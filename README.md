@@ -10,11 +10,11 @@ Tag parsing rules: Entries are separated by "; ", and for tags in entry are sepa
 
 **Tags are:**
 
-- 1. Acc.Ver[-submap]
-- 2. Gene Symbol
-- 3. Strand
-- 4. BlockAttr
-- 5. ExIn Num
+- Acc.Ver[-submap]
+- Gene Symbol
+- Strand
+- BlockAttr
+- ExIn Num
 
     The BlockAttr and the ExIn Num are defined as the following:
 
@@ -68,13 +68,13 @@ Tag parsing rules: Entries are separated by "; ", and for tags in entry are sepa
               EX1    EX2    EX3
                  IVS1   IVS2
 
-- 6. n./r. HGVS start for block before departing
-- 7. n./r. HGVS end for block before departing
-- 8. c. HGVS start for block before departing.
-- 9. c. HGVS end for block before departing.
-- 10.original block length
-- 11.Primary Tag (If "Y", the primary transcript record in all transcripts of the same gene, otherwise "N")
-- 12.Offset to leftmost of non departing block. 
+- n./r. HGVS start for block before departing
+- n./r. HGVS end for block before departing
+- c. HGVS start for block before departing.
+- c. HGVS end for block before departing.
+- original block length
+- Primary Tag (If "Y", the primary transcript record in all transcripts of the same gene, otherwise "N")
+- Offset to leftmost of non departing block. 
 
 **Example entries:**
 
@@ -91,12 +91,12 @@ Tag parsing rules: Entries are separated by "; ", and for tags in entry are sepa
 For the primary tag definition, there's a cooresponding sort strategy:
 * Rules are list for prior to minor. *
 
-- 1. whether the transcript is on the primary assembly. "On" is prior.
-- 2. concatenated CDS is longer
-- 3. concatenated Exon is longer
-- 4. union Exon with flank region is longer
-- 5. Chromosome ID number is smaller
-- 6. Position number on forward strand-chromosome is smaller.
+- whether the transcript is on the primary assembly. "On" is prior.
+- concatenated CDS is longer
+- concatenated Exon is longer
+- union Exon with flank region is longer
+- Chromosome ID number is smaller
+- Position number on forward strand-chromosome is smaller.
 
 Then assign the 'best' NMid to the first record, and add postfix "-N" (1..n-1) to the following records
 
