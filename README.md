@@ -16,7 +16,7 @@ Tag parsing rules: Entries are separated by "; ", and for tags in entry are sepa
 - BlockAttr
 - ExIn Num
 
--The BlockAttr and the ExIn Num are defined as the following:
+The BlockAttr and the ExIn Num are defined as the following:
 
     For entry with cmpl 5' cds and cmpl 3' cds:
 
