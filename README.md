@@ -13,11 +13,18 @@ Tag parsing rules: Entries are separated by "; ", and for tags in entry are sepa
 - 1. Acc.Ver[-submap]
 - 2. Gene Symbol
 - 3. Strand
--               5'UTR   =======================================>   3'UTR
-- 4. BlockAttr: 5U3E,I5U2,5U2,I5U1,5U1,C1,IC1, C2, IC2,C3E,3U1,I3U1,3U2E
-- 5. ExIn Num : EX1  IVS1 EX2 IVS2   EX3  IVS3 EX4 IVS4  EX5   IVS5 EX6E
+- 4. BlockAttr
+- 5. ExIn Num
+
+    For entry with cmpl 5' cds and cmpl 3' cds:
+
+	       5'UTR   =======================================>   3'UTR
+
+	       5U3E,I5U2,5U2,I5U1,5U1,C1,IC1, C2, IC2,C3E,3U1,I3U1,3U2E
+	       EX1  IVS1 EX2 IVS2   EX3  IVS3 EX4 IVS4  EX5   IVS5 EX6E
 
     For entry with incmpl 5' cds and cmpl 3' cds:
+
                5'UTR ======> 5'CDS   ===================>   3'UTR
 
                              C-3P,IC-2,C-2,IC-1,C-1,3U1,I3U1,3U2E
@@ -29,6 +36,7 @@ Tag parsing rules: Entries are separated by "; ", and for tags in entry are sepa
                     IVS-4         IVS-3    IVS-2        IVS-1
 
     For entry with incmpl 3' cds and cmpl 5' cds:
+
                5'UTR   ===================>   3'CDS ======> 3'UTR
 
                5U2E,I5U1,5U1,C+1,IC+1,C+2,IC+2,C+3P
@@ -40,6 +48,7 @@ Tag parsing rules: Entries are separated by "; ", and for tags in entry are sepa
                     IVS+1        IVS+2    IVS+3         IVS+4
 
     For entry with incmpl 3' cds and incmpl 5' cds:
+
               5'UTR ======> 5'CDS   =======>  3'CDS ======> 3'UTR
      
                             C*1P,IC*1,C*2,IC*2,C*3P
@@ -56,7 +65,7 @@ Tag parsing rules: Entries are separated by "; ", and for tags in entry are sepa
               R1 IR1 R2 IR2 R3
               EX1    EX2    EX3
                  IVS1   IVS2
-  
+
 - 6.n./r. HGVS start for block before departing
 - 7.n./r. HGVS end for block before departing
 - 8.c. HGVS start for block before departing.
@@ -88,5 +97,4 @@ For the primary tag definition, there's a cooresponding sort strategy:
 - 6. Position number on forward strand-chromosome is smaller.
 
 Then assign the 'best' NMid to the first record, and add postfix "-N" (1..n-1) to the following records
-
 
