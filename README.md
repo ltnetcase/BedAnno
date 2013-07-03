@@ -15,7 +15,7 @@ Tag parsing rules: Entries are separated by "; ", and for tags in entry are sepa
 - Strand
 - BlockAttr
 - ExIn Num
-- The BlockAttr and the ExIn Num are defined as the following:
+The BlockAttr and the ExIn Num are defined as the following:
 
     For entry with cmpl 5' cds and cmpl 3' cds:
 
@@ -63,6 +63,7 @@ Tag parsing rules: Entries are separated by "; ", and for tags in entry are sepa
     For non-coding RNA
 
               5' =========> 3'
+
               R1 IR1 R2 IR2 R3
               EX1    EX2    EX3
                  IVS1   IVS2
@@ -88,7 +89,8 @@ Tag parsing rules: Entries are separated by "; ", and for tags in entry are sepa
     chr1    880436  880526  NM_015658.3|NOC2L|-|C18|EX18|2202|2113|2143|2054|90|Y|0
 
 For the primary tag definition, there's a cooresponding sort strategy:
-*Rules are list for prior to minor.*
+
+ *Rules are list for prior to minor.*
 
 - whether the transcript is on the primary assembly. "On" is prior.
 - concatenated CDS is longer
