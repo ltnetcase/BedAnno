@@ -16,6 +16,8 @@ Tag parsing rules: Entries are separated by "; ", and for tags in entry are sepa
 - 4. BlockAttr
 - 5. ExIn Num
 
+    The BlockAttr and the ExIn Num are defined as the following:
+
     For entry with cmpl 5' cds and cmpl 3' cds:
 
 	       5'UTR   =======================================>   3'UTR
@@ -66,10 +68,10 @@ Tag parsing rules: Entries are separated by "; ", and for tags in entry are sepa
               EX1    EX2    EX3
                  IVS1   IVS2
 
-- 6.n./r. HGVS start for block before departing
-- 7.n./r. HGVS end for block before departing
-- 8.c. HGVS start for block before departing.
-- 9.c. HGVS end for block before departing.
+- 6. n./r. HGVS start for block before departing
+- 7. n./r. HGVS end for block before departing
+- 8. c. HGVS start for block before departing.
+- 9. c. HGVS end for block before departing.
 - 10.original block length
 - 11.Primary Tag (If "Y", the primary transcript record in all transcripts of the same gene, otherwise "N")
 - 12.Offset to leftmost of non departing block. 
