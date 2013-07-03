@@ -15,6 +15,13 @@ Tag parsing rules: Entries are separated by "; ", and for tags in entry are sepa
 - Strand
 - BlockAttr
 - ExIn Num
+- n./r. HGVS start for block before departing
+- n./r. HGVS end for block before departing
+- c. HGVS start for block before departing.
+- c. HGVS end for block before departing.
+- original block length
+- Primary Tag (If "Y", the primary transcript record in all transcripts of the same gene, otherwise "N")
+- Offset to leftmost of non departing block. 
 
 The BlockAttr and the ExIn Num are defined as the following:
 
@@ -68,14 +75,6 @@ The BlockAttr and the ExIn Num are defined as the following:
               R1 IR1 R2 IR2 R3
               EX1    EX2    EX3
                  IVS1   IVS2
-
-- n./r. HGVS start for block before departing
-- n./r. HGVS end for block before departing
-- c. HGVS start for block before departing.
-- c. HGVS end for block before departing.
-- original block length
-- Primary Tag (If "Y", the primary transcript record in all transcripts of the same gene, otherwise "N")
-- Offset to leftmost of non departing block. 
 
 **Example entries:**
 
