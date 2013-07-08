@@ -1,0 +1,34 @@
+BedAnno version 0.10
+====================
+
+This module is built for annotating the variations on hg19, by
+a well formatted bed format annotation database.
+please see README.md for more information.
+
+Current version of module is v0.01, please feel free to report bugs
+to me, and improvements advices are the most preciated.
+
+INSTALLATION
+
+To install this module type the following:
+
+   perl Makefile.PL
+   make
+   make test
+   make install
+
+DEPENDENCIES
+
+This module use tabix to extract bed infomation, so the tabix should be installed,
+sample bed format database is attached in data dir, together with the coding seq fasta
+which have been indexed.
+
+COPYRIGHT AND LICENCE
+
+Copyright (C) 2013 by liutao
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself, either Perl version 5.10.1 or,
+at your option, any later version of Perl 5 you may have available.
+
+

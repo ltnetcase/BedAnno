@@ -1,0 +1,8 @@
+Revision history for Perl extension BedAnno.
+
+0.01  Tue Jun 18 19:11:02 2013
+	- original version; created by h2xs 1.23 with options
+		-AXc -n BedAnno -b v5.10.1
+
+0.10  Mon Jul 8 17:01:02 2013
+	- alpha version released.
