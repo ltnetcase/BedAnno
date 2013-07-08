@@ -3,7 +3,7 @@ BedAnno
 
 Annotate genomics variations of hg19 by using a BED+1 format database, which construct from ucsc hg19 databases.
 
-BED +1 Format for hg19_refseq annotation
+BED +1 Format for hg19 refseq annotation
 ----------------------------------------
 The start position is in 0 based, stop in 1 based
 Tag parsing rules: Entries are separated by "; ", and for tags in entry are separated by "|"

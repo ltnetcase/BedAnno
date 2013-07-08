@@ -21,7 +21,7 @@ our @EXPORT = qw(
     fetchseq get_codon parse_var
 );
 
-our $VERSION = '0.10';
+our $VERSION = '0.11';
 
 =head1 NAME
 
@@ -42,12 +42,15 @@ samtools.
 
 =head2 EXPORT
 
-None by default.
+fetchseq()  - used to batched fetch genomic sequences (flanks), 
+	      this depend on samtools installed, and a faidx(ed) 
+	      fasta file.
+get_codon() - used to get codon information through cds position.
+parse_var() - parse variation information stand-alone, giving
+	      the guess information and possible coordinates.
 
 =head1 Methods
 =cut
-
-# Preloaded methods go here.
 
 our %codon3 = (
     TTT=>"Phe",	CTT=>"Leu", ATT=>"Ile",	GTT=>"Val",
@@ -270,6 +273,128 @@ sub load_anno {
 	$$self{annodb} = \%annodb;
 	return $self->region_merge() if ($prTag or $mmapTag or $geneTag or $tranTag);
 	return $self;
+    }
+}
+
+=head2 write_using
+
+    About   : write the current using database information to files
+    Usage   : $beda->write_using( $file, $type );
+    Args    : file gives the filename to output, and type is one of the following:
+		g:  gene symbol list
+		t:  transcript acc.ver list
+		b:  standard bed format of only exon region
+		a:  BED +1 format, exon region with '+1' annotation, 
+		    oneline per one exon for one transcript, this
+		    format allow redundancy exists, and not sorted by
+		    chromosomal coordinates, but by the transcript acc.ver
+		    and the exon number, this file is mainly for 
+		    transcript originated statistics for only exon.
+
+=cut
+sub write_using {
+    my ($self, $file, $type) = @_;
+    open (F, ">", $file) or $self->throw("$file: $!");
+    my (%genes, %trans, @beds, %anno) = ();
+    foreach my $chr (sort keys %{$$self{annodb}}) {
+	foreach my $bedent (@{$$self{annodb}{$chr}}) {
+	    my $exOpt = 0;
+	    foreach my $annoblk (keys %{$$bedent{annos}}) {
+		# NM_152486.2|SAMD11|+|IC7|IVS8|949|950|869|870|829|Y
+		my @info = split(/\|/, $annoblk);
+
+		given ($type) {
+		    when ('g') {
+			$genes{$info[1]} = 1;
+		    }
+		    when ('t') {
+			$trans{$info[0]} = 1;
+		    }
+		    when ('b') {
+			$exOpt = 1 if ($info[4] =~ /^EX/);
+		    }
+		    when ('a') {
+			if ( $info[4] =~ /^EX/) {
+			    if (   !exists( $anno{ $info[0] } )
+				or !exists( $anno{ $info[0] }{ $info[4] } ) )
+			    {
+				$anno{ $info[0] }{ $info[4] }{chr} = $chr;
+				$anno{ $info[0] }{ $info[4] }{sta} = $$bedent{sta};
+				$anno{ $info[0] }{ $info[4] }{sto} = $$bedent{sto};
+				$anno{ $info[0] }{ $info[4] }{blk} = $annoblk;
+			    }
+			    elsif ($$bedent{sto} > $anno{ $info[0] }{ $info[4] }{sto}) {
+				$anno{ $info[0] }{ $info[4] }{sto} = $$bedent{sto};
+			    }
+			    else {
+				$self->throw("Error: bad db, non-departed beds, or no-sort!");
+			    }
+			}
+		    }
+		    default { $self->throw("type: $type not regconized."); }
+		}
+	    }
+	    push (@beds, [ $chr, $$bedent{sta}, $$bedent{sto} ]) if ($type eq 'b' and $exOpt);
+	}
+    }
+
+    given ($type) {
+	when ('g') {
+	    say F (sort keys %genes);
+	}
+	when ('t') {
+	    say F (sort keys %trans);
+	}
+	when ('b') { # merge bed regions due to pre-sorted db.
+	    if (0 == @beds) {
+		$self->warn("no region in db.\n");
+		return;
+	    }
+	    my ($pre_chr, $pre_sta, $pre_sto) = @{$beds[0]};
+	    for (my $i = 1; $i < @beds; $i++) {
+		my ($cur_chr, $cur_sta, $cur_sto) = @{$beds[$i]};
+		if (($cur_chr ne $pre_chr) or ($cur_sta > $pre_sto)) {
+		    say F join("\t", $pre_chr, $pre_sta, $pre_sto);
+		    ($pre_chr, $pre_sta, $pre_sto) = ($cur_chr, $cur_sta, $cur_sto);
+		}
+		elsif ($cur_sta == $pre_sto) {
+		    $pre_sto = $cur_sto;
+		}
+		else {
+		    $self->throw("Error: bad db, non-departed beds, or no-sort!");
+		}
+	    }
+	    say F join("\t", $pre_chr, $pre_sta, $pre_sto);
+	}
+	when ('a') {
+	    foreach my $nm (sort keys %anno) {
+		foreach my $ex (sort exsort keys %{$anno{$nm}}) {
+		    say F join("\t", $anno{$nm}{$ex}{chr}, $anno{$nm}{$ex}{sta},
+			$anno{$nm}{$ex}{sto}, $anno{$nm}{$ex}{blk});
+		}
+	    }
+	}
+	default { $self->throw("type: $type not regconized."); }
+    }
+    close F;
+    return;
+}
+
+sub exsort {
+    my ($sym, $anum, $bnum);
+    if ($a =~ /^EX([\+\-\*]?)(\d+)$/) {
+	$sym = $1;
+	$anum = $2;
+    }
+    if ($b =~ /^EX[\+\-\*]?(\d+)$/) {
+	$bnum = $1;
+    }
+    confess "ExIn number format error. [$a, $b]" if (!defined $anum or !defined $bnum);
+    if (!defined $sym or $sym !~ /\-/) {
+	$anum <=> $bnum;
+    }
+    else {
+	$bnum <=> $anum;
     }
 }
 
