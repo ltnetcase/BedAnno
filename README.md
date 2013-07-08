@@ -19,7 +19,7 @@ Tag parsing rules: Entries are separated by "; ", and for tags in entry are sepa
 - n./r. HGVS end for block before departing
 - c. HGVS start for block before departing.
 - c. HGVS end for block before departing.
-- original block length
+- Original block length
 - Primary Tag (If "Y", the primary transcript record in all transcripts of the same gene, otherwise "N")
 - Offset to leftmost of non departing block. 
 
