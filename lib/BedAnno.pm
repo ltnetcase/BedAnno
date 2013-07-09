@@ -1851,7 +1851,7 @@ sub select_position {
 		my $rChrAnnos = $beda->batch_anno( chr, \@vars); 
 		push (@all_annos, @$rChrAnnos);
 	      }
-    Args    : an array ref of vars and an array ref of cPos
+    Args    : chr, and an array ref of vars.
     Returns : an array ref of annos, see anno().
 
 =cut
