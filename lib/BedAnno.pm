@@ -21,7 +21,7 @@ our @EXPORT = qw(
     fetchseq get_codon parse_var
 );
 
-our $VERSION = '0.12';
+our $VERSION = '0.13';
 
 =head1 NAME
 
@@ -283,6 +283,8 @@ sub load_anno {
     Args    : file gives the filename to output, and type is one of the following:
 		g:  gene symbol list
 		t:  transcript acc.ver list
+		c:  the complete annotation region, in bed format,
+		    which can be used as the variation calling region.
 		b:  standard bed format of only exon region
 		a:  BED +1 format, exon region with '+1' annotation, 
 		    oneline per one exon for one transcript, this
@@ -295,9 +297,13 @@ sub load_anno {
 sub write_using {
     my ($self, $file, $type) = @_;
     open (F, ">", $file) or $self->throw("$file: $!");
-    my (%genes, %trans, @beds, %anno) = ();
+    my (%genes, %trans, @beds, %anno, @complete) = ();
     foreach my $chr (sort keys %{$$self{annodb}}) {
 	foreach my $bedent (@{$$self{annodb}{$chr}}) {
+	    if ($type eq 'c') {
+		push (@complete, [ $chr, $$bedent{sta}, $$bedent{sto} ]);
+		next;
+	    }
 	    my $exOpt = 0;
 	    foreach my $annoblk (keys %{$$bedent{annos}}) {
 		# NM_152486.2|SAMD11|+|IC7|IVS8|949|950|869|870|829|Y
@@ -373,6 +379,27 @@ sub write_using {
 			$anno{$nm}{$ex}{sto}, $anno{$nm}{$ex}{blk});
 		}
 	    }
+	}
+	when ('c') {
+	    if (0 == @complete) {
+		$self->warn("no region in db.\n");
+		return;
+	    }
+	    my ($pre_chr, $pre_sta, $pre_sto) = @{$complete[0]};
+	    for (my $i = 1; $i < @complete; $i++) {
+		my ($cur_chr, $cur_sta, $cur_sto) = @{$complete[$i]};
+		if (($cur_chr ne $pre_chr) or ($cur_sta > $pre_sto)) {
+		    say F join("\t", $pre_chr, $pre_sta, $pre_sto);
+		    ($pre_chr, $pre_sta, $pre_sto) = ($cur_chr, $cur_sta, $cur_sto);
+		}
+		elsif ($cur_sta == $pre_sto) {
+		    $pre_sto = $cur_sto;
+		}
+		else {
+		    $self->throw("Error: bad db, non-departed complete, or no-sort!");
+		}
+	    }
+	    say F join("\t", $pre_chr, $pre_sta, $pre_sto);
 	}
 	default { $self->throw("type: $type not regconized."); }
     }

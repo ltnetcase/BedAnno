@@ -12,3 +12,7 @@ Revision history for Perl extension BedAnno.
 
 0.12  Tue Jul 9 13:01:02 2013
 	- fix a bug in parse_cPos, when dealing with intron mutation
+
+0.13  Tue Jul 9 22:32:02 2013
+	- add a new type 'c' to write_using() method to make the
+	  complete annotation region be available to generate.

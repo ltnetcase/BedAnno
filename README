@@ -1,11 +1,11 @@
-BedAnno version 0.12
+BedAnno version 0.13
 ====================
 
 This module is built for annotating the variations on hg19, by
 a well formatted bed format annotation database.
 please see README.md for more information.
 
-Current version of module is v0.12, please feel free to report bugs
+Current version of module is v0.13, please feel free to report bugs
 to me, and improvements advices are the most preciated.
 
 INSTALLATION
