@@ -42,12 +42,12 @@ samtools.
 
 =head2 EXPORT
 
-fetchseq()  - used to batched fetch genomic sequences (flanks), 
-	      this depend on samtools installed, and a faidx(ed) 
-	      fasta file.
-get_codon() - used to get codon information through cds position.
-parse_var() - parse variation information stand-alone, giving
-	      the guess information and possible coordinates.
+    fetchseq()  - used to batched fetch genomic sequences (flanks), 
+		  this depend on samtools installed, and a faidx(ed) 
+		  fasta file.
+    get_codon() - used to get codon information through cds position.
+    parse_var() - parse variation information stand-alone, giving
+		  the guess information and possible coordinates.
 
 =head1 Methods
 =cut
@@ -1367,6 +1367,7 @@ sub get_aaDelInfo {
 }
 
 =head2 get_aaInsInfo
+
     About   : get pHGVS and function code from coding insertion
     Usage   : my ($pHGVS, $func) = $beda->get_aaInsInfo($query_tid, $cP, $t_alt, $tp);
     Args    : query_tid is the tid for query refseq codon, [no -N tail]
@@ -2658,7 +2659,7 @@ If you have a web site set up for your module, mention it here.
 
 =head1 AUTHOR
 
-liutao, E<lt>liutao@genomics.cn<gt>
+liutao, E<lt>liutao@genomics.cnE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
