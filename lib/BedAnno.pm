@@ -162,7 +162,7 @@ sub new {
 
 sub readfa {
     my $file = shift;
-    open (FAS, "zcat -f $file |") or confess "$file: $!";
+    open (FAS, "zcat -f $file |") or confess "$file: $!\n";
     local $/ = ">";
     my %seqs = ();
     while (<FAS>) {
@@ -389,7 +389,7 @@ sub exsort {
     if ($b =~ /^EX[\+\-\*]?(\d+)$/) {
 	$bnum = $1;
     }
-    confess "ExIn number format error. [$a, $b]" if (!defined $anum or !defined $bnum);
+    confess "ExIn number format error. [$a, $b]\n" if (!defined $anum or !defined $bnum);
     if (!defined $sym or $sym !~ /\-/) {
 	$anum <=> $bnum;
     }
@@ -1601,7 +1601,7 @@ sub get_codon {
     my ($rseq, $tid, $cpos) = @_;
     my $frame = ($cpos - 1) % 3; # 0, 1, 2
     if (!exists $$rseq{$tid}) {
-	carp "no coding sequence for $tid";
+	carp "no coding sequence for $tid\n";
 	return ("", "", "", $frame);
     }
     my $codon = uc(substr($$rseq{$tid}, ($cpos - $frame - 1), 3));
@@ -2054,7 +2054,7 @@ sub in_reg_cPos {
 		$cpos = 'r.'.($$rh{nsto} + $total_right_offset);
 	    }
 	}
-	default { confess "unrecognized block attribution!"; }
+	default { confess "unrecognized block attribution!\n"; }
     }
     return { gsym => $$rh{gsym}, reg => $$rh{blka}, exin => $$rh{exin}, cpos => $cpos, strd => $$rh{strand}, bd => $border };
 }
@@ -2186,7 +2186,7 @@ sub parse_annoent {
     # NM_152486.2|SAMD11|+|IC7|IVS8|949|950|869|870|Y
     my @infos = split(/\|/, $annoent);
     my $tid = shift @infos;
-    confess "Error format of anno ents [$annoent]" if (10 != @infos);
+    confess "Error format of anno ents [$annoent]\n" if (10 != @infos);
     my @tags  = qw(gsym strand blka exin nsta nsto csta csto wlen pr);
     @annoinfo{@tags} = @infos;
     return ($tid, \%annoinfo);
@@ -2234,6 +2234,12 @@ sub parse_annoent {
 =cut
 sub parse_var {
     my ($chr, $pos, $ref, $alt) = @_;
+    $ref = uc($ref);
+    $alt = uc($alt);
+    if ($ref =~ /[^ACGT]/ or $alt =~ /[^ACGT]/) {
+	confess ("Cannot recognize non ACGT ref/alt,", 
+	    "may be you need first split your alt string into pieces.\n");
+    }
     my $ref_len = length ($ref);
     my $alt_len = length ($alt);
     my %var = (
@@ -2611,7 +2617,7 @@ sub fetchseq {
     while (0 < @$rRegs) {
 	my @set = splice (@$rRegs, 0, 1000);
 	my $regions = join(" ", @set);
-	open (FASTA, "samtools faidx $fasta $regions |") or confess "samtools faidx: $!";
+	open (FASTA, "samtools faidx $fasta $regions |") or confess "samtools faidx: $!\n";
 	my @all_seq = <FASTA>;
 	close FASTA;
 	shift @all_seq;
