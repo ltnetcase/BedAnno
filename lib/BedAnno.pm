@@ -21,7 +21,7 @@ our @EXPORT = qw(
     fetchseq get_codon parse_var
 );
 
-our $VERSION = '0.11';
+our $VERSION = '0.12';
 
 =head1 NAME
 
@@ -620,6 +620,9 @@ sub pairanno {
 	    $reg = $$cL{reg};
 	    $exin = $$cL{exin};
 	    ($func, $cc, $pHGVS, $polar) = $self->parse_cPos($tid, $$cL{cpos}, $t_alt);
+	    if ($$cL{reg} =~ /^I/ and $$cL{bd} =~ /1/) {
+		$func = 'abnormal-intron';
+	    }
 	}
 	when ('ins') {
 
@@ -1124,18 +1127,15 @@ sub parse_cPos {
 		}
 	    }
 	}
-	when (/^[cr]\.[\-\*]?\d+[\-\+]\d+/) { # intron region
-	    if ($$cpos{bd} =~ /0/) {
+	when (/^[cr]\.[\-\*]?\d+([\-\+])(\d+)/) { # intron region
+	    if ($2 > 2) {
 		$func = 'intron';
 	    }
-	    elsif ($$cpos{bd} =~ /b/) {
+	    elsif ($1 eq '+') {
 		$func = 'splice-5';
 	    }
-	    elsif ($$cpos{bd} =~ /B/) {
+	    elsif ($1 eq '-') {
 		$func = 'splice-3';
-	    }
-	    else {
-		$func = 'abnormal-intron';
 	    }
 	}
 	when (/^c\.-\d+$/) { # 5' UTR

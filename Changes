@@ -9,3 +9,6 @@ Revision history for Perl extension BedAnno.
 
 0.11  Mon Jul 8 22:01:02 2013
 	- add method write_using() to generate db information files.
+
+0.12  Tue Jul 9 13:01:02 2013
+	- fix a bug in parse_cPos, when dealing with intron mutation
