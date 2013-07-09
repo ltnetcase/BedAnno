@@ -1840,11 +1840,11 @@ sub select_position {
     About   : The fastest way to annotate multiple snv and 1bp deletion variations,
 	      indel and other types also can be annotated, but no faster than annotated
 	      one by one.
-    Usage   : $beda = BedAnno->new('in.bed.gz', 'in.chr.fa', 'in.codon.fa'); 
+    Usage   : $beda = BedAnno->new( db => 'in.bed.gz', codon => 'in.codon.fa'); 
 	      @all_annos = ();
 	      foreach chr {
 		my @vars = (); 
-		foreach pos, ref, alt {
+		foreach pos, ref, @alt {
 		  $var = parse_var($chr, $pos, $ref, $alt);
 		  push (@vars, $var);
 		}
