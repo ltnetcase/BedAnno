@@ -162,7 +162,7 @@ sub new {
 
 sub readfa {
     my $file = shift;
-    open (FAS, "zcat -f $file |") or confess "$file: $!\n";
+    open (FAS, "zcat -f $file |") or confess "$file: $!";
     local $/ = ">";
     my %seqs = ();
     while (<FAS>) {
@@ -353,7 +353,7 @@ sub write_using {
 	}
 	when ('b') { # merge bed regions due to pre-sorted db.
 	    if (0 == @beds) {
-		$self->warn("no region in db.\n");
+		$self->warn("no region in db.");
 		return;
 	    }
 	    my ($pre_chr, $pre_sta, $pre_sto) = @{$beds[0]};
@@ -382,7 +382,7 @@ sub write_using {
 	}
 	when ('c') {
 	    if (0 == @complete) {
-		$self->warn("no region in db.\n");
+		$self->warn("no region in db.");
 		return;
 	    }
 	    my ($pre_chr, $pre_sta, $pre_sto) = @{$complete[0]};
@@ -416,7 +416,7 @@ sub exsort {
     if ($b =~ /^EX[\+\-\*]?(\d+)$/) {
 	$bnum = $1;
     }
-    confess "ExIn number format error. [$a, $b]\n" if (!defined $anum or !defined $bnum);
+    confess "ExIn number format error. [$a, $b]" if (!defined $anum or !defined $bnum);
     if (!defined $sym or $sym !~ /\-/) {
 	$anum <=> $bnum;
     }
@@ -1628,7 +1628,7 @@ sub get_codon {
     my ($rseq, $tid, $cpos) = @_;
     my $frame = ($cpos - 1) % 3; # 0, 1, 2
     if (!exists $$rseq{$tid}) {
-	carp "no coding sequence for $tid\n";
+	carp "no coding sequence for $tid";
 	return ("", "", "", $frame);
     }
     my $codon = uc(substr($$rseq{$tid}, ($cpos - $frame - 1), 3));
@@ -2081,7 +2081,7 @@ sub in_reg_cPos {
 		$cpos = 'r.'.($$rh{nsto} + $total_right_offset);
 	    }
 	}
-	default { confess "unrecognized block attribution!\n"; }
+	default { confess "unrecognized block attribution!"; }
     }
     return { gsym => $$rh{gsym}, reg => $$rh{blka}, exin => $$rh{exin}, cpos => $cpos, strd => $$rh{strand}, bd => $border };
 }
@@ -2213,7 +2213,7 @@ sub parse_annoent {
     # NM_152486.2|SAMD11|+|IC7|IVS8|949|950|869|870|Y
     my @infos = split(/\|/, $annoent);
     my $tid = shift @infos;
-    confess "Error format of anno ents [$annoent]\n" if (10 != @infos);
+    confess "Error format of anno ents [$annoent]" if (10 != @infos);
     my @tags  = qw(gsym strand blka exin nsta nsto csta csto wlen pr);
     @annoinfo{@tags} = @infos;
     return ($tid, \%annoinfo);
@@ -2265,7 +2265,7 @@ sub parse_var {
     $alt = uc($alt);
     if ($ref =~ /[^ACGT]/ or $alt =~ /[^ACGT]/) {
 	confess ("Cannot recognize non ACGT ref/alt,", 
-	    "may be you need first split your alt string into pieces.\n");
+	    "may be you need first split your alt string into pieces.");
     }
     my $ref_len = length ($ref);
     my $alt_len = length ($alt);
@@ -2644,7 +2644,7 @@ sub fetchseq {
     while (0 < @$rRegs) {
 	my @set = splice (@$rRegs, 0, 1000);
 	my $regions = join(" ", @set);
-	open (FASTA, "samtools faidx $fasta $regions |") or confess "samtools faidx: $!\n";
+	open (FASTA, "samtools faidx $fasta $regions |") or confess "samtools faidx: $!";
 	my @all_seq = <FASTA>;
 	close FASTA;
 	shift @all_seq;
