@@ -21,7 +21,7 @@ our @EXPORT = qw(
     fetchseq get_codon parse_var
 );
 
-our $VERSION = '0.13';
+our $VERSION = '0.14';
 
 =head1 NAME
 
@@ -2279,7 +2279,7 @@ sub parse_var {
     );
     if ($ref_len > 1 and $alt_len > 1) {
         my $complex = parse_complex( $ref, $ref_len, $alt, $alt_len );
-	my $ori_pos = $var{pos};
+        my $ori_pos = $var{pos};
 
         $var{guess} = $$complex{guess};
 
@@ -2291,7 +2291,7 @@ sub parse_var {
         $var{'+'}{brl} = $$complex{bcRlen};
         $var{'+'}{bal} = $$complex{bcAlen};
 
-        $var{'-'}{bp}    = $ori_pos + $$complex{'-'}{bcOffst};
+        $var{'-'}{bp} = $ori_pos + $$complex{'-'}{bcOffst};
         $var{'-'}{br} =
           substr( $ref, $$complex{'-'}{bcOffst}, $$complex{bcRlen} );
         $var{'-'}{ba} =
@@ -2317,7 +2317,7 @@ sub parse_var {
             $var{'+'}{rl} = $$complex{newRlen};
             $var{'+'}{al} = $$complex{newAlen};
 
-            $var{'-'}{p}    = $ori_pos + $$complex{'-'}{Offset};
+            $var{'-'}{p} = $ori_pos + $$complex{'-'}{offset};
             $var{'-'}{r} =
               substr( $ref, $$complex{'-'}{offset}, $$complex{newRlen} );
             $var{'-'}{a} =
