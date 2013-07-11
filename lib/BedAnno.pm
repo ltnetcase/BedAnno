@@ -1628,7 +1628,6 @@ sub get_codon {
     my ($rseq, $tid, $cpos) = @_;
     my $frame = ($cpos - 1) % 3; # 0, 1, 2
     if (!exists $$rseq{$tid}) {
-	carp "no coding sequence for $tid";
 	return ("", "", "", $frame);
     }
     my $codon = uc(substr($$rseq{$tid}, ($cpos - $frame - 1), 3));
