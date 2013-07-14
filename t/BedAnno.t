@@ -153,6 +153,22 @@ my $rep_anno = {
     }
 };
 
+my $n_anno = {
+      c       => 'c.2376+47_2376+48delCTinsCTTGGNCT',
+      p       => '.',
+      cc      => '.',
+      r       => 'IC4',
+      exin    => 'IVS5',
+      func    => 'intron',
+      polar   => '.',
+      bc      => '.',
+      flanks  => {
+        l     => 'chr8:61713129-61713130',
+        r     => 'chr8:61713133-61713134',
+        strd  => '+'
+      }
+};
+
 test_anno($snv_anno, "NM_006996.2", "chr1", 169454923, "C", "A");
 test_anno($del1_anno, "NM_001004696.1", "chr1", 248525638, "CA", "C");
 test_anno($ins_anno, "NM_018406.6", "chr3", 195518112, "T", "TGTCTCCTGCGTAACA");
@@ -161,6 +177,7 @@ test_anno($splice_anno, "NM_006158.4", "chr8", 24811064, "AGGGGGGG", "AGGGGGG");
 test_anno($splice1_anno, "NM_024022.2", "chr21", 43803308,  "CTA", "CTATA");
 test_anno($delins_anno, "NM_001039141.2", "chr22", 38119754, "TCAAC", "TC");
 test_anno($rep_anno, "NM_000581.2", "chr3", 49395673, "GGCCGCCGCCGCCGCCGCC", "GGCCGCCGCCGCC");
+test_anno($n_anno, "NM_017780.3", "chr8", 61713130, "ACT", "ACTTGGNCT");
 
 done_testing();
 exit 0;

@@ -18,10 +18,10 @@ our @ISA = qw(Exporter);
 # will save memory.
 
 our @EXPORT = qw(
-    fetchseq get_codon parse_var
+    fetchseq get_codon parse_var individual_anno
 );
 
-our $VERSION = '0.14';
+our $VERSION = '0.15';
 
 =head1 NAME
 
@@ -475,6 +475,172 @@ sub region_merge {
     }
 }
 
+=head2 individual_anno
+
+    About   : annotate the variation pairs of one diploid individual, 
+	      combine the region, function, and HGVS strings etc.
+    Usage   : my $rIndAnno = individual_anno($varanno1, $sep, $varanno2);
+    Args    : a pair of variation annotation entry (see varanno())
+    Returns : a hash ref of individual annotation information:
+		{
+		    c    => $combin_cHGVS (in c.[...];[...] format)
+		    p    => $combin_pHGVS (in p.[...];[...] format)
+		    cc   => $combin_codonchange (in [...];[...] format)
+		    r    => $region or $combin_region(multiple)
+		    exin => $exin or $combin_exin(multiple)
+		    func => $most_serious_func
+		    flanks => $flanks or $combin_flanks(multiple)
+		    keep => [0/1] to indicate if this should be kept in excel.
+		}
+    
+=cut
+sub individual_anno {
+    my ($va1, $va2) = @_;
+
+    my %ind_anno_info = ();
+    @ind_anno_info{qw(c p cc r exin func flanks)} = ('.') x 8;
+    if (    ( !exists $$va1{info} or !exists $$va1{info}{c} )
+        and ( exists $$va2{info} and exists $$va2{info}{c} ) )
+    {	# va1 is ref or no annos
+	%ind_anno_info = %{$$va2{info}};
+	combin_ref(\%ind_anno_info);
+    }
+    elsif ( ( !exists $$va2{info} or !exists $$va2{info}{c} )
+        and ( exists $$va1{info} and exists $$va1{info}{c} ) )
+    {	# va2 is ref or no annos
+	%ind_anno_info = %{$$va1{info}};
+	combin_ref(\%ind_anno_info);
+    }
+    elsif ( exists $$va1{info}
+        and exists $$va1{info}{c}
+        and exists $$va2{info}
+        and exists $$va2{info}{c} )
+    {
+        $ind_anno_info{c}  = combin_two( $$va1{info}{c},  $$va2{info}{c} );
+        $ind_anno_info{p}  = combin_two( $$va1{info}{p},  $$va2{info}{p} );
+        $ind_anno_info{cc} = combin_two( $$va1{info}{cc}, $$va2{info}{cc} );
+        $ind_anno_info{polar} =
+          combin_two( $$va1{info}{polar}, $$va2{info}{polar} );
+        $ind_anno_info{r} = check_comb( $$va1{info}{r}, $$va2{info}{r} );
+        $ind_anno_info{exin} =
+          check_comb( $$va1{info}{exin}, $$va2{info}{exin} );
+        $ind_anno_info{func} =
+          check_comb( $$va1{info}{func}, $$va2{info}{func} );
+        $ind_anno_info{flanks} =
+          comb_flanks( $$va1{info}{flanks}, $$va2{info}{flanks} );
+    }
+
+    $ind_anno_info{keep} = ($ind_anno_info{func} eq '.') ? 0 : 1;
+    if ($ind_anno_info{func} eq 'intron') {
+	my $outTag = 0;
+	while ($ind_anno_info{c} =~ /\d+[\+\-](\d+)/g) {
+	    if ($1 <= 10) {
+		$outTag = 1;
+		last;
+	    }
+	}
+	$ind_anno_info{keep} = $outTag;
+    }
+    return \%ind_anno_info;
+}
+
+sub comb_flanks {
+    my ($rflk1, $rflk2) = @_;
+    if (    $$rflk1{l} eq $$rflk2{l}
+        and $$rflk1{r} eq $$rflk2{r}
+        and $$rflk1{strd} eq $$rflk2{strd} )
+    {
+	return $rflk1;
+    }
+    else {
+	my %multiflk = ();
+	$multiflk{l} = $$rflk1{l} . " " . $$rflk2{l};
+	$multiflk{r} = $$rflk1{r} . " " . $$rflk2{r};
+	$multiflk{strd} = $$rflk1{strd} . " " . $$rflk2{strd};
+	return \%multiflk;
+    }
+}
+
+# for joining region exin func string
+sub check_comb {
+    my ($s1, $s2) = @_;
+    return $s1 if ($s1 eq $s2);
+    my %func_order;
+
+    # for function, only select the most serious one as the main function
+    @func_order{
+        qw( abnormal-intron abnormal-inseq-stop altstart 
+	    frameshift stop-gain stop-loss cds-indel 
+	    splice-5 splice-3 nonsense missense coding-synon 
+	    intron utr-5 utr-3 ncRNA unknown . )
+    } = ( 1 .. 18 );
+
+    if (exists $func_order{$s1} and exists $func_order{$s2}) {
+	return (($func_order{$s1} < $func_order{$s2}) ? $s1 : $s2);
+    }
+    else {
+	return "[".$s1."];[".$s2."]";
+    }
+}
+
+# for joining cHGVS pHGVS codon-change polar-change of two varannos
+sub combin_two {
+    my ($v1s, $v2s) = @_;
+
+    my $ind_vs;
+    if ($v1s ne '.' and $v2s ne '.') {
+	my $pre1 = substr( $v1s, 0, 2 );
+	my $pre2 = substr( $v2s, 0, 2 );
+	my $latter2 = substr( $v2s, 2 );
+	if (($pre1 =~ /^[cr]\.$/ or $pre1 =~ /^[\+\-]/) and ( $pre1 eq $pre2 )) {
+	    substr( $v1s, 2, 0, "[" );
+	    $ind_vs = $v1s . "];[" . $latter2 . "]";
+	}
+	else {
+	    $ind_vs =
+	      "[" . $v1s . "];[" . $v2s . "]";
+	}
+    }
+    elsif ($v1s eq '.' and $v2s eq '.') {
+	$ind_vs = '.';
+    }
+    else {
+	$ind_vs = "[" . $v1s . "];[" . $v2s . "]";
+    }
+
+    return $ind_vs;
+}
+
+# for joining current varanno to a ref
+sub combin_ref {
+    my $ind_anno_ref = shift;
+
+    # c HGVS
+    if ($$ind_anno_ref{c} ne '.') { # 
+	my $lb_pos = ($$ind_anno_ref{c} =~ /^[\+\-]/) ? 0 : 2;
+	substr($$ind_anno_ref{c},$lb_pos,0,"[");
+	$$ind_anno_ref{c} .= "];[=]";
+    }
+
+    # p HGVS
+    if ($$ind_anno_ref{p} ne '.') {
+	substr($$ind_anno_ref{p},2,0,"[");
+	$$ind_anno_ref{p} .= "];[=]";
+    }
+
+    # codon change
+    if ($$ind_anno_ref{cc} ne '.') {
+	$$ind_anno_ref{cc} = "[".$$ind_anno_ref{cc}."];[=]";
+    }
+
+    # polar change
+    if ($$ind_anno_ref{polar} ne '.') {
+	$$ind_anno_ref{polar} = "[".$$ind_anno_ref{polar}."];[=]";
+    }
+
+    return $ind_anno_ref;
+}
+
 =head2 anno
 
     About   : Annotate single short variation by annotation db.
@@ -579,7 +745,8 @@ sub pairanno {
 
     my ( $ref, $alt, $pos, $rl, $al ) =
       ( $$var{ref}, $$var{alt}, $$var{pos}, $$var{reflen}, $$var{altlen} );
-    if (exists $$var{'+'} and exists $$var{'+'}{p}) { # for diff strand position cases
+    if (exists $$var{'+'} and exists $$var{'+'}{p}) {
+	# for diff strand position cases
 	$ref = $$var{$$cL{strd}}{r};
 	$alt = $$var{$$cL{strd}}{a};
 	$pos = $$var{$$cL{strd}}{p};
@@ -2262,7 +2429,7 @@ sub parse_var {
     my ($chr, $pos, $ref, $alt) = @_;
     $ref = uc($ref);
     $alt = uc($alt);
-    if ($ref =~ /[^ACGT]/ or $alt =~ /[^ACGT]/) {
+    if ($ref =~ /[^ACGTN]/ or $alt =~ /[^ACGTN]/) {
 	confess ("Cannot recognize non ACGT ref/alt,", 
 	    "may be you need first split your alt string into pieces.");
     }
@@ -2386,7 +2553,7 @@ sub parse_complex {
 
     my $rc_ref = count_content($cref);
     my $rc_alt = count_content($calt);
-    my @diff = map { $$rc_ref[$_] - $$rc_alt[$_] } (0 .. 4);
+    my @diff = map { $$rc_ref[$_] - $$rc_alt[$_] } (0 .. 5);
 
     my $get_rst = get_internal( $ref, $len_ref, $alt, $len_alt );
     my $guess = guess_type( $$get_rst{r}, $$get_rst{a} );
@@ -2424,7 +2591,7 @@ sub parse_complex {
 
 	my %has = ();
 	for (my $rep = $llen; $rep > 0; $rep--) {
-	    while ($larger =~ /([ACGT]+)(?:\1){$rep}/g) {
+	    while ($larger =~ /([ACGTN]+)(?:\1){$rep}/g) {
 		next if (exists $has{$1});
 
                 my $rep_el = $1;
@@ -2610,7 +2777,7 @@ sub check_div {
     my $rcs = count_content($s);
     return 0 unless ($$rc[0] % $$rcs[0] == 0);
     my $div = $$rc[0] / $$rcs[0];
-    for (1 .. 4) {
+    for (1 .. 5) {
         return 0 if ($$rc[$_] != $$rcs[$_] * $div);
     }
     return $div;
@@ -2618,8 +2785,8 @@ sub check_div {
 
 sub count_content {
     my $s = uc(shift);
-    my $l = ($s =~ tr/ACGT/1234/);
-    my @count = ($l, 0, 0, 0, 0);
+    my $l = ($s =~ tr/ACGTN/12345/);
+    my @count = ($l, 0, 0, 0, 0, 0);
     while ($s=~/(\d)/g) {
 	$count[$1] ++;
     }

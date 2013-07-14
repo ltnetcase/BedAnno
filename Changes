@@ -19,3 +19,7 @@ Revision history for Perl extension BedAnno.
 
 0.14  Wes Jul 10 13.14:02 2013
 	- fix a bug of typo in parse_var()
+
+0.15  Sun Jul 14 22:04:01 2013
+	- support character 'N' in the variation string
+	- add a exported method individual_anno() to combinate two variation in one individual.
