@@ -483,16 +483,17 @@ sub region_merge {
     Args    : a pair of variation annotation entry (see varanno())
     Returns : a hash ref of individual annotation information:
 		{
-		    c    => $combin_cHGVS (in c.[...];[...] format)
-		    p    => $combin_pHGVS (in p.[...];[...] format)
-		    cc   => $combin_codonchange (in [...];[...] format)
-		    r    => $region or $combin_region(multiple)
-		    exin => $exin or $combin_exin(multiple)
-		    func => $most_serious_func
+		    c      => $combin_cHGVS (in c.[...];[...] format)
+		    p      => $combin_pHGVS (in p.[...];[...] format)
+		    cc     => $combin_codonchange (in [...];[...] format)
+		    r      => $region or $combin_region(multiple)
+		    exin   => $exin or $combin_exin(multiple)
+		    func   => $most_serious_func
 		    flanks => $flanks or $combin_flanks(multiple)
-		    keep => [0/1] to indicate if this should be kept in excel.
+		    keep   => [0/1] to indicate if this variation should be kept.
+			      or say if the variation is likely to make sense.
 		}
-    
+
 =cut
 sub individual_anno {
     my ($va1, $va2) = @_;
@@ -800,10 +801,10 @@ sub pairanno {
 	$cR = $tmp;
     }
     # get cPos without c./r. 
-    my $cP_L = substr($$cL{cpos}, 2);
-    my $cP_R = substr($$cR{cpos}, 2);
-    my $pre_L = substr($$cL{cpos}, 0, 2);
-    my $pre_R = substr($$cR{cpos}, 0, 2);
+    my $cP_L  = substr( $$cL{cpos}, 2 );
+    my $cP_R  = substr( $$cR{cpos}, 2 );
+    my $pre_L = substr( $$cL{cpos}, 0, 2 );
+    my $pre_R = substr( $$cR{cpos}, 0, 2 );
 
     my $coding_max = int(length($$self{codonseq}{$query_tid})/3) if (exists $$self{codonseq}{$query_tid});
 
