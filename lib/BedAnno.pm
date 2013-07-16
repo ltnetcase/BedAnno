@@ -21,7 +21,7 @@ our @EXPORT = qw(
     fetchseq get_codon parse_var individual_anno
 );
 
-our $VERSION = '0.15';
+our $VERSION = '0.16';
 
 =head1 NAME
 

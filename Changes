@@ -23,3 +23,8 @@ Revision history for Perl extension BedAnno.
 0.15  Sun Jul 14 22:04:01 2013
 	- support character 'N' in the variation string
 	- add a exported method individual_anno() to combinate two variation in one individual.
+
+0.16  Sun Jul 16 16.17:01 2013
+	- fix bugs in write_using()
+	- add a method get_cover_batch() to fetch cPos information of region in batch mode
+	- add comments for annodb format.
