@@ -105,6 +105,7 @@ our %Polar = (
 	      when use "mmap", multiple mapping record will be involved.
 	      when use "onlyPr", record without primary tag and not involved in the transcript list, will be skipped.
     Returns : return annoed blocks which are merged depend on the genes, trans, and region restriction.
+	      please see load_anno() for more information of the format of database.
 
 =cut
 sub new {
@@ -185,6 +186,36 @@ sub readfa {
 	      region, regbed, genes, trans
 	      the tag local can return a local annotate db without overwrite the class entry's.
     Returns : BedA entry with full merged annotation blocks, or a localized merged anno db.
+	      The returned annotation database is a hash ref:
+		{
+		    $chr => [
+			{
+			    sta   => $start, (0 based)
+			    sto   => $stop,  (1 based)
+			    annos => {
+				$anno_string => $offset, ...
+			    }
+
+			    detail => {
+				$tid => {
+				    gsym => $gsym,    (gene symbol)
+				    blka => $blka,    (block attribute)
+				    exin => $exin,    (exon intron number)
+				    nsta => $nsta,    (n./r. left  of whole block)
+				    nsto => $nsto,    (n./r. right of whole block)
+				    csta => $csta,    (c.    left  of whole block)
+				    csto => $csto,    (c.    right of whole block)
+				    wlen => $wlen,    (length of whole block)
+				    pr   => $pr,      (primary tag)
+				    strand => $strd,  (strand)
+				    offset => $offset (offset of current block to whole block)
+				}, ...
+			    }
+			}, ... 
+		    ], ...
+		}
+	      Note: when variation hit one of the annotation entry, the anno_string will be parsed.
+	      and the "detail" tag will be added then.
 
 =cut
 sub load_anno {
@@ -346,10 +377,10 @@ sub write_using {
 
     given ($type) {
 	when ('g') {
-	    say F (sort keys %genes);
+	    say F join("\n", (sort keys %genes));
 	}
 	when ('t') {
-	    say F (sort keys %trans);
+	    say F join("\n", (sort keys %trans));
 	}
 	when ('b') { # merge bed regions due to pre-sorted db.
 	    if (0 == @beds) {
@@ -409,11 +440,11 @@ sub write_using {
 
 sub exsort {
     my ($sym, $anum, $bnum);
-    if ($a =~ /^EX([\+\-\*]?)(\d+)$/) {
+    if ($a =~ /^EX([\+\-\*]?)(\d+)E?$/) {
 	$sym = $1;
 	$anum = $2;
     }
-    if ($b =~ /^EX[\+\-\*]?(\d+)$/) {
+    if ($b =~ /^EX[\+\-\*]?(\d+)E?$/) {
 	$bnum = $1;
     }
     confess "ExIn number format error. [$a, $b]" if (!defined $anum or !defined $bnum);
@@ -2253,6 +2284,7 @@ sub in_reg_cPos {
     return { gsym => $$rh{gsym}, reg => $$rh{blka}, exin => $$rh{exin}, cpos => $cpos, strd => $$rh{strand}, bd => $border };
 }
 
+
 =head2 get_cover
 
     About   : get covered region infos for deletions, and also for insertion pos pairs.
@@ -2370,6 +2402,157 @@ sub get_cover {
 	push (@ret_pairs, [ $tid, $left_cPos, $right_cPos ]);
     }
     return \@ret_pairs;
+}
+
+
+=head2 get_cover_batch
+
+    About   : get covered region in batch mode
+    Usage   : my $cover_href = $beda->get_cover_batch( $chr, \@stasto );
+    Args    : a chromosome id, and an array ref of [ [ $start, $stop ], ... ]
+    Returns : a hash ref of:
+		{
+		    "$start-$stop" => [ 
+					[ $tid, $left_cPos, $right_cPos ], ... 
+				      ], ...
+		}
+	      Note: the pos-pair which do not hit any annotation blocks, will
+		    not exist in the returned results.
+
+=cut
+sub get_cover_batch {
+    my ($self, $chr, $stasto_aref) = @_;
+    my $rAnnos = $$self{annodb};
+    return {} if (!exists $$rAnnos{$chr});
+
+    my @sorted_stasto = sort pairsort @$stasto_aref;
+    return {} if (0 == @sorted_stasto);
+
+    my %ret_cov = ();
+
+    my $cur_blkId = 0;
+    for (my $i = 0; $i < @{$$rAnnos{$chr}}; $i++) {
+	my $cur_bedent = $$rAnnos{$chr}[$i];
+
+	# skip left anno blocks
+	next if ($sorted_stasto[$cur_blkId][0] > $$cur_bedent{sto});
+
+	# skip no hit pos-pair
+	while ($sorted_stasto[$cur_blkId][1] <= $$cur_bedent{sta}) {
+	    $cur_blkId ++;
+	    return \%ret_cov if ($cur_blkId == @sorted_stasto);
+	}
+
+	# skip left anno blocks again for the new shifted pos-pair.
+	next if ($sorted_stasto[$cur_blkId][0] > $$cur_bedent{sto});
+
+	# hit the annotation blks
+	my $pospair = join( "-", @{$sorted_stasto[$cur_blkId]} );
+	$ret_cov{$pospair} = cal_covered( $$rAnnos{$chr}, $i, @{$sorted_stasto[$cur_blkId]} );
+	$cur_blkId ++; 
+	$i --; # keep annotation block to stay at current index
+    }
+    return \%ret_cov;
+}
+
+sub cal_covered {
+    my ($rchrAnnos, $k, $start, $stop) = @_;
+
+    my %min_left = ();
+    my %min_right = ();
+    my %left_most = ();
+    my %right_most = ();
+
+    while ($k < @$rchrAnnos and $$rchrAnnos[$k]{sta} < $stop) {
+	my $bedent = $$rchrAnnos[$k];
+	if (!exists $$bedent{detail}) {
+	    foreach my $annoblk (keys %{$$bedent{annos}}) {
+		my $offset1 = $$bedent{annos}{$annoblk};
+		my ($tid, $ranno) = parse_annoent($annoblk);
+		$$bedent{detail}{$tid} = $ranno;
+		$$bedent{detail}{$tid}{offset} = $offset1;
+	    }
+	}
+	
+	foreach my $tid (sort keys %{$$bedent{detail}}) {
+	    if (!exists $min_left{$tid}) {
+		$min_left{$tid} = $$bedent{sta} + 1 - $start;
+		$left_most{$tid} = $k;
+	    }
+	    if (!exists $min_right{$tid}) {
+		$min_right{$tid} = $stop - $$bedent{sto};
+		$right_most{$tid} = $k;
+	    }
+	    elsif ($min_right{$tid} > ($stop - $$bedent{sto})) {
+		$min_right{$tid} = $stop - $$bedent{sto};
+		$right_most{$tid} = $k;
+	    }
+	}
+	$k ++;
+    }
+
+    my @ret_pairs = ();
+    foreach my $tid (sort keys %left_most) {
+	my ($left_cPos, $right_cPos);
+	my ( $left_bed, $right_bed ) =
+	  ( $$rchrAnnos[ $left_most{$tid} ], $$rchrAnnos[ $right_most{$tid} ] );
+
+	if ($min_left{$tid} > 0) {  # extend off the left of tid
+	    my $left_cp;
+	    my $bd = 0;
+	    if ($$left_bed{detail}{$tid}{strand} eq '+') {
+		$bd = "b" if ($min_left{$tid} < 2);
+		$left_cp = "--".$min_left{$tid};
+	    }
+	    else {
+		$bd = "B" if ($min_left{$tid} < 2);
+		$left_cp = "++".$min_left{$tid};
+	    }
+	    $left_cPos = {
+		gsym => $$left_bed{detail}{$tid}{gsym},
+		reg  => $$left_bed{detail}{$tid}{blka},
+		exin => $$left_bed{detail}{$tid}{exin},
+		strd => $$left_bed{detail}{$tid}{strand},
+		cpos => $left_cp,
+		bd   => $bd
+	      };
+	}
+	else {
+	    $left_cPos = in_reg_cPos($$left_bed{detail}{$tid}, -$min_left{$tid});
+	}
+	if ($min_right{$tid} > 0) { # extend off the right of tid
+	    my $right_cp;
+	    my $rbd = 0;
+	    if ($$right_bed{detail}{$tid}{strand} eq '+') {
+		$rbd = "B" if ($min_right{$tid} < 2);
+		$right_cp = "++".$min_right{$tid};
+	    }
+	    else {
+		$rbd = "b" if ($min_right{$tid} < 2);
+		$right_cp = "--".$min_right{$tid};
+	    }
+	    $right_cPos = {
+		gsym => $$right_bed{detail}{$tid}{gsym},
+		reg  => $$right_bed{detail}{$tid}{blka},
+		exin => $$right_bed{detail}{$tid}{exin},
+		strd => $$right_bed{detail}{$tid}{strand},
+		cpos => $right_cp,
+		bd   => $rbd
+	      };
+	}
+	else {
+	    my $converse_left =
+	      ( $$right_bed{sto} - $$right_bed{sta} + $min_right{$tid} - 1 );
+	    $right_cPos =
+	      in_reg_cPos( $$right_bed{detail}{$tid}, $converse_left );
+	}
+	push (@ret_pairs, [ $tid, $left_cPos, $right_cPos ]);
+    }
+    return \@ret_pairs;
+}
+
+sub pairsort {
+    $$a[0] <=> $$b[0] or $$a[1] <=> $$b[1]
 }
 
 
