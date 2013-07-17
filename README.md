@@ -1,7 +1,13 @@
 BedAnno
 =======
 
-Annotate genomics variations of hg19 by using a BED+1 format database, which construct from ucsc hg19 databases.
+Annotate genomics variations of hg19 by using a BED+1 format database, 
+which construct from ucsc hg19 databases. This module can directly 
+parse the vcf4.1 format ref and single alt string(no commas in it),
+without normalized by vcftools, and can recognize the tandom repeat 
+variation and duplication, generate the standard HGVS strings for 
+most of complex cases. Also it will ajust the strand of transcript,
+and follow the 3' nearest rules to annotate.
 
 BED +1 Format for hg19 refseq annotation
 ----------------------------------------
