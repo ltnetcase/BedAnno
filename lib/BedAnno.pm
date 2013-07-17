@@ -510,7 +510,7 @@ sub region_merge {
 
     About   : annotate the variation pairs of one diploid individual, 
 	      combine the region, function, and HGVS strings etc.
-    Usage   : my $rIndAnno = individual_anno($varanno1, $sep, $varanno2);
+    Usage   : my $rIndAnno = individual_anno($varanno1, $varanno2);
     Args    : a pair of variation annotation entry (see varanno())
     Returns : a hash ref of individual annotation information:
 		{
@@ -3032,14 +3032,8 @@ __END__
 
 =head1 SEE ALSO
 
-Mention other useful documentation such as the documentation of
-related modules or operating system documentation (such as man pages
-in UNIX), or any relevant external documentation such as RFCs or
-standards.
-
-If you have a mailing list set up for your module, mention it here.
-
-If you have a web site set up for your module, mention it here.
+    HGVS     :  http://www.hgvs.org/mutnomen/recs.html
+    Mutalyzer:  https://mutalyzer.nl
 
 =head1 AUTHOR
 
