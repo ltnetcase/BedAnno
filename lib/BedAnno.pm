@@ -42,12 +42,14 @@ samtools.
 
 =head2 EXPORT
 
-    fetchseq()  - used to batched fetch genomic sequences (flanks), 
-		  this depend on samtools installed, and a faidx(ed) 
-		  fasta file.
-    get_codon() - used to get codon information through cds position.
-    parse_var() - parse variation information stand-alone, giving
-		  the guess information and possible coordinates.
+    fetchseq()		- used to batched fetch genomic sequences (flanks), 
+			  this depend on samtools installed, and a faidx(ed) 
+			  fasta file.
+    get_codon()		- used to get codon information through cds position.
+    parse_var()		- parse variation information stand-alone, giving
+			  the guess information and possible coordinates.
+    individual_anno()	- combine a pair of vars which has been annotated
+			  by varanno() to an individual annotation.
 
 =head1 Methods
 =cut
