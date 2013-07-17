@@ -105,5 +105,7 @@ For the primary tag definition, there's a cooresponding sort strategy:
 - Chromosome ID number is smaller
 - Position number on forward strand-chromosome is smaller.
 
-Then assign the 'best' NMid to the first record, and add postfix "-N" (1..n-1) to the following records
+Then assign the primary tag 'Y' to the first refseq Acc.Ver, 
+and add postfix "-N" (1..n-1) to the other following records
+in the order of sort result.
 
