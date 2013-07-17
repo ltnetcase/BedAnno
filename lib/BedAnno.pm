@@ -2450,6 +2450,7 @@ sub get_cover_batch {
 	my $pospair = join( "-", @{$sorted_stasto[$cur_blkId]} );
 	$ret_cov{$pospair} = cal_covered( $$rAnnos{$chr}, $i, @{$sorted_stasto[$cur_blkId]} );
 	$cur_blkId ++; 
+	last if ($cur_blkId >= @sorted_stasto);
 	$i --; # keep annotation block to stay at current index
     }
     return \%ret_cov;
