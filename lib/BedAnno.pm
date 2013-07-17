@@ -9,14 +9,6 @@ require Exporter;
 
 our @ISA = qw(Exporter);
 
-# Items to export into callers namespace by default. Note: do not export
-# names by default without a very good reason. Use EXPORT_OK instead.
-# Do not simply export all your public functions/methods/constants.
-
-# This allows declaration	use BedAnno ':all';
-# If you do not need this, moving things directly into @EXPORT or @EXPORT_OK
-# will save memory.
-
 our @EXPORT = qw(
     fetchseq get_codon parse_var individual_anno
 );
@@ -757,7 +749,7 @@ sub varanno {
 		  utr-3, utr-5, ncRNA, 
 		  altstart, missense, nonsense, coding-synon, 
 		  intron, splice-3, splice-5,
-		  cds-indel, frameshift, stop-gain, stop-loss 
+		  cds-indel, frameshift, stop-gain, stop-loss, init-loss, 
 		  unknown for 'c.?'
 		  abnormal-inseq-stop for non-end stop codon in refseq.
 		  abnormal-intron for too short intron (<4bp) due to mapping deduced.
@@ -963,7 +955,7 @@ sub pairanno {
 			}
 			when (/^C/) {
 			    $pHGVS = 'p.0?';
-			    $func  = 'altstart';
+			    $func  = 'init-loss';
 			}
 			when (/^3/) {
 			    $pHGVS = 'p.0?';
@@ -981,7 +973,7 @@ sub pairanno {
 			    }
 			    elsif ($cP_R =~ /^\d+/) {
 				$pHGVS = 'p.0?';
-				$func  = 'altstart';
+				$func  = 'init-loss';
 			    }
 			    elsif ($cP_R =~ /^\*/) {
 				$pHGVS = 'p.0?';
@@ -1185,7 +1177,7 @@ sub pairanno {
 		    }
 		    when ('5C') {
 			$pHGVS = 'p.0?';
-			$func  = 'altstart';
+			$func  = 'init-loss';
 		    }
 		    when ('C3') {
 			my $pP_L = aaNum($cP_L);
@@ -1344,8 +1336,8 @@ sub parse_cPos {
 	    my $new_codon = $codon;
 	    if ($aa ne '') {
 		substr($new_codon, $frame, 1, $t_alt);
-		my $new_aa = (exists $codon3{$new_codon}) ? $codon3{$new_codon} : "";
-		my $new_pol = (exists $Polar{$new_aa}) ? $Polar{$new_aa} : "";
+		my $new_aa = (exists $codon3{$new_codon}) ? $codon3{$new_codon} : ".";
+		my $new_pol = (exists $Polar{$new_aa}) ? $Polar{$new_aa} : ".";
 		$func = $self->get_aafunc($aa, $new_aa, $query_tid, $cP);
 		$pHGVS = get_aaHGVS($aa, $new_aa, $func, $cP);
 		$cc = $codon.'=>'.$new_codon;
@@ -1436,7 +1428,7 @@ sub get_aaDelInfo {
 	    if ($pP_L == 1) {
 
 		$pHGVS = 'p.0?';
-		$func  = 'altstart';
+		$func  = 'init-loss';
 		return ( $pHGVS, $func );
 		
 	    }
@@ -1565,7 +1557,7 @@ sub get_aaDelInfo {
 	    elsif ($pP_L == 1 and substr($todel_aa, 0, 3) ne substr($ins_aa, 0, 3)) {
 
 		$pHGVS = 'p.0?';
-		$func  = 'altstart';
+		$func  = 'init-loss';
 
 	    }
 	    else {
@@ -1673,7 +1665,7 @@ sub get_aaInsInfo {
 	if ($pP == 1 and ($fsOpt or $new_aa !~ /$aa/)) {
 
 	    $pHGVS = 'p.0?';
-	    $func  = 'altstart';
+	    $func  = 'init-loss';
 
 	}
 	elsif ($pP == 1 and $new_aa =~ /$aa$/) { # non-frameshift with inition code tail
