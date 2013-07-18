@@ -742,7 +742,7 @@ sub varanno {
     About   : get infomations from select_position(), (std grp) besides function,
 	      codon-change, flank_region position, polar and HGVS strings:
 		  for coding gene region gives c. HGVS and p. HGVS
-		  for non-coding RNA gives r. HGVS, 
+		  for non-coding RNA gives n. HGVS, 
 		  for non-available gives '.'.
 	      function of mutation, follow the definitions mainly from dbSNP:
 		  for intergenic or non-target region: using '.'
@@ -825,7 +825,7 @@ sub pairanno {
 	$cL = $cR;
 	$cR = $tmp;
     }
-    # get cPos without c./r. 
+    # get cPos without c./n. 
     my $cP_L  = substr( $$cL{cpos}, 2 );
     my $cP_R  = substr( $$cR{cpos}, 2 );
     my $pre_L = substr( $$cL{cpos}, 0, 2 );
@@ -965,7 +965,7 @@ sub pairanno {
 			    $func  = 'ncRNA';
 			}
 			when (/^I/) {
-			    if ($pre_R eq 'r.') {
+			    if ($pre_R eq 'n.') {
 				$func = 'ncRNA';
 			    }
 			    elsif ($cP_R =~ /^\-|^1\-\d/) {
@@ -1012,7 +1012,7 @@ sub pairanno {
 			    $func  = 'ncRNA';
 			}
 			when (/^I/) {
-			    if ($pre_L eq 'r.') {
+			    if ($pre_L eq 'n.') {
 				$func = 'ncRNA';
 			    }
 			    elsif ($cP_L =~ /^\-/) {
@@ -1148,7 +1148,7 @@ sub pairanno {
 			    $func = 'abnormal-intron';
 			}
 			elsif ($$cL{bd} =~ /0/ and $$cR{bd} =~ /0/) {
-			    if ($pre_L eq 'r.') {
+			    if ($pre_L eq 'n.') {
 				$func = 'ncRNA';
 			    }
 			    else {
@@ -1321,7 +1321,7 @@ sub get_aaseq {
 
     About   : parse the cds position of snv variation
     Usage   : my ($func, $cc, $pHGVS, $polar) = $beda->parse_cPos($query_tid, $cpos, $t_alt);
-    Args    : query_tid is transcript id with out tail [-n], cpos is cds pos in hgvs c./r. format.
+    Args    : query_tid is transcript id with out tail [-n], cpos is cds pos in hgvs c./n. format.
 	      t_alt are strand specific alt char.
     Returns : the function code, codon-change, 'p.' format HGVS string, polar-change. see pairanno()
 
@@ -1364,7 +1364,7 @@ sub parse_cPos {
 	when (/^c\.\*\d+$/) { # 3' UTR
 	    $func = 'utr-3';
 	}
-	when (/^r\.\d+$/) { # ncRNA
+	when (/^n\.\d+$/) { # ncRNA
 	    $func = 'ncRNA';
 	}
 	default { $func = 'unknown'; }
@@ -2247,11 +2247,11 @@ sub in_reg_cPos {
 	    else { # ncRNA
 		if ($total_left_offset < $total_right_offset) {
 		    my $opt = ($strandopt) ? '+' : '-';
-		    $cpos = 'r.'.$$rh{nsta}.$opt.($total_left_offset + 1);
+		    $cpos = 'n.'.$$rh{nsta}.$opt.($total_left_offset + 1);
 		}
 		else {
 		    my $opt = ($strandopt) ? '-' : '+';
-		    $cpos = 'r.'.$$rh{nsto}.$opt.($total_right_offset + 1);
+		    $cpos = 'n.'.$$rh{nsto}.$opt.($total_right_offset + 1);
 		}
 	    }
 	}
@@ -2267,10 +2267,10 @@ sub in_reg_cPos {
 	}
 	when (/^R/) { # ncRNA
 	    if ($strandopt) {
-		$cpos = 'r.'.($$rh{nsta} + $total_left_offset);
+		$cpos = 'n.'.($$rh{nsta} + $total_left_offset);
 	    }
 	    else {
-		$cpos = 'r.'.($$rh{nsto} + $total_right_offset);
+		$cpos = 'n.'.($$rh{nsto} + $total_right_offset);
 	    }
 	}
 	default { confess "unrecognized block attribution!"; }
