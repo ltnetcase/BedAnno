@@ -508,7 +508,7 @@ sub region_merge {
     Args    : a pair of variation annotation entry (see varanno())
     Returns : a hash ref of individual annotation information:
 		{
-		    c      => $combin_cHGVS (in c.[...];[...] format)
+		    c      => $combin_cHGVS (in c./n./m./g.[...];[...] format)
 		    p      => $combin_pHGVS (in p.[...];[...] format)
 		    cc     => $combin_codonchange (in [...];[...] format)
 		    r      => $region or $combin_region(multiple)
@@ -618,7 +618,7 @@ sub combin_two {
 	my $pre1 = substr( $v1s, 0, 2 );
 	my $pre2 = substr( $v2s, 0, 2 );
 	my $latter2 = substr( $v2s, 2 );
-	if (($pre1 =~ /^[cr]\.$/ or $pre1 =~ /^[\+\-]/) and ( $pre1 eq $pre2 )) {
+	if (($pre1 =~ /^[cnmg]\.$/ or $pre1 =~ /^[\+\-]/) and ( $pre1 eq $pre2 )) {
 	    substr( $v1s, 2, 0, "[" );
 	    $ind_vs = $v1s . "];[" . $latter2 . "]";
 	}
