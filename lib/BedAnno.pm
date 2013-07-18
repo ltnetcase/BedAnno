@@ -10,10 +10,10 @@ require Exporter;
 our @ISA = qw(Exporter);
 
 our @EXPORT = qw(
-    fetchseq get_codon parse_var individual_anno
+    fetchseq get_codon parse_var individual_anno get_gHGVS
 );
 
-our $VERSION = '0.16';
+our $VERSION = '0.17';
 
 =head1 NAME
 
@@ -736,6 +736,56 @@ sub varanno {
     }
     return \%ret_anno;
 }
+
+=head2 get_gHGVS
+
+    About   : get genomics (chromosomal) HGVS string of variation
+    Usage   : my $gHGVS = get_gHGVS($var);
+    Args    : variation entry
+    Returns : chromosomal HGVS string.
+
+=cut
+sub get_gHGVS {
+    my $var = shift;
+    my $gHGVS = 'g.';
+    if ($var->{chr} =~ /M/) { # hit mito chromosome
+	$gHGVS = 'm.';
+    }
+    given ($$var{guess}) {
+	when ('snv') {
+	    $gHGVS .= $$var{pos}.$$var{ref}.'>'.$$var{alt};
+	}
+	when ('ins') {
+	    $gHGVS .= $$var{pos}.'_'.($$var{pos}+1).'ins'.(substr($$var{alt},1));
+	}
+	when ([ 'del', 'delins' ]) {
+	    # 1bp del/delins
+	    $gHGVS .= ($$var{pos}+1);
+	    if ($$var{reflen} > 2) {
+		$gHGVS .= '_'.($$var{pos} + $$var{reflen} - 1);
+	    }
+	    $gHGVS .= 'del'.(substr($$var{ref}, 1));
+	    $gHGVS .= 'ins'.(substr($$var{alt}, 1)) if (/delins/);
+	}
+	when ('rep') {
+	    $gHGVS .= ($$var{pos} + 1);
+	    if ($$var{ref_cn} == 1 and $$var{alt_cn} == 2) { # dup
+		if ($$var{replen} > 1) {
+		    $gHGVS .= '_' . ($$var{pos} + $$var{replen});
+		}
+		$gHGVS .= 'dup'. $$var{rep};
+	    }
+	    else {
+		$gHGVS .= $$var{rep}.'['.$$var{ref_cn}.'>'.$$var{alt_cn}.']';
+	    }
+	}
+	default {
+	    confess "Can not recognize type $$var{guess}.";
+	}
+    }
+    return $gHGVS;
+}
+
 
 =head2 pairanno
 
