@@ -507,6 +507,8 @@ sub region_merge {
     Usage   : my $rIndAnno = individual_anno($varanno1, $varanno2);
     Args    : a pair of variation annotation entry (see varanno())
     Returns : a hash ref of individual annotation information:
+	      {
+		$tid => 
 		{
 		    c      => $combin_cHGVS (in c./n./m./g.[...];[...] format)
 		    p      => $combin_pHGVS (in p.[...];[...] format)
@@ -517,57 +519,78 @@ sub region_merge {
 		    flanks => $flanks or $combin_flanks(multiple)
 		    keep   => [0/1] to indicate if this variation should be kept.
 			      or say if the variation is likely to make sense.
-		}
+		}, ...
+	      }
 
 =cut
 sub individual_anno {
     my ($va1, $va2) = @_;
 
-    my %ind_anno_info = ();
-    @ind_anno_info{qw(c p cc r exin func flanks)} = ('.') x 8;
-    if (    ( !exists $$va1{info} or !exists $$va1{info}{c} )
-        and ( exists $$va2{info} and exists $$va2{info}{c} ) )
-    {	# va1 is ref or no annos
-	%ind_anno_info = %{$$va2{info}};
-	combin_ref(\%ind_anno_info);
-    }
-    elsif ( ( !exists $$va2{info} or !exists $$va2{info}{c} )
-        and ( exists $$va1{info} and exists $$va1{info}{c} ) )
-    {	# va2 is ref or no annos
-	%ind_anno_info = %{$$va1{info}};
-	combin_ref(\%ind_anno_info);
-    }
-    elsif ( exists $$va1{info}
-        and exists $$va1{info}{c}
-        and exists $$va2{info}
-        and exists $$va2{info}{c} )
-    {
-        $ind_anno_info{c}  = combin_two( $$va1{info}{c},  $$va2{info}{c} );
-        $ind_anno_info{p}  = combin_two( $$va1{info}{p},  $$va2{info}{p} );
-        $ind_anno_info{cc} = combin_two( $$va1{info}{cc}, $$va2{info}{cc} );
-        $ind_anno_info{polar} =
-          combin_two( $$va1{info}{polar}, $$va2{info}{polar} );
-        $ind_anno_info{r} = check_comb( $$va1{info}{r}, $$va2{info}{r} );
-        $ind_anno_info{exin} =
-          check_comb( $$va1{info}{exin}, $$va2{info}{exin} );
-        $ind_anno_info{func} =
-          check_comb( $$va1{info}{func}, $$va2{info}{func} );
-        $ind_anno_info{flanks} =
-          comb_flanks( $$va1{info}{flanks}, $$va2{info}{flanks} );
+    my %all_tid_annos = ();
+    if (!exists $$va1{info} and !exists $$va2{info}) {
+	confess "no annotation info in any var, may be all reference.";
     }
 
-    $ind_anno_info{keep} = ($ind_anno_info{func} eq '.') ? 0 : 1;
-    if ($ind_anno_info{func} eq 'intron') {
-	my $outTag = 0;
-	while ($ind_anno_info{c} =~ /\d+[\+\-](\d+)/g) {
-	    if ($1 <= 10) {
-		$outTag = 1;
-		last;
-	    }
+    my $former = (exists $$va1{info}) ? $va1 : $va2;
+    my $latter = (exists $$va1{info}) ? $va2 : $va1;
+    foreach my $tid (keys %{$$former{info}}) {
+	my %ind_anno_info = ();
+	@ind_anno_info{qw(c p cc r exin func flanks)} = ('.') x 8;
+	if (!exists $$latter{info}) {
+	    %ind_anno_info = %{$$former{info}{$tid}};
+	    combin_ref(\%ind_anno_info);
 	}
-	$ind_anno_info{keep} = $outTag;
+	elsif ( exists $$latter{info}{$tid} )
+	{
+	    $ind_anno_info{c}  = combin_two( $$former{info}{$tid}{c},  $$latter{info}{$tid}{c} );
+	    $ind_anno_info{p}  = combin_two( $$former{info}{$tid}{p},  $$latter{info}{$tid}{p} );
+	    $ind_anno_info{cc} = combin_two( $$former{info}{$tid}{cc}, $$latter{info}{$tid}{cc} );
+	    $ind_anno_info{polar} =
+	      combin_two( $$former{info}{$tid}{polar}, $$latter{info}{$tid}{polar} );
+	    $ind_anno_info{r} = check_comb( $$former{info}{$tid}{r}, $$latter{info}{$tid}{r} );
+	    $ind_anno_info{exin} =
+	      check_comb( $$former{info}{$tid}{exin}, $$latter{info}{$tid}{exin} );
+	    $ind_anno_info{func} =
+	      check_comb( $$former{info}{$tid}{func}, $$latter{info}{$tid}{func} );
+	    $ind_anno_info{flanks} =
+	      comb_flanks( $$former{info}{$tid}{flanks}, $$latter{info}{$tid}{flanks} );
+	}
+	else {# non-same location pair of variation
+	    %ind_anno_info = %{$$former{info}{$tid}};
+	}
+
+	$ind_anno_info{keep} = ($ind_anno_info{func} eq '.') ? 0 : 1;
+	if ($ind_anno_info{func} eq 'intron') {
+	    my $outTag = 0;
+	    while ($ind_anno_info{c} =~ /\d+[\+\-](\d+)/g) {
+		if ($1 <= 10) {
+		    $outTag = 1;
+		    last;
+		}
+	    }
+	    $ind_anno_info{keep} = $outTag;
+	}
+	$all_tid_annos{$tid} = {%ind_anno_info};
     }
-    return \%ind_anno_info;
+    if (exists $$latter{info}) {
+	foreach my $t2 (keys %{$$latter{info}}) {
+	    next if (exists $$former{info}{$t2});
+	    my %ind_anno2 = %{$$latter{info}{$t2}};
+	    $ind_anno2{keep} = ($ind_anno2{func} eq '.') ? 0 : 1;
+	    if ($ind_anno2{func} eq 'intron') {
+		my $outTag = 0;
+		while ($ind_anno2{c} =~ /\d+[\+\-](\d+)/g) {
+		    if ($1 <= 10) {
+			$outTag = 1;
+			last;
+		    }
+		}
+		$ind_anno2{keep} = $outTag;
+	    }
+	    $all_tid_annos{$t2} = {%ind_anno2};
+	}
+    }
+    return \%all_tid_annos;
 }
 
 sub comb_flanks {
@@ -686,7 +709,14 @@ sub anno {
     About   : generate all the needed annotation for a var entry
     Usage   : my $rAnnoRst = $beda->varanno($var, genes=>\%genes, trans=>\%trans);
     Args    : see parse_var(), and load_anno()
-    Returns : see pairanno()
+    Returns : a hash ref:
+		{
+		    var  => $var, ( see parse_var(), select_position() )
+		    info => {
+			tid => $anno_info, ( see pairanno() )
+			...
+		    }
+		}
 
 =cut
 sub varanno {
