@@ -904,7 +904,7 @@ sub pairanno {
 	    }
 	    else { # insertion on the edge of region
 		$reg = $$cL{reg}.'-'.$$cR{reg};
-		$exin = $$cL{exin}.'-'.$$cR{exin};
+		$exin = ( $$cL{exin} eq $$cR{exin} ) ? $$cL{exin} : $$cL{exin}.'-'.$$cR{exin};
 
 		my $indicator = substr($$cL{reg},0,1).substr($$cR{reg},0,1);
 		given ($indicator) {
@@ -1129,7 +1129,7 @@ sub pairanno {
             }
             else { # multiple region del/delins
                 $reg  = $$cL{reg} . '-' . $$cR{reg};
-                $exin = $$cL{exin} . '-' . $$cR{exin};
+                $exin = ( $$cL{exin} eq $$cR{exin} ) ? $$cL{exin} : $$cL{exin} . '-' . $$cR{exin};
 		given ($indicator) {
 		    when ('CC') {
 			($pHGVS, $func) = $self->get_aaDelInfo($query_tid, $$cL{cpos}, $$cR{cpos}, $t_alt);
