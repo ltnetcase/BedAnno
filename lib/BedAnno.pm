@@ -3001,16 +3001,16 @@ sub get_internal {
 		return {
 		    '+' => 1,
 		    '-' => 1,
-		    'r' => substr($new_ref_len, 1),
-		    'a' => substr($new_alt_len, 1)
+		    'r' => 1,
+		    'a' => 1
 		};
 	    }
 	    if (substr($new_ref_len, 1) eq substr($new_alt_len, 1)) {
 		return {
 		    '+' => 0,
 		    '-' => 0,
-		    'r' => substr($new_ref_len, 0, 1),
-		    'a' => substr($new_alt_len, 0, 1)
+		    'r' => 1,
+		    'a' => 1
 		};
 	    }
 	}
