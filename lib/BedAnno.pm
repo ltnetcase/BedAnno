@@ -535,7 +535,7 @@ sub individual_anno {
     my $latter = (exists $$va1{info}) ? $va2 : $va1;
     foreach my $tid (keys %{$$former{info}}) {
 	my %ind_anno_info = ();
-	@ind_anno_info{qw(c p cc r exin func flanks)} = ('.') x 8;
+	@ind_anno_info{qw(c p cc r exin polar func flanks)} = ('.') x 8;
 	if (!exists $$latter{info}) {
 	    %ind_anno_info = %{$$former{info}{$tid}};
 	    combin_ref(\%ind_anno_info);
@@ -695,7 +695,7 @@ sub combin_ref {
     About   : Annotate single short variation by annotation db.
     Usage   : my $rAnnoRst = $beda->anno( 'chr20', 1234567, 'TG', 'TGGG' );
     Args    : chromosome id, chromosome position, reference, alternative.
-    Returns : a hash ref of annotation informations, see pairanno().
+    Returns : a hash ref of annotation informations, see varanno().
 
 =cut
 sub anno {
@@ -771,7 +771,7 @@ sub varanno {
 
     About   : get genomics (chromosomal) HGVS string of variation
     Usage   : my $gHGVS = get_gHGVS($var);
-    Args    : variation entry
+    Args    : variation entry, after parse_var(), see parse_var().
     Returns : chromosomal HGVS string.
 
 =cut
@@ -2996,6 +2996,24 @@ sub get_internal {
 	$new_ref_len = $reflen - $loff - $roff + 1;
 	$new_alt_len = $altlen - $loff - $roff + 1;
 	$lofs = ($loff - 1 < 0) ? 0 : ($loff - 1);
+	if ($new_ref_len == $new_alt_len and $new_ref_len == 2) {
+	    if (substr($new_ref_len, 0, 1) eq substr($new_alt_len, 0, 1)) {
+		return {
+		    '+' => 1,
+		    '-' => 1,
+		    'r' => substr($new_ref_len, 1),
+		    'a' => substr($new_alt_len, 1)
+		};
+	    }
+	    if (substr($new_ref_len, 1) eq substr($new_alt_len, 1)) {
+		return {
+		    '+' => 0,
+		    '-' => 0,
+		    'r' => substr($new_ref_len, 0, 1),
+		    'a' => substr($new_alt_len, 0, 1)
+		};
+	    }
+	}
 	return {
 	    '+' => $lofs,
 	    '-' => $lofs,
