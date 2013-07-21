@@ -184,6 +184,53 @@ my $snv_5utr_anno = {
         strd => '+'
     }
 };
+my $del_intron_anno = {
+    c      => 'c.948+1_949-1delGCTG',
+    p      => '.',
+    cc     => '.',
+    r      => 'IC5',
+    exin   => 'IVS5',
+    func   => 'splice',
+    polar  => '.',
+    bc     => '.',
+    flanks => {
+        l    => "chr6_cox_hap2:2892856-2892857",
+        r    => "chr6_cox_hap2:2892862-2892863",
+        strd => '+'
+    }
+};
+
+my $del_intron1_anno = {
+    c      => 'c.946_949-1delGCTGCTG',
+    p      => '.',
+    cc     => '.',
+    r      => 'C5-IC5',
+    exin   => 'EX5-IVS5',
+    func   => 'splice',
+    polar  => '.',
+    bc     => '.',
+    flanks => {
+        l    => "chr6_cox_hap2:2892853-2892854",
+        r    => "chr6_cox_hap2:2892862-2892863",
+        strd => '+'
+    }
+};
+
+my $del_intron2_anno = {
+    c      => 'c.948_949delTGCTGG',
+    p      => 'p.Ala316_Ala317delinsAlaSerfs*?',
+    cc     => '.',
+    r      => 'C5-C6',
+    exin   => 'EX5-EX6',
+    func   => 'frameshift',
+    polar  => '.',
+    bc     => '.',
+    flanks => {
+        l    => "chr6_cox_hap2:2892855-2892856",
+        r    => "chr6_cox_hap2:2892863-2892864",
+        strd => '+'
+    }
+};
 
 test_anno($snv_anno, "NM_006996.2", "chr1", 169454923, "C", "A");
 test_anno($del1_anno, "NM_001004696.1", "chr1", 248525638, "CA", "C");
@@ -195,6 +242,9 @@ test_anno($delins_anno, "NM_001039141.2", "chr22", 38119754, "TCAAC", "TC");
 test_anno($rep_anno, "NM_000581.2", "chr3", 49395673, "GGCCGCCGCCGCCGCCGCC", "GGCCGCCGCCGCC");
 test_anno($n_anno, "NM_017780.3", "chr8", 61713130, "ACT", "ACTTGGNCT");
 test_anno($snv_5utr_anno, "NM_152486.2", "chr1", 861320, "TT", "TG");
+test_anno($del_intron_anno,  "NM_000247.1-2", "chr6_cox_hap2", 2892857, "TGCTG", "T");
+test_anno($del_intron1_anno, "NM_000247.1-2", "chr6_cox_hap2", 2892854, "TGCTGCTG", "T");
+test_anno($del_intron2_anno, "NM_000247.1-2", "chr6_cox_hap2", 2892856, "CTGCTGG", "C");
 
 
 done_testing();

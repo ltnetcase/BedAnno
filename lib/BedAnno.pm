@@ -1214,7 +1214,7 @@ sub pairanno {
                 $exin = ( $$cL{exin} eq $$cR{exin} ) ? $$cL{exin} : $$cL{exin} . '-' . $$cR{exin};
 		given ($indicator) {
 		    when ('CC') {
-			($pHGVS, $func) = $self->get_aaDelInfo($query_tid, $$cL{cpos}, $$cR{cpos}, $t_alt);
+			($pHGVS, $func) = $self->get_aaDelInfo($query_tid, $cP_L, $cP_R, $t_alt);
 		    }
 		    when ('55') {
 			$func = 'utr-5';
