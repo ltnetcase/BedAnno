@@ -2998,19 +2998,21 @@ sub get_internal {
 	$new_ref_len = $reflen - $loff - $roff + 1;
 	$new_alt_len = $altlen - $loff - $roff + 1;
 	$lofs = ($loff - 1 < 0) ? 0 : ($loff - 1);
-	if ($new_ref_len == $new_alt_len and $new_ref_len == 2) {
-	    if (substr($new_ref_len, 0, 1) eq substr($new_alt_len, 0, 1)) {
+	if ($new_ref_len == $new_alt_len and $new_ref_len == 2) { # possible simple snv, or consecutive snv.
+	    my $new_ref = substr($ref, $lofs, 2);
+	    my $new_alt = substr($alt, $lofs, 2);
+	    if (substr($new_ref, 0, 1) eq substr($new_alt, 0, 1)) {
 		return {
-		    '+' => 1,
-		    '-' => 1,
+		    '+' => ($lofs + 1),
+		    '-' => ($lofs + 1),
 		    'r' => 1,
 		    'a' => 1
 		};
 	    }
-	    if (substr($new_ref_len, 1) eq substr($new_alt_len, 1)) {
+	    if (substr($new_ref, 1) eq substr($new_alt, 1)) {
 		return {
-		    '+' => 0,
-		    '-' => 0,
+		    '+' => $lofs,
+		    '-' => $lofs,
 		    'r' => 1,
 		    'a' => 1
 		};
