@@ -169,6 +169,22 @@ my $n_anno = {
       }
 };
 
+my $snv_5utr_anno = {
+    c      => 'c.-1T>G',
+    p      => '.',
+    cc     => '.',
+    r      => '5U1',
+    exin   => 'EX2',
+    func   => 'utr-5',
+    polar  => '.',
+    bc     => '.',
+    flanks => {
+        l    => "chr1:861319-861320",
+        r    => "chr1:861322-861323",
+        strd => '+'
+    }
+};
+
 test_anno($snv_anno, "NM_006996.2", "chr1", 169454923, "C", "A");
 test_anno($del1_anno, "NM_001004696.1", "chr1", 248525638, "CA", "C");
 test_anno($ins_anno, "NM_018406.6", "chr3", 195518112, "T", "TGTCTCCTGCGTAACA");
@@ -178,6 +194,8 @@ test_anno($splice1_anno, "NM_024022.2", "chr21", 43803308,  "CTA", "CTATA");
 test_anno($delins_anno, "NM_001039141.2", "chr22", 38119754, "TCAAC", "TC");
 test_anno($rep_anno, "NM_000581.2", "chr3", 49395673, "GGCCGCCGCCGCCGCCGCC", "GGCCGCCGCCGCC");
 test_anno($n_anno, "NM_017780.3", "chr8", 61713130, "ACT", "ACTTGGNCT");
+test_anno($snv_5utr_anno, "NM_152486.2", "chr1", 861320, "TT", "TG");
+
 
 done_testing();
 exit 0;
