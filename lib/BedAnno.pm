@@ -34,14 +34,16 @@ samtools.
 
 =head2 EXPORT
 
+    parse_var()		- parse variation information stand-alone, giving
+			  the guess information and possible coordinates.
+    get_gHGVS()		- get g./m. HGVS string from variation entry, got from
+			  parse_var().
+    individual_anno()	- combine a pair of vars which has been annotated
+			  by varanno() to an individual annotation.
     fetchseq()		- used to batched fetch genomic sequences (flanks), 
 			  this depend on samtools installed, and a faidx(ed) 
 			  fasta file.
     get_codon()		- used to get codon information through cds position.
-    parse_var()		- parse variation information stand-alone, giving
-			  the guess information and possible coordinates.
-    individual_anno()	- combine a pair of vars which has been annotated
-			  by varanno() to an individual annotation.
 
 =head1 Methods
 =cut
