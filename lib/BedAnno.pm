@@ -1025,6 +1025,14 @@ sub pairanno {
             else { # $pre_L ne $pre_R
                 $cHGVS = $$cL{cpos} . '_' . $$cR{cpos} . 'del' . $t_ref;
 		$cHGVS .= 'ins' . $t_alt if (/delins/);
+                $reg =
+                  ( $$cL{reg} eq $$cR{reg} )
+                  ? $$cL{reg}
+                  : $$cL{reg} . '-' . $$cR{reg};
+                $exin =
+                  ( $$cL{exin} eq $$cR{exin} )
+                  ? $$cL{exin}
+                  : $$cL{exin} . '-' . $$cR{exin};
 
 		if (($pre_L eq '--') and ($pre_R eq '++')) { # whole transcript is missing
 		    $pHGVS = 'p.0?';
