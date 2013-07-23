@@ -13,7 +13,7 @@ our @EXPORT = qw(
     fetchseq get_codon parse_var individual_anno get_gHGVS
 );
 
-our $VERSION = '0.17';
+our $VERSION = '0.18';
 
 =head1 NAME
 
@@ -709,8 +709,8 @@ sub anno {
 =head2 varanno
 
     About   : generate all the needed annotation for a var entry
-    Usage   : my $rAnnoRst = $beda->varanno($var, genes=>\%genes, trans=>\%trans);
-    Args    : see parse_var(), and load_anno()
+    Usage   : my $rAnnoRst = $beda->varanno($var);
+    Args    : see parse_var()
     Returns : a hash ref:
 		{
 		    var  => $var, ( see parse_var(), select_position() )
