@@ -620,7 +620,7 @@ sub check_comb {
 
     # for function, only select the most serious one as the main function
     @func_order{
-        qw( abnormal-intron abnormal-inseq-stop altstart 
+        qw( abnormal-intron abnormal-inseq-stop init-loss altstart 
 	    frameshift stop-gain stop-loss cds-indel 
 	    splice-5 splice-3 nonsense missense coding-synon 
 	    intron utr-5 utr-3 ncRNA unknown . )
