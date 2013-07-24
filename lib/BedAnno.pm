@@ -643,7 +643,7 @@ sub combin_two {
 	my $pre1 = substr( $v1s, 0, 2 );
 	my $pre2 = substr( $v2s, 0, 2 );
 	my $latter2 = substr( $v2s, 2 );
-	if (($pre1 =~ /^[cnmg]\.$/ or $pre1 =~ /^[\+\-]/) and ( $pre1 eq $pre2 )) {
+	if (($pre1 =~ /^[cnmgp]\.$/ or $pre1 =~ /^[\+\-]/) and ( $pre1 eq $pre2 )) {
 	    substr( $v1s, 2, 0, "[" );
 	    $ind_vs = $v1s . "];[" . $latter2 . "]";
 	}
@@ -1942,7 +1942,7 @@ sub get_flanks {
     About   : Select the position that should be annotated on and get pairs by transcript ids
     Usage   : $var = $beda->select_position($var, \%cPos);
     Args    : var entry and cPos hash ref.
-    Returns : var with standard {sel}{std}, and possible backward compitable {sel}{bc}
+    Returns : var with standard {sel}{std}, and possible backward compatible {sel}{bc}
 
 =cut
 sub select_position {
