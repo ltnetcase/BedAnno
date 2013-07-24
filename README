@@ -25,10 +25,12 @@ which have been indexed.
 
 COPYRIGHT AND LICENCE
 
-Copyright (C) 2013 by liutao
+Copyright (C) 2013 by Liu Tao <liutao@genomics.cn>
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.10.1 or,
 at your option, any later version of Perl 5 you may have available.
 
+ACKNOWLEDGEMENT
 
+Thanks Zhu Yaping, Liu Fengxia, Liu Hui for testing most of methods.
