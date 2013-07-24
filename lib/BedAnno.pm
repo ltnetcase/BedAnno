@@ -616,22 +616,22 @@ sub comb_flanks {
 sub check_comb {
     my ($s1, $s2) = @_;
     return $s1 if ($s1 eq $s2);
-    my %func_order;
-
-    # for function, only select the most serious one as the main function
-    @func_order{
-        qw( abnormal-intron abnormal-inseq-stop init-loss altstart 
-	    frameshift stop-gain stop-loss cds-indel 
-	    splice-5 splice-3 nonsense missense coding-synon 
-	    intron utr-5 utr-3 ncRNA unknown . )
-    } = ( 1 .. 18 );
-
-    if (exists $func_order{$s1} and exists $func_order{$s2}) {
-	return (($func_order{$s1} < $func_order{$s2}) ? $s1 : $s2);
-    }
-    else {
+#    my %func_order;
+#
+#    # for function, only select the most serious one as the main function
+#    @func_order{
+#        qw( abnormal-intron abnormal-inseq-stop init-loss altstart 
+#	    frameshift stop-gain stop-loss cds-indel 
+#	    splice-5 splice-3 nonsense missense coding-synon 
+#	    intron utr-5 utr-3 ncRNA unknown . )
+#    } = ( 1 .. 18 );
+#
+#    if (exists $func_order{$s1} and exists $func_order{$s2}) {
+#	return (($func_order{$s1} < $func_order{$s2}) ? $s1 : $s2);
+#    }
+#    else {
 	return "[".$s1."];[".$s2."]";
-    }
+#    }
 }
 
 # for joining cHGVS pHGVS codon-change polar-change of two varannos
