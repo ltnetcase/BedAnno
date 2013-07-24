@@ -607,7 +607,7 @@ sub comb_flanks {
 	my %multiflk = ();
 	$multiflk{l} = $$rflk1{l} . " " . $$rflk2{l};
 	$multiflk{r} = $$rflk1{r} . " " . $$rflk2{r};
-	$multiflk{strd} = $$rflk1{strd} . " " . $$rflk2{strd};
+	$multiflk{strd} = $$rflk1{strd};
 	return \%multiflk;
     }
 }
