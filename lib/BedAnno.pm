@@ -517,7 +517,7 @@ sub region_merge {
 		    cc     => $combin_codonchange (in [...];[...] format)
 		    r      => $region or $combin_region(multiple)
 		    exin   => $exin or $combin_exin(multiple)
-		    func   => $most_serious_func
+		    func   => $combin_func  (in [...];[...] format)
 		    flanks => $flanks or $combin_flanks(multiple)
 		    keep   => [0/1] to indicate if this variation should be kept.
 			      or say if the variation is likely to make sense.
