@@ -1416,6 +1416,9 @@ sub parse_cPos {
 	    my $new_pol = (exists $Polar{$new_aa}) ? $Polar{$new_aa} : ".";
 	    $func = $self->get_aafunc($aa, $new_aa, $query_tid, $cP);
 	    $pHGVS = get_aaHGVS($aa, $new_aa, $func, $cP);
+
+	    $pHGVS .= 'ext*?' if ($func eq 'stop-loss');
+
 	    $cc = $codon.'=>'.$new_codon;
 	    $polar = ($pol eq $new_pol) ? '.' : $pol.'=>'.$new_pol;
 	    if ($aa eq '*' and $cP + 3 <= length($$self{codonseq}{$query_tid})) {

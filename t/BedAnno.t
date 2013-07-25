@@ -236,7 +236,7 @@ my $snv_cdna_scoden_anno = {
 
 my $snv_cdna_ecoden_anno = {
     c      => 'c.2046A>T',
-    p      => 'p.*682Cys',
+    p      => 'p.*682Cysext*?',
     cc     => 'TGA=>TGT',
     r      => 'C13E',
     exin   => 'EX14E',
