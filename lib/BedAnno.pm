@@ -1,6 +1,5 @@
 package BedAnno;
 
-use 5.010001;
 use strict;
 use warnings;
 use Carp;
@@ -13,7 +12,7 @@ our @EXPORT = qw(
     fetchseq get_codon parse_var individual_anno get_gHGVS
 );
 
-our $VERSION = '0.18';
+our $VERSION = '0.19';
 
 =head1 NAME
 
@@ -336,100 +335,97 @@ sub write_using {
 		# NM_152486.2|SAMD11|+|IC7|IVS8|949|950|869|870|829|Y
 		my @info = split(/\|/, $annoblk);
 
-		given ($type) {
-		    when ('g') {
-			$genes{$info[1]} = 1;
-		    }
-		    when ('t') {
-			$trans{$info[0]} = 1;
-		    }
-		    when ('b') {
-			$exOpt = 1 if ($info[4] =~ /^EX/);
-		    }
-		    when ('a') {
-			if ( $info[4] =~ /^EX/) {
-			    if (   !exists( $anno{ $info[0] } )
-				or !exists( $anno{ $info[0] }{ $info[4] } ) )
-			    {
-				$anno{ $info[0] }{ $info[4] }{chr} = $chr;
-				$anno{ $info[0] }{ $info[4] }{sta} = $$bedent{sta};
-				$anno{ $info[0] }{ $info[4] }{sto} = $$bedent{sto};
-				$anno{ $info[0] }{ $info[4] }{blk} = $annoblk;
-			    }
-			    elsif ($$bedent{sto} > $anno{ $info[0] }{ $info[4] }{sto}) {
-				$anno{ $info[0] }{ $info[4] }{sto} = $$bedent{sto};
-			    }
-			    else {
-				$self->throw("Error: bad db, non-departed beds, or no-sort!");
-			    }
+		if ($type eq 'g') {
+		    $genes{$info[1]} = 1;
+		}
+		elsif ($type eq 't') {
+		    $trans{$info[0]} = 1;
+		}
+		elsif ($type eq 'b') {
+		    $exOpt = 1 if ($info[4] =~ /^EX/);
+		}
+		elsif ($type eq 'a') {
+		    if ( $info[4] =~ /^EX/) {
+			if (   !exists( $anno{ $info[0] } )
+			    or !exists( $anno{ $info[0] }{ $info[4] } ) )
+			{
+			    $anno{ $info[0] }{ $info[4] }{chr} = $chr;
+			    $anno{ $info[0] }{ $info[4] }{sta} = $$bedent{sta};
+			    $anno{ $info[0] }{ $info[4] }{sto} = $$bedent{sto};
+			    $anno{ $info[0] }{ $info[4] }{blk} = $annoblk;
+			}
+			elsif ($$bedent{sto} > $anno{ $info[0] }{ $info[4] }{sto}) {
+			    $anno{ $info[0] }{ $info[4] }{sto} = $$bedent{sto};
+			}
+			else {
+			    $self->throw("Error: bad db, non-departed beds, or no-sort!");
 			}
 		    }
-		    default { $self->throw("type: $type not regconized."); }
 		}
+		else { $self->throw("type: $type not regconized."); }
 	    }
 	    push (@beds, [ $chr, $$bedent{sta}, $$bedent{sto} ]) if ($type eq 'b' and $exOpt);
 	}
     }
 
-    given ($type) {
-	when ('g') {
-	    say F join("\n", (sort keys %genes));
-	}
-	when ('t') {
-	    say F join("\n", (sort keys %trans));
-	}
-	when ('b') { # merge bed regions due to pre-sorted db.
-	    if (0 == @beds) {
-		$self->warn("no region in db.");
-		return;
-	    }
-	    my ($pre_chr, $pre_sta, $pre_sto) = @{$beds[0]};
-	    for (my $i = 1; $i < @beds; $i++) {
-		my ($cur_chr, $cur_sta, $cur_sto) = @{$beds[$i]};
-		if (($cur_chr ne $pre_chr) or ($cur_sta > $pre_sto)) {
-		    say F join("\t", $pre_chr, $pre_sta, $pre_sto);
-		    ($pre_chr, $pre_sta, $pre_sto) = ($cur_chr, $cur_sta, $cur_sto);
-		}
-		elsif ($cur_sta == $pre_sto) {
-		    $pre_sto = $cur_sto;
-		}
-		else {
-		    $self->throw("Error: bad db, non-departed beds, or no-sort!");
-		}
-	    }
-	    say F join("\t", $pre_chr, $pre_sta, $pre_sto);
-	}
-	when ('a') {
-	    foreach my $nm (sort keys %anno) {
-		foreach my $ex (sort exsort keys %{$anno{$nm}}) {
-		    say F join("\t", $anno{$nm}{$ex}{chr}, $anno{$nm}{$ex}{sta},
-			$anno{$nm}{$ex}{sto}, $anno{$nm}{$ex}{blk});
-		}
-	    }
-	}
-	when ('c') {
-	    if (0 == @complete) {
-		$self->warn("no region in db.");
-		return;
-	    }
-	    my ($pre_chr, $pre_sta, $pre_sto) = @{$complete[0]};
-	    for (my $i = 1; $i < @complete; $i++) {
-		my ($cur_chr, $cur_sta, $cur_sto) = @{$complete[$i]};
-		if (($cur_chr ne $pre_chr) or ($cur_sta > $pre_sto)) {
-		    say F join("\t", $pre_chr, $pre_sta, $pre_sto);
-		    ($pre_chr, $pre_sta, $pre_sto) = ($cur_chr, $cur_sta, $cur_sto);
-		}
-		elsif ($cur_sta == $pre_sto) {
-		    $pre_sto = $cur_sto;
-		}
-		else {
-		    $self->throw("Error: bad db, non-departed complete, or no-sort!");
-		}
-	    }
-	    say F join("\t", $pre_chr, $pre_sta, $pre_sto);
-	}
-	default { $self->throw("type: $type not regconized."); }
+    if ($type eq 'g') {
+	say F join("\n", (sort keys %genes));
     }
+    elsif ($type eq 't') {
+	say F join("\n", (sort keys %trans));
+    }
+    elsif ($type eq 'b') { # merge bed regions due to pre-sorted db.
+	if (0 == @beds) {
+	    $self->warn("no region in db.");
+	    return;
+	}
+	my ($pre_chr, $pre_sta, $pre_sto) = @{$beds[0]};
+	for (my $i = 1; $i < @beds; $i++) {
+	    my ($cur_chr, $cur_sta, $cur_sto) = @{$beds[$i]};
+	    if (($cur_chr ne $pre_chr) or ($cur_sta > $pre_sto)) {
+		say F join("\t", $pre_chr, $pre_sta, $pre_sto);
+		($pre_chr, $pre_sta, $pre_sto) = ($cur_chr, $cur_sta, $cur_sto);
+	    }
+	    elsif ($cur_sta == $pre_sto) {
+		$pre_sto = $cur_sto;
+	    }
+	    else {
+		$self->throw("Error: bad db, non-departed beds, or no-sort!");
+	    }
+	}
+	say F join("\t", $pre_chr, $pre_sta, $pre_sto);
+    }
+    elsif ($type eq 'a') {
+	foreach my $nm (sort keys %anno) {
+	    foreach my $ex (sort exsort keys %{$anno{$nm}}) {
+		say F join("\t", $anno{$nm}{$ex}{chr}, $anno{$nm}{$ex}{sta},
+		    $anno{$nm}{$ex}{sto}, $anno{$nm}{$ex}{blk});
+	    }
+	}
+    }
+    elsif ($type eq 'c') {
+	if (0 == @complete) {
+	    $self->warn("no region in db.");
+	    return;
+	}
+	my ($pre_chr, $pre_sta, $pre_sto) = @{$complete[0]};
+	for (my $i = 1; $i < @complete; $i++) {
+	    my ($cur_chr, $cur_sta, $cur_sto) = @{$complete[$i]};
+	    if (($cur_chr ne $pre_chr) or ($cur_sta > $pre_sto)) {
+		say F join("\t", $pre_chr, $pre_sta, $pre_sto);
+		($pre_chr, $pre_sta, $pre_sto) = ($cur_chr, $cur_sta, $cur_sto);
+	    }
+	    elsif ($cur_sta == $pre_sto) {
+		$pre_sto = $cur_sto;
+	    }
+	    else {
+		$self->throw("Error: bad db, non-departed complete, or no-sort!");
+	    }
+	}
+	say F join("\t", $pre_chr, $pre_sta, $pre_sto);
+    }
+    else { $self->throw("type: $type not regconized."); }
+
     close F;
     return;
 }
@@ -783,38 +779,39 @@ sub get_gHGVS {
     if ($var->{chr} =~ /M/) { # hit mito chromosome
 	$gHGVS = 'm.';
     }
-    given ($$var{guess}) {
-	when ('snv') {
-	    $gHGVS .= $$var{pos}.$$var{ref}.'>'.$$var{alt};
+
+    $_ = $$var{guess};
+    if ($_ eq 'snv') {
+	$gHGVS .= $$var{pos}.$$var{ref}.'>'.$$var{alt};
+    }
+    elsif ($_ eq 'ins') {
+	$gHGVS .= $$var{pos}.'_'.($$var{pos}+1).'ins'.(substr($$var{alt},1));
+    }
+    elsif ($_ eq 'del' or $_ eq 'delins') {
+	# 1bp del/delins
+	$gHGVS .= ($$var{pos}+1);
+	if ($$var{reflen} > 2) {
+	    $gHGVS .= '_'.($$var{pos} + $$var{reflen} - 1);
 	}
-	when ('ins') {
-	    $gHGVS .= $$var{pos}.'_'.($$var{pos}+1).'ins'.(substr($$var{alt},1));
-	}
-	when ([ 'del', 'delins' ]) {
-	    # 1bp del/delins
-	    $gHGVS .= ($$var{pos}+1);
-	    if ($$var{reflen} > 2) {
-		$gHGVS .= '_'.($$var{pos} + $$var{reflen} - 1);
+	$gHGVS .= 'del'.(substr($$var{ref}, 1));
+	$gHGVS .= 'ins'.(substr($$var{alt}, 1)) if (/delins/);
+    }
+    elsif ($_ eq 'rep') {
+	$gHGVS .= ($$var{pos} + 1);
+	if ($$var{ref_cn} == 1 and $$var{alt_cn} == 2) { # dup
+	    if ($$var{replen} > 1) {
+		$gHGVS .= '_' . ($$var{pos} + $$var{replen});
 	    }
-	    $gHGVS .= 'del'.(substr($$var{ref}, 1));
-	    $gHGVS .= 'ins'.(substr($$var{alt}, 1)) if (/delins/);
+	    $gHGVS .= 'dup'. $$var{rep};
 	}
-	when ('rep') {
-	    $gHGVS .= ($$var{pos} + 1);
-	    if ($$var{ref_cn} == 1 and $$var{alt_cn} == 2) { # dup
-		if ($$var{replen} > 1) {
-		    $gHGVS .= '_' . ($$var{pos} + $$var{replen});
-		}
-		$gHGVS .= 'dup'. $$var{rep};
-	    }
-	    else {
-		$gHGVS .= $$var{rep}.'['.$$var{ref_cn}.'>'.$$var{alt_cn}.']';
-	    }
-	}
-	default {
-	    confess "Can not recognize type $$var{guess}.";
+	else {
+	    $gHGVS .= $$var{rep}.'['.$$var{ref_cn}.'>'.$$var{alt_cn}.']';
 	}
     }
+    else {
+	confess "Can not recognize type $$var{guess}.";
+    }
+
     return $gHGVS;
 }
 
@@ -915,464 +912,453 @@ sub pairanno {
 
     my $coding_max = int(length($$self{codonseq}{$query_tid})/3) if (exists $$self{codonseq}{$query_tid});
 
-    given ($$var{guess}) {
+    $_ = $$var{guess};
 
-	when ('snv') { # only one position
-	    $cHGVS = $$cL{cpos}.$t_ref.'>'.$t_alt; # c.123A>G
-	    $reg = $$cL{reg};
+    if ($_ eq 'snv') { # only one position
+	$cHGVS = $$cL{cpos}.$t_ref.'>'.$t_alt; # c.123A>G
+	$reg = $$cL{reg};
+	$exin = $$cL{exin};
+	($func, $cc, $pHGVS, $polar) = $self->parse_cPos($tid, $$cL{cpos}, $t_alt);
+	if ($$cL{reg} =~ /^I/ and $$cL{bd} =~ /1/) {
+	    $func = 'abnormal-intron';
+	}
+    }
+    elsif ($_ eq 'ins') {
+
+	if ($pre_L eq $pre_R) {
+	    $cHGVS = $$cL{cpos}.'_'.$cP_R.'ins'.$t_alt;
+	}
+	else {
+	    $cHGVS = $$cL{cpos}.'_'.$$cR{cpos}.'ins'.$t_alt;
+	    return (
+		$tid,
+		{
+		    c      => $cHGVS,
+		    p      => $pHGVS,
+		    cc     => $cc,
+		    r      => $reg,
+		    exin   => $exin,
+		    func   => $func,
+		    polar  => $polar,
+		    bc     => $bc_cHGVS,
+		    flanks => $flanks
+		}
+	    );
+	}
+
+	if ($$cL{reg} eq $$cR{reg}) { # non-edge insertion
+
+	    $reg  = $$cL{reg};
 	    $exin = $$cL{exin};
-	    ($func, $cc, $pHGVS, $polar) = $self->parse_cPos($tid, $$cL{cpos}, $t_alt);
-	    if ($$cL{reg} =~ /^I/ and $$cL{bd} =~ /1/) {
-		$func = 'abnormal-intron';
+
+	    if ($reg =~ /^C/) { # coding region
+		( $pHGVS, $func ) = $self->get_aaInsInfo($query_tid, $cP_L, $t_alt, 1);
 	    }
+	    elsif ($reg =~ /^I/) {
+		if ($$cL{bd} =~ /0/ and $$cR{bd} =~ /0/) {
+		    $func = 'intron';
+		}
+		elsif ($$cL{bd} =~ /b/) {
+		    $func = 'splice-5';
+		}
+		elsif ($$cR{bd} =~ /B/) {
+		    $func = 'splice-3';
+		}
+		else {
+		    $func = 'abnormal-intron';
+		}
+	    }
+	    elsif ($reg =~ /^5/) {
+		$func = 'utr-5';
+	    }
+	    elsif ($reg =~ /^3/) {
+		$func = 'utr-3';
+	    }
+	    elsif ($reg =~ /^R/) {
+		$func = 'ncRNA';
+	    }
+	    else { $self->throw("unexpected region string [$reg]"); }
 	}
-	when ('ins') {
-
-	    if ($pre_L eq $pre_R) {
-		$cHGVS = $$cL{cpos}.'_'.$cP_R.'ins'.$t_alt;
-	    }
-	    else {
-		$cHGVS = $$cL{cpos}.'_'.$$cR{cpos}.'ins'.$t_alt;
-		return (
-		    $tid,
-		    {
-			c      => $cHGVS,
-			p      => $pHGVS,
-			cc     => $cc,
-			r      => $reg,
-			exin   => $exin,
-			func   => $func,
-			polar  => $polar,
-			bc     => $bc_cHGVS,
-			flanks => $flanks
-		    }
-		);
-	    }
-
-	    if ($$cL{reg} eq $$cR{reg}) { # non-edge insertion
-
-		$reg  = $$cL{reg};
-		$exin = $$cL{exin};
-
-		given ($reg) {
-		    when (/^C/) { # coding region
-			( $pHGVS, $func ) = $self->get_aaInsInfo($query_tid, $cP_L, $t_alt, 1);
-		    }
-		    when (/^I/) {
-			if ($$cL{bd} =~ /0/ and $$cR{bd} =~ /0/) {
-			    $func = 'intron';
-			}
-			elsif ($$cL{bd} =~ /b/) {
-			    $func = 'splice-5';
-			}
-			elsif ($$cR{bd} =~ /B/) {
-			    $func = 'splice-3';
-			}
-			else {
-			    $func = 'abnormal-intron';
-			}
-		    }
-		    when (/^5/) {
-			$func = 'utr-5';
-		    }
-		    when (/^3/) {
-			$func = 'utr-3';
-		    }
-		    when (/^R/) {
-			$func = 'ncRNA';
-		    }
-		    default { $self->throw("unexpected region string [$reg]"); }
-		}
-	    }
-	    else { # insertion on the edge of region
-		$reg = $$cL{reg}.'-'.$$cR{reg};
-		$exin = ( $$cL{exin} eq $$cR{exin} ) ? $$cL{exin} : $$cL{exin}.'-'.$$cR{exin};
-
-		my $indicator = substr($$cL{reg},0,1).substr($$cR{reg},0,1);
-		given ($indicator) {
-		    when ('IC') { # 5' coding exon insertion
-			( $pHGVS, $func ) = $self->get_aaInsInfo($query_tid, $cP_R, $t_alt, -1);
-		    }
-		    when ('CI') { # 3' conding exon insertion
-			( $pHGVS, $func ) = $self->get_aaInsInfo($query_tid, $cP_L, $t_alt, 1);
-		    }
-		    when (/5/) {
-			$func = 'utr-5';
-		    }
-		    when (/3/) {
-			$func = 'utr-3';
-		    }
-		    when (/R/) {
-			$func = 'ncRNA';
-		    }
-		    default { $self->throw("unexpected indicator [$indicator]"); }
-		}
-	    }
-	}
-	when ([ 'del', 'delins' ]) {
-
-            if ( $pre_L eq $pre_R ) {
-                if ( $$cL{cpos} eq $$cR{cpos} ) {
-                    $cHGVS = $$cL{cpos} . 'del' . $t_ref;
-                }
-                else {
-                    $cHGVS = $$cL{cpos} . '_' . $cP_R . 'del' . $t_ref;
-                }
-		
-		$cHGVS .= 'ins' . $t_alt if (/delins/);
-
-            }
-            else { # $pre_L ne $pre_R
-                $cHGVS = $$cL{cpos} . '_' . $$cR{cpos} . 'del' . $t_ref;
-		$cHGVS .= 'ins' . $t_alt if (/delins/);
-                $reg =
-                  ( $$cL{reg} eq $$cR{reg} )
-                  ? $$cL{reg}
-                  : $$cL{reg} . '-' . $$cR{reg};
-                $exin =
-                  ( $$cL{exin} eq $$cR{exin} )
-                  ? $$cL{exin}
-                  : $$cL{exin} . '-' . $$cR{exin};
-
-		if (($pre_L eq '--') and ($pre_R eq '++')) { # whole transcript is missing
-		    $pHGVS = 'p.0?';
-		    $func  = 'knockout'; # which may not be exists in variation calling result.
-		}
-		elsif ($pre_L eq '--') { # the 5' end of transcript is missing
-		    given ($$cR{reg}) {
-			when (/^5/) {
-			    $func = 'utr-5';
-			}
-			when (/^C/) {
-			    $pHGVS = 'p.0?';
-			    $func  = 'init-loss';
-			}
-			when (/^3/) {
-			    $pHGVS = 'p.0?';
-			    $func  = 'knockout';
-			}
-			when (/^R/) {
-			    $func  = 'ncRNA';
-			}
-			when (/^I/) {
-			    if ($pre_R eq 'n.') {
-				$func = 'ncRNA';
-			    }
-			    elsif ($cP_R =~ /^\-|^1\-\d/) {
-				$func = 'utr-5';
-			    }
-			    elsif ($cP_R =~ /^\d+/) {
-				$pHGVS = 'p.0?';
-				$func  = 'init-loss';
-			    }
-			    elsif ($cP_R =~ /^\*/) {
-				$pHGVS = 'p.0?';
-				$func  = 'knockout';
-			    }
-			    else {
-				$self->throw("unexpected cP_R [$cP_R]");
-			    }
-			}
-			default {
-			    $self->throw("unexpected region [$$cR{reg}]");
-			}
-		    }
-		}
-		else { # $pre_R eq '++' the 3'end of transcript is missing.
-		    given ($$cL{reg}) {
-			when (/^5/) {
-			    $pHGVS = 'p.0?';
-			    $func = 'knockout';
-			}
-			when (/^C/) {
-			    my $pP_L = aaNum($cP_L);
-			    my $aa_L = get_aa($$self{codonseq}, $query_tid, $pP_L);
-			    if ($aa_L ne '') {
-				$pHGVS = 'p.'.$aa_L.$pP_L.'_*'.$coding_max.'del';
-				$func  = 'stop-loss';
-			    }
-			    else {
-				$func  = 'unknown';
-			    }
-			}
-			when (/^3/) {
-			    $func  = 'utr-3';
-			}
-			when (/^R/) {
-			    $func  = 'ncRNA';
-			}
-			when (/^I/) {
-			    if ($pre_L eq 'n.') {
-				$func = 'ncRNA';
-			    }
-			    elsif ($cP_L =~ /^\-/) {
-				$pHGVS = 'p.0?';
-				$func  = 'knockout';
-			    }
-			    elsif ($cP_L =~ /^\*/) {
-				$func = 'utr-3';
-			    }
-			    elsif ($cP_L =~ /^(\d+)\+/) {
-				if (exists $$self{codonseq}{$query_tid}) {
-				    if ($1 == length($$self{codonseq}{$query_tid})) {
-					$func = 'utr-3';
-				    }
-				    else {
-					my $pP_L = aaNum($1+1);
-					if ($pP_L < $coding_max) {
-					    my $aa_L = get_aa($$self{codonseq}, $query_tid, $pP_L);
-					    $pHGVS = 'p.'.$aa_L.$pP_L.'_*'.$coding_max.'del';
-					}
-					else {
-					    $pHGVS = 'p.'.$coding_max.'del*';
-					}
-					$func  = 'stop-loss';
-				    }
-				}
-				else {
-				    $func = 'unknown';
-				}
-			    }
-			    elsif ($cP_L =~ /^(\d+)\-/) {
-				if (exists $$self{codonseq}{$query_tid}) {
-				    my $pP_L = aaNum($1);
-				    if ($pP_L < $coding_max) {
-					my $aa_L = get_aa($$self{codonseq}, $query_tid, $pP_L);
-					$pHGVS = 'p.'.$aa_L.$pP_L.'_*'.$coding_max.'del';
-				    }
-				    else {
-					$pHGVS = 'p.'.$coding_max.'del*';
-				    }
-				    $func  = 'stop-loss';
-				}
-				else {
-				    $func = 'unknown';
-				}
-			    }
-			    else {
-				$self->throw("unexpected cP_L [$cP_L]");
-			    }
-			}
-			default {
-			    $self->throw("unexpected region [$$cR{reg}]");
-			}
-		    }
-		}
-
-		return (
-		    $tid,
-		    {
-			c      => $cHGVS,
-			p      => $pHGVS,
-			cc     => $cc,
-			r      => $reg,
-			exin   => $exin,
-			func   => $func,
-			polar  => $polar,
-			bc     => $bc_cHGVS,
-			flanks => $flanks
-		    }
-		);
-		
-            }
+	else { # insertion on the edge of region
+	    $reg = $$cL{reg}.'-'.$$cR{reg};
+	    $exin = ( $$cL{exin} eq $$cR{exin} ) ? $$cL{exin} : $$cL{exin}.'-'.$$cR{exin};
 
 	    my $indicator = substr($$cL{reg},0,1).substr($$cR{reg},0,1);
 
-            if ( $$cL{reg} eq $$cR{reg} ) {
-                $reg  = $$cL{reg};
-                $exin = $$cL{exin};
+	    if ($indicator eq 'IC') { # 5' coding exon insertion
+		( $pHGVS, $func ) = $self->get_aaInsInfo($query_tid, $cP_R, $t_alt, -1);
+	    }
+	    elsif ($indicator eq 'CI') { # 3' conding exon insertion
+		( $pHGVS, $func ) = $self->get_aaInsInfo($query_tid, $cP_L, $t_alt, 1);
+	    }
+	    elsif ($indicator =~ /5/) {
+		$func = 'utr-5';
+	    }
+	    elsif ($indicator =~ /3/) {
+		$func = 'utr-3';
+	    }
+	    elsif ($indicator =~ /R/) {
+		$func = 'ncRNA';
+	    }
+	    else { $self->throw("unexpected indicator [$indicator]"); }
+	}
+    }
+    elsif ( $_ eq 'del' or $_ eq 'delins' ) {
 
-		given ($indicator) {
-		    when ('CC') {
-			($pHGVS, $func) = $self->get_aaDelInfo($query_tid, $cP_L, $cP_R, $t_alt);
-		    }
-		    when ('II') {
-			if ($$cL{bd} =~ /1/) {
-			    $func = 'abnormal-intron';
-			}
-			elsif ($$cL{bd} =~ /0/ and $$cR{bd} =~ /0/) {
-			    $func = 'intron';
-			}
-			elsif ($$cL{bd} =~ /b/ and $$cR{bd} =~ /B/) {
-			    $func = 'splice';
-			}
-			elsif ($$cL{bd} =~ /b/) {
-			    $func = 'splice-5';
-			}
-			elsif ($$cR{bd} =~ /B/) {
-			    $func = 'splice-3';
-			}
-		    }
-		    when ('55') {
-			$func = 'utr-5';
-		    }
-		    when ('33') {
-			$func = 'utr-3';
-		    }
-		    when ('RR') {
-			$func = 'ncRNA';
-		    }
-		    default {
-			$self->throw("unexpected region [$$cL{reg}]");
-		    }
+	if ( $pre_L eq $pre_R ) {
+	    if ( $$cL{cpos} eq $$cR{cpos} ) {
+		$cHGVS = $$cL{cpos} . 'del' . $t_ref;
+	    }
+	    else {
+		$cHGVS = $$cL{cpos} . '_' . $cP_R . 'del' . $t_ref;
+	    }
+	    
+	    $cHGVS .= 'ins' . $t_alt if (/delins/);
+
+	}
+	else { # $pre_L ne $pre_R
+	    $cHGVS = $$cL{cpos} . '_' . $$cR{cpos} . 'del' . $t_ref;
+	    $cHGVS .= 'ins' . $t_alt if (/delins/);
+	    $reg =
+	      ( $$cL{reg} eq $$cR{reg} )
+	      ? $$cL{reg}
+	      : $$cL{reg} . '-' . $$cR{reg};
+	    $exin =
+	      ( $$cL{exin} eq $$cR{exin} )
+	      ? $$cL{exin}
+	      : $$cL{exin} . '-' . $$cR{exin};
+
+	    if (($pre_L eq '--') and ($pre_R eq '++')) { # whole transcript is missing
+		$pHGVS = 'p.0?';
+		$func  = 'knockout'; # which may not be exists in variation calling result.
+	    }
+	    elsif ($pre_L eq '--') { # the 5' end of transcript is missing
+		if ($$cR{reg} =~ /^5/) {
+		    $func = 'utr-5';
 		}
-            }
-            else { # multiple region del/delins
-                $reg  = $$cL{reg} . '-' . $$cR{reg};
-                $exin = ( $$cL{exin} eq $$cR{exin} ) ? $$cL{exin} : $$cL{exin} . '-' . $$cR{exin};
-		given ($indicator) {
-		    when ('CC') {
-			($pHGVS, $func) = $self->get_aaDelInfo($query_tid, $cP_L, $cP_R, $t_alt);
-		    }
-		    when ('55') {
-			$func = 'utr-5';
-		    }
-		    when ('33') {
-			$func = 'utr-3';
-		    }
-		    when ('RR') {
+		elsif ($$cR{reg} =~ /^C/) {
+		    $pHGVS = 'p.0?';
+		    $func  = 'init-loss';
+		}
+		elsif ($$cR{reg} =~ /^3/) {
+		    $pHGVS = 'p.0?';
+		    $func  = 'knockout';
+		}
+		elsif ($$cR{reg} =~ /^R/) {
+		    $func  = 'ncRNA';
+		}
+		elsif ($$cR{reg} =~ /^I/) {
+		    if ($pre_R eq 'n.') {
 			$func = 'ncRNA';
 		    }
-		    when ('II') {
-			if ($$cL{bd} =~ /1/) {
-			    $func = 'abnormal-intron';
-			}
-			elsif ($$cL{bd} =~ /0/ and $$cR{bd} =~ /0/) {
-			    if ($pre_L eq 'n.') {
-				$func = 'ncRNA';
-			    }
-			    else {
-				my ($cds_L, $cds_R);
-				if ($cP_L =~ /^(\d+)\-/) {
-				    $cds_L = $1;
-				}
-				elsif ($cP_L =~ /^(\d+)\+/) {
-				    $cds_L = $1 + 1;
-				}
-
-				if ($cP_R =~ /^(\d+)\+/) {
-				    $cds_R = $1;
-				}
-				elsif ($cP_R =~ /^(\d+)\-/) {
-				    $cds_R = $1 - 1;
-				}
-
-				($pHGVS, $func) = $self->get_aaDelInfo($query_tid, $cds_L, $cds_R);
-			    }
-			}
-			else { # ($$cL{bd} =~ /b/i or $$cR{bd} =~ /b/i) the splice cases is too complex to parse
-			    # give splice to indicate either or both of side are at splice site.
-			    $func = 'splice';
-			}
+		    elsif ($cP_R =~ /^\-|^1\-\d/) {
+			$func = 'utr-5';
 		    }
-		    when ('5C') {
+		    elsif ($cP_R =~ /^\d+/) {
 			$pHGVS = 'p.0?';
 			$func  = 'init-loss';
 		    }
-		    when ('C3') {
-			my $pP_L = aaNum($cP_L);
-			my $aa_L = get_aa($$self{codonseq}, $query_tid, $pP_L);
-			if ($aa_L eq '') {
-			    $func = 'unknown';
-			}
-			else {
-			    if ($pP_L == $coding_max) {
-				$pHGVS = 'p.'.$coding_max.'del*';
-			    }
-			    else {
-				$pHGVS = 'p.'.$aa_L.$pP_L.'_*'.$coding_max.'del';
-			    }
-			    $func  = 'stop-loss';
-			}
-		    }
-		    when ('53') {
+		    elsif ($cP_R =~ /^\*/) {
 			$pHGVS = 'p.0?';
 			$func  = 'knockout';
 		    }
-		    default { # for other complex cases
-			if ($$cR{exin} =~ /C1/) {
-			    $pHGVS = 'p.0?';
-			    $func = 'splice-3';
-			}
-			elsif ($$cL{exin} =~ /C\d+E/) {
-			    my $pP_L = aaNum($cP_L);
-			    my $aa_L = get_aa($$self{codonseq}, $query_tid, $pP_L);
-			    if ($aa_L ne '') {
-				if ($pP_L == $coding_max) {
-				    $pHGVS = 'p.'.$coding_max.'del*';
-				}
-				else {
-				    $pHGVS = 'p.'.$aa_L.$pP_L.'_*'.$coding_max.'del';
-				}
-			    }
-			    $func = 'splice-5';
-			}
-			else {
-			    $func = 'splice';
-			}
-		    }
-		}
-            }
-	}
-	# when meet repeats, the input selection must come from
-	# the standard group: (repeat element cds position), 
-	# the backward compatible cds position is used to calculate
-	# the bcHGVS, pHGVS and give the function prediction as well.
-	# the standard cds position is only for the cHGVS.
-	when ('rep') {
-	    my $t_rep = ($$cL{strd} eq '+') ? $$var{rep} : rev_comp($$var{rep});
-	    if ($$var{ref_cn} == 1 and $$var{alt_cn} == 2) { # duplication
-		if ($$var{replen} > 1) {
-		    if ($pre_L ne $pre_R) {
-			$cHGVS = $$cL{cpos}.'_'.$$cR{cpos}.'dup'.$t_rep;
-		    }
 		    else {
-			$cHGVS = $$cL{cpos}.'_'.$cP_R.'dup'.$t_rep;
+			$self->throw("unexpected cP_R [$cP_R]");
 		    }
 		}
 		else {
-		    $cHGVS = $$cL{cpos}.'dup'.$t_rep;
+		    $self->throw("unexpected region [$$cR{reg}]");
 		}
 	    }
-	    else { # simple repeats
-		$cHGVS = $$cL{cpos}.$t_rep.'['.$$var{ref_cn}.'>'.$$var{alt_cn}.']';
+	    else { # $pre_R eq '++' the 3'end of transcript is missing.
+		if ($$cL{reg} =~ /^5/) {
+		    $pHGVS = 'p.0?';
+		    $func = 'knockout';
+		}
+		elsif ($$cL{reg} =~ /^C/) {
+		    my $pP_L = aaNum($cP_L);
+		    my $aa_L = get_aa($$self{codonseq}, $query_tid, $pP_L);
+		    if ($aa_L ne '') {
+			$pHGVS = 'p.'.$aa_L.$pP_L.'_*'.$coding_max.'del';
+			$func  = 'stop-loss';
+		    }
+		    else {
+			$func  = 'unknown';
+		    }
+		}
+		elsif ($$cL{reg} =~ /^3/) {
+		    $func  = 'utr-3';
+		}
+		elsif ($$cL{reg} =~ /^R/) {
+		    $func  = 'ncRNA';
+		}
+		elsif ($$cL{reg} =~ /^I/) {
+		    if ($pre_L eq 'n.') {
+			$func = 'ncRNA';
+		    }
+		    elsif ($cP_L =~ /^\-/) {
+			$pHGVS = 'p.0?';
+			$func  = 'knockout';
+		    }
+		    elsif ($cP_L =~ /^\*/) {
+			$func = 'utr-3';
+		    }
+		    elsif ($cP_L =~ /^(\d+)\+/) {
+			if (exists $$self{codonseq}{$query_tid}) {
+			    if ($1 == length($$self{codonseq}{$query_tid})) {
+				$func = 'utr-3';
+			    }
+			    else {
+				my $pP_L = aaNum($1+1);
+				if ($pP_L < $coding_max) {
+				    my $aa_L = get_aa($$self{codonseq}, $query_tid, $pP_L);
+				    $pHGVS = 'p.'.$aa_L.$pP_L.'_*'.$coding_max.'del';
+				}
+				else {
+				    $pHGVS = 'p.'.$coding_max.'del*';
+				}
+				$func  = 'stop-loss';
+			    }
+			}
+			else {
+			    $func = 'unknown';
+			}
+		    }
+		    elsif ($cP_L =~ /^(\d+)\-/) {
+			if (exists $$self{codonseq}{$query_tid}) {
+			    my $pP_L = aaNum($1);
+			    if ($pP_L < $coding_max) {
+				my $aa_L = get_aa($$self{codonseq}, $query_tid, $pP_L);
+				$pHGVS = 'p.'.$aa_L.$pP_L.'_*'.$coding_max.'del';
+			    }
+			    else {
+				$pHGVS = 'p.'.$coding_max.'del*';
+			    }
+			    $func  = 'stop-loss';
+			}
+			else {
+			    $func = 'unknown';
+			}
+		    }
+		    else {
+			$self->throw("unexpected cP_L [$cP_L]");
+		    }
+		}
+		else {
+		    $self->throw("unexpected region [$$cL{reg}]");
+		}
 	    }
 
-	    # if backward compatible selection exists, the pHGVS and function
-	    # will be assigned to the variation.
-	    if (exists $$var{sel}{bc}) {
-		my $sel_for_bc;
-		foreach my $bc_sel (@{$$var{sel}{bc}}) {
-		    my ($bc_tid, $bc_cL, $bc_cR) = @{$bc_sel};
-		    next if ($bc_tid ne $tid);
-		    $sel_for_bc = $bc_sel;
-		    last;
+	    return (
+		$tid,
+		{
+		    c      => $cHGVS,
+		    p      => $pHGVS,
+		    cc     => $cc,
+		    r      => $reg,
+		    exin   => $exin,
+		    func   => $func,
+		    polar  => $polar,
+		    bc     => $bc_cHGVS,
+		    flanks => $flanks
 		}
-		if (defined $sel_for_bc) {
-		    my %bc_var; # create a backward compatible var
-		    my $rbc_var_info = $$var{$$cL{strd}};
-		    $bc_var{chr}   = $$var{chr};
-		    $bc_var{guess} = guess_type($$rbc_var_info{brl}, $$rbc_var_info{bal});
-		    $bc_var{pos}   = $$rbc_var_info{bp};
-		    $bc_var{ref}   = $$rbc_var_info{br};
-		    $bc_var{alt}   = $$rbc_var_info{ba};
-		    $bc_var{reflen} = $$rbc_var_info{brl};
-		    $bc_var{altlen} = $$rbc_var_info{bal};
+	    );
+	    
+	}
 
-                    my ( $ret_tid, $ret_rbc_annos ) =
-                      $self->pairanno( \%bc_var, $sel_for_bc );
-                    $pHGVS         = $$ret_rbc_annos{p};
-                    $func          = $$ret_rbc_annos{func};
-                    $reg           = $$ret_rbc_annos{r};
-                    $exin          = $$ret_rbc_annos{exin};
-                    $bc_cHGVS      = $$ret_rbc_annos{c};
-                    $flanks        = $$ret_rbc_annos{flanks};
-                    $$flanks{strd} = $$cL{strd};
+	my $indicator = substr($$cL{reg},0,1).substr($$cR{reg},0,1);
+
+	if ( $$cL{reg} eq $$cR{reg} ) {
+	    $reg  = $$cL{reg};
+	    $exin = $$cL{exin};
+
+	    if ($indicator eq 'CC') {
+		($pHGVS, $func) = $self->get_aaDelInfo($query_tid, $cP_L, $cP_R, $t_alt);
+	    }
+	    elsif ($indicator eq 'II') {
+		if ($$cL{bd} =~ /1/) {
+		    $func = 'abnormal-intron';
+		}
+		elsif ($$cL{bd} =~ /0/ and $$cR{bd} =~ /0/) {
+		    $func = 'intron';
+		}
+		elsif ($$cL{bd} =~ /b/ and $$cR{bd} =~ /B/) {
+		    $func = 'splice';
+		}
+		elsif ($$cL{bd} =~ /b/) {
+		    $func = 'splice-5';
+		}
+		elsif ($$cR{bd} =~ /B/) {
+		    $func = 'splice-3';
+		}
+	    }
+	    elsif ($indicator eq '55') {
+		$func = 'utr-5';
+	    }
+	    elsif ($indicator eq '33') {
+		$func = 'utr-3';
+	    }
+	    elsif ($indicator eq 'RR') {
+		$func = 'ncRNA';
+	    }
+	    else {
+		$self->throw("unexpected region [$$cL{reg}]");
+	    }
+	}
+	else { # multiple region del/delins
+	    $reg  = $$cL{reg} . '-' . $$cR{reg};
+	    $exin = ( $$cL{exin} eq $$cR{exin} ) ? $$cL{exin} : $$cL{exin} . '-' . $$cR{exin};
+
+	    if ($indicator eq 'CC') {
+		($pHGVS, $func) = $self->get_aaDelInfo($query_tid, $cP_L, $cP_R, $t_alt);
+	    }
+	    elsif ($indicator eq '55') {
+		$func = 'utr-5';
+	    }
+	    elsif ($indicator eq '33') {
+		$func = 'utr-3';
+	    }
+	    elsif ($indicator eq 'RR') {
+		$func = 'ncRNA';
+	    }
+	    elsif ($indicator eq 'II') {
+		if ($$cL{bd} =~ /1/) {
+		    $func = 'abnormal-intron';
+		}
+		elsif ($$cL{bd} =~ /0/ and $$cR{bd} =~ /0/) {
+		    if ($pre_L eq 'n.') {
+			$func = 'ncRNA';
+		    }
+		    else {
+			my ($cds_L, $cds_R);
+			if ($cP_L =~ /^(\d+)\-/) {
+			    $cds_L = $1;
+			}
+			elsif ($cP_L =~ /^(\d+)\+/) {
+			    $cds_L = $1 + 1;
+			}
+
+			if ($cP_R =~ /^(\d+)\+/) {
+			    $cds_R = $1;
+			}
+			elsif ($cP_R =~ /^(\d+)\-/) {
+			    $cds_R = $1 - 1;
+			}
+
+			($pHGVS, $func) = $self->get_aaDelInfo($query_tid, $cds_L, $cds_R);
+		    }
+		}
+		else { # ($$cL{bd} =~ /b/i or $$cR{bd} =~ /b/i) the splice cases is too complex to parse
+		    # give splice to indicate either or both of side are at splice site.
+		    $func = 'splice';
+		}
+	    }
+	    elsif ($indicator eq '5C') {
+		$pHGVS = 'p.0?';
+		$func  = 'init-loss';
+	    }
+	    elsif ($indicator eq 'C3') {
+		my $pP_L = aaNum($cP_L);
+		my $aa_L = get_aa($$self{codonseq}, $query_tid, $pP_L);
+		if ($aa_L eq '') {
+		    $func = 'unknown';
+		}
+		else {
+		    if ($pP_L == $coding_max) {
+			$pHGVS = 'p.'.$coding_max.'del*';
+		    }
+		    else {
+			$pHGVS = 'p.'.$aa_L.$pP_L.'_*'.$coding_max.'del';
+		    }
+		    $func  = 'stop-loss';
+		}
+	    }
+	    elsif ($indicator eq '53') {
+		$pHGVS = 'p.0?';
+		$func  = 'knockout';
+	    }
+	    else { # for other complex cases
+		if ($$cR{exin} =~ /C1/) {
+		    $pHGVS = 'p.0?';
+		    $func = 'splice-3';
+		}
+		elsif ($$cL{exin} =~ /C\d+E/) {
+		    my $pP_L = aaNum($cP_L);
+		    my $aa_L = get_aa($$self{codonseq}, $query_tid, $pP_L);
+		    if ($aa_L ne '') {
+			if ($pP_L == $coding_max) {
+			    $pHGVS = 'p.'.$coding_max.'del*';
+			}
+			else {
+			    $pHGVS = 'p.'.$aa_L.$pP_L.'_*'.$coding_max.'del';
+			}
+		    }
+		    $func = 'splice-5';
+		}
+		else {
+		    $func = 'splice';
 		}
 	    }
 	}
-	default { $self->throw("unexpected type of variation [$$var{guess}]."); }
     }
+    # when meet repeats, the input selection must come from
+    # the standard group: (repeat element cds position), 
+    # the backward compatible cds position is used to calculate
+    # the bcHGVS, pHGVS and give the function prediction as well.
+    # the standard cds position is only for the cHGVS.
+    elsif ( $_ eq 'rep' ) {
+	my $t_rep = ($$cL{strd} eq '+') ? $$var{rep} : rev_comp($$var{rep});
+	if ($$var{ref_cn} == 1 and $$var{alt_cn} == 2) { # duplication
+	    if ($$var{replen} > 1) {
+		if ($pre_L ne $pre_R) {
+		    $cHGVS = $$cL{cpos}.'_'.$$cR{cpos}.'dup'.$t_rep;
+		}
+		else {
+		    $cHGVS = $$cL{cpos}.'_'.$cP_R.'dup'.$t_rep;
+		}
+	    }
+	    else {
+		$cHGVS = $$cL{cpos}.'dup'.$t_rep;
+	    }
+	}
+	else { # simple repeats
+	    $cHGVS = $$cL{cpos}.$t_rep.'['.$$var{ref_cn}.'>'.$$var{alt_cn}.']';
+	}
+
+	# if backward compatible selection exists, the pHGVS and function
+	# will be assigned to the variation.
+	if (exists $$var{sel}{bc}) {
+	    my $sel_for_bc;
+	    foreach my $bc_sel (@{$$var{sel}{bc}}) {
+		my ($bc_tid, $bc_cL, $bc_cR) = @{$bc_sel};
+		next if ($bc_tid ne $tid);
+		$sel_for_bc = $bc_sel;
+		last;
+	    }
+	    if (defined $sel_for_bc) {
+		my %bc_var; # create a backward compatible var
+		my $rbc_var_info = $$var{$$cL{strd}};
+		$bc_var{chr}   = $$var{chr};
+		$bc_var{guess} = guess_type($$rbc_var_info{brl}, $$rbc_var_info{bal});
+		$bc_var{pos}   = $$rbc_var_info{bp};
+		$bc_var{ref}   = $$rbc_var_info{br};
+		$bc_var{alt}   = $$rbc_var_info{ba};
+		$bc_var{reflen} = $$rbc_var_info{brl};
+		$bc_var{altlen} = $$rbc_var_info{bal};
+
+		my ( $ret_tid, $ret_rbc_annos ) =
+		  $self->pairanno( \%bc_var, $sel_for_bc );
+		$pHGVS         = $$ret_rbc_annos{p};
+		$func          = $$ret_rbc_annos{func};
+		$reg           = $$ret_rbc_annos{r};
+		$exin          = $$ret_rbc_annos{exin};
+		$bc_cHGVS      = $$ret_rbc_annos{c};
+		$flanks        = $$ret_rbc_annos{flanks};
+		$$flanks{strd} = $$cL{strd};
+	    }
+	}
+    }
+    else { $self->throw("unexpected type of variation [$$var{guess}]."); }
 
     return (
         $tid,
@@ -1419,46 +1405,46 @@ sub get_aaseq {
 sub parse_cPos {
     my ($self, $query_tid, $cpos, $t_alt) = @_;
     my ($func, $cc, $pHGVS, $polar) = ('.') x 4;
-    given ($cpos) {
-	when (/^c\.(\d+)$/) { # coding region
-	    my $cP = $1;
-	    my ($codon, $aa, $pol, $frame) = get_codon($$self{codonseq}, $query_tid, $cP);
-	    my $new_codon = $codon;
-	    if ($aa ne '') {
-		substr($new_codon, $frame, 1, $t_alt);
-		my $new_aa = (exists $codon3{$new_codon}) ? $codon3{$new_codon} : ".";
-		my $new_pol = (exists $Polar{$new_aa}) ? $Polar{$new_aa} : ".";
-		$func = $self->get_aafunc($aa, $new_aa, $query_tid, $cP);
-		$pHGVS = get_aaHGVS($aa, $new_aa, $func, $cP);
-		$cc = $codon.'=>'.$new_codon;
-		$polar = ($pol eq $new_pol) ? '.' : $pol.'=>'.$new_pol;
-		if ($aa eq '*' and $cP + 3 <= length($$self{codonseq}{$query_tid})) {
-		    $func = 'abnormal-inseq-stop';
-		}
+
+    if ($cpos =~ /^c\.(\d+)$/) { # coding region
+	my $cP = $1;
+	my ($codon, $aa, $pol, $frame) = get_codon($$self{codonseq}, $query_tid, $cP);
+	my $new_codon = $codon;
+	if ($aa ne '') {
+	    substr($new_codon, $frame, 1, $t_alt);
+	    my $new_aa = (exists $codon3{$new_codon}) ? $codon3{$new_codon} : ".";
+	    my $new_pol = (exists $Polar{$new_aa}) ? $Polar{$new_aa} : ".";
+	    $func = $self->get_aafunc($aa, $new_aa, $query_tid, $cP);
+	    $pHGVS = get_aaHGVS($aa, $new_aa, $func, $cP);
+	    $cc = $codon.'=>'.$new_codon;
+	    $polar = ($pol eq $new_pol) ? '.' : $pol.'=>'.$new_pol;
+	    if ($aa eq '*' and $cP + 3 <= length($$self{codonseq}{$query_tid})) {
+		$func = 'abnormal-inseq-stop';
 	    }
 	}
-	when (/^[cr]\.[\-\*]?\d+([\-\+])(\d+)/) { # intron region
-	    if ($2 > 2) {
-		$func = 'intron';
-	    }
-	    elsif ($1 eq '+') {
-		$func = 'splice-5';
-	    }
-	    elsif ($1 eq '-') {
-		$func = 'splice-3';
-	    }
-	}
-	when (/^c\.-\d+$/) { # 5' UTR
-	    $func = 'utr-5';
-	}
-	when (/^c\.\*\d+$/) { # 3' UTR
-	    $func = 'utr-3';
-	}
-	when (/^n\.\d+$/) { # ncRNA
-	    $func = 'ncRNA';
-	}
-	default { $func = 'unknown'; }
     }
+    elsif ($cpos =~ /^[cr]\.[\-\*]?\d+([\-\+])(\d+)/) { # intron region
+	if ($2 > 2) {
+	    $func = 'intron';
+	}
+	elsif ($1 eq '+') {
+	    $func = 'splice-5';
+	}
+	elsif ($1 eq '-') {
+	    $func = 'splice-3';
+	}
+    }
+    elsif ($cpos =~ /^c\.-\d+$/) { # 5' UTR
+	$func = 'utr-5';
+    }
+    elsif ($cpos =~ /^c\.\*\d+$/) { # 3' UTR
+	$func = 'utr-3';
+    }
+    elsif ($cpos =~ /^n\.\d+$/) { # ncRNA
+	$func = 'ncRNA';
+    }
+    else { $func = 'unknown'; }
+
     return ($func, $cc, $pHGVS, $polar);
 }
 
@@ -1513,164 +1499,162 @@ sub get_aaDelInfo {
 
     my $ins_aa = get_aaseq($total_remain);
     my $ins_aalen = (length($ins_aa) % 3 == 0) ? (length($ins_aa)/3) : (int(length($ins_aa)/3)+1);
-    given ($ins_aa) {
-	when (/^$/) { #frameshit or cds deletion without insertion 
-	    if ($pP_L == 1) {
+    if ($ins_aa =~ /^$/) { #frameshit or cds deletion without insertion 
+	if ($pP_L == 1) {
 
-		$pHGVS = 'p.0?';
-		$func  = 'init-loss';
-		return ( $pHGVS, $func );
-		
+	    $pHGVS = 'p.0?';
+	    $func  = 'init-loss';
+	    return ( $pHGVS, $func );
+	    
+	}
+
+	if ($pP_L == $pP_R) {
+	    $pHGVS =
+	      ($fsOpt)
+	      ? 'p.' . $aa_L . $pP_L . 'fs*?'
+	      : 'p.' . $aa_L . $pP_L . 'del';
+	}
+	else {
+	    $pHGVS =
+	      ($fsOpt)
+	      ? 'p.' . $aa_L . $pP_L . '_' . $aa_R . $pP_R . 'del'
+	      : 'p.' . $aa_L . $pP_L . '_' . $aa_R . $pP_R . 'delfs*?';
+	}
+
+	$func =
+	  ($fsOpt) ? 'frameshift'
+	  : ( ( $cP_R + 3 > length( $$self{codonseq}{$query_tid} ) )
+	    ? 'stop-loss'
+	    : 'cds-indel' );
+
+    }
+    elsif ($ins_aa =~ /\*/) { # stop gain after delins
+	if ($aa_R eq '*') { # cds-indel
+	    my $local_ins_aa = $`; # $` prematch
+	    my $local_ins_aalen = $ins_aalen - 1;
+
+	    if ($cP_L == $cP_R) {
+		if ($local_ins_aa eq '') {
+
+		    $pHGVS = 'p.=';
+		    $func  = 'coding-synon';
+
+		}
+		else { # delins caused insertion
+		    my $aa_pre = get_aa($$self{codonseq}, $query_tid, ($pP_L - 1));
+
+		    $pHGVS = 'p.'. $aa_pre. ($pP_L - 1) . '_' . $aa_R . $pP_R . 'ins' . $local_ins_aa;
+		    $func  = 'cds-indel';
+		}
 	    }
+	    else { # for inconvinience of realign the protein del and ins, delins may be false predicting, except for head/tail align.
+		my $local_todel = $todel_aa;
+		$local_todel =~ s/\*$//;
+		my $local_todel_len = $todel_aalen - 1;
 
+		if ($local_todel eq $local_ins_aa) {
+
+		    $pHGVS = 'p.=';
+		    $func  = 'coding-synon';
+		    return ( $pHGVS, $func );
+
+		}
+
+		$func = 'cds-indel';
+
+		my ($local_pP_L, $local_pP_R, $local_aa_L, $local_aa_R, $local_toins_aa);
+		if ($local_todel =~ /^$local_ins_aa/) { # deletion is longer
+		    $local_pP_L = $pP_L + $local_ins_aalen;
+		    $local_pP_R = $pP_R - 1;
+		    $local_aa_L = get_aa($$self{codonseq}, $query_tid, $local_pP_L);
+		    if ($local_pP_L == $local_pP_R) {
+			$pHGVS = 'p.'.$local_aa_L.$local_pP_L.'del';
+		    }
+		    else {
+			$local_aa_R = get_aa($$self{codonseq}, $query_tid, $local_pP_R);
+			$pHGVS = 'p.'.$local_aa_L.$local_pP_L.'_'.$local_aa_R.$local_pP_R.'del';
+		    }
+		}
+		elsif ($local_todel =~ /$local_ins_aa$/) {
+		    $local_pP_R = $pP_R - 1 - $local_ins_aalen;
+		    $local_aa_R = get_aa($$self{codonseq}, $query_tid, $local_pP_R);
+		    if ($local_pP_R == $pP_L) {
+			$pHGVS = 'p.'.$aa_L.$pP_L.'del';
+		    }
+		    else {
+			$pHGVS = 'p.'.$aa_L.$pP_L.'_'.$local_aa_R.$local_pP_R.'del';
+		    }
+		}
+		elsif ($local_ins_aa =~ /^$local_todel/) { # insertion is longer
+		    $local_pP_L = $pP_R - 1;
+		    $local_toins_aa = $'; # $' post match
+		    $local_aa_L = get_aa($$self{codonseq}, $query_tid, $local_pP_L);
+		    
+		    $pHGVS = 'p.'.$local_aa_L.$local_pP_L.'_'.$aa_R.$pP_R.'ins'.$local_toins_aa;
+		}
+		elsif ($local_ins_aa =~ /$local_todel$/) {
+		    $local_pP_R = $pP_L + 1;
+		    $local_toins_aa = $`; # $` prematch
+		    $local_aa_R = get_aa($$self{codonseq}, $query_tid, $local_pP_R);
+
+		    $pHGVS = 'p.'.$aa_L.$pP_L.'_'.$local_aa_R.$local_pP_R.'ins'.$local_toins_aa;
+		}
+		else { # delins
+		    $local_pP_R = $pP_R - 1;
+		    $local_aa_R = get_aa($$self{codonseq}, $query_tid, $local_pP_R);
+
+		    $pHGVS = 'p.'.$aa_L.$pP_L.'_'.$local_aa_R.$local_pP_R.'delins'.$ins_aa;
+		}
+	    }
+	}
+	else { # $aa_R ne '*'
+	    $func  = 'stop-gain';
 	    if ($pP_L == $pP_R) {
-                $pHGVS =
-                  ($fsOpt)
-                  ? 'p.' . $aa_L . $pP_L . 'fs*?'
-                  : 'p.' . $aa_L . $pP_L . 'del';
-	    }
-	    else {
-                $pHGVS =
-                  ($fsOpt)
-                  ? 'p.' . $aa_L . $pP_L . '_' . $aa_R . $pP_R . 'del'
-                  : 'p.' . $aa_L . $pP_L . '_' . $aa_R . $pP_R . 'delfs*?';
-	    }
-
-            $func =
-              ($fsOpt) ? 'frameshift'
-              : ( ( $cP_R + 3 > length( $$self{codonseq}{$query_tid} ) )
-                ? 'stop-loss'
-                : 'cds-indel' );
-
-	}
-	when (/\*/) { # stop gain after delins
-	    if ($aa_R eq '*') { # cds-indel
-		my $local_ins_aa = $`; # $` prematch
-		my $local_ins_aalen = $ins_aalen - 1;
-
-		if ($cP_L == $cP_R) {
-		    if ($local_ins_aa eq '') {
-
-			$pHGVS = 'p.=';
-			$func  = 'coding-synon';
-
-		    }
-		    else { # delins caused insertion
-			my $aa_pre = get_aa($$self{codonseq}, $query_tid, ($pP_L - 1));
-
-			$pHGVS = 'p.'. $aa_pre. ($pP_L - 1) . '_' . $aa_R . $pP_R . 'ins' . $local_ins_aa;
-			$func  = 'cds-indel';
-		    }
-		}
-		else { # for inconvinience of realign the protein del and ins, delins may be false predicting, except for head/tail align.
-		    my $local_todel = $todel_aa;
-		    $local_todel =~ s/\*$//;
-		    my $local_todel_len = $todel_aalen - 1;
-
-		    if ($local_todel eq $local_ins_aa) {
-
-			$pHGVS = 'p.=';
-			$func  = 'coding-synon';
-			return ( $pHGVS, $func );
-
-		    }
-
-		    $func = 'cds-indel';
-
-		    my ($local_pP_L, $local_pP_R, $local_aa_L, $local_aa_R, $local_toins_aa);
-		    if ($local_todel =~ /^$local_ins_aa/) { # deletion is longer
-			$local_pP_L = $pP_L + $local_ins_aalen;
-			$local_pP_R = $pP_R - 1;
-			$local_aa_L = get_aa($$self{codonseq}, $query_tid, $local_pP_L);
-			if ($local_pP_L == $local_pP_R) {
-			    $pHGVS = 'p.'.$local_aa_L.$local_pP_L.'del';
-			}
-			else {
-			    $local_aa_R = get_aa($$self{codonseq}, $query_tid, $local_pP_R);
-			    $pHGVS = 'p.'.$local_aa_L.$local_pP_L.'_'.$local_aa_R.$local_pP_R.'del';
-			}
-		    }
-		    elsif ($local_todel =~ /$local_ins_aa$/) {
-			$local_pP_R = $pP_R - 1 - $local_ins_aalen;
-			$local_aa_R = get_aa($$self{codonseq}, $query_tid, $local_pP_R);
-			if ($local_pP_R == $pP_L) {
-			    $pHGVS = 'p.'.$aa_L.$pP_L.'del';
-			}
-			else {
-			    $pHGVS = 'p.'.$aa_L.$pP_L.'_'.$local_aa_R.$local_pP_R.'del';
-			}
-		    }
-		    elsif ($local_ins_aa =~ /^$local_todel/) { # insertion is longer
-			$local_pP_L = $pP_R - 1;
-			$local_toins_aa = $'; # $' post match
-			$local_aa_L = get_aa($$self{codonseq}, $query_tid, $local_pP_L);
-			
-			$pHGVS = 'p.'.$local_aa_L.$local_pP_L.'_'.$aa_R.$pP_R.'ins'.$local_toins_aa;
-		    }
-		    elsif ($local_ins_aa =~ /$local_todel$/) {
-			$local_pP_R = $pP_L + 1;
-			$local_toins_aa = $`; # $` prematch
-			$local_aa_R = get_aa($$self{codonseq}, $query_tid, $local_pP_R);
-
-			$pHGVS = 'p.'.$aa_L.$pP_L.'_'.$local_aa_R.$local_pP_R.'ins'.$local_toins_aa;
-		    }
-		    else { # delins
-			$local_pP_R = $pP_R - 1;
-			$local_aa_R = get_aa($$self{codonseq}, $query_tid, $local_pP_R);
-
-			$pHGVS = 'p.'.$aa_L.$pP_L.'_'.$local_aa_R.$local_pP_R.'delins'.$ins_aa;
-		    }
-		}
-	    }
-	    else { # $aa_R ne '*'
-		$func  = 'stop-gain';
-		if ($pP_L == $pP_R) {
-		    if (length($ins_aa) < 4) {
-			$pHGVS = 'p.'.$aa_L.$pP_L.$ins_aa;
-		    }
-		    else {
-			$pHGVS = 'p.'.$aa_L.$pP_L.'delins'.$ins_aa;
-		    }
+		if (length($ins_aa) < 4) {
+		    $pHGVS = 'p.'.$aa_L.$pP_L.$ins_aa;
 		}
 		else {
-		    $pHGVS = 'p.'.$aa_L.$pP_L.'_'.$aa_R.$pP_R.'delins'.$ins_aa;
+		    $pHGVS = 'p.'.$aa_L.$pP_L.'delins'.$ins_aa;
 		}
-	    }
-	}
-	default {
-	    if ($todel_aa eq $ins_aa) { # frameshift or delins 
-
-		$pHGVS = ($fsOpt) ? 'p.' . $aa_R . $pP_R . 'fs*?' : 'p.=';
-		$func  = ($fsOpt) ? 'frameshift' : 'coding-synon';
-
-	    }
-	    elsif ($pP_L == 1 and substr($todel_aa, 0, 3) ne substr($ins_aa, 0, 3)) {
-
-		$pHGVS = 'p.0?';
-		$func  = 'init-loss';
-
 	    }
 	    else {
-		if ($pP_L == $pP_R) {
-		    if (length($ins_aa) < 4) {
-			$pHGVS = 'p.' . $aa_L . $pP_L . $ins_aa;
-		    }
-		    else {
-			$pHGVS = 'p.' . $aa_L . $pP_L . 'delins' . $ins_aa;
-		    }
+		$pHGVS = 'p.'.$aa_L.$pP_L.'_'.$aa_R.$pP_R.'delins'.$ins_aa;
+	    }
+	}
+    }
+    else {
+	if ($todel_aa eq $ins_aa) { # frameshift or delins 
+
+	    $pHGVS = ($fsOpt) ? 'p.' . $aa_R . $pP_R . 'fs*?' : 'p.=';
+	    $func  = ($fsOpt) ? 'frameshift' : 'coding-synon';
+
+	}
+	elsif ($pP_L == 1 and substr($todel_aa, 0, 3) ne substr($ins_aa, 0, 3)) {
+
+	    $pHGVS = 'p.0?';
+	    $func  = 'init-loss';
+
+	}
+	else {
+	    if ($pP_L == $pP_R) {
+		if (length($ins_aa) < 4) {
+		    $pHGVS = 'p.' . $aa_L . $pP_L . $ins_aa;
 		}
 		else {
-		    $pHGVS = 'p.' . $aa_L . $pP_L . '_' . $aa_R . $pP_R . 'delins' . $ins_aa;
+		    $pHGVS = 'p.' . $aa_L . $pP_L . 'delins' . $ins_aa;
 		}
-		$pHGVS .= 'fs*?' if ($fsOpt);
-
-		$func =
-		  ($fsOpt) ? 'frameshift'
-		  : ( ( $cP_R + 3 > length( $$self{codonseq}{$query_tid} ) )
-		    ? 'stop-loss'
-		    : 'cds-indel' );
-
 	    }
+	    else {
+		$pHGVS = 'p.' . $aa_L . $pP_L . '_' . $aa_R . $pP_R . 'delins' . $ins_aa;
+	    }
+	    $pHGVS .= 'fs*?' if ($fsOpt);
+
+	    $func =
+	      ($fsOpt) ? 'frameshift'
+	      : ( ( $cP_R + 3 > length( $$self{codonseq}{$query_tid} ) )
+		? 'stop-loss'
+		: 'cds-indel' );
+
 	}
     }
     return ( $pHGVS, $func );
@@ -1952,96 +1936,96 @@ sub select_position {
     if (!exists $$var{'+'} or (!exists $$var{'+'}{p} and $$var{guess} ne 'rep')) {
     # simple variation or same pos(strand) non-repeat variation which caused by complex delins or multiple samples
 	my $anno_sels = [];
-	given ($$var{guess}) {
-	    when ('snv') { # only select pos for the case: c.123A>G
-		if (exists $$rcPos{$$var{pos}}) {
-		    foreach my $tid (sort keys %{$$rcPos{$$var{pos}}}) {
-			push (@$anno_sels, [ $tid, $$rcPos{$$var{pos}}{$tid} ]);
-		    }
+
+	$_ = $$var{guess};
+	if ($_ eq 'snv') { # only select pos for the case: c.123A>G
+	    if (exists $$rcPos{$$var{pos}}) {
+		foreach my $tid (sort keys %{$$rcPos{$$var{pos}}}) {
+		    push (@$anno_sels, [ $tid, $$rcPos{$$var{pos}}{$tid} ]);
 		}
 	    }
-	    when ('ins') { # the pos and pos+1 are selected: c.123_124insTG
-		$anno_sels = $self->get_cover($$var{chr}, $$var{pos}, ($$var{pos}+1));
-	    }
-	    when (['del', 'delins']) { # the pos+1 and pos+reflen-1 are selected
-		if ($$var{reflen} == 2) { # 1 bp deletion : c.123delT, c.123delTinsGAC
-		    if (exists $$rcPos{($$var{pos}+1)}) {
-			foreach my $tid (sort keys %{$$rcPos{($$var{pos}+1)}}) {
-			    push (@$anno_sels, [ $tid, $$rcPos{($$var{pos}+1)}{$tid} ]);
-			}
-		    }
-		}
-		else { # multiple bases deletion: c.124_125delTG
-                    $anno_sels = $self->get_cover(
-                        $$var{chr},
-                        ( $$var{pos} + 1 ),
-                        ( $$var{pos} + $$var{reflen} - 1 )
-                    );
-		}
-	    }
-	    default { $self->throw("Error: unexpected guess for normal case: $$var{guess}"); }
 	}
+	elsif ($_ eq 'ins') { # the pos and pos+1 are selected: c.123_124insTG
+	    $anno_sels = $self->get_cover($$var{chr}, $$var{pos}, ($$var{pos}+1));
+	}
+	elsif ($_ eq 'del' or $_ eq 'delins') { # the pos+1 and pos+reflen-1 are selected
+	    if ($$var{reflen} == 2) { # 1 bp deletion : c.123delT, c.123delTinsGAC
+		if (exists $$rcPos{($$var{pos}+1)}) {
+		    foreach my $tid (sort keys %{$$rcPos{($$var{pos}+1)}}) {
+			push (@$anno_sels, [ $tid, $$rcPos{($$var{pos}+1)}{$tid} ]);
+		    }
+		}
+	    }
+	    else { # multiple bases deletion: c.124_125delTG
+		$anno_sels = $self->get_cover(
+		    $$var{chr},
+		    ( $$var{pos} + 1 ),
+		    ( $$var{pos} + $$var{reflen} - 1 )
+		);
+	    }
+	}
+	else { $self->throw("Error: unexpected guess for normal case: $$var{guess}"); }
+
 	$$var{sel}{std} = $anno_sels;
     }
     elsif (exists $$var{'+'}{p}) { # strand different pos
 	my ($f_annos, $r_annos) = ([], []);
 	my @sel_std = ();
-	given ($$var{guess}) { # modified repeat caused ambigous 
-	    when ('ins') {
-                $f_annos = $self->get_cover( $$var{chr}, $$var{'+'}{p},
-                    ( $$var{'+'}{p} + 1 ) );
-                $r_annos = $self->get_cover( $$var{chr}, $$var{'-'}{p},
-                    ( $$var{'-'}{p} + 1 ) );
-	    }
-	    when (['del', 'delins']) {
-		if ($$var{'+'}{rl} == 2) { # 1bp deletion or delins : c.123delT  c.123delAinsGT
-                    my $localrcp = $self->get_cPos( $$var{chr},
-                        [ ( $$var{'+'}{p} + 1 ), ( $$var{'-'}{p} + 1 ) ]
-                    );
-                    if ( exists $$localrcp{ ( $$var{'+'}{p} + 1 ) } ) {
-                        foreach my $tid (
-                            sort
-                            keys %{ $$localrcp{ ( $$var{'+'}{p} + 1 ) } } )
-                        {
-                            push(
-                                @$f_annos,
-                                [
-                                    $tid,
-                                    $$localrcp{ ( $$var{'+'}{p} + 1 ) }{$tid}
-                                ]
-                              );
-                        }
-                    }
-                    if ( exists $$localrcp{ ( $$var{'-'}{p} + 1 ) } ) {
-                        foreach my $tid (
-                            sort
-                            keys %{ $$localrcp{ ( $$var{'-'}{p} + 1 ) } } )
-                        {
-                            push(
-                                @$r_annos,
-                                [
-                                    $tid,
-                                    $$localrcp{ ( $$var{'-'}{p} + 1 ) }{$tid}
-                                ]
-                              );
-                        }
-                    }
-		}
-		else {
-                    $f_annos = $self->get_cover(
-                        $$var{chr},
-                        ( $$var{'+'}{p} + 1 ),
-                        ( $$var{'+'}{p} + $$var{'+'}{rl} - 1 )
-                    );
-                    $r_annos = $self->get_cover(
-                        $$var{chr},
-                        ( $$var{'-'}{p} + 1 ),
-                        ( $$var{'-'}{p} + $$var{'-'}{rl} - 1 )
-                    );
-		}
-	    }
-	    default { $self->throw("Error: unexpected guess for different fr pos $$var{guess}"); }
+	$_ = $$var{guess}; # modified repeat caused ambiguous
+	if ($_ eq 'ins') {
+	    $f_annos = $self->get_cover( $$var{chr}, $$var{'+'}{p},
+		( $$var{'+'}{p} + 1 ) );
+	    $r_annos = $self->get_cover( $$var{chr}, $$var{'-'}{p},
+		( $$var{'-'}{p} + 1 ) );
 	}
+	elsif ($_ eq 'del' or $_ eq 'delins') {
+	    if ($$var{'+'}{rl} == 2) { # 1bp deletion or delins : c.123delT  c.123delAinsGT
+		my $localrcp = $self->get_cPos( $$var{chr},
+		    [ ( $$var{'+'}{p} + 1 ), ( $$var{'-'}{p} + 1 ) ]
+		);
+		if ( exists $$localrcp{ ( $$var{'+'}{p} + 1 ) } ) {
+		    foreach my $tid (
+			sort
+			keys %{ $$localrcp{ ( $$var{'+'}{p} + 1 ) } } )
+		    {
+			push(
+			    @$f_annos,
+			    [
+				$tid,
+				$$localrcp{ ( $$var{'+'}{p} + 1 ) }{$tid}
+			    ]
+			  );
+		    }
+		}
+		if ( exists $$localrcp{ ( $$var{'-'}{p} + 1 ) } ) {
+		    foreach my $tid (
+			sort
+			keys %{ $$localrcp{ ( $$var{'-'}{p} + 1 ) } } )
+		    {
+			push(
+			    @$r_annos,
+			    [
+				$tid,
+				$$localrcp{ ( $$var{'-'}{p} + 1 ) }{$tid}
+			    ]
+			  );
+		    }
+		}
+	    }
+	    else {
+		$f_annos = $self->get_cover(
+		    $$var{chr},
+		    ( $$var{'+'}{p} + 1 ),
+		    ( $$var{'+'}{p} + $$var{'+'}{rl} - 1 )
+		);
+		$r_annos = $self->get_cover(
+		    $$var{chr},
+		    ( $$var{'-'}{p} + 1 ),
+		    ( $$var{'-'}{p} + $$var{'-'}{rl} - 1 )
+		);
+	    }
+	}
+	else { $self->throw("Error: unexpected guess for different fr pos $$var{guess}"); }
 	
 	foreach my $f_cpp (@$f_annos) {
 	    push (@sel_std, $f_cpp) if ($$f_cpp[1]{strd} eq '+');
@@ -2314,57 +2298,58 @@ sub in_reg_cPos {
 
     my $cpos;
     my $strandopt = ($$rh{strand} eq '+') ? 1 : 0;
-    given ($$rh{blka}) {
-	when (/^C/ or /^5/) { # cds or utr-5
-	    if ($strandopt) {
-		$cpos = 'c.'.($$rh{csta} + $total_left_offset);
-	    }
-	    else {
-		$cpos = 'c.'.($$rh{csto} + $total_right_offset);
-	    }
+
+    $_ = $$rh{blka};
+    if (/^C/ or /^5/) { # cds or utr-5
+	if ($strandopt) {
+	    $cpos = 'c.'.($$rh{csta} + $total_left_offset);
 	}
-	when (/^I/) { # intron
-	    if ($$rh{csta} ne '') { # coding rna
-		if ($total_left_offset < $total_right_offset) {
-		    my $opt = ($strandopt) ? '+' : '-';
-		    $cpos = 'c.'.$$rh{csta}.$opt.($total_left_offset + 1);
-		}
-		else {
-		    my $opt = ($strandopt) ? '-' : '+';
-		    $cpos = 'c.'.$$rh{csto}.$opt.($total_right_offset + 1);
-		}
-	    }
-	    else { # ncRNA
-		if ($total_left_offset < $total_right_offset) {
-		    my $opt = ($strandopt) ? '+' : '-';
-		    $cpos = 'n.'.$$rh{nsta}.$opt.($total_left_offset + 1);
-		}
-		else {
-		    my $opt = ($strandopt) ? '-' : '+';
-		    $cpos = 'n.'.$$rh{nsto}.$opt.($total_right_offset + 1);
-		}
-	    }
+	else {
+	    $cpos = 'c.'.($$rh{csto} + $total_right_offset);
 	}
-	when (/^3/) { # utr-3
-	    if ($strandopt) {
-		my $p = $$rh{csta}; $p =~ s/^\*//;
-		$cpos = 'c.*'.($p + $total_left_offset);
-	    }
-	    else {
-		my $p = $$rh{csto}; $p =~ s/\*//;
-		$cpos = 'c.*'.($p + $total_right_offset);
-	    }
-	}
-	when (/^R/) { # ncRNA
-	    if ($strandopt) {
-		$cpos = 'n.'.($$rh{nsta} + $total_left_offset);
-	    }
-	    else {
-		$cpos = 'n.'.($$rh{nsto} + $total_right_offset);
-	    }
-	}
-	default { confess "unrecognized block attribution!"; }
     }
+    elsif (/^I/) { # intron
+	if ($$rh{csta} ne '') { # coding rna
+	    if ($total_left_offset < $total_right_offset) {
+		my $opt = ($strandopt) ? '+' : '-';
+		$cpos = 'c.'.$$rh{csta}.$opt.($total_left_offset + 1);
+	    }
+	    else {
+		my $opt = ($strandopt) ? '-' : '+';
+		$cpos = 'c.'.$$rh{csto}.$opt.($total_right_offset + 1);
+	    }
+	}
+	else { # ncRNA
+	    if ($total_left_offset < $total_right_offset) {
+		my $opt = ($strandopt) ? '+' : '-';
+		$cpos = 'n.'.$$rh{nsta}.$opt.($total_left_offset + 1);
+	    }
+	    else {
+		my $opt = ($strandopt) ? '-' : '+';
+		$cpos = 'n.'.$$rh{nsto}.$opt.($total_right_offset + 1);
+	    }
+	}
+    }
+    elsif (/^3/) { # utr-3
+	if ($strandopt) {
+	    my $p = $$rh{csta}; $p =~ s/^\*//;
+	    $cpos = 'c.*'.($p + $total_left_offset);
+	}
+	else {
+	    my $p = $$rh{csto}; $p =~ s/\*//;
+	    $cpos = 'c.*'.($p + $total_right_offset);
+	}
+    }
+    elsif (/^R/) { # ncRNA
+	if ($strandopt) {
+	    $cpos = 'n.'.($$rh{nsta} + $total_left_offset);
+	}
+	else {
+	    $cpos = 'n.'.($$rh{nsto} + $total_right_offset);
+	}
+    }
+    else { confess "unrecognized block attribution!"; }
+
     return { gsym => $$rh{gsym}, reg => $$rh{blka}, exin => $$rh{exin}, cpos => $cpos, strd => $$rh{strand}, bd => $border };
 }
 

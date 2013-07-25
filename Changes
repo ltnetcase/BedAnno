@@ -35,3 +35,8 @@ Revision history for Perl extension BedAnno.
 0.18  Tue Jul 23 20:30:01 2013
 	- fix a few bugs
 	- add more test cases
+
+0.19  Thu Jul 25 15:00:00 2013
+	- change the library to not to use perl v5.10 feature, change all 
+	  given/when structure to if/elsif structure. for furture compatible
+	  issues.
