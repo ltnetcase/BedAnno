@@ -2658,21 +2658,31 @@ sub parse_annoent {
 
     About   : parse the variation directly by the ref and alt string
     Usage   : my $var = parse_var( $chr, $pos, $ref, $alt );
-    Returns : a hash ref of variation
+    Returns : a hash ref of variation:
+
 	      chr, pos, ref, alt, reflen, altlen, guess
 
 	      # if fpos is the same with rpos, (pos, ref, alt, reflen, altlen) will be updated
 
-	      # for different fpos and rpos cases only, usually complex case
 	      '+' => {
+
+		  # for different fpos and rpos cases only, usually complex case
 		  p - forward strand offset
 		  r - forward strand ref string
 		  a - forward strand alt string
 		  rl
 		  al
+
+		  # backward compatible to previous results if parsed complex
+		  bp - forward strand offset
+		  br - forward strand ref string
+		  ba - forward strand alt string
+		  brl
+		  bal
+
 		}
 	      '-' => {
-		  same to '+'
+		  same to '+', but for reverse strand
 		}
 
 	      # for repeat type only
@@ -2681,17 +2691,6 @@ sub parse_annoent {
 	      ref_cn - copy number in reference
 	      alt_cn - copy number in alternative
 
-	      # backward compatible to previous results if parsed complex
-	      '+' => {
-		  bp - forward strand offset
-		  br - forward strand ref string
-		  ba - forward strand alt string
-		  brl
-		  bal
-		}
-	      '-' => {
-		  same to '+'
-		}
 
 =cut
 sub parse_var {
