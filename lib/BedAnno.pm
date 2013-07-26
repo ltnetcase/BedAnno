@@ -3057,7 +3057,7 @@ sub get_internal {
 
 	my ($f_lofs, $r_lofs);
 	$f_lofs = ($loff - 1 < 0) ? 0 : ($loff - 1);
-	$r_lofs = ($shorter - $roff - 1 < 0) ? 0 : ($shorter - $roff - 1 < 0);
+	$r_lofs = ($shorter - $roff - 1 < 0) ? 0 : ($shorter - $roff - 1);
 
 	return {
 	    '+' => $f_lofs,
