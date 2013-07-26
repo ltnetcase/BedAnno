@@ -515,6 +515,7 @@ sub region_merge {
 		    exin   => $exin or $combin_exin(multiple)
 		    func   => $combin_func  (in [...];[...] format)
 		    flanks => $flanks or $combin_flanks(multiple)
+		    polar  => $combin_polar (in [...];[...] format)
 		    keep   => [0/1] to indicate if this variation should be kept.
 			      or say if the variation is likely to make sense.
 		}, ...
@@ -807,6 +808,9 @@ sub get_gHGVS {
 	else {
 	    $gHGVS .= $$var{rep}.'['.$$var{ref_cn}.'>'.$$var{alt_cn}.']';
 	}
+    }
+    elsif ($_ eq 'ref') {
+	$gHGVS .= '=';
     }
     else {
 	confess "Can not recognize type $$var{guess}.";
@@ -1357,6 +1361,11 @@ sub pairanno {
 		$$flanks{strd} = $$cL{strd};
 	    }
 	}
+    }
+    elsif ($_ eq 'ref') {
+	$cHGVS = ($$var{chr} =~ /M/) ? 'm.=' : 'g.=';
+	$reg = $$cL{reg};
+	$exin = $$cL{exin};
     }
     else { $self->throw("unexpected type of variation [$$var{guess}]."); }
 
@@ -1941,7 +1950,7 @@ sub select_position {
 	my $anno_sels = [];
 
 	$_ = $$var{guess};
-	if ($_ eq 'snv') { # only select pos for the case: c.123A>G
+	if ($_ eq 'snv' or $_ eq 'ref') { # only select pos for the case: c.123A>G
 	    if (exists $$rcPos{$$var{pos}}) {
 		foreach my $tid (sort keys %{$$rcPos{$$var{pos}}}) {
 		    push (@$anno_sels, [ $tid, $$rcPos{$$var{pos}}{$tid} ]);
@@ -2187,7 +2196,7 @@ sub get_anno_pos {
 	    return ($$var{'+'}{bp} + 1);
 	}
     }
-    elsif ($$var{guess} eq 'snv') {
+    elsif ($$var{guess} eq 'snv' or $$var{guess} eq 'ref') {
 	return $$var{pos};
     }
     elsif ($$var{guess} eq 'del' and $$var{reflen} == 2) {
@@ -2685,6 +2694,7 @@ sub parse_var {
     my ($chr, $pos, $ref, $alt) = @_;
     $ref = uc($ref);
     $alt = uc($alt);
+
     if ($ref =~ /[^ACGTN]/ or $alt =~ /[^ACGTN]/) {
 	confess ("Cannot recognize non ACGT ref/alt,", 
 	    "may be you need first split your alt string into pieces.");
@@ -2699,12 +2709,18 @@ sub parse_var {
         reflen => $ref_len,
         altlen => $alt_len
     );
+    if ($ref eq $alt) {
+	$var{guess} = 'ref';
+	return \%var;
+    }
+
     if ($ref_len > 1 and $alt_len > 1) {
         my $complex = parse_complex( $ref, $ref_len, $alt, $alt_len );
-        my $ori_pos = $var{pos};
 
         $var{guess} = $$complex{guess};
+	return \%var if ($var{guess} eq 'ref');
 
+        my $ori_pos = $var{pos};
         $var{'+'}{bp} = $ori_pos + $$complex{'+'}{bcOffst};
         $var{'+'}{br} =
           substr( $ref, $$complex{'+'}{bcOffst}, $$complex{bcRlen} );
