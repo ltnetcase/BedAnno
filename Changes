@@ -40,3 +40,7 @@ Revision history for Perl extension BedAnno.
 	- change the library to not to use perl v5.10 feature, change all 
 	  given/when structure to if/elsif structure. for furture compatible
 	  issues.
+
+0.20  Thu Jul 26 21:03:03 2013
+	- fix a bug in get_internal()
+	- add various test cases
