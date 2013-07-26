@@ -26,6 +26,22 @@ my $beda = BedAnno->new(
 
 #explain "The database are:", $$beda{annodb};
 
+my $ref_anno = {
+    c      => "g.=",
+    p      => ".",
+    cc     => ".",
+    r      => "C1",
+    exin   => "EX1",
+    func   => ".",
+    polar  => ".",
+    bc     => '.',
+    flanks => {
+        l    => "chr1:169454921-169454922",
+        r    => "chr1:169454924-169454925",
+        strd => '-'
+    }
+};
+
 my $snv_anno = {
     c      => "c.82G>T",
     p      => "p.Glu28*",
@@ -663,6 +679,7 @@ my $rep_insertion_cnv_utr_anno = {
     }
 };
 
+test_anno( $ref_anno,  "NM_006996.2",    "chr1", 169454923, "C",  "C" );
 test_anno( $snv_anno,  "NM_006996.2",    "chr1", 169454923, "C",  "A" );
 test_anno( $del1_anno, "NM_001004696.1", "chr1", 248525638, "CA", "C" );
 test_anno( $ins_anno, "NM_018406.6", "chr3", 195518112, "T",
