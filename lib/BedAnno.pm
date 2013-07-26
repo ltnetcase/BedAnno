@@ -1363,9 +1363,13 @@ sub pairanno {
 	}
     }
     elsif ($_ eq 'ref') {
-	$cHGVS = ($$var{chr} =~ /M/) ? 'm.=' : 'g.=';
-	$reg = $$cL{reg};
-	$exin = $$cL{exin};
+        $cHGVS = ( $$var{chr} =~ /M/ ) ? 'm.=' : 'g.=';
+        $reg =
+          ( $$cL{reg} eq $$cR{reg} ) ? $$cL{reg} : $$cL{reg} . '-' . $$cR{reg};
+        $exin =
+          ( $$cL{exin} eq $$cR{exin} )
+          ? $$cL{exin}
+          : $$cL{exin} . '-' . $$cR{exin};
     }
     else { $self->throw("unexpected type of variation [$$var{guess}]."); }
 
@@ -1950,7 +1954,7 @@ sub select_position {
 	my $anno_sels = [];
 
 	$_ = $$var{guess};
-	if ($_ eq 'snv' or $_ eq 'ref') { # only select pos for the case: c.123A>G
+	if ($_ eq 'snv') { # only select pos for the case: c.123A>G
 	    if (exists $$rcPos{$$var{pos}}) {
 		foreach my $tid (sort keys %{$$rcPos{$$var{pos}}}) {
 		    push (@$anno_sels, [ $tid, $$rcPos{$$var{pos}}{$tid} ]);
@@ -1974,6 +1978,16 @@ sub select_position {
 		    ( $$var{pos} + 1 ),
 		    ( $$var{pos} + $$var{reflen} - 1 )
 		);
+	    }
+	}
+	elsif ($_ eq 'ref') {
+	    if ($$var{reflen} == 1 and exists $$rcPos{$$var{pos}}) {
+		foreach my $tid (sort keys %{$$rcPos{$$var{pos}}}) {
+		    push (@$anno_sels, [ $tid, $$rcPos{$$var{pos}}{$tid} ]);
+		}
+	    }
+	    else {
+		$anno_sels = $self->get_cover($$var{chr}, $$var{pos}, ($$var{pos} + $$var{reflen} - 1));
 	    }
 	}
 	else { $self->throw("Error: unexpected guess for normal case: $$var{guess}"); }
