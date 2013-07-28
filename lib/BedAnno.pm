@@ -90,18 +90,20 @@ our %Polar = (
     Args    : The args "db", "codon" are necessary arg, this codon is cut from hg19 the following are optional args:
 	      "genes"  => {"ABC" => 1, "DEF" => 1} / "genes.list"		# limit the genes to be annotate
 	      "trans"  => {"NM_0012.1" => 1, "NM_0034.2" => 1} /  "trans.list"	# limit the transcripts to be annotate
-	      "region" => "chr20:1234567-1234568" # give the target region in region string
-	      "regbed" => "in.region.bed"	  # give the target region in bed format region files.
-	      "onlyPr" => 1			  # to limit the anno range to the primary transcript for a gene.
-	      "mmap"   => 1			  # to output all needed multiple mapping record of transcript.
-	      when use "genes", "trans", "onlyPr" together, it will extract transcript of "genes" with primary tag, 
+	      "region" => "chr20:1234567-1234568"    # give the target region in region string
+	      "regbed" => "in.region.bed"	     # give the target region in bed format region files.
+	      "onlyPr" => 1			     # to limit the anno range to the primary transcript for a gene.
+	      "mmap"   => 1			     # to output all needed multiple mapping record of transcript.
+	      when use "genes", "trans", "onlyPr" together, which will return the transcript of "genes" with primary tag, 
 							    besides all the "trans",
 	      when use "genes" only, will extract all transcripts of genes without multiple mapping.
 	      when use "trans" only, will extract only these transcripts.
 	      when use "mmap", multiple mapping record will be involved.
 	      when use "onlyPr", record without primary tag and not involved in the transcript list, will be skipped.
-    Returns : return annoed blocks which are merged depend on the genes, trans, and region restriction.
-	      please see load_anno() for more information of the format of database.
+    Returns : A class which has the following extra two tags be assigned
+		    codonseq => $coding_sequence_hash_ref   # coding sequence hashed with the tid
+		    annodb   => $annotation_db_hash_ref
+	      please see load_anno() for more information of the format of the annotation_db_hash_ref.
 
 =cut
 sub new {
