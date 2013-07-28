@@ -87,14 +87,15 @@ our %Polar = (
 
     About   : Creat a new annotation entry, automatically call load_anno method.
     Usage   : my $beda = BedAnno->new( db => 'in.bed.gz', regbed => 'in.region.bed', codon => 'in.coding.fa[.gz]');
-    Args    : The args db, codon are necessary arg, this codon is cut from hg19 the following are optional args.
-	      "genes"  => {"ABC" => 1, "DEF" => 1} / "genes.list"		    limit the genes to be annotate
-	      "trans"  => {"NM_0012.1" => 1, "NM_0034.2" => 1} /  "trans.list"	    limit the transcripts to be annotate
-	      "region" => "chr20:1234567-1234568"				    give the target region in region string
-	      "regbed" => "in.region.bed"					    give the target region in bed format region files.
-	      "onlyPr" => 1							    to limit the anno range to the primary transcript for a gene.
-	      "mmap"   => 1							    to output all needed multiple mapping record of transcript.
-	      when use "genes", "trans", "onlyPr" together, it will extract transcript of "genes" with primary tag, besides all the "trans",
+    Args    : The args "db", "codon" are necessary arg, this codon is cut from hg19 the following are optional args:
+	      "genes"  => {"ABC" => 1, "DEF" => 1} / "genes.list"		# limit the genes to be annotate
+	      "trans"  => {"NM_0012.1" => 1, "NM_0034.2" => 1} /  "trans.list"	# limit the transcripts to be annotate
+	      "region" => "chr20:1234567-1234568" # give the target region in region string
+	      "regbed" => "in.region.bed"	  # give the target region in bed format region files.
+	      "onlyPr" => 1			  # to limit the anno range to the primary transcript for a gene.
+	      "mmap"   => 1			  # to output all needed multiple mapping record of transcript.
+	      when use "genes", "trans", "onlyPr" together, it will extract transcript of "genes" with primary tag, 
+							    besides all the "trans",
 	      when use "genes" only, will extract all transcripts of genes without multiple mapping.
 	      when use "trans" only, will extract only these transcripts.
 	      when use "mmap", multiple mapping record will be involved.
@@ -527,7 +528,7 @@ sub individual_anno {
 
     my %all_tid_annos = ();
     if (!exists $$va1{info} and !exists $$va2{info}) {
-	confess "no annotation info in any var, may be all reference.";
+	confess "no annotation info in any var, may be all reference?";
     }
 
     my $former = (exists $$va1{info}) ? $va1 : $va2;
@@ -535,10 +536,30 @@ sub individual_anno {
     foreach my $tid (keys %{$$former{info}}) {
 	my %ind_anno_info = ();
 	@ind_anno_info{qw(c p cc r exin polar func flanks)} = ('.') x 8;
-	if (!exists $$latter{info}) {
-	    %ind_anno_info = %{$$former{info}{$tid}};
-	    combin_ref(\%ind_anno_info);
-	}
+        if (
+            $$former{info}{$tid}{c} eq 'c.='
+            and (
+                !exists $$latter{info}
+                or ( exists $$latter{info}{$tid}
+                    and $$latter{info}{$tid}{c} eq 'c.=' )
+            )
+          )
+        {    # both ref
+            %ind_anno_info = %{ $$former{info}{$tid} };
+        }
+        elsif (
+            !exists $$latter{info}
+            or
+            ( exists $$latter{info}{$tid} and $$latter{info}{$tid}{c} eq 'c.=' )
+          )
+        {    # latter is ref
+            %ind_anno_info = %{ $$former{info}{$tid} };
+            combin_ref( \%ind_anno_info );
+        }
+        elsif ( $$former{info}{$tid}{c} eq 'c.=' ) {    # former is ref
+            %ind_anno_info = %{ $$latter{info}{$tid} };
+            combin_ref( \%ind_anno_info );
+        }
 	elsif ( exists $$latter{info}{$tid} )
 	{
 	    $ind_anno_info{c}  = combin_two( $$former{info}{$tid}{c},  $$latter{info}{$tid}{c} );
