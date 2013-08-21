@@ -640,7 +640,7 @@ sub check_comb {
 #
 #    # for function, only select the most serious one as the main function
 #    @func_order{
-#        qw( abnormal-intron abnormal-inseq-stop init-loss altstart 
+#        qw( abnormal-intron abnormal-inseq-stop init-loss misstart 
 #	    frameshift stop-gain stop-loss cds-indel 
 #	    splice-5 splice-3 nonsense missense coding-synon 
 #	    intron utr-5 utr-3 ncRNA unknown . )
@@ -853,7 +853,7 @@ sub get_gHGVS {
 	      function of mutation, follow the definitions mainly from dbSNP:
 		  for intergenic or non-target region: using '.'
 		  utr-3, utr-5, ncRNA, 
-		  altstart, missense, nonsense, coding-synon, 
+		  misstart, missense, nonsense, coding-synon, 
 		  intron, splice-3, splice-5,
 		  cds-indel, frameshift, stop-gain, stop-loss, init-loss, 
 		  unknown for 'c.?'
@@ -1867,7 +1867,7 @@ sub get_aaInsInfo {
 sub get_aaHGVS {
     my ($aa, $new_aa, $func, $cP) = @_;
     return '.' if ($aa eq '' or $new_aa eq '' or $func eq '');
-    if ($func eq 'altstart') {
+    if ($func eq 'misstart') {
 	return 'p.0?';
     }
     elsif ($func eq 'coding-synon') {
@@ -1906,7 +1906,7 @@ sub get_aafunc {
 	$func = 'coding-synon';
     }
     elsif ($cP < 4) {
-	$func = 'altstart';
+	$func = 'misstart';
     }
     elsif ($aa eq '*') {
 	if ($cP + 3 > (length($$self{codonseq}{$query_tid}))) {
