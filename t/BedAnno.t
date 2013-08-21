@@ -35,10 +35,10 @@ my $ref_anno = {
     func   => ".",
     polar  => ".",
     bc     => '.',
+    strd   => '-',
     flanks => {
         l    => "chr1:169454921-169454922",
-        r    => "chr1:169454924-169454925",
-        strd => '-'
+        r    => "chr1:169454924-169454925"
     }
 };
 
@@ -51,10 +51,10 @@ my $snv_anno = {
     func   => "nonsense",
     polar  => "P-=>.",
     bc     => '.',
+    strd   => '-',
     flanks => {
         l    => "chr1:169454921-169454922",
-        r    => "chr1:169454924-169454925",
-        strd => '-'
+        r    => "chr1:169454924-169454925"
     }
 };
 
@@ -67,10 +67,10 @@ my $del1_anno = {
     func   => 'frameshift',
     polar  => '.',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => "chr1:248525637-248525638",
-        r    => "chr1:248525640-248525641",
-        strd => '+'
+        r    => "chr1:248525640-248525641"
     }
 };
 
@@ -83,10 +83,10 @@ my $splice_anno = {
     func   => 'abnormal-intron',
     polar  => '.',
     bc     => 'c.1413+1delC',
+    strd   => '-',
     flanks => {
         l    => "chr8:24811063-24811064",
-        r    => "chr8:24811066-24811067",
-        strd => '-'
+        r    => "chr8:24811066-24811067"
     }
 };
 
@@ -99,10 +99,10 @@ my $splice1_anno = {
     func   => 'splice-3',
     polar  => '.',
     bc     => 'c.617-2_617-1insTA',
+    strd   => '-',
     flanks => {
         l    => "chr21:43803307-43803308",
-        r    => "chr21:43803309-43803310",
-        strd => '-'
+        r    => "chr21:43803309-43803310"
     }
 };
 
@@ -115,10 +115,10 @@ my $ins_anno = {
     func   => 'cds-indel',
     polar  => '.',
     bc     => '.',
+    strd   => '-',
     flanks => {
         l    => "chr3:195518111-195518112",
         r    => "chr3:195518113-195518114",
-        strd => '-'
     }
 };
 
@@ -131,10 +131,10 @@ my $intr_anno = {
     func   => 'intron',
     polar  => '.',
     bc     => '.',
+    strd   => '-',
     flanks => {
         l    => "chr3:195518111-195518112",
-        r    => "chr3:195518113-195518114",
-        strd => '-'
+        r    => "chr3:195518113-195518114"
     }
 };
 
@@ -147,10 +147,10 @@ my $delins_anno = {
     func   => 'cds-indel',
     polar  => '.',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => "chr22:38119753-38119754",
-        r    => "chr22:38119759-38119760",
-        strd => '+'
+        r    => "chr22:38119759-38119760"
     }
 };
 
@@ -163,10 +163,10 @@ my $rep_anno = {
     func   => 'cds-indel',
     polar  => '.',
     bc     => 'c.33_38delGGCGGC',
+    strd   => '-',
     flanks => {
         l    => "chr3:49395672-49395673",
-        r    => "chr3:49395680-49395681",
-        strd => '-'
+        r    => "chr3:49395680-49395681"
     }
 };
 
@@ -179,10 +179,10 @@ my $n_anno = {
     func   => 'intron',
     polar  => '.',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => 'chr8:61713129-61713130',
-        r    => 'chr8:61713133-61713134',
-        strd => '+'
+        r    => 'chr8:61713133-61713134'
     }
 };
 
@@ -195,10 +195,10 @@ my $snv_5utr_anno = {
     func   => 'utr-5',
     polar  => '.',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => "chr1:861319-861320",
-        r    => "chr1:861322-861323",
-        strd => '+'
+        r    => "chr1:861322-861323"
     }
 };
 
@@ -211,10 +211,10 @@ my $snv_intron_3_anno = {
     func   => 'splice-3',
     polar  => '.',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => "chr1:865532-865533",
-        r    => "chr1:865535-865536",
-        strd => '+'
+        r    => "chr1:865535-865536"
     }
 };
 
@@ -227,10 +227,10 @@ my $snv_intron_3_new_anno = {
     func   => 'splice-3',
     polar  => '.',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => "chr1:865531-865532",
-        r    => "chr1:865534-865535",
-        strd => '+'
+        r    => "chr1:865534-865535"
     }
 };
 
@@ -243,10 +243,10 @@ my $snv_cdna_scoden_anno = {
     func   => 'altstart',
     polar  => '.',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => "chr1:861320-861321",
-        r    => "chr1:861323-861324",
-        strd => '+'
+        r    => "chr1:861323-861324"
     }
 };
 
@@ -259,10 +259,10 @@ my $snv_cdna_ecoden_anno = {
     func   => 'stop-loss',
     polar  => '.=>P0',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => "chr1:879531-879532",
-        r    => "chr1:879534-879535",
-        strd => '+'
+        r    => "chr1:879534-879535"
     }
 };
 
@@ -275,10 +275,10 @@ my $del_cdna_scoden_anno = {
     func   => 'init-loss',
     polar  => '.',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => "chr1:861321-861322",
-        r    => "chr1:861328-861329",
-        strd => '+'
+        r    => "chr1:861328-861329"
     }
 };
 my $del_intron_anno = {
@@ -290,10 +290,10 @@ my $del_intron_anno = {
     func   => 'splice',
     polar  => '.',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => "chr6_cox_hap2:2892856-2892857",
-        r    => "chr6_cox_hap2:2892862-2892863",
-        strd => '+'
+        r    => "chr6_cox_hap2:2892862-2892863"
     }
 };
 
@@ -306,10 +306,10 @@ my $del_intron1_anno = {
     func   => 'splice',
     polar  => '.',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => "chr6_cox_hap2:2892853-2892854",
-        r    => "chr6_cox_hap2:2892862-2892863",
-        strd => '+'
+        r    => "chr6_cox_hap2:2892862-2892863"
     }
 };
 
@@ -322,10 +322,10 @@ my $del_intron2_anno = {
     func   => 'frameshift',
     polar  => '.',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => "chr6_cox_hap2:2892855-2892856",
-        r    => "chr6_cox_hap2:2892863-2892864",
-        strd => '+'
+        r    => "chr6_cox_hap2:2892863-2892864"
     }
 };
 
@@ -338,10 +338,10 @@ my $del_extron_anno = {
     func   => 'init-loss',
     polar  => '.',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => "chr1:948952-948953",
-        r    => "chr1:948957-948958",
-        strd => '+'
+        r    => "chr1:948957-948958"
     }
 };
 my $del_extron2_anno = {
@@ -353,10 +353,10 @@ my $del_extron2_anno = {
     func   => 'splice',
     polar  => '.',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => "chr15:42694318-42694319",
-        r    => "chr15:42694336-42694337",
-        strd => '+'
+        r    => "chr15:42694336-42694337"
     }
 };
 
@@ -369,10 +369,10 @@ my $del_5utr_coding_anno = {
     func   => 'init-loss',
     polar  => '.',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => "chr1:948950-948951",
-        r    => "chr1:948957-948958",
-        strd => '+'
+        r    => "chr1:948957-948958"
     }
 };
 
@@ -385,10 +385,10 @@ my $del_3utr_coding_anno = {
     func   => 'stop-loss',
     polar  => '.',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => "chr1:949856-949857",
-        r    => "chr1:949861-949862",
-        strd => '+'
+        r    => "chr1:949861-949862"
     }
 };
 
@@ -401,10 +401,10 @@ my $del_in_out_coding_anno = {
     func   => 'init-loss',
     polar  => '.',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => "chr19:32083185-32083186",
-        r    => "chr19:32083191-32083192",
-        strd => '+'
+        r    => "chr19:32083191-32083192"
     }
 };
 
@@ -417,10 +417,10 @@ my $ins_intron_splice_anno = {
     func   => 'splice-3',
     polar  => '.',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => "chr1:866416-866417",
-        r    => "chr1:866418-866419",
-        strd => '+'
+        r    => "chr1:866418-866419"
     }
 };
 
@@ -433,10 +433,10 @@ my $ins_utr_coding_anno = {
     func   => 'utr-5',
     polar  => '.',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => "chr1:861320-861321",
-        r    => "chr1:861322-861323",
-        strd => '+'
+        r    => "chr1:861322-861323"
     }
 };
 
@@ -449,10 +449,10 @@ my $ins_intron_exon_anno = {
     func   => 'frameshift',
     polar  => '.',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => "chr1:866417-866418",
-        r    => "chr1:866419-866420",
-        strd => '+'
+        r    => "chr1:866419-866420"
     }
 };
 my $ins_intron_exon2_anno = {
@@ -464,10 +464,10 @@ my $ins_intron_exon2_anno = {
     func   => 'cds-indel',
     polar  => '.',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => "chr1:866417-866418",
-        r    => "chr1:866419-866420",
-        strd => '+'
+        r    => "chr1:866419-866420"
     }
 };
 
@@ -480,10 +480,10 @@ my $ins_intron_exon3_anno = {
     func   => 'stop-gain',
     polar  => '.',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => "chr8:61714085-61714086",
-        r    => "chr8:61714087-61714088",
-        strd => '+'
+        r    => "chr8:61714087-61714088"
     }
 };
 
@@ -496,10 +496,10 @@ my $delins_intron_splice_anno = {
     func   => 'splice',
     polar  => '.',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => "chr1:866416-866417",
-        r    => "chr1:866421-866422",
-        strd => '+'
+        r    => "chr1:866421-866422"
     }
 };
 
@@ -512,10 +512,10 @@ my $delins_utr_coding_anno = {
     func   => 'init-loss',
     polar  => '.',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => "chr1:861319-861320",
-        r    => "chr1:861324-861325",
-        strd => '+'
+        r    => "chr1:861324-861325"
     }
 };
 
@@ -528,10 +528,10 @@ my $delins_exon_intron_anno = {
     func   => 'splice',
     polar  => '.',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => "chr1:871149-871150",
-        r    => "chr1:871153-871154",
-        strd => '+'
+        r    => "chr1:871153-871154"
     }
 };
 
@@ -544,10 +544,10 @@ my $delins_in_out_anno = {
     func   => 'init-loss',
     polar  => '.',
     bc     => '.',
+    strd   => '+',
     flanks => {
         l    => "chr19:32083184-32083185",
-        r    => "chr19:32083190-32083191",
-        strd => '+'
+        r    => "chr19:32083190-32083191"
     }
 };
 
@@ -560,10 +560,10 @@ my $rep_insertion_dup_anno = {
     func   => 'frameshift',
     polar  => '.',
     bc     => 'c.38_39insC',
+    strd   => '-',
     flanks => {
         l    => "chr3:49395672-49395673",
-        r    => "chr3:49395674-49395675",
-        strd => '-'
+        r    => "chr3:49395674-49395675"
     }
 };
 
@@ -576,10 +576,10 @@ my $rep_insertion_dup1_anno = {
     func   => 'utr-5',
     polar  => '.',
     bc     => 'c.-1_1insTTT',
+    strd   => '+',
     flanks => {
         l    => "chr1:861320-861321",
-        r    => "chr1:861322-861323",
-        strd => '+'
+        r    => "chr1:861322-861323"
     }
 };
 
@@ -592,10 +592,10 @@ my $rep_insertion_dup_utr_coding_anno = {
     func   => 'coding-synon',
     polar  => '.',
     bc     => 'c.1_2insTATATA',
+    strd   => '+',
     flanks => {
         l    => "chr1:861321-861322",
-        r    => "chr1:861323-861324",
-        strd => '+'
+        r    => "chr1:861323-861324"
     }
 };
 
@@ -608,10 +608,10 @@ my $rep_insertion_dup_extron_intron_anno = {
     func   => 'splice-5',
     polar  => '.',
     bc     => 'c.1064+2_1064+3insGGTGGTGGT',
+    strd   => '+',
     flanks => {
         l    => "chr1:877869-877870",
-        r    => "chr1:877871-877872",
-        strd => '+'
+        r    => "chr1:877871-877872"
     }
 };
 
@@ -624,10 +624,10 @@ my $rep_insertion_dup_in_out_anno = {
     func   => '.',
     polar  => '.',
     bc     => 'c.447_++1insAGAG',
+    strd   => '+',
     flanks => {
         l    => "chr19:32083944-32083945",
-        r    => "chr19:32083946-32083947",
-        strd => '+'
+        r    => "chr19:32083946-32083947"
     }
 };
 
@@ -640,10 +640,10 @@ my $rep_insertion_cnv_coding_anno = {
     func   => 'cds-indel',
     polar  => '.',
     bc     => 'c.58_59insAAA',
+    strd   => '+',
     flanks => {
         l    => "chr1:861378-861379",
-        r    => "chr1:861380-861381",
-        strd => '+'
+        r    => "chr1:861380-861381"
     }
 };
 
@@ -656,10 +656,10 @@ my $rep_insertion_cnv_intron_anno = {
     func   => 'intron',
     polar  => '.',
     bc     => 'c.305+140_305+141insTTT',
+    strd   => '+',
     flanks => {
         l    => "chr1:866608-866609",
-        r    => "chr1:866610-866611",
-        strd => '+'
+        r    => "chr1:866610-866611"
     }
 };
 
@@ -672,10 +672,10 @@ my $rep_insertion_cnv_utr_anno = {
     func   => 'utr-3',
     polar  => '.',
     bc     => 'c.*11_*12insGGGGG',
+    strd   => '+',
     flanks => {
         l    => "chr1:879543-879544",
-        r    => "chr1:879545-879546",
-        strd => '+'
+        r    => "chr1:879545-879546"
     }
 };
 
@@ -1219,10 +1219,10 @@ my $snv_varanno={
        'c' => 'n.1721G>T',
        'cc' => '.',
        'exin' => 'EX11E',
+       'strd' => '-',
        'flanks' => {
          'l' => 'chr1:14408-14409',
-         'r' => 'chr1:14411-14412',
-         'strd' => '-'
+         'r' => 'chr1:14411-14412'
        },
        'func' => 'ncRNA',
        'p' => '.',
@@ -1262,10 +1262,10 @@ my $insert_varanno={
        'c' => 'n.1718_1720delCTAinsTAGCTATTC',
        'cc' => '.',
        'exin' => 'EX11E',
+       'strd' => '-',
        'flanks' => {
          'l' => 'chr1:14409-14410',
-         'r' => 'chr1:14414-14415',
-         'strd' => '-'
+         'r' => 'chr1:14414-14415'
        },
        'func' => 'ncRNA',
        'p' => '.',
@@ -1327,10 +1327,10 @@ my $del_varanno={
        'c' => 'n.1714_1720delCGATCTA',
        'cc' => '.',
        'exin' => 'EX11E',
+       'strd' => '-',
        'flanks' => {
          'l' => 'chr1:14409-14410',
-         'r' => 'chr1:14418-14419',
-         'strd' => '-'
+         'r' => 'chr1:14418-14419'
        },
        'func' => 'ncRNA',
        'p' => '.',
@@ -1355,7 +1355,7 @@ my $del_varanno={
              'cpos' => 'n.1720',
              'exin' => 'EX11E',
              'gsym' => 'WASH7P',
-             'reg' => 'R11E',#
+             'reg' => 'R11E',
              'strd' => '-'
            },
            {
@@ -1378,10 +1378,10 @@ my $rep_varanno={
        'c' => 'n.1718CTA[1>4]',
        'cc' => '.',
        'exin' => 'EX11E',
+       'strd' => '-',
        'flanks' => {
          'l' => 'chr1:14409-14410',
-         'r' => 'chr1:14411-14412',
-         'strd' => '-'
+         'r' => 'chr1:14411-14412'
        },
        'func' => 'ncRNA',
        'p' => '.',
@@ -1460,10 +1460,10 @@ my $dup_varanno={
        'c' => 'n.1719_1720dupTA',
        'cc' => '.',
        'exin' => 'EX11E',
+       'strd' => '-',
        'flanks' => {
          'l' => 'chr1:14409-14410',
-         'r' => 'chr1:14411-14412',
-         'strd' => '-'
+         'r' => 'chr1:14411-14412'
        },
        'func' => 'ncRNA',
        'p' => '.',
@@ -1550,10 +1550,10 @@ my $delins_varanno={
        'c' => 'n.1716_1720delTCTAinsA',
        'cc' => '.',
        'exin' => 'EX11E',
+       'strd' => '-',
        'flanks' => {
          'l' => 'chr1:14409-14410',
-         'r' => 'chr1:14416-14417',
-         'strd' => '-'
+         'r' => 'chr1:14416-14417'
        },
        'func' => 'ncRNA',
        'p' => '.',
@@ -1615,10 +1615,10 @@ my $n_varanno={
        'c' => 'n.1720_1721insNTAN',
        'cc' => '.',
        'exin' => 'EX11E',
+       'strd' => '-',
        'flanks' => {
          'l' => 'chr1:14409-14410',
-         'r' => 'chr1:14411-14412',
-         'strd' => '-'
+         'r' => 'chr1:14411-14412'
        },
        'func' => 'ncRNA',
        'p' => '.',
@@ -1666,10 +1666,10 @@ my $splice_1_varanno={
        'c' => 'c.1408C[7>6]',
        'cc' => '.',
        'exin' => 'IVS3',
+       'strd' => '-',
        'flanks' => {
          'l' => 'chr8:24811063-24811064',
-         'r' => 'chr8:24811066-24811067',
-         'strd' => '-'
+         'r' => 'chr8:24811066-24811067'
        },
        'func' => 'abnormal-intron',
        'p' => '.',
@@ -1740,10 +1740,10 @@ my $splice_2_varanno={
        'c' => 'c.1410_1411insT',
        'cc' => '.',
        'exin' => 'EX3',
+       'strd' => '-',
        'flanks' => {
          'l' => 'chr8:24811067-24811068',
-         'r' => 'chr8:24811069-24811070',
-         'strd' => '-'
+         'r' => 'chr8:24811069-24811070'
        },
        'func' => 'frameshift',
        'p' => 'p.Pro471fs*?',
@@ -1805,10 +1805,10 @@ my $splice1_1_varanno={
        'c' => 'c.617-3_617-2dupTA',
        'cc' => '.',
        'exin' => 'IVS7',
+       'strd' => '-',
        'flanks' => {
          'l' => 'chr21:43803307-43803308',
-         'r' => 'chr21:43803309-43803310',
-         'strd' => '-'
+         'r' => 'chr21:43803309-43803310'
        },
        'func' => 'splice-3',
        'p' => '.',
@@ -1895,10 +1895,10 @@ my $splice1_2_varanno={
        'c' => 'c.617-4_617-3delCT',
        'cc' => '.',
        'exin' => 'IVS7',
+       'strd' => '-',
        'flanks' => {
          'l' => 'chr21:43803308-43803309',
-         'r' => 'chr21:43803312-43803313',
-         'strd' => '-'
+         'r' => 'chr21:43803312-43803313'
        },
        'func' => 'intron',
        'p' => '.',
@@ -1946,10 +1946,10 @@ my $cds_1_varanno={
        'c' => 'c.28_38delGCGGCGGCGGCinsGGCGGCGGCGGC',
        'cc' => '.',
        'exin' => 'EX1',
+       'strd' => '-',
        'flanks' => {
          'l' => 'chr3:49395672-49395673',
-         'r' => 'chr3:49395685-49395686',
-         'strd' => '-'
+         'r' => 'chr3:49395685-49395686'
        },
        'func' => 'frameshift',
        'p' => 'p.Ala10_Ala13delinsGlyGlyGlyGlyProfs*?',
@@ -2011,10 +2011,10 @@ my $cds_2_varanno={
        'c' => 'c.28_34delGCGGCGGinsGG',
        'cc' => '.',
        'exin' => 'EX1',
+       'strd' => '-',
        'flanks' => {
          'l' => 'chr3:49395676-49395677',
-         'r' => 'chr3:49395685-49395686',
-         'strd' => '-'
+         'r' => 'chr3:49395685-49395686'
        },
        'func' => 'frameshift',
        'p' => 'p.Ala10_Ala12delinsGlyfs*?',
@@ -2076,10 +2076,10 @@ my $utr5_1_varanno={
        'c' => 'c.-1T>G',
        'cc' => '.',
        'exin' => 'EX2',
+       'strd' => '+',
        'flanks' => {
          'l' => 'chr1:861319-861320',
-         'r' => 'chr1:861322-861323',
-         'strd' => '+'
+         'r' => 'chr1:861322-861323'
        },
        'func' => 'utr-5',
        'p' => '.',
@@ -2133,10 +2133,10 @@ my $utr5_2_varanno={
        'c' => 'c.-1_2delTTA',
        'cc' => '.',
        'exin' => 'EX2',
+       'strd' => '+',
        'flanks' => {
          'l' => 'chr1:861319-861320',
-         'r' => 'chr1:861324-861325',
-         'strd' => '+'
+         'r' => 'chr1:861324-861325'
        },
        'func' => 'init-loss',
        'p' => 'p.0?',
@@ -2184,10 +2184,10 @@ my $cdna_scoden_1_varanno={
        'c' => 'c.1A>C',
        'cc' => 'ATG=>CTG',
        'exin' => 'EX2',
+       'strd' => '+',
        'flanks' => {
          'l' => 'chr1:861320-861321',
-         'r' => 'chr1:861323-861324',
-         'strd' => '+'
+         'r' => 'chr1:861323-861324'
        },
        'func' => 'altstart',
        'p' => 'p.0?',
@@ -2241,10 +2241,10 @@ my $cdna_scoden_2_varanno={
        'c' => 'c.1_2insC',
        'cc' => '.',
        'exin' => 'EX2',
+       'strd' => '+',
        'flanks' => {
          'l' => 'chr1:861321-861322',
-         'r' => 'chr1:861323-861324',
-         'strd' => '+'
+         'r' => 'chr1:861323-861324'
        },
        'func' => 'init-loss',
        'p' => 'p.0?',
@@ -2292,10 +2292,10 @@ my $cdna_ecoden_1_varanno={
        'c' => 'c.2046A>T',
        'cc' => 'TGA=>TGT',
        'exin' => 'EX14E',
+       'strd' => '+',
        'flanks' => {
          'l' => 'chr1:879531-879532',
-         'r' => 'chr1:879534-879535',
-         'strd' => '+'
+         'r' => 'chr1:879534-879535'
        },
        'func' => 'stop-loss',
        'p' => 'p.*682Cysext*?',
@@ -2349,10 +2349,10 @@ my $cdna_ecoden_2_varanno={
        'c' => 'c.2046A[1>4]',
        'cc' => '.',
        'exin' => 'EX14E',
+       'strd' => '+',
        'flanks' => {
          'l' => 'chr1:879532-879533',
-         'r' => 'chr1:879534-879535',
-         'strd' => '+'
+         'r' => 'chr1:879534-879535'
        },
        'func' => 'utr-3',
        'p' => '.',
@@ -2431,10 +2431,10 @@ my $intron_1_varanno={
        'c' => 'c.948+1_949-1delGCTG',
        'cc' => '.',
        'exin' => 'IVS5',
+       'strd' => '+',
        'flanks' => {
          'l' => 'chr6_cox_hap2:2892856-2892857',
-         'r' => 'chr6_cox_hap2:2892862-2892863',
-         'strd' => '+'
+         'r' => 'chr6_cox_hap2:2892862-2892863'
        },
        'func' => 'splice',
        'p' => '.',
@@ -2483,10 +2483,10 @@ my $intron_2_varanno={
        'c' => 'c.948_948+1insA',
        'cc' => '.',
        'exin' => 'EX5-IVS5',
+       'strd' => '+',
        'flanks' => {
          'l' => 'chr6_cox_hap2:2892856-2892857',
-         'r' => 'chr6_cox_hap2:2892858-2892859',
-         'strd' => '+'
+         'r' => 'chr6_cox_hap2:2892858-2892859'
        },
        'func' => 'frameshift',
        'p' => 'p.Ala317fs*?',
@@ -2548,10 +2548,10 @@ my $utr5_del_1_varanno ={
        'c' => 'c.-2_3delCCATG',
        'cc' => '.',
        'exin' => 'EX1',
+       'strd' => '+',
        'flanks' => {
          'l' => 'chr1:948950-948951',
-         'r' => 'chr1:948957-948958',
-         'strd' => '+'
+         'r' => 'chr1:948957-948958'
        },
        'func' => 'init-loss',
        'p' => 'p.0?',
@@ -2599,10 +2599,10 @@ my $utr5_del_2_varanno ={
        'c' => 'c.1_3delATG',
        'cc' => '.',
        'exin' => 'EX1',
+       'strd' => '+',
        'flanks' => {
          'l' => 'chr1:948952-948953',
-         'r' => 'chr1:948957-948958',
-         'strd' => '+'
+         'r' => 'chr1:948957-948958'
        },
        'func' => 'init-loss',
        'p' => 'p.0?',
@@ -2650,10 +2650,10 @@ my $ins_intron_exon3_1_varanno={
        'c' => 'c.2377-1_2377insTAA',
        'cc' => '.',
        'exin' => 'IVS5-EX6',
+       'strd' => '+',
        'flanks' => {
          'l' => 'chr8:61714085-61714086',
-         'r' => 'chr8:61714087-61714088',
-         'strd' => '+'
+         'r' => 'chr8:61714087-61714088'
        },
        'func' => 'stop-gain',
        'p' => 'p.Gln792_Gln792ins*',
@@ -2702,10 +2702,10 @@ my $ins_intron_exon3_2_varanno={
        'c' => 'c.2377_2378insGGA',
        'cc' => '.',
        'exin' => 'EX6',
+       'strd' => '+',
        'flanks' => {
          'l' => 'chr8:61714086-61714087',
-         'r' => 'chr8:61714088-61714089',
-         'strd' => '+'
+         'r' => 'chr8:61714088-61714089'
        },
        'func' => 'cds-indel',
        'p' => 'p.Glu793delinsGlyLys',
@@ -2753,10 +2753,10 @@ my $rep_insertion_dup_1_varanno={
        'c' => 'c.446AG[1>3]',
        'cc' => '.',
        'exin' => '.',
+       'strd' => '+',
        'flanks' => {
          'l' => 'chr19:32083944-32083945',
-         'r' => 'chr19:32083946-32083947',
-         'strd' => '+'
+         'r' => 'chr19:32083946-32083947'
        },
        'func' => '.',
        'p' => '.',
@@ -2835,10 +2835,10 @@ my $rep_insertion_dup_2_varanno={
        'c' => 'c.446A[1>5]',
        'cc' => '.',
        'exin' => 'EX2E',
+       'strd' => '+',
        'flanks' => {
          'l' => 'chr19:32083943-32083944',
-         'r' => 'chr19:32083945-32083946',
-         'strd' => '+'
+         'r' => 'chr19:32083945-32083946'
        },
        'func' => 'coding-synon',
        'p' => 'p.=',
@@ -2916,10 +2916,10 @@ my $snv_del_individual={
      'c' => 'n.[1721G>T];[1714_1720delCGATCTA]',
      'cc' => '.',
      'exin' => 'EX11E',
+     'strd' => '-',
      'flanks' => {
        'l' => 'chr1:14408-14409 chr1:14409-14410',
-       'r' => 'chr1:14411-14412 chr1:14418-14419',
-       'strd' => '-'
+       'r' => 'chr1:14411-14412 chr1:14418-14419'
      },
      'func' => 'ncRNA',
      'keep' => 1,
@@ -2933,10 +2933,11 @@ my $insert_rep_individual={
      'c' => 'n.[1718_1720delCTAinsTAGCTATTC];[1718CTA[1>4]]',
      'cc' => '.',
      'exin' => 'EX11E',
+     'strd' => '-',
      'flanks' => {
        'l' => 'chr1:14409-14410 chr1:14409-14410',
-       'r' => 'chr1:14414-14415 chr1:14411-14412',
-       'strd' => '-',     },
+       'r' => 'chr1:14414-14415 chr1:14411-14412'
+      },
      'func' => 'ncRNA',
      'keep' => 1,
      'p' => '.',
@@ -2949,10 +2950,10 @@ my $snv_insert_individual={
      'c' => 'n.[1721G>T];[1718_1720delCTAinsTAGCTATTC]',
      'cc' => '.',
      'exin' => 'EX11E',
+     'strd' => '-',
      'flanks' => {
        'l' => 'chr1:14408-14409 chr1:14409-14410',
-       'r' => 'chr1:14411-14412 chr1:14414-14415',
-       'strd' => '-'
+       'r' => 'chr1:14411-14412 chr1:14414-14415'
      },
      'func' => 'ncRNA',
      'keep' => 1,
@@ -2966,10 +2967,10 @@ my $insert_dup_individual={
      'c' => 'n.[1718_1720delCTAinsTAGCTATTC];[1719_1720dupTA]',
      'cc' => '.',
      'exin' => 'EX11E',
+     'strd' => '-',
      'flanks' => {
        'l' => 'chr1:14409-14410 chr1:14409-14410',
-       'r' => 'chr1:14414-14415 chr1:14411-14412',
-       'strd' => '-'
+       'r' => 'chr1:14414-14415 chr1:14411-14412'
      },
      'func' => 'ncRNA',
      'keep' => 1,
@@ -2983,10 +2984,10 @@ my $del_rep_individual={
      'c' => 'n.[1714_1720delCGATCTA];[1718CTA[1>4]]',
      'cc' => '.',
      'exin' => 'EX11E',
+     'strd' => '-',
      'flanks' => {
        'l' => 'chr1:14409-14410 chr1:14409-14410',
-       'r' => 'chr1:14418-14419 chr1:14411-14412',
-       'strd' => '-'
+       'r' => 'chr1:14418-14419 chr1:14411-14412'
      },
      'func' => 'ncRNA',
      'keep' => 1,
@@ -3000,10 +3001,10 @@ my $del_dup_individual={
      'c' => 'n.[1714_1720delCGATCTA];[1719_1720dupTA]',
      'cc' => '.',
      'exin' => 'EX11E',
+     'strd' => '-',
      'flanks' => {
        'l' => 'chr1:14409-14410 chr1:14409-14410',
-       'r' => 'chr1:14418-14419 chr1:14411-14412',
-       'strd' => '-'
+       'r' => 'chr1:14418-14419 chr1:14411-14412'
      },
      'func' => 'ncRNA',
      'keep' => 1,
@@ -3017,10 +3018,10 @@ my $del_delins_individual={
      'c' => 'n.[1714_1720delCGATCTA];[1716_1720delTCTAinsA]',
      'cc' => '.',
      'exin' => 'EX11E',
+     'strd' => '-',
      'flanks' => {
        'l' => 'chr1:14409-14410 chr1:14409-14410',
-       'r' => 'chr1:14418-14419 chr1:14416-14417',
-       'strd' => '-'
+       'r' => 'chr1:14418-14419 chr1:14416-14417'
      },
      'func' => 'ncRNA',
      'keep' => 1,
@@ -3034,10 +3035,10 @@ my $del_n_individual={
      'c' => 'n.[1714_1720delCGATCTA];[1720_1721insNTAN]',
      'cc' => '.',
      'exin' => 'EX11E',
+     'strd' => '-',
      'flanks' => {
        'l' => 'chr1:14409-14410 chr1:14409-14410',
-       'r' => 'chr1:14418-14419 chr1:14411-14412',
-       'strd' => '-'
+       'r' => 'chr1:14418-14419 chr1:14411-14412'
      },
      'func' => 'ncRNA',
      'keep' => 1,
@@ -3051,10 +3052,10 @@ my $rep_dup_individual={
      'c' => 'n.[1718CTA[1>4]];[1719_1720dupTA]',
      'cc' => '.',
      'exin' => 'EX11E',
+     'strd' => '-',
      'flanks' => {
        'l' => 'chr1:14409-14410',
-       'r' => 'chr1:14411-14412',
-       'strd' => '-'
+       'r' => 'chr1:14411-14412'
      },
      'func' => 'ncRNA',
      'keep' => 1,
@@ -3068,10 +3069,10 @@ my $splice_individual={
      'c' => 'c.[1408C[7>6]];[1408C[7>6]]',
      'cc' => '.',
      'exin' => 'IVS3',
+     'strd' => '-',
      'flanks' => {
        'l' => 'chr8:24811063-24811064',
-       'r' => 'chr8:24811066-24811067',
-       'strd' => '-'
+       'r' => 'chr8:24811066-24811067'
      },
      'func' => 'abnormal-intron',
      'keep' => 1,
@@ -3085,10 +3086,10 @@ my $splice1_individual={
      'c' => 'c.[617-3_617-2dupTA];[617-4_617-3delCT]',
      'cc' => '.',
      'exin' => 'IVS7',
+     'strd' => '-',
      'flanks' => {
        'l' => 'chr21:43803307-43803308 chr21:43803308-43803309',
-       'r' => 'chr21:43803309-43803310 chr21:43803312-43803313',
-       'strd' => '-'
+       'r' => 'chr21:43803309-43803310 chr21:43803312-43803313'
      },
      'func' => '[splice-3];[intron]',
      'keep' => 1,
@@ -3102,10 +3103,10 @@ my $cds_individual={
      'c' => 'c.[28_38delGCGGCGGCGGCinsGGCGGCGGCGGC];[28_34delGCGGCGGinsGG]',
      'cc' => '.',
      'exin' => 'EX1',
+     'strd' => '-',
      'flanks' => {
        'l' => 'chr3:49395672-49395673 chr3:49395676-49395677',
-       'r' => 'chr3:49395685-49395686 chr3:49395685-49395686',
-       'strd' => '-'
+       'r' => 'chr3:49395685-49395686 chr3:49395685-49395686'
      },
      'func' => 'frameshift',
      'keep' => 1,
@@ -3119,10 +3120,10 @@ my $utr5_individual={
      'c' => 'c.[-1T>G];[-1_2delTTA]',
      'cc' => '.',
      'exin' => 'EX2',
+     'strd' => '+',
      'flanks' => {
        'l' => 'chr1:861319-861320 chr1:861319-861320',
-       'r' => 'chr1:861322-861323 chr1:861324-861325',
-       'strd' => '+'
+       'r' => 'chr1:861322-861323 chr1:861324-861325'
      },
      'func' => '[utr-5];[init-loss]',
      'keep' => 1,
@@ -3136,10 +3137,10 @@ my $cdna_scoden_individual={
      'c' => 'c.[1A>C];[1_2insC]',
      'cc' => '[ATG=>CTG];[.]',
      'exin' => 'EX2',
+     'strd' => '+',
      'flanks' => {
        'l' => 'chr1:861320-861321 chr1:861321-861322',
-       'r' => 'chr1:861323-861324 chr1:861323-861324',
-       'strd' => '+'
+       'r' => 'chr1:861323-861324 chr1:861323-861324'
      },
      'func' => '[altstart];[init-loss]',
      'keep' => 1,
@@ -3153,10 +3154,10 @@ my $cdna_ecoden_individual={
      'c' => 'c.[2046A>T];[2046A[1>4]]',
      'cc' => '[TGA=>TGT];[.]',
      'exin' => 'EX14E',
+     'strd' => '+',
      'flanks' => {
        'l' => 'chr1:879531-879532 chr1:879532-879533',
-       'r' => 'chr1:879534-879535 chr1:879534-879535',
-       'strd' => '+'
+       'r' => 'chr1:879534-879535 chr1:879534-879535'
      },
      'func' => '[stop-loss];[utr-3]',
      'keep' => 1,
@@ -3170,10 +3171,10 @@ my $intron_individual={
      'c' => 'c.[948+1_949-1delGCTG];[948_948+1insA]',
      'cc' => '.',
      'exin' => '[IVS5];[EX5-IVS5]',
+     'strd' => '+',
      'flanks' => {
        'l' => 'chr6_cox_hap2:2892856-2892857 chr6_cox_hap2:2892856-2892857',
-       'r' => 'chr6_cox_hap2:2892862-2892863 chr6_cox_hap2:2892858-2892859',
-       'strd' => '+'
+       'r' => 'chr6_cox_hap2:2892862-2892863 chr6_cox_hap2:2892858-2892859'
      },
      'func' => '[splice];[frameshift]',
      'keep' => 1,
@@ -3187,10 +3188,10 @@ my $utr5_other_individual={
      'c' => 'c.[-2_3delCCATG];[1_3delATG]',
      'cc' => '.',
      'exin' => 'EX1',
+     'strd' => '+',
      'flanks' => {
        'l' => 'chr1:948950-948951 chr1:948952-948953',
-       'r' => 'chr1:948957-948958 chr1:948957-948958',
-       'strd' => '+'
+       'r' => 'chr1:948957-948958 chr1:948957-948958'
      },
      'func' => 'init-loss',
      'keep' => 1,
@@ -3204,10 +3205,10 @@ my $ins_intron_individual={
      'c' => 'c.[2377-1_2377insTAA];[2377_2378insGGA]',
      'cc' => '.',
      'exin' => '[IVS5-EX6];[EX6]',
+     'strd' => '+',
      'flanks' => {
        'l' => 'chr8:61714085-61714086 chr8:61714086-61714087',
-       'r' => 'chr8:61714087-61714088 chr8:61714088-61714089',
-       'strd' => '+'
+       'r' => 'chr8:61714087-61714088 chr8:61714088-61714089'
      },
      'func' => '[stop-gain];[cds-indel]',
      'keep' => 1,
@@ -3221,10 +3222,10 @@ my $rep_insertion_dup_individual={
      'c' => 'c.[446AG[1>3]];[446A[1>5]]',
      'cc' => '.',
      'exin' => '[.];[EX2E]',
+     'strd' => '+',
      'flanks' => {
        'l' => 'chr19:32083944-32083945 chr19:32083943-32083944',
-       'r' => 'chr19:32083946-32083947 chr19:32083945-32083946',
-       'strd' => '+'
+       'r' => 'chr19:32083946-32083947 chr19:32083945-32083946'
      },
      'func' => '[.];[coding-synon]',
      'keep' => 1,

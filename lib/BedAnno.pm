@@ -12,7 +12,7 @@ our @EXPORT = qw(
     fetchseq get_codon parse_var individual_anno get_gHGVS
 );
 
-our $VERSION = '0.20';
+our $VERSION = '0.30';
 
 =head1 NAME
 
@@ -517,6 +517,7 @@ sub region_merge {
 		    r      => $region or $combin_region(multiple)
 		    exin   => $exin or $combin_exin(multiple)
 		    func   => $combin_func  (in [...];[...] format)
+		    strd   => $strand
 		    flanks => $flanks or $combin_flanks(multiple)
 		    polar  => $combin_polar (in [...];[...] format)
 		    keep   => [0/1] to indicate if this variation should be kept.
@@ -537,7 +538,7 @@ sub individual_anno {
     my $latter = (exists $$va1{info}) ? $va2 : $va1;
     foreach my $tid (keys %{$$former{info}}) {
 	my %ind_anno_info = ();
-	@ind_anno_info{qw(c p cc r exin polar func flanks)} = ('.') x 8;
+	@ind_anno_info{qw(c p cc r exin polar strd func flanks)} = ('.') x 9;
         if (
             $$former{info}{$tid}{c} eq 'c.='
             and (
@@ -576,6 +577,7 @@ sub individual_anno {
 	      check_comb( $$former{info}{$tid}{func}, $$latter{info}{$tid}{func} );
 	    $ind_anno_info{flanks} =
 	      comb_flanks( $$former{info}{$tid}{flanks}, $$latter{info}{$tid}{flanks} );
+	    $ind_anno_info{strd} = $$former{info}{$tid}{strd};
 	}
 	else {# non-same location pair of variation
 	    %ind_anno_info = %{$$former{info}{$tid}};
@@ -618,8 +620,7 @@ sub individual_anno {
 sub comb_flanks {
     my ($rflk1, $rflk2) = @_;
     if (    $$rflk1{l} eq $$rflk2{l}
-        and $$rflk1{r} eq $$rflk2{r}
-        and $$rflk1{strd} eq $$rflk2{strd} )
+        and $$rflk1{r} eq $$rflk2{r} )
     {
 	return $rflk1;
     }
@@ -627,7 +628,6 @@ sub comb_flanks {
 	my %multiflk = ();
 	$multiflk{l} = $$rflk1{l} . " " . $$rflk2{l};
 	$multiflk{r} = $$rflk1{r} . " " . $$rflk2{r};
-	$multiflk{strd} = $$rflk1{strd};
 	return \%multiflk;
     }
 }
@@ -864,7 +864,8 @@ sub get_gHGVS {
     Args    : a var entry and a selected anno
     Returns : ( $tid, { c => c.HGVS, p => p.HGVS,  cc => condon-change,
 			r => region, exin => exin, func => func,  polar => pol, 
-			flanks => { l => left_region, r => right_region, strd => [+-] }
+			strd => [+-],
+			flanks => { l => left_region, r => right_region }
 	              } )
 
 =cut
@@ -896,7 +897,6 @@ sub pairanno {
 
     # get flank region string ready for fetchseq
     my $flanks = get_flanks($$var{chr}, $pos, $rl);
-    $$flanks{strd} = $$cL{strd};
 
     my $strandopt = ($$cL{strd} eq '-') ? 0 : 1;
     my $t_ref = ($strandopt) ? uc($ref) : rev_comp(uc($ref));
@@ -915,6 +915,7 @@ sub pairanno {
 		exin   => $$cL{exin},
 		func   => 'unknown',
 		polar  => '.',
+		strd   => $$cL{strd},
 		bc     => $bc_cHGVS,
 		flanks => $flanks
 	    }
@@ -967,6 +968,7 @@ sub pairanno {
 		    exin   => $exin,
 		    func   => $func,
 		    polar  => $polar,
+		    strd   => $$cL{strd},
 		    bc     => $bc_cHGVS,
 		    flanks => $flanks
 		}
@@ -1186,6 +1188,7 @@ sub pairanno {
 		    exin   => $exin,
 		    func   => $func,
 		    polar  => $polar,
+		    strd   => $$cL{strd},
 		    bc     => $bc_cHGVS,
 		    flanks => $flanks
 		}
@@ -1381,7 +1384,6 @@ sub pairanno {
 		$exin          = $$ret_rbc_annos{exin};
 		$bc_cHGVS      = $$ret_rbc_annos{c};
 		$flanks        = $$ret_rbc_annos{flanks};
-		$$flanks{strd} = $$cL{strd};
 	    }
 	}
     }
@@ -1406,6 +1408,7 @@ sub pairanno {
             exin   => $exin,
             func   => $func,
             polar  => $polar,
+	    strd   => $$cL{strd},
 	    bc     => $bc_cHGVS,
             flanks => $flanks
         }

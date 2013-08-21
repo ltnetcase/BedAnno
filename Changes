@@ -44,3 +44,7 @@ Revision history for Perl extension BedAnno.
 0.20  Thu Jul 26 21:03:03 2013
 	- fix a bug in get_internal()
 	- add various test cases
+
+0.30  Thu Aug 21 11:43:07 2013
+	- change the structure of return value for pairanno(), move the strd information
+	  out of the flanks infomations as an outer key.
