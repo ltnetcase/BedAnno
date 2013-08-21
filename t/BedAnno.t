@@ -240,7 +240,7 @@ my $snv_cdna_scoden_anno = {
     cc     => 'ATG=>CTG',
     r      => 'C1',
     exin   => 'EX2',
-    func   => 'altstart',
+    func   => 'misstart',
     polar  => '.',
     bc     => '.',
     strd   => '+',
@@ -2189,7 +2189,7 @@ my $cdna_scoden_1_varanno={
          'l' => 'chr1:861320-861321',
          'r' => 'chr1:861323-861324'
        },
-       'func' => 'altstart',
+       'func' => 'misstart',
        'p' => 'p.0?',
        'polar' => '.',
        'r' => 'C1'
@@ -3142,7 +3142,7 @@ my $cdna_scoden_individual={
        'l' => 'chr1:861320-861321 chr1:861321-861322',
        'r' => 'chr1:861323-861324 chr1:861323-861324'
      },
-     'func' => '[altstart];[init-loss]',
+     'func' => '[misstart];[init-loss]',
      'keep' => 1,
      'p' => 'p.[0?];[0?]',
      'polar' => '.',
