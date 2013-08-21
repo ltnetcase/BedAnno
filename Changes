@@ -48,3 +48,4 @@ Revision history for Perl extension BedAnno.
 0.30  Thu Aug 21 11:43:07 2013
 	- change the structure of return value for pairanno(), move the strd information
 	  out of the flanks infomations as an outer key.
+	- change function of 'altstart' to 'misstart'
