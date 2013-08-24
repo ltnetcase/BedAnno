@@ -47,7 +47,7 @@ samtools.
 =head1 Methods
 =cut
 
-our %codon3 = (
+my %C3 = (
     TTT=>"Phe",	CTT=>"Leu", ATT=>"Ile",	GTT=>"Val",
     TTC=>"Phe", CTC=>"Leu", ATC=>"Ile", GTC=>"Val",
     TCT=>"Ser", CCT=>"Pro", ACT=>"Thr", GCT=>"Ala",
@@ -70,6 +70,35 @@ our %codon3 = (
 		CGN=>"Arg",		GGN=>"Gly"
 );
 
+
+my %C1 = (
+    TTT=>"F", CTT=>"L", ATT=>"I", GTT=>"V",
+    TTC=>"F", CTC=>"L", ATC=>"I", GTC=>"V",
+    TCT=>"S", CCT=>"P", ACT=>"T", GCT=>"A",
+    TCC=>"S", CCC=>"P", ACC=>"T", GCC=>"A",
+    TAT=>"Y", CAT=>"H", AAT=>"N", GAT=>"D",
+    TAC=>"Y", CAC=>"H", AAC=>"N", GAC=>"D",
+    TGT=>"C", CGT=>"R", AGT=>"S", GGT=>"G",
+    TGC=>"C", CGC=>"R", AGC=>"S", GGC=>"G",
+    TTA=>"L", CTA=>"L", ATA=>"I", GTA=>"V",
+    TCA=>"S", CTG=>"L", ACA=>"T", GTG=>"V",
+    TAA=>"*", CCA=>"P", AAA=>"K", GCA=>"A",
+    TGA=>"*", CCG=>"P", AGA=>"R", GCG=>"A",
+    TTG=>"L", CAA=>"Q", ATG=>"M", GAA=>"E",
+    TCG=>"S", CAG=>"Q", ACG=>"T", GAG=>"E",
+    TAG=>"*", CGA=>"R", AAG=>"K", GGA=>"G",
+    TGG=>"W", CGG=>"R", AGG=>"R", GGG=>"G",
+
+    TCN=>"S", CCN=>"P", ACN=>"T", GTN=>"V",
+	      CTN=>"L",		  GCN=>"A",
+	      CGN=>"R",		  GGN=>"G"
+);
+
+our %C3toC1 = ();
+foreach my $threebase (sort keys %C3) {
+    $C3toC1{$C3{$threebase}} = $C1{$threebase};
+}
+
 our %Polar = (
     Ala => "NP", Asn => "P0", Arg => "P+", Asp => "P-",
     Ile => "NP", Cys => "P0", His => "P+", Glu => "P-",
@@ -83,6 +112,8 @@ our %Polar = (
     '*' => '.'
 );
 
+our %Code2Pep = %C3;
+
 =head2 new
 
     About   : Creat a new annotation entry, automatically call load_anno method.
@@ -91,9 +122,10 @@ our %Polar = (
 	      "genes"  => {"ABC" => 1, "DEF" => 1} / "genes.list"		# limit the genes to be annotate
 	      "trans"  => {"NM_0012.1" => 1, "NM_0034.2" => 1} /  "trans.list"	# limit the transcripts to be annotate
 	      "region" => "chr20:1234567-1234568"    # give the target region in region string
-	      "regbed" => "in.region.bed"	     # give the target region in bed format region files.
-	      "onlyPr" => 1			     # to limit the anno range to the primary transcript for a gene.
-	      "mmap"   => 1			     # to output all needed multiple mapping record of transcript.
+	      "regbed" => "in.region.bed"            # give the target region in bed format region files.
+	      "onlyPr" => 1                          # to limit the anno range to the primary transcript for a gene.
+	      "mmap"   => 1                          # to output all needed multiple mapping record of transcript.
+	      "short"  => 1                          # to use 1 bp peptide code instead 3bp peptide code
 	      when use "genes", "trans", "onlyPr" together, which will return the transcript of "genes" with primary tag, 
 							    besides all the "trans",
 	      when use "genes" only, will extract all transcripts of genes without multiple mapping.
@@ -154,6 +186,9 @@ sub new {
     }
     if (exists $$self{mmap}) {
 	$open_args{mmap} = $$self{mmap};
+    }
+    if (exists $$self{short}) {
+	%Code2Pep = %C1;
     }
 
     return $self->load_anno(%open_args);
@@ -1422,7 +1457,7 @@ sub get_aaseq {
     my $new_aa = "";
     for (my $i = 0; $i < length($new_codon); $i+=3) {
 	my $add_codon = substr($new_codon, $i, 3);
-	my $add_aa = (exists $codon3{$add_codon}) ? $codon3{$add_codon} : "";
+	my $add_aa = (exists $Code2Pep{$add_codon}) ? $Code2Pep{$add_codon} : "";
 	if ($add_aa ne '') {
 	    $new_aa .= $add_aa;
 	}
@@ -1451,7 +1486,7 @@ sub parse_cPos {
 	my $new_codon = $codon;
 	if ($aa ne '') {
 	    substr($new_codon, $frame, 1, $t_alt);
-	    my $new_aa = (exists $codon3{$new_codon}) ? $codon3{$new_codon} : ".";
+	    my $new_aa = (exists $Code2Pep{$new_codon}) ? $Code2Pep{$new_codon} : ".";
 	    my $new_pol = (exists $Polar{$new_aa}) ? $Polar{$new_aa} : ".";
 	    $func = $self->get_aafunc($aa, $new_aa, $query_tid, $cP);
 	    $pHGVS = get_aaHGVS($aa, $new_aa, $func, $cP);
@@ -1888,7 +1923,7 @@ sub get_aa {
     }
     else {
 	my $codon = uc(substr($$rseq{$qtid}, $start, 3));
-	return ((!exists $codon3{$codon}) ? "" : $codon3{$codon});
+	return ((!exists $Code2Pep{$codon}) ? "" : $Code2Pep{$codon});
     }
 }
 
@@ -1940,7 +1975,7 @@ sub get_codon {
 	return ("", "", "", $frame);
     }
     my $codon = uc(substr($$rseq{$tid}, ($cpos - $frame - 1), 3));
-    my $aa = (exists $codon3{$codon}) ? $codon3{$codon} : "";
+    my $aa = (exists $Code2Pep{$codon}) ? $Code2Pep{$codon} : "";
     my $pol = (exists $Polar{$aa}) ? $Polar{$aa} : "";
     return ($codon, $aa, $pol, $frame);
 }
