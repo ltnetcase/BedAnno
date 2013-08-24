@@ -12,7 +12,7 @@ our @EXPORT = qw(
     fetchseq get_codon parse_var individual_anno get_gHGVS
 );
 
-our $VERSION = '0.30';
+our $VERSION = '0.31';
 
 =head1 NAME
 
