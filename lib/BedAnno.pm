@@ -9,7 +9,7 @@ require Exporter;
 our @ISA = qw(Exporter);
 
 our @EXPORT = qw(
-    fetchseq get_codon parse_var individual_anno get_gHGVS
+    fetchseq get_codon parse_var individual_anno get_gHGVS Code2Pep C3toC1
 );
 
 our $VERSION = '0.31';
@@ -43,6 +43,8 @@ samtools.
 			  this depend on samtools installed, and a faidx(ed) 
 			  fasta file.
     get_codon()		- used to get codon information through cds position.
+    Code2Pep()		- encode 3 bp nucleotides to peptide code.
+    C3toC1()		- encode 3 chars peptide code to 1 char peptide code.
 
 =head1 Methods
 =cut
@@ -3189,6 +3191,26 @@ sub fetchseq {
 	}
     }
     return \%seqs;
+}
+
+sub Code2Pep {
+    my $code = shift;
+    if (exists $Code2Pep{$code}) {
+	return $Code2Pep{$code};
+    }
+    else {
+	return '.';
+    }
+}
+
+sub C3toC1 {
+    my $c3 = shift;
+    if (exists $C3toC1{$c3}) {
+	return $C3toC1{$c3};
+    }
+    else {
+	return '.';
+    }
 }
 
 sub rev_comp {
