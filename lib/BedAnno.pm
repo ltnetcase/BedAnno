@@ -577,11 +577,11 @@ sub individual_anno {
 	my %ind_anno_info = ();
 	@ind_anno_info{qw(c p cc r exin polar strd func flanks)} = ('.') x 9;
         if (
-            $$former{info}{$tid}{c} eq 'c.='
+            $$former{info}{$tid}{c} =~ /[gcm]\.=/
             and (
                 !exists $$latter{info}
                 or ( exists $$latter{info}{$tid}
-                    and $$latter{info}{$tid}{c} eq 'c.=' )
+                    and $$latter{info}{$tid}{c} =~ /[gcm]\.=/ )
             )
           )
         {    # both ref
@@ -590,13 +590,13 @@ sub individual_anno {
         elsif (
             !exists $$latter{info}
             or
-            ( exists $$latter{info}{$tid} and $$latter{info}{$tid}{c} eq 'c.=' )
+            ( exists $$latter{info}{$tid} and $$latter{info}{$tid}{c} =~ /[gcm]\.=/ )
           )
         {    # latter is ref
             %ind_anno_info = %{ $$former{info}{$tid} };
             combin_ref( \%ind_anno_info );
         }
-        elsif ( $$former{info}{$tid}{c} eq 'c.=' ) {    # former is ref
+        elsif ( $$former{info}{$tid}{c} =~ /[gcm]\.=/ ) {    # former is ref
             %ind_anno_info = %{ $$latter{info}{$tid} };
             combin_ref( \%ind_anno_info );
         }
