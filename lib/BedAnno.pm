@@ -472,11 +472,11 @@ sub write_using {
 
 sub exsort {
     my ($sym, $anum, $bnum);
-    if ($a =~ /^EX([\+\-\*]?)(\d+)E?$/) {
+    if ($a =~ /^EX([\+\-\*]?)(\d+)[EP]?$/) {
 	$sym = $1;
 	$anum = $2;
     }
-    if ($b =~ /^EX[\+\-\*]?(\d+)E?$/) {
+    if ($b =~ /^EX[\+\-\*]?(\d+)[EP]?$/) {
 	$bnum = $1;
     }
     confess "ExIn number format error. [$a, $b]" if (!defined $anum or !defined $bnum);
