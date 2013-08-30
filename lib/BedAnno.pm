@@ -12,7 +12,7 @@ our @EXPORT = qw(
     fetchseq get_codon parse_var individual_anno get_gHGVS Code2Pep C3toC1
 );
 
-our $VERSION = '0.31';
+our $VERSION = '0.32';
 
 =head1 NAME
 
@@ -472,11 +472,11 @@ sub write_using {
 
 sub exsort {
     my ($sym, $anum, $bnum);
-    if ($a =~ /^EX([\+\-\*]?)(\d+)E?$/) {
+    if ($a =~ /^EX([\+\-\*]?)(\d+)[EP]?$/) {
 	$sym = $1;
 	$anum = $2;
     }
-    if ($b =~ /^EX[\+\-\*]?(\d+)E?$/) {
+    if ($b =~ /^EX[\+\-\*]?(\d+)[EP]?$/) {
 	$bnum = $1;
     }
     confess "ExIn number format error. [$a, $b]" if (!defined $anum or !defined $bnum);
@@ -924,8 +924,8 @@ sub pairanno {
 	$al  = $$var{$$cL{strd}}{al};
     }
 
-    if ($rl > 1 or $al > 1) { # get the real diff base in ref
-	$ref = substr($ref, 1); 
+    if ($rl > 1 or $al > 1 and $rl != $al) { # get the real diff base in ref
+	$ref = substr($ref, 1);
 	$alt = substr($alt, 1);
 	$rl --;
 	$al --;
@@ -2027,7 +2027,7 @@ sub select_position {
 	elsif ($_ eq 'ins') { # the pos and pos+1 are selected: c.123_124insTG
 	    $anno_sels = $self->get_cover($$var{chr}, $$var{pos}, ($$var{pos}+1));
 	}
-	elsif ($_ eq 'del' or $_ eq 'delins') { # the pos+1 and pos+reflen-1 are selected
+	elsif ($_ eq 'del' or ($_ eq 'delins' and $$var{reflen} != $$var{altlen})) { # the pos+1 and pos+reflen-1 are selected
 	    if ($$var{reflen} == 2) { # 1 bp deletion : c.123delT, c.123delTinsGAC
 		if (exists $$rcPos{($$var{pos}+1)}) {
 		    foreach my $tid (sort keys %{$$rcPos{($$var{pos}+1)}}) {
@@ -2042,6 +2042,11 @@ sub select_position {
 		    ( $$var{pos} + $$var{reflen} - 1 )
 		);
 	    }
+	}
+	elsif ($_ eq 'delins' and $$var{reflen} == $$var{altlen}) { # substitution case for CompleteGenomics.
+	    $anno_sel = $self->get_cover(
+		$$var{chr}, $$var{pos}, ($$var{pos} + $$var{reflen} - 1)
+	    );
 	}
 	elsif ($_ eq 'ref') {
 	    if ($$var{reflen} == 1 and exists $$rcPos{$$var{pos}}) {
