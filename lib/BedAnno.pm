@@ -69,7 +69,11 @@ my %C3 = (
 
     TCN=>"Ser", CCN=>"Pro", ACN=>"Thr", GTN=>"Val",
 		CTN=>"Leu",		GCN=>"Ala",
-		CGN=>"Arg",		GGN=>"Gly"
+		CGN=>"Arg",		GGN=>"Gly",
+    
+    # selenocysteine
+    UGA=>"Sec"
+
 );
 
 
@@ -93,7 +97,9 @@ my %C1 = (
 
     TCN=>"S", CCN=>"P", ACN=>"T", GTN=>"V",
 	      CTN=>"L",		  GCN=>"A",
-	      CGN=>"R",		  GGN=>"G"
+	      CGN=>"R",		  GGN=>"G",
+    
+    UGA=>"U"
 );
 
 our %C3toC1 = ();
@@ -110,11 +116,52 @@ our %Polar = (
     Pro => "NP", Thr => "P0",
     Trp => "NP", Tyr => "P0",
     Val => "NP",
+    Sec => "NP",
 
     '*' => '.'
 );
 
 our %Code2Pep = %C3;
+@Polar{@C1{(sort keys %C1)}} = @Polar{@C3{(sort keys %C1)}};
+
+our %SO = (
+    # variant type
+    159     => 'deletion',
+    1483    => 'SNV',
+    667     => 'insertion',
+    1000032 => 'indel',
+
+    # Gene Parts
+    316	    => 'CDS',
+    204	    => 'five_prime_UTR',
+    205	    => 'three_prime_UTR',
+    655	    => 'ncRNA',
+    191	    => 'interior_intron',
+    448	    => 'three_prime_UTR_intron',
+    447	    => 'five_prime_UTR_intron',
+    163	    => 'five_prime_cis_splice_site',
+    164	    => 'three_prime_cis_splice_site',
+    167	    => 'promoter',
+    1577    => 'complex_transcript_variant',
+
+    # Function Parts
+    1819    => 'synonymous_variant',
+    1583    => 'missense_variant',
+    1821    => 'inframe_insertion',
+    1822    => 'inframe_deletion',
+    1587    => 'stop_gained',
+    1578    => 'stop_lost',
+    1582    => 'initiator_codon_variant',
+    1589    => 'frameshift_variant',
+    1567    => 'stop_retained_variant',
+    1575    => 'splice_donor_variant',
+    1574    => 'splice_acceptor_variant',
+    1623    => '5_prime_UTR_variant',
+    1624    => '3_prime_UTR_variant',
+    1619    => 'nc_transcript_variant',
+    1627    => 'intron_variant',
+    1893    => 'transcript_ablation'
+);
 
 =head2 new
 
@@ -2044,7 +2091,7 @@ sub select_position {
 	    }
 	}
 	elsif ($_ eq 'delins' and $$var{reflen} == $$var{altlen}) { # substitution case for CompleteGenomics.
-	    $anno_sel = $self->get_cover(
+	    $anno_sels = $self->get_cover(
 		$$var{chr}, $$var{pos}, ($$var{pos} + $$var{reflen} - 1)
 	    );
 	}
