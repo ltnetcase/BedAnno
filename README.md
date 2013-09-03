@@ -107,9 +107,9 @@ For the primary tag definition, there's a cooresponding sort strategy:
 
 Then assign the primary tag 'Y' to the first refseq Acc.Ver, 
 and add postfix "-N" (1..n-1) to the other following records
+in the order of sort result.
 
 **Note:**
 
 The master branch is under reconstruction, please use v0.31 branch instead for annotaion purpose.
-in the order of sort result.
 
