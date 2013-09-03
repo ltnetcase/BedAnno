@@ -626,7 +626,7 @@ sub individual_anno {
         if (
             $$former{info}{$tid}{c} =~ /[gcm]\.=/
             and (
-                !exists $$latter{info}
+                !exists $$latter{info} or !exists $$latter{info}{$tid}
                 or ( exists $$latter{info}{$tid}
                     and $$latter{info}{$tid}{c} =~ /[gcm]\.=/ )
             )
@@ -635,7 +635,7 @@ sub individual_anno {
             %ind_anno_info = %{ $$former{info}{$tid} };
         }
         elsif (
-            !exists $$latter{info}
+            !exists $$latter{info} or !exists $$latter{info}{$tid}
             or
             ( exists $$latter{info}{$tid} and $$latter{info}{$tid}{c} =~ /[gcm]\.=/ )
           )
