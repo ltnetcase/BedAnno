@@ -579,7 +579,7 @@ sub individual_anno {
         if (
             $$former{info}{$tid}{c} =~ /[gcm]\.=/
             and (
-                !exists $$latter{info}
+                !exists $$latter{info} or !exists $$latter{info}{$tid}
                 or ( exists $$latter{info}{$tid}
                     and $$latter{info}{$tid}{c} =~ /[gcm]\.=/ )
             )
@@ -589,7 +589,7 @@ sub individual_anno {
         }
         elsif (
             !exists $$latter{info}
-            or
+            or !exists $$latter{info}{$tid} or
             ( exists $$latter{info}{$tid} and $$latter{info}{$tid}{c} =~ /[gcm]\.=/ )
           )
         {    # latter is ref
