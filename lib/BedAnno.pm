@@ -848,14 +848,37 @@ sub get_gHGVS {
     elsif ($_ eq 'ins') {
 	$gHGVS .= $$var{pos}.'_'.($$var{pos}+1).'ins'.(substr($$var{alt},1));
     }
-    elsif ($_ eq 'del' or $_ eq 'delins') {
-	# 1bp del/delins
-	$gHGVS .= ($$var{pos}+1);
-	if ($$var{reflen} > 2) {
-	    $gHGVS .= '_'.($$var{pos} + $$var{reflen} - 1);
-	}
-	$gHGVS .= 'del'.(substr($$var{ref}, 1));
-	$gHGVS .= 'ins'.(substr($$var{alt}, 1)) if (/delins/);
+    elsif ( $_ eq 'del' or $_ eq 'delins' ) {
+
+        my $normal_delins_opt =
+          ( substr( $$var{ref}, 0, 1 ) eq substr( $$var{alt}, 0, 1 ) ) ? 1 : 0;
+
+        # 1bp del/delins
+        $gHGVS .=
+            ($normal_delins_opt)
+          ? ( $$var{pos} + 1 )
+          : $$var{pos};
+        if (
+            $$var{reflen} > 2
+            or ( $$var{reflen} > 1
+                and !$normal_delins_opt )
+          )
+        {
+            $gHGVS .= '_' . ( $$var{pos} + $$var{reflen} - 1 );
+        }
+        $gHGVS .= 'del'
+          . (
+            ($normal_delins_opt)
+            ? substr( $$var{ref}, 1 )
+            : $$var{ref}
+          );
+        $gHGVS .= 'ins'
+          . (
+            ($normal_delins_opt)
+            ? substr( $$var{alt}, 1 )
+            : $$var{alt}
+          ) if (/delins/);
+
     }
     elsif ($_ eq 'rep') {
 	$gHGVS .= ($$var{pos} + 1);
@@ -924,12 +947,13 @@ sub pairanno {
 	$al  = $$var{$$cL{strd}}{al};
     }
 
-    if ($rl > 1 or $al > 1) { # get the real diff base in ref
-	$ref = substr($ref, 1); 
-	$alt = substr($alt, 1);
-	$rl --;
-	$al --;
-	$pos ++;
+    if ( substr( $ref, 0, 1 ) eq substr( $alt, 0, 1 ) and $$var{guess} ne 'ref')
+    {    # get the real diff base in ref
+        $ref = substr( $ref, 1 );
+        $alt = substr( $alt, 1 );
+        $rl--;
+        $al--;
+        $pos++;
     }
 
     # get flank region string ready for fetchseq
@@ -1406,7 +1430,10 @@ sub pairanno {
 		my %bc_var; # create a backward compatible var
 		my $rbc_var_info = $$var{$$cL{strd}};
 		$bc_var{chr}   = $$var{chr};
-		$bc_var{guess} = guess_type($$rbc_var_info{brl}, $$rbc_var_info{bal});
+                $bc_var{guess} = guess_type(
+                    $$rbc_var_info{brl}, $$rbc_var_info{bal},
+                    $$rbc_var_info{br},  $$rbc_var_info{ba}
+                );
 		$bc_var{pos}   = $$rbc_var_info{bp};
 		$bc_var{ref}   = $$rbc_var_info{br};
 		$bc_var{alt}   = $$rbc_var_info{ba};
@@ -2023,24 +2050,38 @@ sub select_position {
 		    push (@$anno_sels, [ $tid, $$rcPos{$$var{pos}}{$tid} ]);
 		}
 	    }
+	    else {
+		$self->throw("Error: No cPos select for $$var{chr}:$$var{pos}");
+	    }
 	}
 	elsif ($_ eq 'ins') { # the pos and pos+1 are selected: c.123_124insTG
 	    $anno_sels = $self->get_cover($$var{chr}, $$var{pos}, ($$var{pos}+1));
 	}
 	elsif ($_ eq 'del' or $_ eq 'delins') { # the pos+1 and pos+reflen-1 are selected
-	    if ($$var{reflen} == 2) { # 1 bp deletion : c.123delT, c.123delTinsGAC
-		if (exists $$rcPos{($$var{pos}+1)}) {
-		    foreach my $tid (sort keys %{$$rcPos{($$var{pos}+1)}}) {
-			push (@$anno_sels, [ $tid, $$rcPos{($$var{pos}+1)}{$tid} ]);
-		    }
+	    if ($$var{reflen} == 1) {
+		foreach my $tid (sort keys %{$$rcPos{$$var{pos}}}) {
+		    push (@$anno_sels, [ $tid, $$rcPos{$$var{pos}}{$tid} ]);
+		}
+	    }
+	    elsif ($$var{reflen} == 2 and (substr($$var{ref},0,1) eq substr($$var{alt},0,1))) { # 1 bp deletion : c.123delT, c.123delTinsGAC
+		foreach my $tid (sort keys %{$$rcPos{($$var{pos}+1)}}) {
+		    push (@$anno_sels, [ $tid, $$rcPos{($$var{pos}+1)}{$tid} ]);
 		}
 	    }
 	    else { # multiple bases deletion: c.124_125delTG
-		$anno_sels = $self->get_cover(
-		    $$var{chr},
-		    ( $$var{pos} + 1 ),
-		    ( $$var{pos} + $$var{reflen} - 1 )
-		);
+		if (substr($$var{ref},0,1) eq substr($$var{alt},0,1)) {
+		    $anno_sels = $self->get_cover(
+			$$var{chr},
+			( $$var{pos} + 1 ),
+			( $$var{pos} + $$var{reflen} - 1 )
+		    );
+		}
+		else {
+		    $anno_sels = $self->get_cover(
+			$$var{chr}, $$var{pos},
+			( $$var{pos} + $$var{reflen} - 1 )
+		    );
+		}
 	    }
 	}
 	elsif ($_ eq 'ref') {
@@ -2068,50 +2109,88 @@ sub select_position {
 		( $$var{'-'}{p} + 1 ) );
 	}
 	elsif ($_ eq 'del' or $_ eq 'delins') {
-	    if ($$var{'+'}{rl} == 2) { # 1bp deletion or delins : c.123delT  c.123delAinsGT
-		my $localrcp = $self->get_cPos( $$var{chr},
-		    [ ( $$var{'+'}{p} + 1 ), ( $$var{'-'}{p} + 1 ) ]
-		);
-		if ( exists $$localrcp{ ( $$var{'+'}{p} + 1 ) } ) {
-		    foreach my $tid (
-			sort
-			keys %{ $$localrcp{ ( $$var{'+'}{p} + 1 ) } } )
-		    {
-			push(
-			    @$f_annos,
-			    [
-				$tid,
-				$$localrcp{ ( $$var{'+'}{p} + 1 ) }{$tid}
-			    ]
-			  );
-		    }
-		}
-		if ( exists $$localrcp{ ( $$var{'-'}{p} + 1 ) } ) {
-		    foreach my $tid (
-			sort
-			keys %{ $$localrcp{ ( $$var{'-'}{p} + 1 ) } } )
-		    {
-			push(
-			    @$r_annos,
-			    [
-				$tid,
-				$$localrcp{ ( $$var{'-'}{p} + 1 ) }{$tid}
-			    ]
-			  );
-		    }
-		}
+	    if ( $$var{'+'}{rl} == 1 ) {
+                my $abnormrcp = $self->get_cPos( $$var{chr},
+                    [ $$var{'+'}{p}, $$var{'-'}{p} ] );
+                if ( exists $$abnormrcp{ $$var{'+'}{p} } ) {
+                    foreach my $tid (
+                        sort
+                        keys %{ $$abnormrcp{ $$var{'+'}{p} } }
+                      )
+                    {
+                        push( @$f_annos,
+                            [ $tid, $$abnormrcp{ $$var{'+'}{p} }{$tid} ] );
+                    }
+                }
+                if ( exists $$abnormrcp{ $$var{'-'}{p} } ) {
+                    foreach my $tid (
+                        sort
+                        keys %{ $$abnormrcp{ $$var{'-'}{p} } }
+                      )
+                    {
+                        push( @$r_annos,
+                            [ $tid, $$abnormrcp{ $$var{'-'}{p} }{$tid} ] );
+                    }
+                }
 	    }
+	    elsif (
+                $$var{'+'}{rl} == 2
+                and (
+                    substr( $$var{'+'}{r}, 0, 1 ) eq
+                    substr( $$var{'+'}{a}, 0, 1 ) )
+              )
+            {    # 1bp deletion or delins : c.123delT  c.123delAinsGT
+                my $localrcp = $self->get_cPos( $$var{chr},
+                    [ ( $$var{'+'}{p} + 1 ), ( $$var{'-'}{p} + 1 ) ] );
+                if ( exists $$localrcp{ ( $$var{'+'}{p} + 1 ) } ) {
+                    foreach my $tid (
+                        sort
+                        keys %{ $$localrcp{ ( $$var{'+'}{p} + 1 ) } }
+                      )
+                    {
+                        push( @$f_annos,
+                            [ $tid, $$localrcp{ ( $$var{'+'}{p} + 1 ) }{$tid} ]
+                        );
+                    }
+                }
+                if ( exists $$localrcp{ ( $$var{'-'}{p} + 1 ) } ) {
+                    foreach my $tid (
+                        sort
+                        keys %{ $$localrcp{ ( $$var{'-'}{p} + 1 ) } }
+                      )
+                    {
+                        push( @$r_annos,
+                            [ $tid, $$localrcp{ ( $$var{'-'}{p} + 1 ) }{$tid} ]
+                        );
+                    }
+                }
+            }
 	    else {
-		$f_annos = $self->get_cover(
-		    $$var{chr},
-		    ( $$var{'+'}{p} + 1 ),
-		    ( $$var{'+'}{p} + $$var{'+'}{rl} - 1 )
-		);
-		$r_annos = $self->get_cover(
-		    $$var{chr},
-		    ( $$var{'-'}{p} + 1 ),
-		    ( $$var{'-'}{p} + $$var{'-'}{rl} - 1 )
-		);
+		if (substr( $$var{'+'}{r}, 0, 1 ) eq
+                    substr( $$var{'+'}{a}, 0, 1 ) ) {
+		    $f_annos = $self->get_cover(
+			$$var{chr},
+			( $$var{'+'}{p} + 1 ),
+			( $$var{'+'}{p} + $$var{'+'}{rl} - 1 )
+		    );
+		    $r_annos = $self->get_cover(
+			$$var{chr},
+			( $$var{'-'}{p} + 1 ),
+			( $$var{'-'}{p} + $$var{'-'}{rl} - 1 )
+		    );
+		}
+		else {
+		    $f_annos = $self->get_cover(
+			$$var{chr},
+			$$var{'+'}{p},
+			( $$var{'+'}{p} + $$var{'+'}{rl} - 1 )
+		    );
+		    $r_annos = $self->get_cover(
+			$$var{chr},
+			$$var{'-'}{p},
+			( $$var{'-'}{p} + $$var{'-'}{rl} - 1 )
+		    );
+		}
 	    }
 	}
 	else { $self->throw("Error: unexpected guess for different fr pos $$var{guess}"); }
@@ -2266,17 +2345,31 @@ sub batch_anno {
 sub get_anno_pos {
     my $var = shift;
     if (exists $$var{'+'}) {	# for multiple samples caused pseudo-complex
-	if ($$var{'+'}{brl} == 1 and $$var{'+'}{bal} == 1) { # back compatible snv
-	    return $$var{'+'}{bp};
-	}
-	elsif ($$var{'+'}{brl} == 2) { # 1bp deletion or delins
-	    return ($$var{'+'}{bp} + 1);
-	}
+        if (
+            $$var{'+'}{brl} == 1
+            and (
+                $$var{'+'}{bal} == 1
+                or (
+                    substr( $$var{'+'}{br}, 0, 1 ) ne
+                    substr( $$var{'+'}{ba}, 0, 1 ) )
+            )
+          )
+        {    # back compatible snv
+            return $$var{'+'}{bp};
+        }
+        elsif (
+            $$var{'+'}{brl} == 2
+            and
+            ( substr( $$var{'+'}{br}, 0, 1 ) eq substr( $$var{'+'}{ba}, 0, 1 ) )
+          )
+        {    # 1bp deletion or delins
+            return ( $$var{'+'}{bp} + 1 );
+        }
     }
-    elsif ($$var{guess} eq 'snv' or $$var{guess} eq 'ref') {
+    elsif ($$var{guess} eq 'snv' or (($$var{guess} eq 'ref' or $$var{guess} =~ /del/) and $$var{reflen} == 1)) {
 	return $$var{pos};
     }
-    elsif ($$var{guess} eq 'del' and $$var{reflen} == 2) {
+    elsif ($$var{guess} =~ /del/ and $$var{reflen} == 2 and (substr($$var{ref},0,1) eq substr($$var{alt},0,1))) {
 	return ($$var{pos} + 1);
     }
     return 0;
@@ -2848,7 +2941,7 @@ sub parse_var {
         }
     }
     else {
-	$var{guess} = guess_type( $ref_len, $alt_len );
+	$var{guess} = guess_type( $ref_len, $alt_len, $ref, $alt );
     }
 
     return \%var;
@@ -2905,7 +2998,23 @@ sub parse_complex {
     my @diff = map { $$rc_ref[$_] - $$rc_alt[$_] } (0 .. 5);
 
     my $get_rst = get_internal( $ref, $len_ref, $alt, $len_alt );
-    my $guess = guess_type( $$get_rst{r}, $$get_rst{a} );
+    my $guess = guess_type(
+        $$get_rst{r}, $$get_rst{a},
+        substr( $ref, $$get_rst{'+'}, $$get_rst{r} ),
+        substr( $alt, $$get_rst{'+'}, $$get_rst{a} )
+    );
+    if ( $$get_rst{'-'} != $$get_rst{'+'} ) {
+        my $alt_guess = guess_type(
+            $$get_rst{r}, $$get_rst{a},
+            substr( $ref, $$get_rst{'-'}, $$get_rst{r} ),
+            substr( $alt, $$get_rst{'-'}, $$get_rst{a} )
+        );
+        if ( $alt_guess ne $guess ) {
+            carp "Warning: meet rare case mutantion, with different. ",
+              "$guess -> $alt_guess for $ref -> $alt, ",
+              "Skip the reverse case.";
+        }
+    }
 
     my %rst = ();
     @rst{ ("bcGuess", "bcRlen", "bcAlen") } = ($guess, $$get_rst{r}, $$get_rst{a});
@@ -3010,7 +3119,8 @@ sub check_trim_tail {
 }
 
 sub guess_type {
-    my ($reflen, $altlen) = @_;
+    my ($reflen, $altlen, $ref, $alt) = @_;
+    return 'ref' if ($ref eq $alt);
     my $guess;
     if ($reflen == $altlen) {
 	$guess = ($reflen == 1) ? 'snv' : 'delins';
@@ -3019,14 +3129,13 @@ sub guess_type {
 	$guess = 'delins';
     }
     elsif ($reflen == 1) {
-	$guess = 'ins';
+	$guess = ($ref eq substr($alt,0,1)) ? 'ins' : 'delins';
     }
     else {
-	$guess = 'del';
+	$guess = ($alt eq substr($ref,0,1)) ? 'del' : 'delins';
     }
     return $guess;
 }
-
 
 # check whether the smaller with inserted $cn copies repeat elements
 # is the same with larger one
@@ -3083,35 +3192,47 @@ sub get_internal {
     }
     my ($lofs, $new_ref_len, $new_alt_len);
     if ($shorter >= $loff + $roff) {
-	$new_ref_len = $reflen - $loff - $roff + 1;
-	$new_alt_len = $altlen - $loff - $roff + 1;
-	$lofs = ($loff - 1 < 0) ? 0 : ($loff - 1);
-	if ($new_ref_len == $new_alt_len and $new_ref_len == 2) { # possible simple snv, or consecutive snv.
-	    my $new_ref = substr($ref, $lofs, 2);
-	    my $new_alt = substr($alt, $lofs, 2);
-	    if (substr($new_ref, 0, 1) eq substr($new_alt, 0, 1)) {
-		return {
-		    '+' => ($lofs + 1),
-		    '-' => ($lofs + 1),
-		    'r' => 1,
-		    'a' => 1
-		};
+	if ($loff > 0) { # multiple sample or normal case
+	    $new_ref_len = $reflen - $loff - $roff + 1;
+	    $new_alt_len = $altlen - $loff - $roff + 1;
+	    $lofs = $loff - 1;
+	    if ($new_ref_len == $new_alt_len and $new_ref_len == 2) { # possible simple snv, or consecutive snv.
+		my $new_ref = substr($ref, $lofs, 2);
+		my $new_alt = substr($alt, $lofs, 2);
+		if (substr($new_ref, 0, 1) eq substr($new_alt, 0, 1)) {
+		    return {
+			'+' => ($lofs + 1),
+			'-' => ($lofs + 1),
+			'r' => 1,
+			'a' => 1
+		    };
+		}
+		if (substr($new_ref, 1) eq substr($new_alt, 1)) {
+		    return {
+			'+' => $lofs,
+			'-' => $lofs,
+			'r' => 1,
+			'a' => 1
+		    };
+		}
 	    }
-	    if (substr($new_ref, 1) eq substr($new_alt, 1)) {
-		return {
-		    '+' => $lofs,
-		    '-' => $lofs,
-		    'r' => 1,
-		    'a' => 1
-		};
-	    }
+	    return {
+		'+' => $lofs,
+		'-' => $lofs,
+		'r' => $new_ref_len,
+		'a' => $new_alt_len
+	    };
 	}
-	return {
-	    '+' => $lofs,
-	    '-' => $lofs,
-	    'r' => $new_ref_len,
-	    'a' => $new_alt_len
-	};
+	else { # abnormal delins
+	    $new_ref_len = $reflen - $roff;
+	    $new_alt_len = $altlen - $roff;
+            return {
+                '+' => 0,
+                '-' => 0,
+                'r' => $new_ref_len,
+                'a' => $new_alt_len
+            };
+	}
     }
     else {
 	my $trim_len = $shorter - 1;

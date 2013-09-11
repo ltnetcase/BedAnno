@@ -778,25 +778,25 @@ my $dup_parse={
 my $delins_parse={
    '+' => {
      'ba' => 'GT',
-     'bal' => 3,
+     'bal' => 2,
      'bp' => 14410,
      'br' => 'CTAGA',
-     'brl' => 6
+     'brl' => 5
    },
    '-' => {
      'ba' => 'GT',
-     'bal' => 3,
+     'bal' => 2,
      'bp' => 14410,
      'br' => 'CTAGA',
-     'brl' => 6
+     'brl' => 5
    },
    'alt' => 'GT',
-   'altlen' => 3,
+   'altlen' => 2,
    'chr' => 'chr1',
    'guess' => 'delins',
    'pos' => 14410,
    'ref' => 'CTAGA',
-   'reflen' => 6
+   'reflen' => 5
  };
 my $n_parse={
    'alt' => 'CNTAN',
@@ -1002,7 +1002,7 @@ my $cdna_scoden_parse_2={
    'alt' => 'GC',
    'altlen' => 2,
    'chr' => 'chr1',
-   'guess' => 'ins',
+   'guess' => 'delins',
    'pos' => 861322,
    'ref' => 'A',
    'reflen' => 1
@@ -1189,7 +1189,7 @@ my $insert_gHGVS="g.14411_14413delTAGinsGAATAGCTA";
 my $del_gHGVS="g.14411_14417delTAGATCG";
 my $rep_gHGVS="g.14411TAG[1>4]";
 my $dup_HGVS="g.14411_14412dupTA";
-my $delins_HGVS="g.14411_14415delTAGAinsT";
+my $delins_HGVS="g.14410_14414delCTAGAinsGT";
 my $n_HGVS="g.14410_14411insNTAN";
 my $splice_1_gHGVS="g.24811065G[7>6]";
 my $splice_2_gHGVS="g.24811068_24811069insA";
@@ -1200,7 +1200,7 @@ my $cds_2_gHGVS="g.49395678_49395684delCCGCCGCinsCC";
 my $utr5_1_gHGVS="g.861321T>G";
 my $utr5_2_gHGVS="g.861321_861323delTTA";
 my $cdna_scoden_1_gHGVS="g.861322A>C";
-my $cdna_scoden_2_gHGVS="g.861322_861323insC";
+my $cdna_scoden_2_gHGVS="g.861322delAinsGC";
 my $cdna_ecoden_1_gHGVS="g.879533A>T";
 my $cdna_ecoden_2_gHGVS="g.879533A[1>4]";
 my $intron_1_gHGVS="g.2892858_2892861delGCTG";
@@ -1547,13 +1547,13 @@ my $delins_varanno={
 'info' => {
      'NR_024540.1' => {
        'bc' => '.',
-       'c' => 'n.1716_1720delTCTAinsA',
+       'c' => 'n.1717_1721delTCTAGinsAC',
        'cc' => '.',
        'exin' => 'EX11E',
        'strd' => '-',
        'flanks' => {
-         'l' => 'chr1:14409-14410',
-         'r' => 'chr1:14416-14417'
+         'l' => 'chr1:14408-14409',
+         'r' => 'chr1:14415-14416'
        },
        'func' => 'ncRNA',
        'p' => '.',
@@ -1564,32 +1564,32 @@ my $delins_varanno={
    'var' => {
      '+' => {
        'ba' => 'GT',
-       'bal' => 3,
+       'bal' => 2,
        'bp' => 14410,
        'br' => 'CTAGA',
-       'brl' => 6
+       'brl' => 5
      },
      '-' => {
        'ba' => 'GT',
-       'bal' => 3,
+       'bal' => 2,
        'bp' => 14410,
        'br' => 'CTAGA',
-       'brl' => 6
+       'brl' => 5
      },
      'alt' => 'GT',
-     'altlen' => 3,
+     'altlen' => 2,
      'chr' => 'chr1',
      'guess' => 'delins',
      'pos' => 14410,
      'ref' => 'CTAGA',
-     'reflen' => 6,
+     'reflen' => 5,
      'sel' => {
        'std' => [
          [
            'NR_024540.1',
            {
              'bd' => 0,
-             'cpos' => 'n.1720',
+             'cpos' => 'n.1721',
              'exin' => 'EX11E',
              'gsym' => 'WASH7P',
              'reg' => 'R11E',
@@ -1597,7 +1597,7 @@ my $delins_varanno={
            },
            {
              'bd' => 0,
-             'cpos' => 'n.1716',
+             'cpos' => 'n.1717',
              'exin' => 'EX11E',
              'gsym' => 'WASH7P',
              'reg' => 'R11E',
@@ -2238,12 +2238,12 @@ my $cdna_scoden_2_varanno={
    'info' => {
      'NM_152486.2' => {
        'bc' => '.',
-       'c' => 'c.1_2insC',
+       'c' => 'c.1delAinsGC',
        'cc' => '.',
        'exin' => 'EX2',
        'strd' => '+',
        'flanks' => {
-         'l' => 'chr1:861321-861322',
+         'l' => 'chr1:861320-861321',
          'r' => 'chr1:861323-861324'
        },
        'func' => 'init-loss',
@@ -2256,7 +2256,7 @@ my $cdna_scoden_2_varanno={
      'alt' => 'GC',
      'altlen' => 2,
      'chr' => 'chr1',
-     'guess' => 'ins',
+     'guess' => 'delins',
      'pos' => 861322,
      'ref' => 'A',
      'reflen' => 1,
@@ -2267,14 +2267,6 @@ my $cdna_scoden_2_varanno={
            {
              'bd' => 'b',
              'cpos' => 'c.1',
-             'exin' => 'EX2',
-             'gsym' => 'SAMD11',
-             'reg' => 'C1',
-             'strd' => '+'
-           },
-           {
-             'bd' => 'b',
-             'cpos' => 'c.2',
              'exin' => 'EX2',
              'gsym' => 'SAMD11',
              'reg' => 'C1',
@@ -3015,13 +3007,13 @@ my $del_dup_individual={
  };
 my $del_delins_individual={
  'NR_024540.1' => {
-     'c' => 'n.[1714_1720delCGATCTA];[1716_1720delTCTAinsA]',
+     'c' => 'n.[1714_1720delCGATCTA];[1717_1721delTCTAGinsAC]',
      'cc' => '.',
      'exin' => 'EX11E',
      'strd' => '-',
      'flanks' => {
-       'l' => 'chr1:14409-14410 chr1:14409-14410',
-       'r' => 'chr1:14418-14419 chr1:14416-14417'
+       'l' => 'chr1:14409-14410 chr1:14408-14409',
+       'r' => 'chr1:14418-14419 chr1:14415-14416'
      },
      'func' => 'ncRNA',
      'keep' => 1,
@@ -3134,13 +3126,13 @@ my $utr5_individual={
 };
 my $cdna_scoden_individual={
 'NM_152486.2' => {
-     'c' => 'c.[1A>C];[1_2insC]',
+     'c' => 'c.[1A>C];[1delAinsGC]',
      'cc' => '[ATG=>CTG];[.]',
      'exin' => 'EX2',
      'strd' => '+',
      'flanks' => {
-       'l' => 'chr1:861320-861321 chr1:861321-861322',
-       'r' => 'chr1:861323-861324 chr1:861323-861324'
+       'l' => 'chr1:861320-861321',
+       'r' => 'chr1:861323-861324'
      },
      'func' => '[misstart];[init-loss]',
      'keep' => 1,
