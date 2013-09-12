@@ -2050,9 +2050,6 @@ sub select_position {
 		    push (@$anno_sels, [ $tid, $$rcPos{$$var{pos}}{$tid} ]);
 		}
 	    }
-	    else {
-		$self->throw("Error: No cPos select for $$var{chr}:$$var{pos}");
-	    }
 	}
 	elsif ($_ eq 'ins') { # the pos and pos+1 are selected: c.123_124insTG
 	    $anno_sels = $self->get_cover($$var{chr}, $$var{pos}, ($$var{pos}+1));
