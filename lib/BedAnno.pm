@@ -124,44 +124,62 @@ our %Polar = (
 our %Code2Pep = %C3;
 @Polar{@C1{(sort keys %C1)}} = @Polar{@C3{(sort keys %C1)}};
 
-our %SO = (
+our %SO2name = (
     # variant type
-    159     => 'deletion',
-    1483    => 'SNV',
-    667     => 'insertion',
-    1000032 => 'indel',
+    "SO:0000159"      => 'deletion',
+    "SO:1000032"      => 'indel',
+    "SO:0001483"      => 'SNV',
+    "SO:0000667"      => 'insertion',
+    "BGISO:reference" => 'ref',
+    "BGISO:no-call"   => 'no-call',
 
     # Gene Parts
-    316	    => 'CDS',
-    204	    => 'five_prime_UTR',
-    205	    => 'three_prime_UTR',
-    655	    => 'ncRNA',
-    191	    => 'interior_intron',
-    448	    => 'three_prime_UTR_intron',
-    447	    => 'five_prime_UTR_intron',
-    163	    => 'five_prime_cis_splice_site',
-    164	    => 'three_prime_cis_splice_site',
-    167	    => 'promoter',
-    1577    => 'complex_transcript_variant',
+    "SO:0000316" => 'CDS',
+    "SO:0000204" => 'five_prime_UTR',
+    "SO:0000205" => 'three_prime_UTR',
+    "SO:0000655" => 'ncRNA',
+    "SO:0000191" => 'interior_intron',
+    "SO:0000448" => 'three_prime_UTR_intron',
+    "SO:0000447" => 'five_prime_UTR_intron',
+    "SO:0000163" => 'five_prime_cis_splice_site',
+    "SO:0000164" => 'three_prime_cis_splice_site',
+    "SO:0000167" => 'promoter',
+    "BGISO:span" => 'span',
 
     # Function Parts
-    1819    => 'synonymous_variant',
-    1583    => 'missense_variant',
-    1821    => 'inframe_insertion',
-    1822    => 'inframe_deletion',
-    1587    => 'stop_gained',
-    1578    => 'stop_lost',
-    1582    => 'initiator_codon_variant',
-    1589    => 'frameshift_variant',
-    1567    => 'stop_retained_variant',
-    1575    => 'splice_donor_variant',
-    1574    => 'splice_acceptor_variant',
-    1623    => '5_prime_UTR_variant',
-    1624    => '3_prime_UTR_variant',
-    1619    => 'nc_transcript_variant',
-    1627    => 'intron_variant',
-    1893    => 'transcript_ablation'
+    "SO:0001819" => 'synonymous_variant',
+    "SO:0001583" => 'missense_variant',
+    "SO:0001587" => 'stop_gained',
+    "SO:0001578" => 'stop_lost',
+    "SO:0001822" => 'inframe_deletion',
+    "SO:0001821" => 'inframe_insertion',
+    "SO:0001589" => 'frameshift_variant',
+    "SO:0001582" => 'initiator_codon_variant',
+    "SO:0001893" => 'transcript_ablation',
+    "SO:0001567" => 'stop_retained_variant',
+
+    # for refSeq the same with call seq.
+    "BGISO:no-change" => 'no-change',
+
+    # for transcript with modification cover the edges of components.
+    "BGISO:annotation-fail" => 'annotation-fail',
+
+    # for span and splice
+    "BGISO:unknown-likely-deleterious" => 'unknown-likely-deleterious',
+    "BGISO:unknown"                    => 'unknown',
+
+    # the followings are replaced by 'unknown-likely-deleterious' in Voyager
+    "SO:0001575" => 'splice_donor_variant',
+    "SO:0001574" => 'splice_acceptor_variant',
+
+    # the followings are replaced by 'unknown' in Voyager
+    "SO:0001623" => '5_prime_UTR_variant',
+    "SO:0001624" => '3_prime_UTR_variant',
+    "SO:0001619" => 'nc_transcript_variant',
+    "SO:0001627" => 'intron_variant'
 );
+
+my %name2SO = reverse(%SO2name);
 
 =head2 new
 
