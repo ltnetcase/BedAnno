@@ -700,7 +700,7 @@ sub combin_two {
 	my $pre1 = substr( $v1s, 0, 2 );
 	my $pre2 = substr( $v2s, 0, 2 );
 	my $latter2 = substr( $v2s, 2 );
-	if (($pre1 =~ /^[cnmgp]\.$/ or $pre1 =~ /^[\+\-]/) and ( $pre1 eq $pre2 )) {
+	if ($pre1 =~ /^[cnmgp]\.$/ and ( $pre1 eq $pre2 )) {
 	    substr( $v1s, 2, 0, "[" );
 	    $ind_vs = $v1s . "];[" . $latter2 . "]";
 	}
