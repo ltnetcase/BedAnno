@@ -157,6 +157,7 @@ our %SO2name = (
     "SO:0001582" => 'initiator_codon_variant',
     "SO:0001893" => 'transcript_ablation',
     "SO:0001567" => 'stop_retained_variant',
+    "BGISO:inframe_delins" => 'inframe_delins',
 
     # for refSeq the same with call seq.
     "BGISO:no-change" => 'no-change',
