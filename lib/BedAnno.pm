@@ -2,15 +2,19 @@ package BedAnno;
 
 use strict;
 use warnings;
+use threads::shared; # if threads used before BedAnno, then this will be threaded
+use Scalar::Util qw(refaddr);
 use Carp;
 
 require Exporter;
 
 our @ISA = qw(Exporter);
 
-our @EXPORT = qw(
-    fetchseq get_codon parse_var individual_anno get_gHGVS Code2Pep C3toC1
+our @EXPORT_OK = qw(
+    parse_var fetchseq Code2Pep C3toC1 C1toC3
 );
+
+our %EXPORT_TAGS = ( all => [ @EXPORT_OK ] );
 
 our $VERSION = '0.32';
 
@@ -18,38 +22,48 @@ our $VERSION = '0.32';
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
+=head2 VERSION v0.32
+
+From version 0.32 BedAnno will change to support CG's variant shell list
+and use ncbi annotation release 104 as the annotation database
+with reformatted database format, and won't give any individual
+annotation, so the individual_anno() is no longer available.
+
 =head1 SYNOPSIS
 
   use BedAnno;
-  my $beda = BedAnno->new( db => "in.bed.gz", regbed => 'in.region.bed', codon => 'in.coding.fa', trans => \%trans);
-  my $anno = $beda->anno( 'chr20', 1234567, 'TG', 'TGGG' ); 
+  my $beda = BedAnno->new( db => "in.bed.gz", tr => 'in.trans.fas.gz', short => 1 );
+  my $anno = $beda->anno( 'chr20', 1234567, 1234569, 'AG', 'TGGG' );
 
 =head1 DESCRIPTION
 
 This module need bgzipped BED+1 format database, combined with tabix index,
 tabix is require for fast extract anno infomation randomly.
 The fasta sequences are indexed by samtools faidx, sequence splicing also requires
-samtools.
+samtools. If allele frequency information, prediction information or cytoBand 
+information is needed, then extra dependencies will be required
 
-=head2 EXPORT
+=head2 EXPORT_OK for all
 
     parse_var()		- parse variation information stand-alone, giving
 			  the guess information and possible coordinates.
-    get_gHGVS()		- get g./m. HGVS string from variation entry, got from
-			  parse_var().
-    individual_anno()	- combine a pair of vars which has been annotated
-			  by varanno() to an individual annotation.
     fetchseq()		- used to batched fetch genomic sequences (flanks), 
 			  this depend on samtools installed, and a faidx(ed) 
 			  fasta file.
-    get_codon()		- used to get codon information through cds position.
-    Code2Pep()		- encode 3 bp nucleotides to peptide code.
+    Code2Pep()		- encode 3 bp nucleotides to peptide code, the format
+			  of return code, depend on the option you used in 
+			  inition method, if "short" exists, then C1 will be
+			  the output format, default C3 format.
     C3toC1()		- encode 3 chars peptide code to 1 char peptide code.
+    C1toC3()		- encode 1 chars peptide code to 3 char peptide code.
 
 =head1 Methods
+
 =cut
 
-my %C3 = (
+our (%C3, %C1, %Code2Pep, %SO2Name, %Name2SO, %Polar, %C3toC1, %C1toC3) :shared;
+
+%C3 = (
     TTT=>"Phe",	CTT=>"Leu", ATT=>"Ile",	GTT=>"Val",
     TTC=>"Phe", CTC=>"Leu", ATC=>"Ile", GTC=>"Val",
     TCT=>"Ser", CCT=>"Pro", ACT=>"Thr", GCT=>"Ala",
@@ -71,13 +85,15 @@ my %C3 = (
 		CTN=>"Leu",		GCN=>"Ala",
 		CGN=>"Arg",		GGN=>"Gly",
     
+    # inseq stop codon
+    UAA=>"X",   UAG=>"X",
+
     # selenocysteine
     UGA=>"Sec"
-
 );
 
 
-my %C1 = (
+%C1 = (
     TTT=>"F", CTT=>"L", ATT=>"I", GTT=>"V",
     TTC=>"F", CTC=>"L", ATC=>"I", GTC=>"V",
     TCT=>"S", CCT=>"P", ACT=>"T", GCT=>"A",
@@ -99,15 +115,19 @@ my %C1 = (
 	      CTN=>"L",		  GCN=>"A",
 	      CGN=>"R",		  GGN=>"G",
     
+    UAA=>"X",   UAG=>"X",
+
     UGA=>"U"
 );
 
-our %C3toC1 = ();
+%C3toC1 = ();
+%C1toC3 = ();
 foreach my $threebase (sort keys %C3) {
     $C3toC1{$C3{$threebase}} = $C1{$threebase};
+    $C1toC3{$C1{$threebase}} = $C3{$threebase};
 }
 
-our %Polar = (
+%Polar = (
     Ala => "NP", Asn => "P0", Arg => "P+", Asp => "P-",
     Ile => "NP", Cys => "P0", His => "P+", Glu => "P-",
     Leu => "NP", Gln => "P0", Lys => "P+",
@@ -118,33 +138,36 @@ our %Polar = (
     Val => "NP",
     Sec => "NP",
 
-    '*' => '.'
+    'X' => '.',  '*' => '.'
 );
 
-our %Code2Pep = %C3;
+%Code2Pep = %C3;
 @Polar{@C1{(sort keys %C1)}} = @Polar{@C3{(sort keys %C1)}};
 
-our %SO2name = (
+%SO2Name = (
+
     # variant type
-    "SO:0000159"      => 'deletion',
-    "SO:1000032"      => 'indel',
-    "SO:0001483"      => 'SNV',
-    "SO:0000667"      => 'insertion',
-    "BGISO:reference" => 'ref',
-    "BGISO:no-call"   => 'no-call',
+    "SO:0000159" => 'del',
+    "SO:1000032" => 'delins',
+    "SO:0001483" => 'snv',
+    "SO:0000667" => 'ins',
+    "ref"        => 'ref',
+    "no-call"    => 'no-call',
 
     # Gene Parts
-    "SO:0000316" => 'CDS',
-    "SO:0000204" => 'five_prime_UTR',
-    "SO:0000205" => 'three_prime_UTR',
-    "SO:0000655" => 'ncRNA',
-    "SO:0000191" => 'interior_intron',
-    "SO:0000448" => 'three_prime_UTR_intron',
-    "SO:0000447" => 'five_prime_UTR_intron',
-    "SO:0000163" => 'five_prime_cis_splice_site',
-    "SO:0000164" => 'three_prime_cis_splice_site',
-    "SO:0000167" => 'promoter',
-    "BGISO:span" => 'span',
+    "SO:0000316"      => 'CDS',
+    "SO:0000204"      => 'five_prime_UTR',
+    "SO:0000205"      => 'three_prime_UTR',
+    "SO:0000655"      => 'ncRNA',
+    "SO:0000191"      => 'interior_intron',
+    "SO:0000448"      => 'three_prime_UTR_intron',
+    "SO:0000447"      => 'five_prime_UTR_intron',
+    "SO:0000163"      => 'five_prime_cis_splice_site',
+    "SO:0000164"      => 'three_prime_cis_splice_site',
+    "SO:0000167"      => 'promoter',
+    "span"            => 'span',
+    "abnormal_intron" => 'abnormal_intron',
+    "annotation-fail" => 'annotation-fail',
 
     # Function Parts
     "SO:0001819" => 'synonymous_variant',
@@ -157,17 +180,25 @@ our %SO2name = (
     "SO:0001582" => 'initiator_codon_variant',
     "SO:0001893" => 'transcript_ablation',
     "SO:0001567" => 'stop_retained_variant',
-    "BGISO:inframe_delins" => 'inframe_delins',
+
+    # for non-equal length of substitution
+    "inframe_delins" => 'inframe_delins',
 
     # for refSeq the same with call seq.
-    "BGISO:no-change" => 'no-change',
+    "no-change" => 'no-change',
 
-    # for transcript with modification cover the edges of components.
-    "BGISO:annotation-fail" => 'annotation-fail',
+    # for transcript with modification cover the edges of components,
+    # or overlapped exons
+    "annotation-fail" => 'annotation-fail',
 
     # for span and splice
-    "BGISO:unknown-likely-deleterious" => 'unknown-likely-deleterious',
-    "BGISO:unknown"                    => 'unknown',
+    "unknown-likely-deleterious" => 'unknown-likely-deleterious',
+
+    # for ncRNA, utr, intron or intergenic
+    "unknown" => 'unknown',
+
+    # for no-call variant
+    "unknown-no-call" => 'unknown-no-call',
 
     # the followings are replaced by 'unknown-likely-deleterious' in Voyager
     "SO:0001575" => 'splice_donor_variant',
@@ -180,99 +211,440 @@ our %SO2name = (
     "SO:0001627" => 'intron_variant'
 );
 
-my %name2SO = reverse(%SO2name);
+%Name2SO = reverse(%SO2name);
 
 =head2 new
 
-    About   : Creat a new annotation entry, automatically call load_anno method.
-    Usage   : my $beda = BedAnno->new( db => 'in.bed.gz', regbed => 'in.region.bed', codon => 'in.coding.fa[.gz]');
-    Args    : The args "db", "codon" are necessary arg, this codon is cut from hg19 the following are optional args:
-	      "genes"  => {"ABC" => 1, "DEF" => 1} / "genes.list"		# limit the genes to be annotate
-	      "trans"  => {"NM_0012.1" => 1, "NM_0034.2" => 1} /  "trans.list"	# limit the transcripts to be annotate
-	      "region" => "chr20:1234567-1234568"    # give the target region in region string
-	      "regbed" => "in.region.bed"            # give the target region in bed format region files.
-	      "onlyPr" => 1                          # to limit the anno range to the primary transcript for a gene.
-	      "mmap"   => 1                          # to output all needed multiple mapping record of transcript.
-	      "short"  => 1                          # to use 1 bp peptide code instead 3bp peptide code
-	      when use "genes", "trans", "onlyPr" together, which will return the transcript of "genes" with primary tag, 
-							    besides all the "trans",
-	      when use "genes" only, will extract all transcripts of genes without multiple mapping.
-	      when use "trans" only, will extract only these transcripts.
-	      when use "mmap", multiple mapping record will be involved.
-	      when use "onlyPr", record without primary tag and not involved in the transcript list, will be skipped.
-    Returns : A class which has the following extra two tags be assigned
-		    codonseq => $coding_sequence_hash_ref   # coding sequence hashed with the tid
-		    annodb   => $annotation_db_hash_ref
-	      please see load_anno() for more information of the format of the annotation_db_hash_ref.
+=over
+
+=item About : Creat a new annotation entry
+
+=item Usage :
+
+    my $beda = $beda = BedAnno->new( db => "in.bed.gz", tr => 'in.trans.fas.gz', short => 1 );
+
+=item Args	- (all database files should be tabix indexed)
+
+=over
+
+=item Essential Args:
+
+=over
+
+=item I<db> <in.bed.gz>
+
+=over
+
+=item annotation database file. 
+
+=back
+
+=item I<tr> <in.trans.fas.gz>
+
+=over
+
+=item transcript sequence fasta file
+
+=back
+
+=item See L</DATABASE FORMAT> for more infomation. 
+
+=back
+
+=item Optional Args :
+
+=over
+
+=item Common options :
+
+=over 
+
+=item I<threads> [number]
+
+=over
+
+=item support paralleled annotation, give the number of threads be used for annotation.
+
+=back
+
+=item I<cytoBand> [cytoBand.bed.gz]
+
+=over
+
+=item add cytoBand information
+
+=back
+
+=item I<pfam> [pfam.tsv.gz]
+
+=over
+
+=item add pfam information
+
+=back
+
+=item I<prediction> [ensembl_prediction_db.tsv.gz]
+
+=over
+
+=item add sift, polyphen2 prediction and scores
+
+=back
+
+=item I<phyloP> [phyloP_scores.tsv.gz]
+
+=over
+
+=item add phyloP scores of all 3 datasets.
+
+=back
+
+=item I<dbSNP> [snp137.bed.gz]
+
+=over
+
+=item add rsID and dbSNP frequency information
+
+=back
+
+=item I<tgp> [tgp_phaseI_v3.bed.gz]
+
+=over
+
+=item add 1000 genomes allele frequency information
+
+=back
+
+=item I<cg54> [CG54.bed.gz]
+
+=over
+
+=item add 54 whole genomes allele frequency information from CompleteGenomics.
+
+=back
+
+=item I<wellderly> [wellderly.bed.gz]
+
+=over
+
+=item add wellderly's allele frequency information from CompleteGenomics.
+
+=back
+
+=item I<esp6500> [ESP6500.bed.gz]
+
+=over
+
+=item add ESP6500 allele frequency information from NHLBI
+
+=back
+
+=item I<short> [boolean]
+
+=over
+
+=item use 1 char peptide code instead of 3 chars format
+
+=back
+
+=item I<batch> [boolean]
+
+=over
+
+=item use batch mode annotation, default in daemon mode as an annotation engine.
+
+=back
+
+=item I<genes> [ "genes.list" | $rh_geneslist ]
+
+=over
+
+=item annotate transcripts for I<genes>. e.g. {"ABC" => 1, "DEF" => 1} or "genes.list" 
+
+=back
+
+=item I<trans> [ "trans.list" | $rh_translist ]
+
+=over
+
+=item annotate transcripts in I<trans>. e.g. {"NM_0012.1" => 1, "NM_0034.2" => 1} or "trans.list" 
+
+=back
+
+=item I<onlyPr> [boolean]
+
+=over
+
+=item limit to primary transcript for I<genes>, boolean option, default no limit.
+
+=back
+
+=item I<mmap> [boolean]
+
+=over
+
+=item allow annotating all other non "BEST" multiple-mapping records, boolen option, default not allowed.
+      e.g. NM_0123.1 have 3 mapping location or alternate splicing, default only the "BEST" one will be 
+      annotated. See L</DATABASE FORMAT> for the "BEST" definition.
+
+=back
+
+=back
+
+=item Batch mode options :
+
+=over
+
+=item I<region> [region_string]
+
+=over
+
+=item limit to only annotate transcript in I<region>. e.g. "chr20:1234567-1234568", prior to I<regbed>.
+
+=back
+ 
+=item I<regbed> [BED format file]
+
+=over
+
+=item similar to I<region>, with allowing multiple regions. e.g. "in.region.bed". 
+
+=back
+
+=back
+
+=item Notes
+
+=over
+
+=item Batch mode is designed for annotation of a complete list of variants 
+      on same chromosome, read all information of the chr into memory, 
+      and annotate all variants together in the order of chr coordinates.
+      This mode can avoid frequent IO, brought by tabix searching, but need
+      huge memory cost.
+
+=back
+
+=back
+
+=back
+
+=item Returns
+
+=over
+
+=item Annotation Engine object entry, please see L</load_anno> for more information.
+
+=back
+
+=back
 
 =cut
 sub new {
     my ($class, @args) = @_;
-    my $self = {@args};
+    my $self :shared;
+    $self = shared_clone({@args});
     bless $self, ref($class) || $class;
 
-    if (   ( !exists $$self{db} )
-        or ( !-e $$self{db} )
-        or ( !exists $$self{codon} )
-        or ( !-e $$self{codon} ) )
+    if (   ( !exists $self->{db} )
+        or ( !-e $self->{db} )
+        or ( !exists $self->{tr} )
+        or ( !-e $self->{tr} ) )
     {
-        $self->throw("Error filename or too few args, need db, codon file to be available at least.");
+        $self->throw("Error filename or too few args, need db, tr file to be available at least.");
     }
 
-    $$self{codonseq} = readfa($$self{codon});
+    my $anno_all_opt = 1;
+
     my %open_args;
-    if (exists $$self{region}) {
-	$open_args{region} = $$self{region};
+    if (exists $self->{region}) {
+	$anno_all_opt = 0;
+	$open_args{region} = $self->{region};
     }
-    if (exists $$self{regbed}) {
-	$open_args{regbed} = $$self{regbed};
+    if (!exists $self->{region} and exists $self->{regbed}) {
+	$anno_all_opt = 0;
+	$open_args{regbed} = $self->{regbed};
     }
-    if (exists $$self{genes}) {
-	if (ref($$self{genes}) eq 'HASH') {
-	    $open_args{genes} = $$self{genes};
+    if (exists $self->{genes}) {
+	$anno_all_opt = 0;
+	if (ref($self->{genes}) eq 'HASH') {
+	    $open_args{genes} = $self->{genes};
 	}
 	else {
-	    open (GENE, $$self{genes}) or $self->throw("$$self{genes} : $!");
+	    open (GENE, $self->{genes}) or $self->throw("$self->{genes} : $!");
 	    my %genes = map { s/\s+//g; $_ => 1 } <GENE>;
 	    close GENE;
 	    $open_args{genes} = \%genes;
 	}
     }
-    if (exists $$self{trans}) {
-	if (ref($$self{trans}) eq 'HASH') {
-	    $open_args{trans} = $$self{trans};
+    if (exists $self->{trans}) {
+	$anno_all_opt = 0;
+	if (ref($self->{trans}) eq 'HASH') {
+	    $open_args{trans} = $self->{trans};
 	}
 	else {
-	    open (TRAN, $$self{trans}) or $self->throw("$$self{trans} : $!");
+	    open (TRAN, $self->{trans}) or $self->throw("$self->{trans} : $!");
 	    my %trans = map { s/\s+//g; $_ => 1 } <TRAN>;
 	    close TRAN;
 	    $open_args{trans} = \%trans;
 	}
+	$open_args{clean_trans} = {map {s/\-\d+$//; $_ => 1} keys %{$self->{trans}}};
     }
-    if (exists $$self{onlyPr}) {
-	$open_args{onlyPr} = $$self{onlyPr};
+    if (exists $self->{onlyPr}) {
+	$anno_all_opt = 0;
+	$open_args{onlyPr} = $self->{onlyPr};
     }
-    if (exists $$self{mmap}) {
-	$open_args{mmap} = $$self{mmap};
+    if (exists $self->{mmap}) {
+	$open_args{mmap} = $self->{mmap};
     }
-    if (exists $$self{short}) {
+    if (exists $self->{short}) {
 	%Code2Pep = %C1;
     }
 
-    return $self->load_anno(%open_args);
+    if (exists $self->{cytoBand}) {
+	confess "Error: [$self->{cytoBand}] $!" if (!-e $self->{cytoBand} or !-r $self->{cytoBand});
+	require GetCytoband;
+	my $cytoBand_h = GetCytoBand->new( db => $self->{cytoBand} );
+	$self->{cytoBand_h} = shared_clone($cytoBand_h);
+    }
+
+    if (exists $self->{pfam}) {
+	confess "Error: [$self->{pfam}] $!" if (!-e $self->{pfam} or !-r $self->{pfam});
+	require GetPfam;
+	my $pfam_h = GetPfam->new( db => $self->{pfam} );
+	$self->{pfam_h} = shared_clone($pfam_h);
+    }
+
+    if (exists $self->{prediction}) {
+	confess "Error: [$self->{prediction}] $!" if (!-e $self->{prediction} or !-r $self->{prediction});
+	require GetPrediction;
+	my $prediction_h = GetPrediction->new( db => $self->{prediction} );
+	$self->{prediction_h} = shared_clone($prediction_h);
+    }
+
+    if (exists $self->{phyloP}) {
+	confess "Error: [$self->{phyloP}] $!" if (!-e $self->{phyloP} or !-r $self->{phyloP});
+	require GetPhyloP;
+	my $phyloP_h = GetPhyloP->new( db => $self->{phyloP} );
+	$self->{phyloP_h} = shared_clone($phyloP_h);
+    }
+
+    if (exists $self->{dbSNP}) {
+	confess "Error: [$self->{dbSNP}] $!" if (!-e $self->{dbSNP} or !-r $self->{dbSNP});
+	require GetDBSNP;
+	my $dbSNP_h = GetDBSNP->new( db => $self->{dbSNP} );
+	$self->{dbSNP_h} = shared_clone($dbSNP_h);
+    }
+
+    if (exists $self->{tgp}) {
+	confess "Error: [$self->{tgp}] $!" if (!-e $self->{tgp} or !-r $self->{tgp});
+	require GetTgp;
+	my $tgp_h = GetTgp->new( db => $self->{tgp} );
+	$self->{tgp_h} = shared_clone($tgp_h);
+    }
+
+    if (exists $self->{cg54}) {
+	confess "Error: [$self->{cg54}] $!" if (!-e $self->{cg54} or !-r $self->{cg54});
+	require GetCGpub;
+	my $cg54_h = GetCGpub->new( db => $self->{cg54} );
+	$self->{cg54_h} = shared_clone($cg54_h);
+    }
+
+    if (exists $self->{wellderly}) {
+	confess "Error: [$self->{wellderly}] $!" if (!-e $self->{wellderly} or !-r $self->{wellderly});
+	require GetCGpub;
+	my $wellderly_h = GetCGpub->new( db => $self->{wellderly} );
+	$self->{wellderly_h} = shared_clone($wellderly_h);
+    }
+
+    if (exists $self->{esp6500}) {
+	confess "Error: [$self->{esp6500}] $!" if (!-e $self->{esp6500} or !-r $self->{esp6500});
+	require GetPfam;
+	my $esp6500_h = GetPfam->new( db => $self->{esp6500} );
+	$self->{esp6500_h} = shared_clone($esp6500_h);
+    }
+
+    $self->{trInfo} = shared_clone($self->readtr());
+    $self->{annodb} = shared_clone($self->load_anno(%open_args)) if (exists $self->{batch});
+    return $self;
 }
 
-sub readfa {
-    my $file = shift;
-    open (FAS, "zcat -f $file |") or confess "$file: $!";
+=head2 readtr
+
+    About   : Read transcript information, and even sequences if in batch mode.
+    Usage   : my $rtrSeqs = $beda->readtr( genes => $rh_NewGenes, trans => $rh_NewTrans );
+    Args    : Optional args "genes" and "trans" only accept hash ref values.
+	      if no args specified, it will load information based on the
+	      configuration of BedAnno entry.
+    Returns : A hash ref of trSeqs:
+	      {
+		$tr_acc => {
+		    len      => $tr_len,
+		    gene     => $gene_sym,
+
+		    # optional tags:
+		    prot     => $prot_acc,
+		    plen     => $prot_len,
+		    csta     => $cds_start_on_trSeq, # 1 based
+		    csto     => $cds_end_on_trSeq,   # 1 based
+		    seq      => $tr_sequence,
+		    
+		    X	     => 1,		     # inseqStop
+		    U	     => 1,		     # selenocysteine
+		    A	     => 1,		     # polyATail
+		    altstart => $startCodons,	     # alt start codons
+		},
+		...
+	      }
+
+=cut
+sub readtr {
+    my $self = shift;
+    my %opts = @_;
+    if (exists $opts{genes} and ref($opts{genes}) ne 'HASH') {
+	$self->throw("Options arg 'genes' only accept hash ref as value.");
+    }
+    if (exists $opts{trans} and ref($opts{trans}) ne 'HASH') {
+	$self->throw("Options arg 'trans' only accept hash ref as value.");
+    }
+
+    open (FAS, "zcat -f $self->{tr} |") or confess "$self->{tr}: $!";
     local $/ = ">";
     my %seqs = ();
     while (<FAS>) {
 	s/[\s>]+$//g;
 	next if (/^\s*$/);
-	my $hd = $1 if (s/^(\S+)[^\n]*\n//);
+	my $hd = $1 if (s/^(\S+[^\n]*)\n//);
+	confess "Error: trSeq parse error!" if (!defined $hd);
+	my @headers = split(/\s+/,$hd);
+	confess "Error: trSeq header parse error!" if (7 > @headers);
 	s/\s+//g;
-	$seqs{$hd} = $_;
+	next if ($headers[6] =~ /FAIL/);				# skip failed transcript
+	if (!exists $opts{trans} and !exists $opts{genes}) {
+	    next unless (
+		(!exists $self->{clean_trans} and !exists $self->{genes}) 
+		    or (exists $self->{clean_trans} and exists $self->{clean_trans}->{$headers[0]})
+		    or (exists $self->{genes} and exists $self->{genes}->{$headers[2]})
+	    );
+	}
+	else {
+	    next unless (
+		(exists $opts{trans} and exists $opts{trans}{$headers[0]})
+		    or (exists $opts{genes} and exists $opts{genes}{$headers[2]})
+	    );
+	}
+	$seqs{$headers[0]}{seq}  = $_ if (exists $self->{batch});       # hash sequence when batch
+	$seqs{$headers[0]}{len}  = $headers[1];				# tx length
+	$seqs{$headers[0]}{gene} = $headers[2];				# gene symbol
+	$seqs{$headers[0]}{prot} = $headers[3] if ($headers[3] ne "."); # prot acc.ver
+	$seqs{$headers[0]}{plen} = $headers[4] if ($headers[4] ne "."); # prot length
+	$seqs{$headers[0]}{U} = 1 if ($headers[6] =~ /selenocysteine/);	# selenocysteine
+	$seqs{$headers[0]}{X} = 1 if ($headers[6] =~ /inseqStop/);	# inseqStop
+	$seqs{$headers[0]}{A} = 1 if ($headers[6] =~ /polyATail/);	# polyATail
+	if ($headers[5] ne ".") { # cds start, cds end in tx
+	    @{$seqs{$headers[0]}}{qw{csta csto}} = split(/,/, $headers[5]);
+	}
+	$seqs{$headers[0]}{altstart} = {map {$_=>1} split(/;/, $headers[7])} if (defined $headers[7]);
     }
     close FAS;
     return \%seqs;
@@ -280,7 +652,7 @@ sub readfa {
 
 =head2 load_anno
 
-    About   : load all needed annotation infomation into memory for multi-proc annotation
+    About   : load all needed annotation infomation into memory for multi-process annotation
     Usage   : $beda->load_anno( region => "chr20:1234567-1234568", trans => \%trans );
 	     or: my $rlocal_db = $beda->load_anno( region => "chr20:1234567-1234568", local => 1 );
     Args    : using %args to override new methods args:
@@ -321,9 +693,9 @@ sub readfa {
 =cut
 sub load_anno {
     my ( $self, %args ) = @_;
-    my $cmd = "<$$self{db}";
-    my $tabix_args = qq['$$self{db}'];
-    if ( -e $$self{db} && $$self{db} =~ /\.gz/i ) {
+    my $cmd = "$self->{db}";
+    my $tabix_args = qq['$self->{db}'];
+    if ( -e $self->{db} && $self->{db} =~ /\.gz/i ) {
         if ( exists $args{region} and defined $args{region} ) {
 	    $tabix_args .= qq[ '$args{region}'];
             $cmd = "tabix $tabix_args |";
@@ -333,7 +705,7 @@ sub load_anno {
             $cmd = "tabix $tabix_args |";
 	}
         else {
-            $cmd = "zcat -f '$$self{db}' |";
+            $cmd = "zcat -f '$self->{db}' |";
         }
     }
     open( ANNO, $cmd ) or $self->throw("$cmd: $!");
@@ -364,7 +736,7 @@ sub load_anno {
                 and ( !$tranTag or !exists( $$tranList{ $cont[0] } ) ) );
             next
               if (  $prTag
-                and ( $cont[10] ne 'Y' )
+                and ( $cont[13] ne 'Y' )
                 and ( !$tranTag or !exists( $$tranList{ $cont[0] } ) ) );
 	    my $ori_cont = $cont[0];
             $cont[0] =~ s/\-\d+$//;
@@ -402,7 +774,7 @@ sub load_anno {
     else {
 	$self->throw("Error: empty available-db!") if (0 == keys %annodb);
 
-	$$self{annodb} = \%annodb;
+	$self->{annodb} = \%annodb;
 	return $self->region_merge() if ($prTag or $mmapTag or $geneTag or $tranTag);
 	return $self;
     }
@@ -3237,14 +3609,28 @@ sub count_content {
 =head2 fetchseq
 
     About   : get sequence from fasta db using samtools faidx
-    Usage   : my $rhash = fetchseq('db.fasta', \@regions);
+    Usage   : my $seq = fetchseq('db.fasta', $region_str);
+	      my $rhash = fetchseq('db.fasta', \@regions);
     Args    : a list of region in format: (chr1:123-456, chr1:789-1000, chr2:234-567, or NM_01130.1:345 )
     Returns : a hash ref of { region => seq }
 
 =cut
 sub fetchseq {
     my ($fasta, $rRegs) = @_;
-
+    if (!ref($rRegs)) {
+	if ($rRegs =~ /[\S]\s+[\S]/) {
+	    $rRegs = [split(/\s+/, $rRegs)];
+	}
+	else {
+	    open (FASTA,"samtools faidx $fasta $rRegs |") or confess "samtools faidx: $!";
+	    <FASTA>;
+	    my @seq = <FASTA>;
+	    my $seq = join("",@seq);
+	    $seq =~ s/\s+//g;
+	    close FASTA;
+	    return $seq;
+	}
+    }
     my %seqs = ();
     local $/ = ">";
     while (0 < @$rRegs) {
@@ -3284,6 +3670,16 @@ sub C3toC1 {
     }
 }
 
+sub C1toC3 {
+    my $c1 = shift;
+    if (exists $C1toC3{$c1}) {
+	return $C1toC3{$c1};
+    }
+    else {
+	return '.';
+    }
+}
+
 sub rev_comp {
     my $Seq = shift;
     $Seq = reverse($Seq);
@@ -3304,6 +3700,10 @@ sub warn {
 
 1;
 __END__
+
+=head1 DATABASE FORMAT
+
+    The Format
 
 =head1 SEE ALSO
 
