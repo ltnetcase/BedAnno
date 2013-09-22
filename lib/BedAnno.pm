@@ -815,13 +815,26 @@ sub varanno {
     }
 
     my %ret_anno = ( var => $var, info => {} );
-    if (exists $$var{sel} and exists $$var{sel}{std}) {
+    if (exists $$var{sel} and exists $$var{sel}{std} and 0 < scalar (@{$$var{sel}{std}})) {
 	my %infos = ();
 	foreach my $sel (@{$$var{sel}{std}}) {
 	    my ($tid, $ranno) = $self->pairanno($var, $sel);
 	    $infos{$tid} = $ranno;
 	}
 	$ret_anno{info} = \%infos;
+    }
+    else {
+	# use no hit transcript as it hit '.' transcript
+	@{$ret_anno{info}{'.'}}{qw(c p cc r exin func polar strd)} = 
+	    (get_gHGVS($var), ('.') x 6, '+');
+	$ret_anno{info}{'.'}{bc} = $ret_anno{info}{'.'}{c};
+	my $act_pos = $$var{pos};
+	my $act_rl  = $$var{reflen};
+	if ( substr( $$var{ref}, 0, 1 ) eq substr( $$var{alt}, 0, 1 ) and $$var{guess} ne 'ref') {
+	    $act_pos += 1;
+	    $act_rl  -= 1;
+	}
+	$ret_anno{info}{'.'}{flanks} = get_flanks($$var{chr}, $act_pos, $act_rl);
     }
     return \%ret_anno;
 }
