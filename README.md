@@ -109,3 +109,6 @@ Then assign the primary tag 'Y' to the first refseq Acc.Ver,
 and add postfix "-N" (1..n-1) to the other following records
 in the order of sort result.
 
+This branch is renamed to "noRealRefSeq\_stable", which means
+that it use pseudo-refseq database to annotate, this database
+is directly cut from the reference genome.
