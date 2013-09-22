@@ -31,6 +31,7 @@ annotation, so the individual_anno() is no longer available.
 
 =head1 SYNOPSIS
 
+  use threads;
   use BedAnno;
   my $beda = BedAnno->new( db => "in.bed.gz", tr => 'in.trans.fas.gz', short => 1 );
   my $anno = $beda->anno( 'chr20', 1234567, 1234569, 'AG', 'TGGG' );
@@ -186,10 +187,6 @@ foreach my $threebase (sort keys %C3) {
 
     # for refSeq the same with call seq.
     "no-change" => 'no-change',
-
-    # for transcript with modification cover the edges of components,
-    # or overlapped exons
-    "annotation-fail" => 'annotation-fail',
 
     # for span and splice
     "unknown-likely-deleterious" => 'unknown-likely-deleterious',
@@ -653,13 +650,10 @@ sub readtr {
 =head2 load_anno
 
     About   : load all needed annotation infomation into memory for multi-process annotation
-    Usage   : $beda->load_anno( region => "chr20:1234567-1234568", trans => \%trans );
-	     or: my $rlocal_db = $beda->load_anno( region => "chr20:1234567-1234568", local => 1 );
-    Args    : using %args to override new methods args:
-	      region, regbed, genes, trans
-	      the tag local can return a local annotate db without overwrite the class entry's.
-    Returns : BedA entry with full merged annotation blocks, or a localized merged anno db.
-	      The returned annotation database is a hash ref:
+    Usage   : my $ranndb = $beda->load_anno( region => "chr20:1234567-1234568", trans => \%trans );
+    Args    : Using %args to override class's properties: region, regbed, genes, trans
+	      if no args, use the the class's properties as default.
+    Returns : a localized merged anno db, The returned annotation database is a hash ref.
 		{
 		    $chr => [
 			{
@@ -672,6 +666,8 @@ sub readtr {
 			    detail => {
 				$tid => {
 				    gsym => $gsym,    (gene symbol)
+				    gid	 => $gid,     (Entrez gene id)
+				    gpSO => $gpSO,    (GeneParts SO)
 				    blka => $blka,    (block attribute)
 				    exin => $exin,    (exon intron number)
 				    nsta => $nsta,    (n./r. left  of whole block)
@@ -681,7 +677,8 @@ sub readtr {
 				    wlen => $wlen,    (length of whole block)
 				    pr   => $pr,      (primary tag)
 				    strand => $strd,  (strand)
-				    offset => $offset (offset of current block to whole block)
+				    offset => $offset,(offset of current block to whole block)
+				    mismatch => $mismatch (non-equal length block descripter)
 				}, ...
 			    }
 			}, ... 
@@ -719,7 +716,7 @@ sub load_anno {
     my $tranList = $args{trans} if ($tranTag);
     my %pureTran = map { s/\-\d+$//; $_ => 1 } keys %$tranList if ($tranTag);
 
-    my %annodb = ();
+    my $rannodb = {};
     while (<ANNO>) {
 	s/\s+$//;
 	my ($chr, $start, $stop, $annostr) = split(/\t/);
@@ -754,8 +751,7 @@ sub load_anno {
                     or ( !$mmapTag and !exists $$tranList{$ori_cont} ) )
                 and ( !$geneTag or !exists( $$geneList{ $cont[1] } ) )
               );
-
-	    # NM_152486.2|SAMD11|+|IC7|IVS8|949|950|869|870|829|Y|0
+	    
             my $ofst = $1
               if ( $anno_ent =~ s/\|(\d+)$// )
               or $self->throw("db format error: [$anno_ent]");
@@ -763,186 +759,31 @@ sub load_anno {
 	}
 
 	next if (!exists $ent{annos});
-	push (@{$annodb{$chr}}, {%ent});
+	push (@{$$rannodb{$chr}}, {%ent});
     }
     close ANNO;
 
-    if (exists $args{local} and $args{local}) {
-	return $self->region_merge( db => \%annodb ) if ($prTag or $mmapTag or $geneTag or $tranTag);
-	return \%annodb;
-    }
-    else {
-	$self->throw("Error: empty available-db!") if (0 == keys %annodb);
+    $rannodb = region_merge($rannodb) if ($prTag or $mmapTag or $geneTag or $tranTag);
 
-	$self->{annodb} = \%annodb;
-	return $self->region_merge() if ($prTag or $mmapTag or $geneTag or $tranTag);
-	return $self;
-    }
-}
-
-=head2 write_using
-
-    About   : write the current using database information to files
-    Usage   : $beda->write_using( $file, $type );
-    Args    : file gives the filename to output, and type is one of the following:
-		g:  gene symbol list
-		t:  transcript acc.ver list
-		c:  the complete annotation region, in bed format,
-		    which can be used as the variation calling region.
-		b:  standard bed format of only exon region
-		a:  BED +1 format, exon region with '+1' annotation, 
-		    oneline per one exon for one transcript, this
-		    format allow redundancy exists, and not sorted by
-		    chromosomal coordinates, but by the transcript acc.ver
-		    and the exon number, this file is mainly for 
-		    transcript originated statistics for only exon.
-
-=cut
-sub write_using {
-    my ($self, $file, $type) = @_;
-    open (F, ">", $file) or $self->throw("$file: $!");
-    my (%genes, %trans, @beds, %anno, @complete) = ();
-    foreach my $chr (sort keys %{$$self{annodb}}) {
-	foreach my $bedent (@{$$self{annodb}{$chr}}) {
-	    if ($type eq 'c') {
-		push (@complete, [ $chr, $$bedent{sta}, $$bedent{sto} ]);
-		next;
-	    }
-	    my $exOpt = 0;
-	    foreach my $annoblk (keys %{$$bedent{annos}}) {
-		# NM_152486.2|SAMD11|+|IC7|IVS8|949|950|869|870|829|Y
-		my @info = split(/\|/, $annoblk);
-
-		if ($type eq 'g') {
-		    $genes{$info[1]} = 1;
-		}
-		elsif ($type eq 't') {
-		    $trans{$info[0]} = 1;
-		}
-		elsif ($type eq 'b') {
-		    $exOpt = 1 if ($info[4] =~ /^EX/);
-		}
-		elsif ($type eq 'a') {
-		    if ( $info[4] =~ /^EX/) {
-			if (   !exists( $anno{ $info[0] } )
-			    or !exists( $anno{ $info[0] }{ $info[4] } ) )
-			{
-			    $anno{ $info[0] }{ $info[4] }{chr} = $chr;
-			    $anno{ $info[0] }{ $info[4] }{sta} = $$bedent{sta};
-			    $anno{ $info[0] }{ $info[4] }{sto} = $$bedent{sto};
-			    $anno{ $info[0] }{ $info[4] }{blk} = $annoblk;
-			}
-			elsif ($$bedent{sto} > $anno{ $info[0] }{ $info[4] }{sto}) {
-			    $anno{ $info[0] }{ $info[4] }{sto} = $$bedent{sto};
-			}
-			else {
-			    $self->throw("Error: bad db, non-departed beds, or no-sort!");
-			}
-		    }
-		}
-		else { $self->throw("type: $type not regconized."); }
-	    }
-	    push (@beds, [ $chr, $$bedent{sta}, $$bedent{sto} ]) if ($type eq 'b' and $exOpt);
-	}
-    }
-
-    if ($type eq 'g') {
-	say F join("\n", (sort keys %genes));
-    }
-    elsif ($type eq 't') {
-	say F join("\n", (sort keys %trans));
-    }
-    elsif ($type eq 'b') { # merge bed regions due to pre-sorted db.
-	if (0 == @beds) {
-	    $self->warn("no region in db.");
-	    return;
-	}
-	my ($pre_chr, $pre_sta, $pre_sto) = @{$beds[0]};
-	for (my $i = 1; $i < @beds; $i++) {
-	    my ($cur_chr, $cur_sta, $cur_sto) = @{$beds[$i]};
-	    if (($cur_chr ne $pre_chr) or ($cur_sta > $pre_sto)) {
-		say F join("\t", $pre_chr, $pre_sta, $pre_sto);
-		($pre_chr, $pre_sta, $pre_sto) = ($cur_chr, $cur_sta, $cur_sto);
-	    }
-	    elsif ($cur_sta == $pre_sto) {
-		$pre_sto = $cur_sto;
-	    }
-	    else {
-		$self->throw("Error: bad db, non-departed beds, or no-sort!");
-	    }
-	}
-	say F join("\t", $pre_chr, $pre_sta, $pre_sto);
-    }
-    elsif ($type eq 'a') {
-	foreach my $nm (sort keys %anno) {
-	    foreach my $ex (sort exsort keys %{$anno{$nm}}) {
-		say F join("\t", $anno{$nm}{$ex}{chr}, $anno{$nm}{$ex}{sta},
-		    $anno{$nm}{$ex}{sto}, $anno{$nm}{$ex}{blk});
-	    }
-	}
-    }
-    elsif ($type eq 'c') {
-	if (0 == @complete) {
-	    $self->warn("no region in db.");
-	    return;
-	}
-	my ($pre_chr, $pre_sta, $pre_sto) = @{$complete[0]};
-	for (my $i = 1; $i < @complete; $i++) {
-	    my ($cur_chr, $cur_sta, $cur_sto) = @{$complete[$i]};
-	    if (($cur_chr ne $pre_chr) or ($cur_sta > $pre_sto)) {
-		say F join("\t", $pre_chr, $pre_sta, $pre_sto);
-		($pre_chr, $pre_sta, $pre_sto) = ($cur_chr, $cur_sta, $cur_sto);
-	    }
-	    elsif ($cur_sta == $pre_sto) {
-		$pre_sto = $cur_sto;
-	    }
-	    else {
-		$self->throw("Error: bad db, non-departed complete, or no-sort!");
-	    }
-	}
-	say F join("\t", $pre_chr, $pre_sta, $pre_sto);
-    }
-    else { $self->throw("type: $type not regconized."); }
-
-    close F;
-    return;
-}
-
-sub exsort {
-    my ($sym, $anum, $bnum);
-    if ($a =~ /^EX([\+\-\*]?)(\d+)[EP]?$/) {
-	$sym = $1;
-	$anum = $2;
-    }
-    if ($b =~ /^EX[\+\-\*]?(\d+)[EP]?$/) {
-	$bnum = $1;
-    }
-    confess "ExIn number format error. [$a, $b]" if (!defined $anum or !defined $bnum);
-    if (!defined $sym or $sym !~ /\-/) {
-	$anum <=> $bnum;
-    }
-    else {
-	$bnum <=> $anum;
-    }
+    return $rannodb;
 }
 
 =head2 region_merge
 
     About   : merge consecutive same-entries regions
-    Usage   : $beda->region_merge();
-	     or:
-		my $rAnnodb = $beda->region_merge( db => \%anndb );
-    Args    : using 'db' tag to locally merge regions,
-	      without updating the db of class entry.
+    Usage   : my $rannodb = region_merge($loaded_db);
+    Args    : A hash ref of loaded_db.
+    Returns : A hash ref of merged db.
+	      
 
 =cut
 sub region_merge {
-    my ($self, %args) = @_;
 
-    my $radb = (exists $args{db}) ? $args{db} : $$self{annodb};
+    my $radb = shift;
+    my %local_radb = %$radb;
 
-    foreach my $chr (keys %$radb) {
-	my @annoents = @{$$radb{$chr}};
+    foreach my $chr (keys %local_radb) {
+	my @annoents = @{$local_radb{$chr}};
 	my $oricount = scalar (@annoents);
 	next if ($oricount <= 1);
 
@@ -966,238 +807,41 @@ sub region_merge {
 	    splice (@annoents, ($curid + 1), 1);
 	}
 
-	$$radb{$chr} = [@annoents] if ($oricount > (scalar @annoents));
+	$local_radb{$chr} = [@annoents] if ($oricount > (scalar @annoents));
     }
-    if (exists $args{db}) {
-	return $radb;
-    }
-    else {
-	return $self;
-    }
+
+    return \%local_radb;
 }
 
-=head2 individual_anno
-
-    About   : annotate the variation pairs of one diploid individual, 
-	      combine the region, function, and HGVS strings etc.
-    Usage   : my $rIndAnno = individual_anno($varanno1, $varanno2);
-    Args    : a pair of variation annotation entry (see varanno())
-    Returns : a hash ref of individual annotation information:
-	      {
-		$tid => 
-		{
-		    c      => $combin_cHGVS (in c./n./m./g.[...];[...] format)
-		    p      => $combin_pHGVS (in p.[...];[...] format)
-		    cc     => $combin_codonchange (in [...];[...] format)
-		    r      => $region or $combin_region(multiple)
-		    exin   => $exin or $combin_exin(multiple)
-		    func   => $combin_func  (in [...];[...] format)
-		    strd   => $strand
-		    flanks => $flanks or $combin_flanks(multiple)
-		    polar  => $combin_polar (in [...];[...] format)
-		    keep   => [0/1] to indicate if this variation should be kept.
-			      or say if the variation is likely to make sense.
-		}, ...
-	      }
-
-=cut
-sub individual_anno {
-    my ($va1, $va2) = @_;
-
-    my %all_tid_annos = ();
-    if (!exists $$va1{info} and !exists $$va2{info}) {
-	confess "no annotation info in any var, may be all reference?";
-    }
-
-    my $former = (exists $$va1{info}) ? $va1 : $va2;
-    my $latter = (exists $$va1{info}) ? $va2 : $va1;
-    foreach my $tid (keys %{$$former{info}}) {
-	my %ind_anno_info = ();
-	@ind_anno_info{qw(c p cc r exin polar strd func flanks)} = ('.') x 9;
-        if (
-            $$former{info}{$tid}{c} =~ /[gcm]\.=/
-            and (
-                !exists $$latter{info} or !exists $$latter{info}{$tid}
-                or ( exists $$latter{info}{$tid}
-                    and $$latter{info}{$tid}{c} =~ /[gcm]\.=/ )
-            )
-          )
-        {    # both ref
-            %ind_anno_info = %{ $$former{info}{$tid} };
-        }
-        elsif (
-            !exists $$latter{info} or !exists $$latter{info}{$tid}
-            or
-            ( exists $$latter{info}{$tid} and $$latter{info}{$tid}{c} =~ /[gcm]\.=/ )
-          )
-        {    # latter is ref
-            %ind_anno_info = %{ $$former{info}{$tid} };
-            combin_ref( \%ind_anno_info );
-        }
-        elsif ( $$former{info}{$tid}{c} =~ /[gcm]\.=/ ) {    # former is ref
-            %ind_anno_info = %{ $$latter{info}{$tid} };
-            combin_ref( \%ind_anno_info );
-        }
-	elsif ( exists $$latter{info}{$tid} )
-	{
-	    $ind_anno_info{c}  = combin_two( $$former{info}{$tid}{c},  $$latter{info}{$tid}{c} );
-	    $ind_anno_info{p}  = combin_two( $$former{info}{$tid}{p},  $$latter{info}{$tid}{p} );
-	    $ind_anno_info{cc} = combin_two( $$former{info}{$tid}{cc}, $$latter{info}{$tid}{cc} );
-	    $ind_anno_info{polar} =
-	      combin_two( $$former{info}{$tid}{polar}, $$latter{info}{$tid}{polar} );
-	    $ind_anno_info{r} = check_comb( $$former{info}{$tid}{r}, $$latter{info}{$tid}{r} );
-	    $ind_anno_info{exin} =
-	      check_comb( $$former{info}{$tid}{exin}, $$latter{info}{$tid}{exin} );
-	    $ind_anno_info{func} =
-	      check_comb( $$former{info}{$tid}{func}, $$latter{info}{$tid}{func} );
-	    $ind_anno_info{flanks} =
-	      comb_flanks( $$former{info}{$tid}{flanks}, $$latter{info}{$tid}{flanks} );
-	    $ind_anno_info{strd} = $$former{info}{$tid}{strd};
-	}
-	else {# non-same location pair of variation
-	    %ind_anno_info = %{$$former{info}{$tid}};
-	}
-
-	$ind_anno_info{keep} = ($ind_anno_info{func} eq '.') ? 0 : 1;
-	if ($ind_anno_info{func} eq 'intron') {
-	    my $outTag = 0;
-	    while ($ind_anno_info{c} =~ /\d+[\+\-](\d+)/g) {
-		if ($1 <= 10) {
-		    $outTag = 1;
-		    last;
-		}
-	    }
-	    $ind_anno_info{keep} = $outTag;
-	}
-	$all_tid_annos{$tid} = {%ind_anno_info};
-    }
-    if (exists $$latter{info}) {
-	foreach my $t2 (keys %{$$latter{info}}) {
-	    next if (exists $$former{info}{$t2});
-	    my %ind_anno2 = %{$$latter{info}{$t2}};
-	    $ind_anno2{keep} = ($ind_anno2{func} eq '.') ? 0 : 1;
-	    if ($ind_anno2{func} eq 'intron') {
-		my $outTag = 0;
-		while ($ind_anno2{c} =~ /\d+[\+\-](\d+)/g) {
-		    if ($1 <= 10) {
-			$outTag = 1;
-			last;
-		    }
-		}
-		$ind_anno2{keep} = $outTag;
-	    }
-	    $all_tid_annos{$t2} = {%ind_anno2};
-	}
-    }
-    return \%all_tid_annos;
-}
-
-sub comb_flanks {
-    my ($rflk1, $rflk2) = @_;
-    if (    $$rflk1{l} eq $$rflk2{l}
-        and $$rflk1{r} eq $$rflk2{r} )
-    {
-	return $rflk1;
-    }
-    else {
-	my %multiflk = ();
-	$multiflk{l} = $$rflk1{l} . " " . $$rflk2{l};
-	$multiflk{r} = $$rflk1{r} . " " . $$rflk2{r};
-	return \%multiflk;
-    }
-}
-
-# for joining region exin func string
-sub check_comb {
-    my ($s1, $s2) = @_;
-    return $s1 if ($s1 eq $s2);
-#    my %func_order;
-#
-#    # for function, only select the most serious one as the main function
-#    @func_order{
-#        qw( abnormal-intron abnormal-inseq-stop init-loss misstart 
-#	    frameshift stop-gain stop-loss cds-indel 
-#	    splice-5 splice-3 nonsense missense coding-synon 
-#	    intron utr-5 utr-3 ncRNA unknown . )
-#    } = ( 1 .. 18 );
-#
-#    if (exists $func_order{$s1} and exists $func_order{$s2}) {
-#	return (($func_order{$s1} < $func_order{$s2}) ? $s1 : $s2);
-#    }
-#    else {
-	return "[".$s1."];[".$s2."]";
-#    }
-}
-
-# for joining cHGVS pHGVS codon-change polar-change of two varannos
-sub combin_two {
-    my ($v1s, $v2s) = @_;
-
-    my $ind_vs;
-    if ($v1s ne '.' and $v2s ne '.') {
-	my $pre1 = substr( $v1s, 0, 2 );
-	my $pre2 = substr( $v2s, 0, 2 );
-	my $latter2 = substr( $v2s, 2 );
-	if (($pre1 =~ /^[cnmgp]\.$/ or $pre1 =~ /^[\+\-]/) and ( $pre1 eq $pre2 )) {
-	    substr( $v1s, 2, 0, "[" );
-	    $ind_vs = $v1s . "];[" . $latter2 . "]";
-	}
-	else {
-	    $ind_vs =
-	      "[" . $v1s . "];[" . $v2s . "]";
-	}
-    }
-    elsif ($v1s eq '.' and $v2s eq '.') {
-	$ind_vs = '.';
-    }
-    else {
-	$ind_vs = "[" . $v1s . "];[" . $v2s . "]";
-    }
-
-    return $ind_vs;
-}
-
-# for joining current varanno to a ref
-sub combin_ref {
-    my $ind_anno_ref = shift;
-
-    # c HGVS
-    if ($$ind_anno_ref{c} ne '.') { # 
-	my $lb_pos = ($$ind_anno_ref{c} =~ /^[\+\-]/) ? 0 : 2;
-	substr($$ind_anno_ref{c},$lb_pos,0,"[");
-	$$ind_anno_ref{c} .= "];[=]";
-    }
-
-    # p HGVS
-    if ($$ind_anno_ref{p} ne '.') {
-	substr($$ind_anno_ref{p},2,0,"[");
-	$$ind_anno_ref{p} .= "];[=]";
-    }
-
-    # codon change
-    if ($$ind_anno_ref{cc} ne '.') {
-	$$ind_anno_ref{cc} = "[".$$ind_anno_ref{cc}."];[=]";
-    }
-
-    # polar change
-    if ($$ind_anno_ref{polar} ne '.') {
-	$$ind_anno_ref{polar} = "[".$$ind_anno_ref{polar}."];[=]";
-    }
-
-    return $ind_anno_ref;
+# just parse annoents when mutation hits.
+sub parse_annoent {
+    my $annoent = shift;
+    my %annoinfo = ();
+    # tid         gsym  gid strand blka gpgo exin nsta nsto csta csto wlen mismatch    pr
+    # NM_015658.3|NOC2L|26155|-|3U1E|205|EX19E|2817|2801|*508|*492|0|D,879582,879582,.|Y
+    my @infos = split(/\|/, $annoent);
+    my $tid = shift @infos;
+    confess "Error format of anno ents [$annoent]" if (10 != @infos);
+    my @tags  = qw(gsym gid strand blka gpSO exin nsta nsto csta csto wlen mismatch pr);
+    @annoinfo{@tags} = @infos;
+    return ($tid, \%annoinfo);
 }
 
 =head2 anno
 
     About   : Annotate single short variation by annotation db.
-    Usage   : my $rAnnoRst = $beda->anno( 'chr20', 1234567, 'TG', 'TGGG' );
-    Args    : chromosome id, chromosome position, reference, alternative.
+    Usage   : my $anno_ent = $beda->anno( 'chr20', 1234567, 1234569, 'AG', 'TGGG' );
+	      or $anno_ent = $beda->anno( 'chr20', 1234568, 'AG', 'AGGG' );
+    Args    : for CG's shell variants, need 5 args in UCSC coordinates (0-based start):
+		chr id, chr start, chr end, reference, alternative.
+	      for variants in VCF, need 4 args, which is lack of chr end, 
+		in 1-based coordinates.
     Returns : a hash ref of annotation informations, see varanno().
 
 =cut
 sub anno {
-    my ($self, $chr, $pos, $ref, $alt) = @_;
-    my $var = parse_var($chr, $pos, $ref, $alt);
+    my $self = shift;
+    my $var = parse_var(@_);
     return $self->varanno($var);
 }
 
@@ -1844,7 +1488,7 @@ sub pairanno {
 		my %bc_var; # create a backward compatible var
 		my $rbc_var_info = $$var{$$cL{strd}};
 		$bc_var{chr}   = $$var{chr};
-		$bc_var{guess} = guess_type($$rbc_var_info{brl}, $$rbc_var_info{bal});
+		$bc_var{guess} = guess_type();
 		$bc_var{pos}   = $$rbc_var_info{bp};
 		$bc_var{ref}   = $$rbc_var_info{br};
 		$bc_var{alt}   = $$rbc_var_info{ba};
@@ -3158,79 +2802,108 @@ sub pairsort {
 }
 
 
-# just parse annoents when mutation hits.
-sub parse_annoent {
-    my $annoent = shift;
-    my %annoinfo = ();
-    # NM_152486.2|SAMD11|+|IC7|IVS8|949|950|869|870|Y
-    my @infos = split(/\|/, $annoent);
-    my $tid = shift @infos;
-    confess "Error format of anno ents [$annoent]" if (10 != @infos);
-    my @tags  = qw(gsym strand blka exin nsta nsto csta csto wlen pr);
-    @annoinfo{@tags} = @infos;
-    return ($tid, \%annoinfo);
-}
-
 =head2 parse_var
 
     About   : parse the variation directly by the ref and alt string
-    Usage   : my $var = parse_var( $chr, $pos, $ref, $alt );
+    Usage   : my $var = parse_var( $chr, $start, $end, $ref, $alt );
+	   or my $var = parse_var( $chr, $pos, $ref, $alt );
     Returns : a hash ref of variation:
+	      {
+		chr	    => $chr,
+		start	    => $start,
+		end	    => $end,
+		ref	    => $ref,
+		alt	    => $alt,
+		reflen	    => $ref_len,
+		altlen	    => $alt_len,
+		guess	    => $varType,    # the output varType
+		imp	    => $imp_varType,# the implicit varType
+		sm	    => $sm,	    # single/multiple base indicator
+					    # equal/non-equal length indicator
 
-	      chr, pos, ref, alt, reflen, altlen, guess
+		# for hgvs naming convinient, reparse it
+		# in forward and reverse strand separately,
+		# If the result are the same, then only 
+		# update the start, end, ref, alt to the
+		# result. otherwise, the following '+', '-',
+		# structure will be generated to reflect
+		# the difference.
 
-	      # if fpos is the same with rpos, (pos, ref, alt, reflen, altlen) will be updated
+		'+' => {
 
-	      '+' => {
+		  # This group assume the transcript is on forward strand,
+		  # and give offsets and ref/alt string based on the rule
+		  # with 'rep' annotation available
+		  p  => $fpos,		    # forward strand offset
+		  r  => $fref,		    # forward strand ref string
+		  a  => $falt,		    # forward strand alt string
+		  rl => $freflen,	    # forward strand ref length
+		  al => $faltlen,	    # forward strand alt length
 
-		  # for different fpos and rpos cases only, usually complex case
-		  p - forward strand offset
-		  r - forward strand ref string
-		  a - forward strand alt string
-		  rl
-		  al
+		  # This group simplely trim off the leading same chars
+		  # on forward strand, and then trim the same tail
+		  bp  => $backward_fpos, 
+		  br  => $backward_fref,
+		  ba  => $backward_falt,
+		  brl => $backward_freflen,
+		  bal => $backward_faltlen,
 
-		  # backward compatible to previous results if parsed complex
-		  bp - forward strand offset
-		  br - forward strand ref string
-		  ba - forward strand alt string
-		  brl
-		  bal
+		},
 
-		}
-	      '-' => {
+		'-' => {
 		  same to '+', but for reverse strand
 		}
 
-	      # for repeat type only
-	      rep    - repeat element
-	      replen - repeat elementlen
-	      ref_cn - copy number in reference
-	      alt_cn - copy number in alternative
+	      # for repeat available variant
+	      rep    => $repeat_element
+	      replen => $repeat_element_length
+	      ref_cn => $copy_number_in_ref,
+	      alt_cn => $copy_number_in_alt,
+	    }
 
 
 =cut
 sub parse_var {
-    my ($chr, $pos, $ref, $alt) = @_;
-    $ref = uc($ref);
-    $alt = uc($alt);
+    confess "Error: not enough args [",scalar(@_),"], need at least 4 args." if (4 > @_);
+    my ($chr, $start, $end, $ref, $alt) = @_;
+    my %var :shared;
 
-    if ($ref =~ /[^ACGTN]/ or $alt =~ /[^ACGTN]/) {
-	confess ("Cannot recognize non ACGT ref/alt,", 
-	    "may be you need first split your alt string into pieces.");
+    if ($end !~ /^\d+$/) { # from VCF v4.1 1-based start
+	$alt = $ref;
+	$ref = $end;
+	$ref = normalise_seq($ref);
+	$alt = normalise_seq($alt);
+	my $rl = length($ref);
+	if (substr($ref,0,1) eq substr($alt,0,1)) {
+	    $end = $start + $rl - 1;
+	    $ref = substr($ref,1);
+	    $alt = substr($alt,1);
+	}
+	else {
+	    $start -= 1; # change to 0-based start
+	    $end = $start + $rl;
+	}
     }
-    my $ref_len = length ($ref);
-    my $alt_len = length ($alt);
-    my %var = (
+
+    my ($varType, $implicit_varType, $sm) = guess_type($start, $end, $ref, $alt);
+
+    my $ref_len = length($ref);
+    my $alt_len = ($alt eq '?') ? undef : length($alt);
+
+    %var = (
         chr    => $chr,
-        pos    => $pos,
+        start  => $start,
+	end    => $end,
         ref    => $ref,
         alt    => $alt,
         reflen => $ref_len,
-        altlen => $alt_len
+        altlen => $alt_len,
+	guess  => $varType,
+	imp    => $implicit_varType,
+	sm     => $sm
     );
-    if ($ref eq $alt) {
-	$var{guess} = 'ref';
+
+    if ($implicit_varType ne 'delins') {
 	return \%var;
     }
 
@@ -3295,6 +2968,17 @@ sub parse_var {
     }
 
     return \%var;
+}
+
+sub normalise_seq {
+    my $seq = shift;
+    $seq =~ s/\s+//g;
+    $seq = "" if ($seq eq '.');
+    $seq = uc($seq);
+    if ($seq =~ /[^ACGTN]/ and $seq ne '?') {
+	confess "Error: unrecognized pattern exists, no multiple alts please. [$seq]\n";
+    }
+    return $seq;
 }
 
 =head2 parse_complex
@@ -3453,21 +3137,55 @@ sub check_trim_tail {
 }
 
 sub guess_type {
-    my ($reflen, $altlen) = @_;
-    my $guess;
-    if ($reflen == $altlen) {
-	$guess = ($reflen == 1) ? 'snv' : 'delins';
+    my ($start, $end, $ref, $alt) = @_;
+    # imp_varType: implicit variant type is for HGVS naming
+    # varType    : to be output as varType name. can be as the key
+    #		   to get the SO term by Name2SO hash.
+    # sm	 : single or multiple bases tag
+    #		    0 - for insertion, 0 base
+    #		    1 - for single base variants
+    #		    2 - for equal-length multiple bases variants
+    #		    3 - for non-equal-length multiple bases delins
+    my ($imp_varType, $varType, $sm);
+    if ($end - $start == 0) {
+	$imp_varType = 'ins';
+	$sm = 0;
     }
-    elsif ($reflen > 1 and $altlen > 1) {
-	$guess = 'delins';
+    elsif ($end - $start == 1) {
+	$sm = 1;
+	if ($ref eq $alt) {
+	    $imp_varType = 'ref';
+	}
+	elsif ($alt eq '') {
+	    $imp_varType = 'del';
+	}
+	elsif (1 == length($alt)) {
+	    $imp_varType = 'snv';
+	}
+	else {
+	    $imp_varType = 'delins';
+	}
     }
-    elsif ($reflen == 1) {
-	$guess = 'ins';
+    elsif ($end - $start > 1) {
+	if ($ref eq $alt) {
+	    $imp_varType = 'ref';
+	}
+	elsif ($alt eq '') {
+	    $imp_varType = 'del';
+	}
+	else {
+	    $imp_varType = 'delins';
+	}
+
+	if (length($ref) == length($alt)) {
+	    $sm = 2; # equal-length subs
+	}
+	else {
+	    $sm = 3; # non-equal-length delins
+	}
     }
-    else {
-	$guess = 'del';
-    }
-    return $guess;
+    $varType = ($alt eq '?') ? 'no-call' : $varType;
+    return ($varType, $imp_varType, $sm);
 }
 
 
