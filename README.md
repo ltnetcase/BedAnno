@@ -2,97 +2,52 @@ BedAnno
 =======
 
 Annotate genomics variations of hg19 by using a BED+1 format database, 
-which construct from ucsc hg19 databases. This module can directly 
+which construct from ncbi anno release 104. This module can directly 
 parse the vcf4.1 format ref and single alt string(no commas in it),
 without normalized by vcftools, and can recognize the tandom repeat 
 variation and duplication, generate the standard HGVS strings for 
 most of complex cases. Also it will ajust the strand of transcript,
-and follow the 3' nearest rules to annotate.
+and follow the 3' nearest rules to annotate. CG's variant shell list
+will also be supported.
 
-BED +1 Format for hg19 refseq annotation
+BED +1 Format for ncbi annotation rel104
 ----------------------------------------
 The start position is in 0 based, stop in 1 based
 Tag parsing rules: Entries are separated by "; ", and for tags in entry are separated by "|"
 
 **Tags are:**
 
-- Acc.Ver[-submap]
-- Gene Symbol
-- Strand
-- BlockAttr
-- ExIn Num
-- n./r. HGVS start for block before departing
-- n./r. HGVS end for block before departing
-- c. HGVS start for block before departing.
-- c. HGVS end for block before departing.
-- Original block length
-- Primary Tag (If "Y", the primary transcript record in all transcripts of the same gene, otherwise "N")
-- Offset to leftmost of non departing block. 
+1.  Acc.Ver
+2.  GeneID
+3.  Gene Symbol
+4.  Strand
+               5'=====|>>>|[=============]|>>>>>>|[==========]|>>>>>>|[=============]|>>>>|==3'
+5.  BlockAttr  : PROM 5U2E D5U1 I5U1 A5U1 5U1 C1  DC1 IC1 AC1 C2E 3U1 D3U1 I3U1 A3U1 3U2E
+6.  GenePartsSO: 167  204  163  447  164  204 316 163 191 164 316 205 163  448  164  448
+7.  ExIn Num   :    . |EX1|      IVS1     |  EX2 |    IVS2    |  EX3 |    IVS3       |EX4E|
+8.  nHGVS start for block before departing
+9.  nHGVS end for block before departing
+10. cHGVS start for block before departing
+11. cHGVS end for block before departing
+12. Length for block before departing
+13. MismatchBlock :  $type,$gstart,$gstop,$gseq 
+         	    ($gseq is in the strand of refseq, '.' for deletion)
+14. Primary Tag, the same with it in header line
+15. Offset to leftmost of non departing block.
 
-The BlockAttr and the ExIn Num are defined as the following:
+**Example:**
 
-    For entry with cmpl 5' cds and cmpl 3' cds:
+    1       155252631       155252633       NM_020897.2|HCN3|57657|+|DC2|163|IVS2|872+1|872+2|708+1|708+2|2||Y|0; NR_073074.1|HCN3|57657|+|DR2|163|IVS2|872+1|872+2|||2||N|0
+    1       155252633       155253762       NM_020897.2|HCN3|57657|+|IC2|191|IVS2|872+3|873-3|708+3|709-3|1129||Y|0; NR_073074.1|HCN3|57657|+|IR2|191|IVS2|872+3|873-3|||1129||N|0
+    1       155253762       155253764       NM_020897.2|HCN3|57657|+|AC2|164|IVS2|873-2|873-1|709-2|709-1|2||Y|0; NR_073074.1|HCN3|57657|+|AR2|164|IVS2|873-2|873-1|||2||N|0
+    1       155253764       155253926       NM_020897.2|HCN3|57657|+|C3|316|EX3|873|1034|709|870|162||Y|0; NR_073074.1|HCN3|57657|+|R3|655|EX3|873|1034|||162||N|0
+    1       155253926       155253928       NM_020897.2|HCN3|57657|+|DC3|163|IVS3|1034+1|1034+2|870+1|870+2|2||Y|0; NR_073074.1|HCN3|57657|+|DR3|163|IVS3|1034+1|1034+2|||2||N|0
+    1       155253928       155254327       NM_020897.2|HCN3|57657|+|IC3|191|IVS3|1034+3|1035-3|870+3|871-3|399||Y|0; NR_073074.1|HCN3|57657|+|IR3|191|IVS3|1034+3|1035-3|||532||N|0
+    1       155254327       155254329       NM_020897.2|HCN3|57657|+|AC3|164|IVS3|1035-2|1035-1|871-2|871-1|2||Y|0; NR_073074.1|HCN3|57657|+|IR3|191|IVS3|1034+3|1035-3|||532||N|399
+    1       155254329       155254460       NM_020897.2|HCN3|57657|+|C4|316|EX4|1035|1253|871|1089|219||Y|0; NR_073074.1|HCN3|57657|+|IR3|191|IVS3|1034+3|1035-3|||532||N|401
+    1       155254460       155254462       NM_020897.2|HCN3|57657|+|C4|316|EX4|1035|1253|871|1089|219||Y|131; NR_073074.1|HCN3|57657|+|AR3|164|IVS3|1035-2|1035-1|||2||N|0
+    1       155254462       155254548       NM_020897.2|HCN3|57657|+|C4|316|EX4|1035|1253|871|1089|219||Y|133; NR_073074.1|HCN3|57657|+|R4|655|EX4|1035|1120|||86||N|0
 
-	       5'UTR   =======================================>   3'UTR
-
-	       5U3E,I5U2,5U2,I5U1,5U1,C1,IC1, C2, IC2,C3E,3U1,I3U1,3U2E
-	       EX1  IVS1 EX2 IVS2   EX3  IVS3 EX4 IVS4  EX5   IVS5 EX6E
-
-    For entry with incmpl 5' cds and cmpl 3' cds:
-
-               5'UTR ======> 5'CDS   ===================>   3'UTR
-
-                             C-3P,IC-2,C-2,IC-1,C-1,3U1,I3U1,3U2E
-                             EX-4P     EX-3      EX-2        EX-1
-                                  IVS-3    IVS-2        IVS-1
-
-               5U2E,I5U1,5U1,C-3E,...............................
-               EX-5E       EX-4        EX-3      EX-2        EX-1
-                    IVS-4         IVS-3    IVS-2        IVS-1
-
-    For entry with incmpl 3' cds and cmpl 5' cds:
-
-               5'UTR   ===================>   3'CDS ======> 3'UTR
-
-               5U2E,I5U1,5U1,C+1,IC+1,C+2,IC+2,C+3P
-               EX+1       EX+2        EX+3     EX+4P
-                    IVS+1        IVS+2    IVS+3
-
-               ................................C+3E,3U1,I3U1,3U2E
-               EX+1       EX+2        EX+3       EX+4        EX+5E
-                    IVS+1        IVS+2    IVS+3         IVS+4
-
-    For entry with incmpl 3' cds and incmpl 5' cds:
-
-              5'UTR ======> 5'CDS   =======>  3'CDS ======> 3'UTR
-     
-                            C*1P,IC*1,C*2,IC*2,C*3P
-                            EX*1P     EX*2     EX*3P
-                                 IVS*1    IVS*2
-     
-              5U2E,I5U1,5U1,C*1, IC*1,C*2,IC*2,C*3E,3U1,I3U1,3U2E
-              EX*1       EX*2         EX*3       EX*4        EX*5E
-                   IVS*1         IVS*2    IVS*3         IVS*4
-
-    For non-coding RNA
-
-              5' =========> 3'
-
-              R1 IR1 R2 IR2 R3
-              EX1    EX2    EX3
-                 IVS1   IVS2
-
-**Example entries:**
-
-    chr1    879077  879188  NM_152486.2|SAMD11|+|C12|EX13|1770|1880|1690|1800|111|Y|0
-    chr1    879188  879287  NM_152486.2|SAMD11|+|IC12|IVS13|1880|1881|1800|1801|99|Y|0
-    chr1    879287  879533  NM_152486.2|SAMD11|+|C13E|EX14E|1881|2126|1801|2046|246|Y|0
-    chr1    879533  879582  NM_152486.2|SAMD11|+|3U1E|EX14E|2127|2554|*1|*428|428|Y|0
-    chr1    879582  879961  NM_015658.3|NOC2L|-|3U1E|EX19E|2800|2310|*491|*1|491|Y|0; NM_152486.2|SAMD11|+|3U1E|EX14E|2127|2554|*1|*428|428|Y|49
-    chr1    879961  880073  NM_015658.3|NOC2L|-|3U1E|EX19E|2800|2310|*491|*1|491|Y|379
-    chr1    880073  880180  NM_015658.3|NOC2L|-|C19E|EX19E|2309|2203|2250|2144|107|Y|0
-    chr1    880180  880436  NM_015658.3|NOC2L|-|IC18|IVS18|2203|2202|2144|2143|256|Y|0
-    chr1    880436  880526  NM_015658.3|NOC2L|-|C18|EX18|2202|2113|2143|2054|90|Y|0
 
 For the primary tag definition, there's a cooresponding sort strategy:
 
