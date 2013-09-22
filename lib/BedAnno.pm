@@ -774,7 +774,6 @@ sub load_anno {
     Usage   : my $rannodb = region_merge($loaded_db);
     Args    : A hash ref of loaded_db.
     Returns : A hash ref of merged db.
-	      
 
 =cut
 sub region_merge {
@@ -2852,7 +2851,7 @@ sub pairsort {
 
 		'-' => {
 		  same to '+', but for reverse strand
-		}
+		},
 
 	      # for repeat available variant
 	      rep    => $repeat_element
@@ -2906,68 +2905,8 @@ sub parse_var {
     if ($implicit_varType ne 'delins') {
 	return \%var;
     }
-
-    if ($ref_len > 1 and $alt_len > 1) {
-        my $complex = parse_complex( $ref, $ref_len, $alt, $alt_len );
-
-        $var{guess} = $$complex{guess};
-	return \%var if ($var{guess} eq 'ref');
-
-        my $ori_pos = $var{pos};
-        $var{'+'}{bp} = $ori_pos + $$complex{'+'}{bcOffst};
-        $var{'+'}{br} =
-          substr( $ref, $$complex{'+'}{bcOffst}, $$complex{bcRlen} );
-        $var{'+'}{ba} =
-          substr( $alt, $$complex{'+'}{bcOffst}, $$complex{bcAlen} );
-        $var{'+'}{brl} = $$complex{bcRlen};
-        $var{'+'}{bal} = $$complex{bcAlen};
-
-        $var{'-'}{bp} = $ori_pos + $$complex{'-'}{bcOffst};
-        $var{'-'}{br} =
-          substr( $ref, $$complex{'-'}{bcOffst}, $$complex{bcRlen} );
-        $var{'-'}{ba} =
-          substr( $alt, $$complex{'-'}{bcOffst}, $$complex{bcAlen} );
-        $var{'-'}{brl} = $$complex{bcRlen};
-        $var{'-'}{bal} = $$complex{bcAlen};
-
-        if ( $$complex{'+'}{offset} == $$complex{'-'}{offset} ) {
-            $var{pos} += $$complex{'+'}{offset};
-            $var{reflen} = $$complex{newRlen};
-            $var{altlen} = $$complex{newAlen};
-            $var{ref} =
-              substr( $ref, $$complex{'+'}{offset}, $$complex{newRlen} );
-            $var{alt} =
-              substr( $alt, $$complex{'+'}{offset}, $$complex{newAlen} );
-        }
-        else {
-            $var{'+'}{p} = $ori_pos + $$complex{'+'}{offset};
-            $var{'+'}{r} =
-              substr( $ref, $$complex{'+'}{offset}, $$complex{newRlen} );
-            $var{'+'}{a} =
-              substr( $alt, $$complex{'+'}{offset}, $$complex{newAlen} );
-            $var{'+'}{rl} = $$complex{newRlen};
-            $var{'+'}{al} = $$complex{newAlen};
-
-            $var{'-'}{p} = $ori_pos + $$complex{'-'}{offset};
-            $var{'-'}{r} =
-              substr( $ref, $$complex{'-'}{offset}, $$complex{newRlen} );
-            $var{'-'}{a} =
-              substr( $alt, $$complex{'-'}{offset}, $$complex{newAlen} );
-            $var{'-'}{rl} = $$complex{newRlen};
-            $var{'-'}{al} = $$complex{newAlen};
-        }
-        if ( $$complex{guess} eq 'rep' ) {
-            $var{rep}    = $$complex{rep};
-            $var{replen} = $$complex{replen};
-            $var{ref_cn} = $$complex{refcn};
-            $var{alt_cn} = $$complex{altcn};
-        }
-    }
-    else {
-	$var{guess} = guess_type( $ref_len, $alt_len );
-    }
-
-    return \%var;
+    
+    return parse_complex( \%var );
 }
 
 sub normalise_seq {
@@ -2983,38 +2922,11 @@ sub normalise_seq {
 
 =head2 parse_complex
     
-    About   : parse complex ref and alt and guess the standard variation depond on the strand
-	      if the strand is '+', the leading coordinate string will be trimmed, and for '-', 
-	      the tail will be trimmed.
-    Usage   : my $rguess = parse_complex( $ref, $len_ref, $alt, $len_alt );
-    Returns : a hash ref which contain the following information 
-	      {
-	       guess  => $guess,	   (set( 'ref' / 'snv' / 'ins' / 'del' / 'delins' / 'rep' ))
-	       
-	       newRlen => $new_ref_len,
-	       newAlen => $new_alt_len,
+    About   : parse complex delins variants to recognize repeat and differ strand-pos var
+    Usage   : my $rguess = parse_complex( $var );
+    Args    : delins variantion entry.
+    Returns : see parse_var()
 
-	       bcRlen  => $bcRlen,
-	       bcAlen  => $bcAlen,
-	       # for backward compatible when dealing complex delins (usually rep with modifications)
-
-	       bcGuess => $bcGuess,
-
-	       '+' => {
-		   offset  => $offset,
-		   bcOffst => $bcOffst,
-		},
-
-	       '-' => {
-		   the same with '+'
-	        },
-
-	       # for repeat only
-	       rep    => $repeat,
-	       replen => $repeatlen,
-	       ref_cn => $ref_copy_num,
-	       alt_cn => $alt_copy_num
-	     }
 =cut
 sub parse_complex {
     my ($ref, $len_ref, $alt, $len_alt) = @_;
