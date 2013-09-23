@@ -3,6 +3,7 @@ package BedAnno;
 use strict;
 use warnings;
 use threads::shared; # if threads used before BedAnno, then this will be threaded
+use Thread::Queue;
 use Scalar::Util qw(refaddr);
 use Carp;
 
@@ -438,9 +439,9 @@ foreach my $threebase (sort keys %C3) {
 
 =cut
 sub new {
-    my ($class, @args) = @_;
-    my $self :shared;
-    $self = shared_clone({@args});
+    my ( $class, @args ) = @_;
+    my $self : shared;
+    $self = shared_clone( {@args} );
     bless $self, ref($class) || $class;
 
     if (   ( !exists $self->{db} )
@@ -448,121 +449,134 @@ sub new {
         or ( !exists $self->{tr} )
         or ( !-e $self->{tr} ) )
     {
-        $self->throw("Error filename or too few args, need db, tr file to be available at least.");
+        $self->throw(
+"Error filename or too few args, need db, tr file to be available at least."
+        );
     }
 
     my $anno_all_opt = 1;
 
     my %open_args;
-    if (exists $self->{region}) {
-	$anno_all_opt = 0;
-	$open_args{region} = $self->{region};
+    if ( exists $self->{region} ) {
+        $anno_all_opt = 0;
+        $open_args{region} = $self->{region};
     }
-    if (!exists $self->{region} and exists $self->{regbed}) {
-	$anno_all_opt = 0;
-	$open_args{regbed} = $self->{regbed};
+    if ( !exists $self->{region} and exists $self->{regbed} ) {
+        $anno_all_opt = 0;
+        $open_args{regbed} = $self->{regbed};
     }
-    if (exists $self->{genes}) {
-	$anno_all_opt = 0;
-	if (ref($self->{genes}) eq 'HASH') {
-	    $open_args{genes} = $self->{genes};
-	}
-	else {
-	    open (GENE, $self->{genes}) or $self->throw("$self->{genes} : $!");
-	    my %genes = map { s/\s+//g; $_ => 1 } <GENE>;
-	    close GENE;
-	    $open_args{genes} = \%genes;
-	}
+    if ( exists $self->{genes} ) {
+        $anno_all_opt = 0;
+        if ( ref( $self->{genes} ) eq 'HASH' ) {
+            $open_args{genes} = $self->{genes};
+        }
+        else {
+            open( GENE, $self->{genes} ) or $self->throw("$self->{genes} : $!");
+            my %genes = map { s/\s+//g; $_ => 1 } <GENE>;
+            close GENE;
+            $open_args{genes} = \%genes;
+        }
     }
-    if (exists $self->{trans}) {
-	$anno_all_opt = 0;
-	if (ref($self->{trans}) eq 'HASH') {
-	    $open_args{trans} = $self->{trans};
-	}
-	else {
-	    open (TRAN, $self->{trans}) or $self->throw("$self->{trans} : $!");
-	    my %trans = map { s/\s+//g; $_ => 1 } <TRAN>;
-	    close TRAN;
-	    $open_args{trans} = \%trans;
-	}
-	$open_args{clean_trans} = {map {s/\-\d+$//; $_ => 1} keys %{$self->{trans}}};
+    if ( exists $self->{trans} ) {
+        $anno_all_opt = 0;
+        if ( ref( $self->{trans} ) eq 'HASH' ) {
+            $open_args{trans} = $self->{trans};
+        }
+        else {
+            open( TRAN, $self->{trans} ) or $self->throw("$self->{trans} : $!");
+            my %trans = map { s/\s+//g; $_ => 1 } <TRAN>;
+            close TRAN;
+            $open_args{trans} = \%trans;
+        }
+        $open_args{clean_trans} =
+          { map { s/\-\d+$//; $_ => 1 } keys %{ $self->{trans} } };
     }
-    if (exists $self->{onlyPr}) {
-	$anno_all_opt = 0;
-	$open_args{onlyPr} = $self->{onlyPr};
+    if ( exists $self->{onlyPr} ) {
+        $anno_all_opt = 0;
+        $open_args{onlyPr} = $self->{onlyPr};
     }
-    if (exists $self->{mmap}) {
-	$open_args{mmap} = $self->{mmap};
+    if ( exists $self->{mmap} ) {
+        $open_args{mmap} = $self->{mmap};
     }
-    if (exists $self->{short}) {
-	%Code2Pep = %C1;
-    }
-
-    if (exists $self->{cytoBand}) {
-	confess "Error: [$self->{cytoBand}] $!" if (!-e $self->{cytoBand} or !-r $self->{cytoBand});
-	require GetCytoband;
-	my $cytoBand_h = GetCytoBand->new( db => $self->{cytoBand} );
-	$self->{cytoBand_h} = shared_clone($cytoBand_h);
+    if ( exists $self->{short} ) {
+        %Code2Pep = %C1;
     }
 
-    if (exists $self->{pfam}) {
-	confess "Error: [$self->{pfam}] $!" if (!-e $self->{pfam} or !-r $self->{pfam});
-	require GetPfam;
-	my $pfam_h = GetPfam->new( db => $self->{pfam} );
-	$self->{pfam_h} = shared_clone($pfam_h);
+    if ( exists $self->{cytoBand} ) {
+        confess "Error: [$self->{cytoBand}] $!"
+          if ( !-e $self->{cytoBand} or !-r $self->{cytoBand} );
+        require GetCytoband;
+        my $cytoBand_h = GetCytoBand->new( db => $self->{cytoBand} );
+        $self->{cytoBand_h} = shared_clone($cytoBand_h);
     }
 
-    if (exists $self->{prediction}) {
-	confess "Error: [$self->{prediction}] $!" if (!-e $self->{prediction} or !-r $self->{prediction});
-	require GetPrediction;
-	my $prediction_h = GetPrediction->new( db => $self->{prediction} );
-	$self->{prediction_h} = shared_clone($prediction_h);
+    if ( exists $self->{pfam} ) {
+        confess "Error: [$self->{pfam}] $!"
+          if ( !-e $self->{pfam} or !-r $self->{pfam} );
+        require GetPfam;
+        my $pfam_h = GetPfam->new( db => $self->{pfam} );
+        $self->{pfam_h} = shared_clone($pfam_h);
     }
 
-    if (exists $self->{phyloP}) {
-	confess "Error: [$self->{phyloP}] $!" if (!-e $self->{phyloP} or !-r $self->{phyloP});
-	require GetPhyloP;
-	my $phyloP_h = GetPhyloP->new( db => $self->{phyloP} );
-	$self->{phyloP_h} = shared_clone($phyloP_h);
+    if ( exists $self->{prediction} ) {
+        confess "Error: [$self->{prediction}] $!"
+          if ( !-e $self->{prediction} or !-r $self->{prediction} );
+        require GetPrediction;
+        my $prediction_h = GetPrediction->new( db => $self->{prediction} );
+        $self->{prediction_h} = shared_clone($prediction_h);
     }
 
-    if (exists $self->{dbSNP}) {
-	confess "Error: [$self->{dbSNP}] $!" if (!-e $self->{dbSNP} or !-r $self->{dbSNP});
-	require GetDBSNP;
-	my $dbSNP_h = GetDBSNP->new( db => $self->{dbSNP} );
-	$self->{dbSNP_h} = shared_clone($dbSNP_h);
+    if ( exists $self->{phyloP} ) {
+        confess "Error: [$self->{phyloP}] $!"
+          if ( !-e $self->{phyloP} or !-r $self->{phyloP} );
+        require GetPhyloP;
+        my $phyloP_h = GetPhyloP->new( db => $self->{phyloP} );
+        $self->{phyloP_h} = shared_clone($phyloP_h);
     }
 
-    if (exists $self->{tgp}) {
-	confess "Error: [$self->{tgp}] $!" if (!-e $self->{tgp} or !-r $self->{tgp});
-	require GetTgp;
-	my $tgp_h = GetTgp->new( db => $self->{tgp} );
-	$self->{tgp_h} = shared_clone($tgp_h);
+    if ( exists $self->{dbSNP} ) {
+        confess "Error: [$self->{dbSNP}] $!"
+          if ( !-e $self->{dbSNP} or !-r $self->{dbSNP} );
+        require GetDBSNP;
+        my $dbSNP_h = GetDBSNP->new( db => $self->{dbSNP} );
+        $self->{dbSNP_h} = shared_clone($dbSNP_h);
     }
 
-    if (exists $self->{cg54}) {
-	confess "Error: [$self->{cg54}] $!" if (!-e $self->{cg54} or !-r $self->{cg54});
-	require GetCGpub;
-	my $cg54_h = GetCGpub->new( db => $self->{cg54} );
-	$self->{cg54_h} = shared_clone($cg54_h);
+    if ( exists $self->{tgp} ) {
+        confess "Error: [$self->{tgp}] $!"
+          if ( !-e $self->{tgp} or !-r $self->{tgp} );
+        require GetTgp;
+        my $tgp_h = GetTgp->new( db => $self->{tgp} );
+        $self->{tgp_h} = shared_clone($tgp_h);
     }
 
-    if (exists $self->{wellderly}) {
-	confess "Error: [$self->{wellderly}] $!" if (!-e $self->{wellderly} or !-r $self->{wellderly});
-	require GetCGpub;
-	my $wellderly_h = GetCGpub->new( db => $self->{wellderly} );
-	$self->{wellderly_h} = shared_clone($wellderly_h);
+    if ( exists $self->{cg54} ) {
+        confess "Error: [$self->{cg54}] $!"
+          if ( !-e $self->{cg54} or !-r $self->{cg54} );
+        require GetCGpub;
+        my $cg54_h = GetCGpub->new( db => $self->{cg54} );
+        $self->{cg54_h} = shared_clone($cg54_h);
     }
 
-    if (exists $self->{esp6500}) {
-	confess "Error: [$self->{esp6500}] $!" if (!-e $self->{esp6500} or !-r $self->{esp6500});
-	require GetPfam;
-	my $esp6500_h = GetPfam->new( db => $self->{esp6500} );
-	$self->{esp6500_h} = shared_clone($esp6500_h);
+    if ( exists $self->{wellderly} ) {
+        confess "Error: [$self->{wellderly}] $!"
+          if ( !-e $self->{wellderly} or !-r $self->{wellderly} );
+        require GetCGpub;
+        my $wellderly_h = GetCGpub->new( db => $self->{wellderly} );
+        $self->{wellderly_h} = shared_clone($wellderly_h);
     }
 
-    $self->{trInfo} = shared_clone($self->readtr());
-    $self->{annodb} = shared_clone($self->load_anno(%open_args)) if (exists $self->{batch});
+    if ( exists $self->{esp6500} ) {
+        confess "Error: [$self->{esp6500}] $!"
+          if ( !-e $self->{esp6500} or !-r $self->{esp6500} );
+        require GetPfam;
+        my $esp6500_h = GetPfam->new( db => $self->{esp6500} );
+        $self->{esp6500_h} = shared_clone($esp6500_h);
+    }
+
+    $self->{trInfo} = shared_clone( $self->readtr() );
+    $self->{annodb} = shared_clone( $self->load_anno(%open_args) )
+      if ( exists $self->{batch} );
     return $self;
 }
 
@@ -598,50 +612,66 @@ sub new {
 sub readtr {
     my $self = shift;
     my %opts = @_;
-    if (exists $opts{genes} and ref($opts{genes}) ne 'HASH') {
-	$self->throw("Options arg 'genes' only accept hash ref as value.");
+    if ( exists $opts{genes} and ref( $opts{genes} ) ne 'HASH' ) {
+        $self->throw("Options arg 'genes' only accept hash ref as value.");
     }
-    if (exists $opts{trans} and ref($opts{trans}) ne 'HASH') {
-	$self->throw("Options arg 'trans' only accept hash ref as value.");
+    if ( exists $opts{trans} and ref( $opts{trans} ) ne 'HASH' ) {
+        $self->throw("Options arg 'trans' only accept hash ref as value.");
     }
 
-    open (FAS, "zcat -f $self->{tr} |") or confess "$self->{tr}: $!";
+    open( FAS, "zcat -f $self->{tr} |" ) or confess "$self->{tr}: $!";
     local $/ = ">";
     my %seqs = ();
     while (<FAS>) {
-	s/[\s>]+$//g;
-	next if (/^\s*$/);
-	my $hd = $1 if (s/^(\S+[^\n]*)\n//);
-	confess "Error: trSeq parse error!" if (!defined $hd);
-	my @headers = split(/\s+/,$hd);
-	confess "Error: trSeq header parse error!" if (7 > @headers);
-	s/\s+//g;
-	next if ($headers[6] =~ /FAIL/);				# skip failed transcript
-	if (!exists $opts{trans} and !exists $opts{genes}) {
-	    next unless (
-		(!exists $self->{clean_trans} and !exists $self->{genes}) 
-		    or (exists $self->{clean_trans} and exists $self->{clean_trans}->{$headers[0]})
-		    or (exists $self->{genes} and exists $self->{genes}->{$headers[2]})
-	    );
-	}
-	else {
-	    next unless (
-		(exists $opts{trans} and exists $opts{trans}{$headers[0]})
-		    or (exists $opts{genes} and exists $opts{genes}{$headers[2]})
-	    );
-	}
-	$seqs{$headers[0]}{seq}  = $_ if (exists $self->{batch});       # hash sequence when batch
-	$seqs{$headers[0]}{len}  = $headers[1];				# tx length
-	$seqs{$headers[0]}{gene} = $headers[2];				# gene symbol
-	$seqs{$headers[0]}{prot} = $headers[3] if ($headers[3] ne "."); # prot acc.ver
-	$seqs{$headers[0]}{plen} = $headers[4] if ($headers[4] ne "."); # prot length
-	$seqs{$headers[0]}{U} = 1 if ($headers[6] =~ /selenocysteine/);	# selenocysteine
-	$seqs{$headers[0]}{X} = 1 if ($headers[6] =~ /inseqStop/);	# inseqStop
-	$seqs{$headers[0]}{A} = 1 if ($headers[6] =~ /polyATail/);	# polyATail
-	if ($headers[5] ne ".") { # cds start, cds end in tx
-	    @{$seqs{$headers[0]}}{qw{csta csto}} = split(/,/, $headers[5]);
-	}
-	$seqs{$headers[0]}{altstart} = {map {$_=>1} split(/;/, $headers[7])} if (defined $headers[7]);
+        s/[\s>]+$//g;
+        next if (/^\s*$/);
+        my $hd = $1 if (s/^(\S+[^\n]*)\n//);
+        confess "Error: trSeq parse error!" if ( !defined $hd );
+        my @headers = split( /\s+/, $hd );
+        confess "Error: trSeq header parse error!" if ( 7 > @headers );
+        s/\s+//g;
+        next if ( $headers[6] =~ /FAIL/ );    # skip failed transcript
+
+        if ( !exists $opts{trans} and !exists $opts{genes} ) {
+            next
+              unless (
+                ( !exists $self->{clean_trans} and !exists $self->{genes} )
+                or (    exists $self->{clean_trans}
+                    and exists $self->{clean_trans}->{ $headers[0] } )
+                or (    exists $self->{genes}
+                    and exists $self->{genes}->{ $headers[2] } )
+              );
+        }
+        else {
+            next
+              unless (
+                ( exists $opts{trans} and exists $opts{trans}{ $headers[0] } )
+                or
+                ( exists $opts{genes} and exists $opts{genes}{ $headers[2] } )
+              );
+        }
+        $seqs{ $headers[0] }{seq} = $_
+          if ( exists $self->{batch} );    # hash sequence when batch
+        $seqs{ $headers[0] }{len}  = $headers[1];    # tx length
+        $seqs{ $headers[0] }{gene} = $headers[2];    # gene symbol
+        $seqs{ $headers[0] }{prot} = $headers[3]
+          if ( $headers[3] ne "." );                 # prot acc.ver
+        $seqs{ $headers[0] }{plen} = $headers[4]
+          if ( $headers[4] ne "." );                 # prot length
+        $seqs{ $headers[0] }{U} = 1
+          if ( $headers[6] =~ /selenocysteine/ );    # selenocysteine
+        $seqs{ $headers[0] }{X} = 1
+          if ( $headers[6] =~ /inseqStop/ );         # inseqStop
+        $seqs{ $headers[0] }{A} = 1
+          if ( $headers[6] =~ /polyATail/ );         # polyATail
+
+        if ( $headers[5] ne "." ) {                  # cds start, cds end in tx
+            @{ $seqs{ $headers[0] } }{qw{csta csto}} =
+              split( /,/, $headers[5] );
+        }
+        $seqs{ $headers[0] }{altstart} =
+          { map { $_ => 1 } split( /;/, $headers[7] ) }
+          if ( defined $headers[7] );
     }
     close FAS;
     return \%seqs;
@@ -690,17 +720,20 @@ sub readtr {
 =cut
 sub load_anno {
     my ( $self, %args ) = @_;
-    my $cmd = "$self->{db}";
+    my $cmd        = "$self->{db}";
     my $tabix_args = qq['$self->{db}'];
     if ( -e $self->{db} && $self->{db} =~ /\.gz/i ) {
         if ( exists $args{region} and defined $args{region} ) {
-	    $tabix_args .= qq[ '$args{region}'];
+            $tabix_args .= qq[ '$args{region}'];
             $cmd = "tabix $tabix_args |";
         }
-	elsif ( exists $args{regbed} and defined $args{regbed} and -e $args{regbed} ) {
-	    $tabix_args = '-B '.$tabix_args.qq[ '$args{regbed}'];
-            $cmd = "tabix $tabix_args |";
-	}
+        elsif ( exists $args{regbed}
+            and defined $args{regbed}
+            and -e $args{regbed} )
+        {
+            $tabix_args = '-B ' . $tabix_args . qq[ '$args{regbed}'];
+            $cmd        = "tabix $tabix_args |";
+        }
         else {
             $cmd = "zcat -f '$self->{db}' |";
         }
@@ -708,25 +741,26 @@ sub load_anno {
     open( ANNO, $cmd ) or $self->throw("$cmd: $!");
 
     # trans filter is always be ahead of genes
-    my $prTag = (exists $args{onlyPr}) ? 1 : 0;
-    my $mmapTag = (exists $args{mmap}) ? 1 : 0;
-    my $geneTag = (exists $args{genes}) ? 1 : 0;
-    my $tranTag = (exists $args{trans}) ? 1 : 0;
+    my $prTag   = ( exists $args{onlyPr} ) ? 1 : 0;
+    my $mmapTag = ( exists $args{mmap} )   ? 1 : 0;
+    my $geneTag = ( exists $args{genes} )  ? 1 : 0;
+    my $tranTag = ( exists $args{trans} )  ? 1 : 0;
     my $geneList = $args{genes} if ($geneTag);
     my $tranList = $args{trans} if ($tranTag);
     my %pureTran = map { s/\-\d+$//; $_ => 1 } keys %$tranList if ($tranTag);
 
     my $rannodb = {};
     while (<ANNO>) {
-	s/\s+$//;
-	my ($chr, $start, $stop, $annostr) = split(/\t/);
-	my @annos = split(/; /, $annostr);
-	
-	#		 0-based	1-based
-	my %ent = (sta => $start, sto => $stop);
-	foreach my $anno_ent (@annos) {
-	    my @cont = split(/\|/, $anno_ent);
-	    # no multiple mapping transcripts if !$mmapTag
+        s/\s+$//;
+        my ( $chr, $start, $stop, $annostr ) = split(/\t/);
+        my @annos = split( /; /, $annostr );
+
+        #		 0-based	1-based
+        my %ent = ( sta => $start, sto => $stop );
+        foreach my $anno_ent (@annos) {
+            my @cont = split( /\|/, $anno_ent );
+
+            # no multiple mapping transcripts if !$mmapTag
             next
               if (  $cont[0] =~ /\-\d+$/
                 and !$mmapTag
@@ -735,7 +769,7 @@ sub load_anno {
               if (  $prTag
                 and ( $cont[13] ne 'Y' )
                 and ( !$tranTag or !exists( $$tranList{ $cont[0] } ) ) );
-	    my $ori_cont = $cont[0];
+            my $ori_cont = $cont[0];
             $cont[0] =~ s/\-\d+$//;
             next
               if (
@@ -751,19 +785,20 @@ sub load_anno {
                     or ( !$mmapTag and !exists $$tranList{$ori_cont} ) )
                 and ( !$geneTag or !exists( $$geneList{ $cont[1] } ) )
               );
-	    
+
             my $ofst = $1
               if ( $anno_ent =~ s/\|(\d+)$// )
               or $self->throw("db format error: [$anno_ent]");
             $ent{annos}{$anno_ent} = $ofst;
-	}
+        }
 
-	next if (!exists $ent{annos});
-	push (@{$$rannodb{$chr}}, {%ent});
+        next if ( !exists $ent{annos} );
+        push( @{ $$rannodb{$chr} }, {%ent} );
     }
     close ANNO;
 
-    $rannodb = region_merge($rannodb) if ($prTag or $mmapTag or $geneTag or $tranTag);
+    $rannodb = region_merge($rannodb)
+      if ( $prTag or $mmapTag or $geneTag or $tranTag );
 
     return $rannodb;
 }
@@ -833,8 +868,8 @@ sub parse_annoent {
 	      or $anno_ent = $beda->anno( 'chr20', 1234568, 'AG', 'AGGG' );
     Args    : for CG's shell variants, need 5 args in UCSC coordinates (0-based start):
 		chr id, chr start, chr end, reference, alternative.
-	      for variants in VCF, need 4 args, which is lack of chr end, 
-		in 1-based coordinates.
+	      for variants in VCF, need 4 args, which is lack of 
+	      chr end, in 1-based coordinates.
     Returns : a hash ref of annotation informations, see varanno().
 
 =cut
@@ -851,9 +886,83 @@ sub anno {
     Args    : see parse_var()
     Returns : a hash ref:
 		{
-		    var  => $var, ( see parse_var(), select_position() )
-		    info => {
-			tid => $anno_info, ( see pairanno() )
+		    var  => {
+			# the first part is from var parsing result.
+			# please see parse_var().
+			# import all the keys from original var entry
+
+			# information
+			cytoBand  => $cytoBand,
+			varTypeSO => $varTypeSO,
+			gHGVS	  => $gHGVS,
+			refbuild  => $referenceBuild,
+
+			# Here's some optional parts which may be generated 
+			# when extra resource is available:
+			dbsnp => {
+			    $rsID => {
+				AN => $dbsnp_total_allele_count,
+				AF => $dbsnp_alt_allele_frequency, # though ref
+			    },
+			    ...
+			},
+
+			tgp => {
+			    AN => $tgp_total_allele_count,
+			    AF => $tgp_alt_allele_frequency,
+			},
+
+			cg54 => {
+			    AN => $cg54_total_allele_count,
+			    AF => $cg54_alt_allele_frequency,
+			},
+
+			wellderly => {
+			    AN => $wellderly_total_allele_count,
+			    AF => $wellderly_alt_allele_frequency,
+			},
+
+			esp6500 => {
+			    AN => $esp6500_total_allele_count,
+			    AF => $esp6500_alt_allele_frequency,
+			},
+		    }
+		    trInfo => {
+                        $tid => {
+			    geneId	  => $Entrez_Gene_ID,
+			    geneSym	  => $Gene_Symbol,
+			    prot	  => $Protein_Acc_Ver,
+                            strd          => $strand,
+			    rnaBegin	  => $Begin_in_RNA_transcript,
+			    rnaEnd	  => $End_in_RNA_transcript,
+			    protBegin	  => $Begin_in_Protein,
+			    protEnd	  => $End_in_Protein,
+                            c             => $cHGVS,
+                            p             => $pHGVS,
+                            cc            => $codon_change,
+			    polar	  => $polar_change,
+                            r             => $imp_funcRegion,
+                            func          => $imp_funcCode,
+                            exin          => $exIntr_number,
+                            genepart      => $GenePart,
+                            genepartSO    => $GenePartSO,
+                            genepartIndex => $GenePartIndex,
+			    exonIndex	  => $exonIndex,    # '.' for N/A
+			    intronIndex	  => $intronIndex   # '.' for N/A
+			    funcSOname	  => $FunctionImpact,
+                            funcSO        => $FunctionImpactSO,
+			    pfamId	  => $PFAM_ID,
+			    pfamName	  => $PFAM_NAME,
+			    phyloPpm	  => $PhyloPscorePlacentalMammals,
+			    phyloPpr	  => $PhyloPscorePrimates,
+			    phyloPve	  => $PhyloPscoreVetebrates,
+			    siftPref	  => $SIFTpred,
+			    siftScore	  => $SIFTscore,
+			    pp2divPred	  => $Polyphen2HumDivPred,
+			    pp2divScore	  => $Polyphen2HumDivScore,
+			    pp2varPred	  => $Polyphen2HumVarPred,
+			    pp2varScore	  => $Polyphen2HumVarScore,
+                        },
 			...
 		    }
 		}
@@ -2809,12 +2918,11 @@ sub pairsort {
     Returns : a hash ref of variation:
 	      {
 		chr	    => $chr,
-		start	    => $start,
-		end	    => $end,
+		pos	    => $start,	    # 0-based start
 		ref	    => $ref,
 		alt	    => $alt,
 		reflen	    => $ref_len,
-		altlen	    => $alt_len,
+		altlen	    => $alt_len,    # not exists if no-call
 		guess	    => $varType,    # the output varType
 		imp	    => $imp_varType,# the implicit varType
 		sm	    => $sm,	    # single/multiple base indicator
@@ -2826,14 +2934,14 @@ sub pairsort {
 		# update the start, end, ref, alt to the
 		# result. otherwise, the following '+', '-',
 		# structure will be generated to reflect
-		# the difference.
+		# the difference. they are all optional
 
 		'+' => {
 
 		  # This group assume the transcript is on forward strand,
 		  # and give offsets and ref/alt string based on the rule
 		  # with 'rep' annotation available
-		  p  => $fpos,		    # forward strand offset
+		  p  => $fpos,		    # forward strand pos, 0-based
 		  r  => $fref,		    # forward strand ref string
 		  a  => $falt,		    # forward strand alt string
 		  rl => $freflen,	    # forward strand ref length
@@ -2860,7 +2968,6 @@ sub pairsort {
 	      alt_cn => $copy_number_in_alt,
 	    }
 
-
 =cut
 sub parse_var {
     confess "Error: not enough args [",scalar(@_),"], need at least 4 args." if (4 > @_);
@@ -2874,35 +2981,29 @@ sub parse_var {
 	$alt = normalise_seq($alt);
 	my $rl = length($ref);
 	if (substr($ref,0,1) eq substr($alt,0,1)) {
-	    $end = $start + $rl - 1;
 	    $ref = substr($ref,1);
 	    $alt = substr($alt,1);
 	}
 	else {
 	    $start -= 1; # change to 0-based start
-	    $end = $start + $rl;
 	}
     }
 
     my ($varType, $implicit_varType, $sm) = guess_type($start, $end, $ref, $alt);
 
-    my $ref_len = length($ref);
-    my $alt_len = ($alt eq '?') ? undef : length($alt);
-
     %var = (
         chr    => $chr,
-        start  => $start,
-	end    => $end,
+        pos    => $start,
         ref    => $ref,
         alt    => $alt,
-        reflen => $ref_len,
-        altlen => $alt_len,
+        reflen => length($ref),
 	guess  => $varType,
 	imp    => $implicit_varType,
 	sm     => $sm
     );
+    $var{altlen} = length($alt) if ($alt ne '?');
 
-    if ($implicit_varType ne 'delins') {
+    if ($guess eq 'no-call' or $implicit_varType ne 'delins') {
 	return \%var;
     }
     
@@ -2922,25 +3023,19 @@ sub normalise_seq {
 
 =head2 parse_complex
     
-    About   : parse complex delins variants to recognize repeat and differ strand-pos var
+    About   : parse complex delins variants to recognize 
+	      repeat and differ strand-pos var.
     Usage   : my $rguess = parse_complex( $var );
-    Args    : delins variantion entry.
+    Args    : delins variantion entry. have been uniform to CG's shell list format.
     Returns : see parse_var()
 
 =cut
 sub parse_complex {
-    my ($ref, $len_ref, $alt, $len_alt) = @_;
+    my $var = shift;
+    my ($ref, $alt, $len_ref, $len_alt) = @{$var}{qw(ref alt reflen altlen)};
 
-    return { guess => "ref" } if ($ref eq $alt);
-
-    # trim the first leading string for ref and alt
-    my $cref = substr($ref, 1);
-    my $calt = substr($alt, 1);
-    my $reflead = substr($ref, 0, 1);
-    my $altlead = substr($alt, 0, 1);
-
-    my $rc_ref = count_content($cref);
-    my $rc_alt = count_content($calt);
+    my $rc_ref = count_content($ref);
+    my $rc_alt = count_content($alt);
     my @diff = map { $$rc_ref[$_] - $$rc_alt[$_] } (0 .. 5);
 
     my $get_rst = get_internal( $ref, $len_ref, $alt, $len_alt );
@@ -2965,15 +3060,15 @@ sub parse_complex {
 	my @absdiff = map {abs} @diff;
 	my ($larger, $smaller, $llen, $slen);
         if ( $len_ref > $len_alt ) {
-            $larger  = $cref;
+            $larger  = $ref;
             $llen    = $len_ref - 1;
-            $smaller = $calt;
+            $smaller = $alt;
             $slen    = $len_alt - 1;
         }
         else {
-            $larger  = $calt;
+            $larger  = $alt;
             $llen    = $len_alt - 1;
-            $smaller = $cref;
+            $smaller = $ref;
             $slen    = $len_ref - 1;
         }
 
@@ -3064,7 +3159,6 @@ sub guess_type {
 	$sm = 0;
     }
     elsif ($end - $start == 1) {
-	$sm = 1;
 	if ($ref eq $alt) {
 	    $imp_varType = 'ref';
 	}
@@ -3077,6 +3171,7 @@ sub guess_type {
 	else {
 	    $imp_varType = 'delins';
 	}
+	$sm = 1;
     }
     elsif ($end - $start > 1) {
 	if ($ref eq $alt) {
@@ -3154,50 +3249,23 @@ sub get_internal {
 
 	last if ($lgo == 0 and $rgo == 0);
     }
-    my ($lofs, $new_ref_len, $new_alt_len);
+    my ($new_ref_len, $new_alt_len);
     if ($shorter >= $loff + $roff) {
-	$new_ref_len = $reflen - $loff - $roff + 1;
-	$new_alt_len = $altlen - $loff - $roff + 1;
-	$lofs = ($loff - 1 < 0) ? 0 : ($loff - 1);
-	if ($new_ref_len == $new_alt_len and $new_ref_len == 2) { # possible simple snv, or consecutive snv.
-	    my $new_ref = substr($ref, $lofs, 2);
-	    my $new_alt = substr($alt, $lofs, 2);
-	    if (substr($new_ref, 0, 1) eq substr($new_alt, 0, 1)) {
-		return {
-		    '+' => ($lofs + 1),
-		    '-' => ($lofs + 1),
-		    'r' => 1,
-		    'a' => 1
-		};
-	    }
-	    if (substr($new_ref, 1) eq substr($new_alt, 1)) {
-		return {
-		    '+' => $lofs,
-		    '-' => $lofs,
-		    'r' => 1,
-		    'a' => 1
-		};
-	    }
-	}
+	$new_ref_len = $reflen - $loff - $roff;
+	$new_alt_len = $altlen - $loff - $roff;
 	return {
-	    '+' => $lofs,
-	    '-' => $lofs,
+	    '+' => $loff,
+	    '-' => $loff,
 	    'r' => $new_ref_len,
 	    'a' => $new_alt_len
 	};
     }
     else {
-	my $trim_len = $shorter - 1;
-	$new_ref_len = $reflen - $trim_len;
-	$new_alt_len = $altlen - $trim_len;
-
-	my ($f_lofs, $r_lofs);
-	$f_lofs = ($loff - 1 < 0) ? 0 : ($loff - 1);
-	$r_lofs = ($shorter - $roff - 1 < 0) ? 0 : ($shorter - $roff - 1);
-
+	$new_ref_len = $reflen - $shorter;
+	$new_alt_len = $altlen - $shorter;
 	return {
-	    '+' => $f_lofs,
-	    '-' => $r_lofs,
+	    '+' => $loff,
+	    '-' => ($shorter - $roff),
 	    'r' => $new_ref_len,
 	    'a' => $new_alt_len
 	};
