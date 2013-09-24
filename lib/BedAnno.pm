@@ -974,9 +974,22 @@ sub anno {
 sub varanno {
     my ($self, $var) = @_;
 
+    my $var_region = ($var->{reflen} > 0) ? (
+	$var->{chr} . ':'
+      . ( $var->{pos} + 1 ) . '-'
+      . ( $var->{pos} + $var->{reflen} )) : (
+        $var->{chr} . ':'
+      . ( $var->{pos} - 1 ) . '-' . ( $var->{pos} + 1 )
+    );
+
+    my $localdb;
     if (!exists $self->{batch}) { # daemon mode
-	
+	$localdb = $self->load_anno( region => $var_region )->{$var->{chr}};
     }
+    else {
+	$localdb = $self->{annodb}->{$var->{chr}};
+    }
+
     if (!exists $$var{sel}) {	# no position annotation
 	my $pos1 = get_anno_pos($var);
 	if ( $pos1 >  0 ) {
@@ -3028,6 +3041,11 @@ sub getUnifiedVar {
 		# for equal length long substitution
 		# record the separated snvs positions
 		sep_snvs => [ $snv_pos1, $snv_pos2, ... ],
+
+		# entries selection which cover by var
+		sel    => {
+		    # please see select_position()
+		},
             }
 
 =cut
