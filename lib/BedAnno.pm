@@ -885,87 +885,89 @@ sub anno {
     Usage   : my $rAnnoRst = $beda->varanno($var);
     Args    : see parse_var()
     Returns : a hash ref:
-		{
-		    var  => {
-			# the first part is from var parsing result.
-			# please see parse_var().
-			# import all the keys from original var entry
+                {
+                    var => {
 
-			# information
-			cytoBand  => $cytoBand,
-			varTypeSO => $varTypeSO,
-			gHGVS	  => $gHGVS,
-			refbuild  => $referenceBuild,
+                        # the first part is from var parsing result.
+                        # please see parse_var().
+                        # import all the keys from original parsed var entry
+			# and add the following keys by this method.
 
-			# Here's some optional parts which may be generated 
-			# when extra resource is available:
-			dbsnp => {
-			    $rsID => {
-				AN => $dbsnp_total_allele_count,
-				AF => $dbsnp_alt_allele_frequency, # though ref
-			    },
-			    ...
-			},
+                        # information
+                        cytoBand  => $cytoBand,
+                        varTypeSO => $varTypeSO,
+                        gHGVS     => $gHGVS,
+                        refbuild  => $referenceBuild,
 
-			tgp => {
-			    AN => $tgp_total_allele_count,
-			    AF => $tgp_alt_allele_frequency,
-			},
+                        # Here's some optional parts which may be generated
+                        # when extra resource is available:
+                        dbsnp => {
+                            $rsID => {
+                                AN => $dbsnp_total_allele_count,
+                                AF => $dbsnp_alt_allele_frequency,  # though ref
+                            },
+                            ...
+                        },
 
-			cg54 => {
-			    AN => $cg54_total_allele_count,
-			    AF => $cg54_alt_allele_frequency,
-			},
+                        tgp => {
+                            AN => $tgp_total_allele_count,
+                            AF => $tgp_alt_allele_frequency,
+                        },
 
-			wellderly => {
-			    AN => $wellderly_total_allele_count,
-			    AF => $wellderly_alt_allele_frequency,
-			},
+                        cg54 => {
+                            AN => $cg54_total_allele_count,
+                            AF => $cg54_alt_allele_frequency,
+                        },
 
-			esp6500 => {
-			    AN => $esp6500_total_allele_count,
-			    AF => $esp6500_alt_allele_frequency,
-			},
-		    }
-		    trInfo => {
+                        wellderly => {
+                            AN => $wellderly_total_allele_count,
+                            AF => $wellderly_alt_allele_frequency,
+                        },
+
+                        esp6500 => {
+                            AN => $esp6500_total_allele_count,
+                            AF => $esp6500_alt_allele_frequency,
+                        },
+                    },
+                    trInfo => {
                         $tid => {
-			    geneId	  => $Entrez_Gene_ID,
-			    geneSym	  => $Gene_Symbol,
-			    prot	  => $Protein_Acc_Ver,
+                            geneId        => $Entrez_Gene_ID,
+                            geneSym       => $Gene_Symbol,
+                            prot          => $Protein_Acc_Ver,
                             strd          => $strand,
-			    rnaBegin	  => $Begin_in_RNA_transcript,
-			    rnaEnd	  => $End_in_RNA_transcript,
-			    protBegin	  => $Begin_in_Protein,
-			    protEnd	  => $End_in_Protein,
+                            rnaBegin      => $Begin_in_RNA_transcript,
+                            rnaEnd        => $End_in_RNA_transcript,
+                            protBegin     => $Begin_in_Protein,
+                            protEnd       => $End_in_Protein,
                             c             => $cHGVS,
                             p             => $pHGVS,
                             cc            => $codon_change,
-			    polar	  => $polar_change,
+                            polar         => $polar_change,
                             r             => $imp_funcRegion,
                             func          => $imp_funcCode,
                             exin          => $exIntr_number,
                             genepart      => $GenePart,
                             genepartSO    => $GenePartSO,
                             genepartIndex => $GenePartIndex,
-			    exonIndex	  => $exonIndex,    # '.' for N/A
-			    intronIndex	  => $intronIndex   # '.' for N/A
-			    funcSOname	  => $FunctionImpact,
-                            funcSO        => $FunctionImpactSO,
-			    pfamId	  => $PFAM_ID,
-			    pfamName	  => $PFAM_NAME,
-			    phyloPpm	  => $PhyloPscorePlacentalMammals,
-			    phyloPpr	  => $PhyloPscorePrimates,
-			    phyloPve	  => $PhyloPscoreVetebrates,
-			    siftPref	  => $SIFTpred,
-			    siftScore	  => $SIFTscore,
-			    pp2divPred	  => $Polyphen2HumDivPred,
-			    pp2divScore	  => $Polyphen2HumDivScore,
-			    pp2varPred	  => $Polyphen2HumVarPred,
-			    pp2varScore	  => $Polyphen2HumVarScore,
+                            exonIndex   => $exonIndex,          # '.' for N/A
+                            intronIndex => $intronIndex,        # '.' for N/A
+                            funcSOname  => $FunctionImpact,
+                            funcSO      => $FunctionImpactSO,
+                            pfamId      => $PFAM_ID,
+                            pfamName    => $PFAM_NAME,
+                            phyloPpm    => $PhyloPscorePlacentalMammals,
+                            phyloPpr    => $PhyloPscorePrimates,
+                            phyloPve    => $PhyloPscoreVetebrates,
+                            siftPref    => $SIFTpred,
+                            siftScore   => $SIFTscore,
+                            pp2divPred  => $Polyphen2HumDivPred,
+                            pp2divScore => $Polyphen2HumDivScore,
+                            pp2varPred  => $Polyphen2HumVarPred,
+                            pp2varScore => $Polyphen2HumVarScore,
                         },
-			...
-		    }
-		}
+                        ...
+                    }
+                }
 
 =cut
 sub varanno {
@@ -2987,16 +2989,18 @@ sub parse_var {
 	else {
 	    $start -= 1; # change to 0-based start
 	}
+	$end = $start + $rl;
     }
 
-    my ($varType, $implicit_varType, $sm) = guess_type($start, $end, $ref, $alt);
+    my $len_ref = $end - $start;            # chance to annotate long range
+    my ($varType, $implicit_varType, $sm) = guess_type($len_ref, $ref, $alt);
 
     %var = (
         chr    => $chr,
         pos    => $start,
         ref    => $ref,
         alt    => $alt,
-        reflen => length($ref),
+        reflen => $len_ref,
 	guess  => $varType,
 	imp    => $implicit_varType,
 	sm     => $sm
@@ -3034,17 +3038,40 @@ sub parse_complex {
     my $var = shift;
     my ($ref, $alt, $len_ref, $len_alt) = @{$var}{qw(ref alt reflen altlen)};
 
-    my $rc_ref = count_content($ref);
-    my $rc_alt = count_content($alt);
-    my @diff = map { $$rc_ref[$_] - $$rc_alt[$_] } (0 .. 5);
-
     my $get_rst = get_internal( $ref, $len_ref, $alt, $len_alt );
-    my $guess = guess_type( $$get_rst{r}, $$get_rst{a} );
+    if ($get_rst->{r} != $len_ref) {
+	my ($imp_guess, $sm) = guess_type_by_length( $get_rst->{r}, $get_rst->{a} );
+	$var->{imp} = $imp_guess;
+	$var->{sm}  = $sm;
+	if ( $get_rst->{'+'} != $get_rst->{'-'} ) {
+	    for my $strd ( '+', '-' ) {
+		$var->{$strd}->{bp} = $var->{pos} + $get_rst->{$strd};
+		$var->{$strd}->{br} =
+		  substr( $var->{ref}, $get_rst->{$strd}, $get_rst->{r} );
+		$var->{$strd}->{ba} =
+		  substr( $var->{alt}, $get_rst->{$strd}, $get_rst->{a} );
+		$var->{$strd}->{brl} = $get_rst->{r};
+		$var->{$strd}->{bal} = $get_rst->{a};
+	    }
+	}
+	else {
+	    $var->{pos} += $get_rst->{'+'};
+	    $var->{reflen} = $get_rst->{r};
+	    $var->{altlen} = $get_rst->{a};
+	    $var->{ref} = substr( $var->{ref}, $get_rst->{'+'}, $get_rst->{r});
+	    $var->{alt} = substr( $var->{alt}, $get_rst->{'+'}, $get_rst->{a});
+	}
+    }
+
 
     my %rst = ();
     @rst{ ("bcGuess", "bcRlen", "bcAlen") } = ($guess, $$get_rst{r}, $$get_rst{a});
     $rst{'+'}{bcOffst} = $$get_rst{'+'};
     $rst{'-'}{bcOffst} = $$get_rst{'-'};
+
+    my $rc_ref = count_content($ref);
+    my $rc_alt = count_content($alt);
+    my @diff = map { $$rc_ref[$_] - $$rc_alt[$_] } (0 .. 5);
 
     my $sign_coord =
       check_sign( \@diff ); # check if the sign of all base diff are consistent.
@@ -3143,22 +3170,55 @@ sub check_trim_tail {
     return 0;
 }
 
+# guess only by length for get_internal result
+# the only delins without no-call left
+# get_internal will recognize the real mutant
+# region, discard the influnce by other 
+# sample's result.
+sub guess_type_by_length {
+    my ($rl, $al) = @_;
+    my ($imp_guess, $sm);
+    if ($rl == 0) {
+	$imp_guess = 'ins';
+	$sm = 0;
+    }
+    elsif ($rl == 1) {
+	if ($al == 1) {
+	    $imp_guess = 'snv';
+	}
+	elsif ($al == 0) {
+	    $imp_guess = 'del';
+	}
+	else {
+	    $imp_guess = 'delins';
+	}
+	$sm = 1;
+    }
+    else {
+	$imp_guess = ($al == 0) ? 'del' : 'delins';
+	$sm = ($rl == $al) ? 3 : 2;
+    }
+
+    return ($imp_guess, $sm);
+}
+
+# input direct guess
 sub guess_type {
-    my ($start, $end, $ref, $alt) = @_;
+    my ($len, $ref, $alt) = @_;
     # imp_varType: implicit variant type is for HGVS naming
     # varType    : to be output as varType name. can be as the key
     #		   to get the SO term by Name2SO hash.
     # sm	 : single or multiple bases tag
     #		    0 - for insertion, 0 base
     #		    1 - for single base variants
-    #		    2 - for equal-length multiple bases variants
-    #		    3 - for non-equal-length multiple bases delins
+    #		    2 - for non-equal-length multiple bases variants
+    #		    3 - for equal-length multiple bases delins
     my ($imp_varType, $varType, $sm);
-    if ($end - $start == 0) {
+    if ($len == 0) {
 	$imp_varType = 'ins';
 	$sm = 0;
     }
-    elsif ($end - $start == 1) {
+    elsif ($len == 1) {
 	if ($ref eq $alt) {
 	    $imp_varType = 'ref';
 	}
@@ -3173,7 +3233,7 @@ sub guess_type {
 	}
 	$sm = 1;
     }
-    elsif ($end - $start > 1) {
+    elsif ($len > 1) {
 	if ($ref eq $alt) {
 	    $imp_varType = 'ref';
 	}
@@ -3184,11 +3244,11 @@ sub guess_type {
 	    $imp_varType = 'delins';
 	}
 
-	if (length($ref) == length($alt)) {
-	    $sm = 2; # equal-length subs
+	if (length($ref) != length($alt)) {
+	    $sm = 2; # non-equal-length subs
 	}
 	else {
-	    $sm = 3; # non-equal-length delins
+	    $sm = 3; # equal-length delins
 	}
     }
     $varType = ($alt eq '?') ? 'no-call' : $varType;
