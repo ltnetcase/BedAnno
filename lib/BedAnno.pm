@@ -503,7 +503,7 @@ sub new {
     }
 
     if ( exists $self->{cytoBand} ) {
-        confess "Error: [$self->{cytoBand}] $!"
+        confess "Error: [$self->{cytoBand}] no exist or cannot be read."
           if ( !-e $self->{cytoBand} or !-r $self->{cytoBand} );
         require GetCytoband;
         my $cytoBand_h = GetCytoBand->new( db => $self->{cytoBand} );
@@ -511,7 +511,7 @@ sub new {
     }
 
     if ( exists $self->{pfam} ) {
-        confess "Error: [$self->{pfam}] $!"
+        confess "Error: [$self->{pfam}] no exist or cannot be read."
           if ( !-e $self->{pfam} or !-r $self->{pfam} );
         require GetPfam;
         my $pfam_h = GetPfam->new( db => $self->{pfam} );
@@ -519,7 +519,7 @@ sub new {
     }
 
     if ( exists $self->{prediction} ) {
-        confess "Error: [$self->{prediction}] $!"
+        confess "Error: [$self->{prediction}] no exist or cannot be read."
           if ( !-e $self->{prediction} or !-r $self->{prediction} );
         require GetPrediction;
         my $prediction_h = GetPrediction->new( db => $self->{prediction} );
@@ -527,7 +527,7 @@ sub new {
     }
 
     if ( exists $self->{phyloP} ) {
-        confess "Error: [$self->{phyloP}] $!"
+        confess "Error: [$self->{phyloP}] no exist or cannot be read."
           if ( !-e $self->{phyloP} or !-r $self->{phyloP} );
         require GetPhyloP;
         my $phyloP_h = GetPhyloP->new( db => $self->{phyloP} );
@@ -535,7 +535,7 @@ sub new {
     }
 
     if ( exists $self->{dbSNP} ) {
-        confess "Error: [$self->{dbSNP}] $!"
+        confess "Error: [$self->{dbSNP}] no exist or cannot be read."
           if ( !-e $self->{dbSNP} or !-r $self->{dbSNP} );
         require GetDBSNP;
         my $dbSNP_h = GetDBSNP->new( db => $self->{dbSNP} );
@@ -543,7 +543,7 @@ sub new {
     }
 
     if ( exists $self->{tgp} ) {
-        confess "Error: [$self->{tgp}] $!"
+        confess "Error: [$self->{tgp}] no exist or cannot be read."
           if ( !-e $self->{tgp} or !-r $self->{tgp} );
         require GetTgp;
         my $tgp_h = GetTgp->new( db => $self->{tgp} );
@@ -551,7 +551,7 @@ sub new {
     }
 
     if ( exists $self->{cg54} ) {
-        confess "Error: [$self->{cg54}] $!"
+        confess "Error: [$self->{cg54}] no exist or cannot be read."
           if ( !-e $self->{cg54} or !-r $self->{cg54} );
         require GetCGpub;
         my $cg54_h = GetCGpub->new( db => $self->{cg54} );
@@ -559,7 +559,7 @@ sub new {
     }
 
     if ( exists $self->{wellderly} ) {
-        confess "Error: [$self->{wellderly}] $!"
+        confess "Error: [$self->{wellderly}] no exist or cannot be read."
           if ( !-e $self->{wellderly} or !-r $self->{wellderly} );
         require GetCGpub;
         my $wellderly_h = GetCGpub->new( db => $self->{wellderly} );
@@ -567,7 +567,7 @@ sub new {
     }
 
     if ( exists $self->{esp6500} ) {
-        confess "Error: [$self->{esp6500}] $!"
+        confess "Error: [$self->{esp6500}] no exist or cannot be read."
           if ( !-e $self->{esp6500} or !-r $self->{esp6500} );
         require GetPfam;
         my $esp6500_h = GetPfam->new( db => $self->{esp6500} );
@@ -854,8 +854,9 @@ sub parse_annoent {
     # tid         gsym  gid strand blka gpgo exin nsta nsto csta csto wlen mismatch    pr
     # NM_015658.3|NOC2L|26155|-|3U1E|205|EX19E|2817|2801|*508|*492|0|D,879582,879582,.|Y
     my @infos = split(/\|/, $annoent);
+    confess "Error format of anno ents [$annoent]" if (14 != @infos);
+
     my $tid = shift @infos;
-    confess "Error format of anno ents [$annoent]" if (10 != @infos);
     my @tags  = qw(gsym gid strand blka gpSO exin nsta nsto csta csto wlen mismatch pr);
     @annoinfo{@tags} = @infos;
     return ($tid, \%annoinfo);
@@ -973,6 +974,9 @@ sub anno {
 sub varanno {
     my ($self, $var) = @_;
 
+    if (!exists $self->{batch}) { # daemon mode
+	
+    }
     if (!exists $$var{sel}) {	# no position annotation
 	my $pos1 = get_anno_pos($var);
 	if ( $pos1 >  0 ) {
@@ -1033,39 +1037,42 @@ sub get_gHGVS {
 	$gHGVS = 'm.';
     }
 
-    $_ = $$var{guess};
-    if ($_ eq 'snv') {
-	$gHGVS .= $$var{pos}.$$var{ref}.'>'.$$var{alt};
+    my $imp = $var->{imp};
+    my $sm  = $var->{sm};
+    my ($pos, $ref, $alt, $reflen, $altlen) = getUnifiedVar($var);
+
+    if ($imp eq 'snv') {
+	$gHGVS .= $pos.$ref.'>'.$alt;
     }
-    elsif ($_ eq 'ins') {
-	$gHGVS .= $$var{pos}.'_'.($$var{pos}+1).'ins'.(substr($$var{alt},1));
+    elsif ($imp eq 'ins') {
+	$gHGVS .= $pos.'_'.($pos+1).'ins'.$alt;
     }
-    elsif ($_ eq 'del' or $_ eq 'delins') {
+    elsif ($imp eq 'del' or $imp eq 'delins') {
 	# 1bp del/delins
-	$gHGVS .= ($$var{pos}+1);
-	if ($$var{reflen} > 2) {
-	    $gHGVS .= '_'.($$var{pos} + $$var{reflen} - 1);
+	$gHGVS .= ($pos+1);
+	if ($sm > 1) {
+	    $gHGVS .= '_'.($pos + $reflen);
 	}
-	$gHGVS .= 'del'.(substr($$var{ref}, 1));
-	$gHGVS .= 'ins'.(substr($$var{alt}, 1)) if (/delins/);
+	$gHGVS .= 'del'.$ref;
+	$gHGVS .= 'ins'.$alt if (/delins/);
     }
-    elsif ($_ eq 'rep') {
-	$gHGVS .= ($$var{pos} + 1);
-	if ($$var{ref_cn} == 1 and $$var{alt_cn} == 2) { # dup
-	    if ($$var{replen} > 1) {
-		$gHGVS .= '_' . ($$var{pos} + $$var{replen});
+    elsif ($imp eq 'rep') {
+	$gHGVS .= ($pos + 1);
+	if ($ref_cn == 1 and $alt_cn == 2) { # dup
+	    if ($sm > 1) {
+		$gHGVS .= '_' . ($pos + $replen);
 	    }
-	    $gHGVS .= 'dup'. $$var{rep};
+	    $gHGVS .= 'dup'. $rep;
 	}
 	else {
-	    $gHGVS .= $$var{rep}.'['.$$var{ref_cn}.'>'.$$var{alt_cn}.']';
+	    $gHGVS .= $rep.'['.$ref_cn.'>'.$alt_cn.']';
 	}
     }
-    elsif ($_ eq 'ref') {
+    elsif ($imp eq 'ref') {
 	$gHGVS .= '=';
     }
     else {
-	confess "Can not recognize type $$var{guess}.";
+	confess "Can not recognize type $imp.";
     }
 
     return $gHGVS;
@@ -2419,17 +2426,7 @@ sub select_position {
     About   : The fastest way to annotate multiple snv and 1bp deletion variations,
 	      indel and other types also can be annotated, but no faster than annotated
 	      one by one.
-    Usage   : $beda = BedAnno->new( db => 'in.bed.gz', codon => 'in.codon.fa'); 
-	      @all_annos = ();
-	      foreach chr {
-		my @vars = (); 
-		foreach pos, ref, @alt {
-		  $var = parse_var($chr, $pos, $ref, $alt);
-		  push (@vars, $var);
-		}
-		my $rChrAnnos = $beda->batch_anno( chr, \@vars); 
-		push (@all_annos, @$rChrAnnos);
-	      }
+    Usage   : $beda = BedAnno->new( db => 'in.bed.gz', tr => 'in.trans.fas'); 
     Args    : chr, and an array ref of vars.
     Returns : an array ref of annos, see anno().
 
@@ -2911,70 +2908,135 @@ sub pairsort {
     $$a[0] <=> $$b[0] or $$a[1] <=> $$b[1]
 }
 
+=head2 getUnifiedVar
+
+    About   : uniform the pos and ref/alt pair selection,
+	      after parse_var(), give info for HGVS naming.
+    Usage   : my @unified_desc = $var->getUnifiedVar($strd);
+    Args    : BedAnno::Var entry and current strand for annotation.
+    Returns : an array of ( 
+		$pos,  # 0-based start pos
+		$ref,  # reference bases
+		$alt,  # called bases
+		$reflen, # reference len
+		$altlen )# called len, undef if no-call
+
+=cut
+sub getUnifiedVar {
+    my $var = shift;
+    my $strd = shift;
+
+    my $consPos = $$var{pos};
+    my $consRef = $$var{ref};
+    my $consAlt = $$var{alt};
+    my $consRL	= $$var{reflen};
+
+    if (!exists $$var{altlen}) {
+	return ($consPos, $consRef, $consAlt, $consRL);
+    }
+
+    my $consAL	= $$var{altlen};
+    
+    if (exists $var->{p}) { # rep
+	$consPos = $$var{p};
+	$consRef = $$var{r};
+	$consAlt = $$var{a};
+	$consRL	 = $$var{rl};
+	$consAL	 = $$var{al};
+    }
+    elsif (exists $var->{bp}) { # complex bc strand same
+	$consPos = $$var{bp};
+	$consRef = $$var{br};
+	$consAlt = $$var{ba};
+	$consRL	 = $$var{brl};
+	$consAL	 = $$var{bal};
+    }
+    elsif (exists $var->{$strd}) { # complex bc strand diff
+	$consPos = $$var{$strd}{bp};
+	$consRef = $$var{$strd}{br};
+	$consAlt = $$var{$strd}{ba};
+	$consRL	 = $$var{$strd}{brl};
+	$consAL	 = $$var{$strd}{bal};
+    }
+
+    return ($consPos, $consRef, $consAlt, $consRL, $consAL);
+}
+
 
 =head2 parse_var
 
-    About   : parse the variation directly by the ref and alt string
+    About   : implicitly create a new object class entry, BedAnno::Var,
+	      parse the variation directly by the ref and alt string.
     Usage   : my $var = parse_var( $chr, $start, $end, $ref, $alt );
 	   or my $var = parse_var( $chr, $pos, $ref, $alt );
-    Returns : a hash ref of variation:
-	      {
-		chr	    => $chr,
-		pos	    => $start,	    # 0-based start
-		ref	    => $ref,
-		alt	    => $alt,
-		reflen	    => $ref_len,
-		altlen	    => $alt_len,    # not exists if no-call
-		guess	    => $varType,    # the output varType
-		imp	    => $imp_varType,# the implicit varType
-		sm	    => $sm,	    # single/multiple base indicator
-					    # equal/non-equal length indicator
+    Returns : a new BedAnno::Var entry :
+            {
+                chr    => $chr,
+                pos    => $start,          # 0-based start
+                ref    => $ref,
+                alt    => $alt,
+                reflen => $ref_len,
+                altlen => $alt_len,        # not exists if no-call
+                guess  => $varType,        # the output varType
+                imp    => $imp_varType,    # the implicit varType
+                sm     => $sm,             # single/multiple base indicator
+                                           # equal/non-equal length indicator
 
-		# for hgvs naming convinient, reparse it
-		# in forward and reverse strand separately,
-		# If the result are the same, then only 
-		# update the start, end, ref, alt to the
-		# result. otherwise, the following '+', '-',
-		# structure will be generated to reflect
-		# the difference. they are all optional
+                # for hgvs naming convinient, reparse delins(guess),
+                # in forward and reverse strand separately,
+                # If the result are the same, then only
+                # give the following optional
+                # rescaled strand-same description group
+                bp  => $bc_pos,       # backward compatible pos, 0-based
+                br  => $bc_ref,       # backward compatible ref string
+                ba  => $bc_alt,       # backward compatible alt string
+                brl => $bc_reflen,    # backward compatible ref length
+                bal => $bc_altlen,    # backward compatible alt length
 
-		'+' => {
+                # otherwise, the following '+', '-',
+                # structure will be generated to reflect
+                # the difference. they are all optional
 
-		  # This group assume the transcript is on forward strand,
-		  # and give offsets and ref/alt string based on the rule
-		  # with 'rep' annotation available
-		  p  => $fpos,		    # forward strand pos, 0-based
-		  r  => $fref,		    # forward strand ref string
-		  a  => $falt,		    # forward strand alt string
-		  rl => $freflen,	    # forward strand ref length
-		  al => $faltlen,	    # forward strand alt length
+                '+' => {
 
-		  # This group simplely trim off the leading same chars
-		  # on forward strand, and then trim the same tail
-		  bp  => $backward_fpos, 
-		  br  => $backward_fref,
-		  ba  => $backward_falt,
-		  brl => $backward_freflen,
-		  bal => $backward_faltlen,
+                  # This group simplely trim off the leading same chars
+                  # on forward strand, and then trim the same tail
+                  bp  => $backward_fpos,
+                  br  => $backward_fref,
+                  ba  => $backward_falt,
+                  brl => $backward_freflen,
+                  bal => $backward_faltlen,
 
+                },
+
+                '-' => { 
+		  # similar to '+', but for reverse strand 
 		},
 
-		'-' => {
-		  same to '+', but for reverse strand
-		},
+                # this group gives ref/alt string based on the rule
+                # with 'rep' annotation available
+                p      => $rep_left_pos,         # repeat pos, 0-based
+                r      => $rep_ref,              # repeat ref string
+                a      => $rep_alt,              # repeat alt string
+                rl     => $rep_reflen,           # repeat ref length
+                al     => $rep_altlen,           # repeat alt length
+                rep    => $repeat_element,
+                replen => $repeat_element_length,
+                ref_cn => $copy_number_in_ref,
+                alt_cn => $copy_number_in_alt,
 
-	      # for repeat available variant
-	      rep    => $repeat_element
-	      replen => $repeat_element_length
-	      ref_cn => $copy_number_in_ref,
-	      alt_cn => $copy_number_in_alt,
-	    }
+		# for equal length long substitution
+		# record the separated snvs positions
+		sep_snvs => [ $snv_pos1, $snv_pos2, ... ],
+            }
 
 =cut
 sub parse_var {
     confess "Error: not enough args [",scalar(@_),"], need at least 4 args." if (4 > @_);
     my ($chr, $start, $end, $ref, $alt) = @_;
-    my %var :shared;
+    $chr = normalise_chr($chr);
+
+    my %var;
 
     if ($end !~ /^\d+$/) { # from VCF v4.1 1-based start
 	$alt = $ref;
@@ -3003,15 +3065,41 @@ sub parse_var {
         reflen => $len_ref,
 	guess  => $varType,
 	imp    => $implicit_varType,
-	sm     => $sm
+	sm     => $sm,
     );
     $var{altlen} = length($alt) if ($alt ne '?');
 
+    my $var : shared;
+    $var = shared_clone({%var});
+    bless $var, 'BedAnno::Var';
+
     if ($guess eq 'no-call' or $implicit_varType ne 'delins') {
-	return \%var;
+	return $var;
     }
     
-    return parse_complex( \%var );
+    return $var->parse_complex();
+}
+
+sub normalise_chr {
+    my $chr = shift;
+    $chr =~ s/^chr//i;
+    if ($chr eq '23') {
+	$chr = 'X';
+    }
+    elsif ($chr eq '24') {
+	$chr = 'Y';
+    }
+    elsif ($chr eq '25') {
+	$chr = 'MT';
+    }
+    elsif ($chr =~ /^[xym]$/) {
+	$chr = uc($chr);
+	$chr .= 'T' if ($chr eq 'M');
+    }
+    elsif ($chr =~ /^M_/i) {
+	$chr = 'MT';
+    }
+    return $chr;
 }
 
 sub normalise_seq {
@@ -3020,7 +3108,8 @@ sub normalise_seq {
     $seq = "" if ($seq eq '.');
     $seq = uc($seq);
     if ($seq =~ /[^ACGTN]/ and $seq ne '?') {
-	confess "Error: unrecognized pattern exists, no multiple alts please. [$seq]\n";
+	confess "Error: unrecognized pattern exists,",
+	    "no multiple alts please. [$seq]";
     }
     return $seq;
 }
@@ -3029,8 +3118,9 @@ sub normalise_seq {
     
     About   : parse complex delins variants to recognize 
 	      repeat and differ strand-pos var.
-    Usage   : my $rguess = parse_complex( $var );
-    Args    : delins variantion entry. have been uniform to CG's shell list format.
+    Usage   : my $var = $var->parse_complex();
+    Args    : variantion entry, which have been uniform to 
+	      CG's shell list format, with its 'guess':delins.
     Returns : see parse_var()
 
 =cut
@@ -3046,57 +3136,51 @@ sub parse_complex {
 	if ( $get_rst->{'+'} != $get_rst->{'-'} ) {
 	    for my $strd ( '+', '-' ) {
 		$var->{$strd}->{bp} = $var->{pos} + $get_rst->{$strd};
+		$var->{$strd}->{brl} = $get_rst->{r};
+		$var->{$strd}->{bal} = $get_rst->{a};
 		$var->{$strd}->{br} =
 		  substr( $var->{ref}, $get_rst->{$strd}, $get_rst->{r} );
 		$var->{$strd}->{ba} =
 		  substr( $var->{alt}, $get_rst->{$strd}, $get_rst->{a} );
-		$var->{$strd}->{brl} = $get_rst->{r};
-		$var->{$strd}->{bal} = $get_rst->{a};
 	    }
 	}
 	else {
-	    $var->{pos} += $get_rst->{'+'};
-	    $var->{reflen} = $get_rst->{r};
-	    $var->{altlen} = $get_rst->{a};
-	    $var->{ref} = substr( $var->{ref}, $get_rst->{'+'}, $get_rst->{r});
-	    $var->{alt} = substr( $var->{alt}, $get_rst->{'+'}, $get_rst->{a});
+	    $var->{bp}  = $var->{pos} + $get_rst->{'+'};
+	    $var->{brl} = $get_rst->{r};
+	    $var->{bal} = $get_rst->{a};
+	    $var->{br} = substr( $var->{ref}, $get_rst->{'+'}, $get_rst->{r} );
+	    $var->{ba} = substr( $var->{alt}, $get_rst->{'+'}, $get_rst->{a} );
 	}
     }
 
-
-    my %rst = ();
-    @rst{ ("bcGuess", "bcRlen", "bcAlen") } = ($guess, $$get_rst{r}, $$get_rst{a});
-    $rst{'+'}{bcOffst} = $$get_rst{'+'};
-    $rst{'-'}{bcOffst} = $$get_rst{'-'};
+    if ($var->{sm} == 3) { # equal length long subs
+	my @separate_snvs = ();
+	for (my $i = 0; $i < $var->{reflen}; $i++) {
+	    next if (substr($var->{ref}, $i, 1) eq substr($var->{alt}, $i, 1));
+	    push (@separate_snvs,  $var->{pos} + $i + 1);
+	}
+	$var->{sep_snvs} = shared_clone([@separate_snvs]);
+    }
 
     my $rc_ref = count_content($ref);
     my $rc_alt = count_content($alt);
     my @diff = map { $$rc_ref[$_] - $$rc_alt[$_] } (0 .. 5);
 
-    my $sign_coord =
-      check_sign( \@diff ); # check if the sign of all base diff are consistent.
-    if ( ( $sign_coord == 0 ) or ( $diff[0] == 0 ) or ( $reflead ne $altlead ) )
-    {
-      # for uncompatible lead char, same length and diff-sign incoordinate cases
-        @rst{ ( "guess", "newRlen", "newAlen" ) } =
-          ( $guess, $$get_rst{r}, $$get_rst{a} );
-	$rst{'+'}{offset} = $$get_rst{'+'};
-	$rst{'-'}{offset} = $$get_rst{'-'};
-    }
-    elsif ($sign_coord) { # possible short tandom repeat variation
+    # check if the sign of all base diff are consistent.
+    if (check_sign( \@diff )) { # possible short tandom repeat variation
 	my @absdiff = map {abs} @diff;
 	my ($larger, $smaller, $llen, $slen);
         if ( $len_ref > $len_alt ) {
             $larger  = $ref;
-            $llen    = $len_ref - 1;
+            $llen    = $len_ref;
             $smaller = $alt;
-            $slen    = $len_alt - 1;
+            $slen    = $len_alt;
         }
         else {
             $larger  = $alt;
-            $llen    = $len_alt - 1;
+            $llen    = $len_alt;
             $smaller = $ref;
-            $slen    = $len_ref - 1;
+            $slen    = $len_ref;
         }
 
 	my %has = ();
@@ -3110,52 +3194,42 @@ sub parse_complex {
                 my $cn = check_div( $rep_el, \@absdiff );
 		if ($cn and check_insrep($larger, $smaller, $rep_el, $cn)) {
 		    my $lenrep = length($rep_el);
-                    @rst{
-                        qw(guess rep replen)
-                    } = ( 'rep', $rep_el, $lenrep );
 
-		    $rst{'+'}{offset} = $lofs;
-		    $rst{'-'}{offset} = $lofs;
+                    @$var{qw(p rep replen)} =
+                      ( ( $var->{pos} + $lofs ), $rep_el, $lenrep );
 
 		    $rep += 1; # add the first copy of element
 
-		    if ($llen == $len_ref - 1) { # ref is longer
-                        @rst{
-                            qw(refcn altcn newRlen newAlen)
-                          } = (
-                            $rep, ( $rep - $cn ),
-                            ( $lenrep * $rep + 1 ), ( $lenrep * ( $rep - $cn ) + 1 )
-                          );
+		    my $l_cn = $rep;
+		    my $s_cn = $rep - $cn;
+		    my $l_wholerep = $rep_el x $l_cn;
+		    my $s_wholerep = $rep_el x $s_cn;
+		    my $l_replen   = $lenrep * $l_cn;
+		    my $s_replen   = $lenrep * $s_cn;
+
+		    if ($llen == $len_ref) { # ref is longer
+                        @$var{qw(ref_cn alt_cn r a rl al)} = (
+                            $l_cn, $s_cn, $l_wholerep, $s_wholerep, $l_replen,
+                            $s_replen
+                        );
 		    }
 		    else { # alt is longer
-                        @rst{
-                            qw(altcn refcn newAlen newRlen)
-                          } = (
-                            $rep, ( $rep - $cn ),
-                            ( $lenrep * $rep + 1 ), ( $lenrep * ( $rep - $cn ) + 1 )
-                          );
+                        @$var{qw(alt_cn ref_cn a r al rl)} = (
+                            $l_cn, $s_cn, $l_wholerep, $s_wholerep, $l_replen,
+                            $s_replen
+                        );
 		    }
-		    return \%rst;
+
+		    $var->{imp} = 'rep';
+		    $var->{sm}  = ($var->{rl} == 1) ? 1 : 2;
+
+		    return $var;
 		}
 		$has{$rep_el} = 1;
 	    }
 	}
-
-	# for non-tandom repeat case, sparsed case which will lead to difference between samtools mpileup and GATK.
-	if (check_trim_tail($larger, $llen, $smaller, $slen)) { 
-	    # check if the tail of smaller is uniq occurence in larger, if uniq, this may caused by multiple samples.
-	    @rst{ ( "guess", "newRlen", "newAlen" ) } =
-	      ( $guess, $$get_rst{r}, $$get_rst{a} );
-	    $rst{'+'}{offset} = $$get_rst{'+'};
-	    $rst{'-'}{offset} = $$get_rst{'-'};
-	}
-	else { # try get backward compatible variation and keep the original delins 
-	    @rst{ ("guess", "newRlen", "newAlen") } = ('delins', $len_ref, $len_alt);
-	    $rst{'+'}{offset} = 0;
-	    $rst{'-'}{offset} = 0;
-	}
     }
-    return \%rst;
+    return $var;
 }
 
 
@@ -3202,23 +3276,39 @@ sub guess_type_by_length {
     return ($imp_guess, $sm);
 }
 
-# input direct guess
+
+=head2 guess_type
+
+    About   : guess the varType directly from the input information.
+    Usage   : my ($guess, $implicit_varType, $sm) = guess_type($len_ref, $ref, $alt);
+    Args    : 1. length of reference (derived from end - start)
+	      2. reference sequence ('.' or empty for ins )
+	      3. called sequence ( '?' for no-call, '.' or empty for del )
+    Returns : $guess is varType in output (ref,snv,ins,del,delins,no-call)
+	      $implicit_varType (ref,snv,ins,del,delins,rep)
+	      $sm is single/multiple/equal/non-equal-len indicator
+		0 - ins case
+		1 - single base ref case
+		2 - multiple base, different length case
+		3 - multiple base, equal length case 
+
+=cut
 sub guess_type {
-    my ($len, $ref, $alt) = @_;
+    my ($len_ref, $ref, $alt) = @_;
     # imp_varType: implicit variant type is for HGVS naming
     # varType    : to be output as varType name. can be as the key
     #		   to get the SO term by Name2SO hash.
     # sm	 : single or multiple bases tag
-    #		    0 - for insertion, 0 base
-    #		    1 - for single base variants
-    #		    2 - for non-equal-length multiple bases variants
-    #		    3 - for equal-length multiple bases delins
+    #		   0 - for insertion, 0 base
+    #		   1 - for single base variants
+    #		   2 - for non-equal-length multiple bases variants
+    #		   3 - for equal-length multiple bases delins
     my ($imp_varType, $varType, $sm);
-    if ($len == 0) {
+    if ($len_ref == 0) {
 	$imp_varType = 'ins';
 	$sm = 0;
     }
-    elsif ($len == 1) {
+    elsif ($len_ref == 1) {
 	if ($ref eq $alt) {
 	    $imp_varType = 'ref';
 	}
@@ -3233,7 +3323,7 @@ sub guess_type {
 	}
 	$sm = 1;
     }
-    elsif ($len > 1) {
+    elsif ($len_ref > 1) {
 	if ($ref eq $alt) {
 	    $imp_varType = 'ref';
 	}
@@ -3245,10 +3335,10 @@ sub guess_type {
 	}
 
 	if (length($ref) != length($alt)) {
-	    $sm = 2; # non-equal-length subs
+	    $sm = 2; # non-equal-length delins
 	}
 	else {
-	    $sm = 3; # equal-length delins
+	    $sm = 3; # equal-length subs
 	}
     }
     $varType = ($alt eq '?') ? 'no-call' : $varType;
@@ -3375,33 +3465,35 @@ sub count_content {
 =cut
 sub fetchseq {
     my ($fasta, $rRegs) = @_;
-    if (!ref($rRegs)) {
-	if ($rRegs =~ /[\S]\s+[\S]/) {
+    local $/ = ">";
+    if (!ref($rRegs)) { # a scalar string
+	if ($rRegs =~ /[\S]\s+[\S]/) { # multiple regions
 	    $rRegs = [split(/\s+/, $rRegs)];
 	}
-	else {
+	else { # single region
 	    open (FASTA,"samtools faidx $fasta $rRegs |") or confess "samtools faidx: $!";
-	    <FASTA>;
-	    my @seq = <FASTA>;
-	    my $seq = join("",@seq);
-	    $seq =~ s/\s+//g;
+	    <FASTA>; # shift first ">";
+	    my $seq = <FASTA>;
 	    close FASTA;
+	    $seq =~ s/^[^\n]+$//;
+	    $seq =~ s/[\s>]+//g;
 	    return $seq;
 	}
     }
     my %seqs = ();
-    local $/ = ">";
     while (0 < @$rRegs) {
 	my @set = splice (@$rRegs, 0, 1000);
 	my $regions = join(" ", @set);
-	open (FASTA, "samtools faidx $fasta $regions |") or confess "samtools faidx: $!";
+        open( FASTA, "samtools faidx $fasta $regions |" )
+          or confess "samtools faidx: $!";
 	my @all_seq = <FASTA>;
 	close FASTA;
 	shift @all_seq;
 	foreach my $rec (@all_seq) {
 	    chomp $rec;
-	    my $hd = $1 if ($rec =~ s/^(\S+)//);
+	    my $hd = $1 if ($rec =~ s/^(\S+)[^\n]*$//);
 	    $rec =~ s/[\s>]+//g;
+	    next if ($rec =~ /^$/);
 	    $seqs{$hd} = uc($rec);
 	}
     }
