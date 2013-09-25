@@ -974,13 +974,13 @@ sub anno {
 sub varanno {
     my ($self, $var) = @_;
 
-    my $var_region = ($var->{reflen} > 0) ? (
-	$var->{chr} . ':'
-      . ( $var->{pos} + 1 ) . '-'
-      . ( $var->{pos} + $var->{reflen} )) : (
-        $var->{chr} . ':'
-      . ( $var->{pos} - 1 ) . '-' . ( $var->{pos} + 1 )
-    );
+    # Due to the bed format database, 
+    # add flank left and right 1bp to query the database
+    # to involve all the mismatches
+    my $var_region =
+      (     $var->{chr} . ':'
+          . ( $var->{pos} - 1 ) . '-'
+          . ( $var->{pos} + $var->{reflen} + 1 ) );
 
     my $localdb;
     if (!exists $self->{batch}) { # daemon mode
@@ -1037,8 +1037,8 @@ sub varanno {
 
 =head2 get_gHGVS
 
-    About   : get genomics (chromosomal) HGVS string of variation
-    Usage   : my $gHGVS = get_gHGVS($var);
+    About   : get genomic (chromosomal) HGVS string of variation
+    Usage   : my $gHGVS = $var->get_gHGVS();
     Args    : variation entry, after parse_var(), see parse_var().
     Returns : chromosomal HGVS string.
 
@@ -1052,7 +1052,7 @@ sub get_gHGVS {
 
     my $imp = $var->{imp};
     my $sm  = $var->{sm};
-    my ($pos, $ref, $alt, $reflen, $altlen) = getUnifiedVar($var);
+    my ($pos, $ref, $alt, $reflen, $altlen) = $var->getUnifiedVar('+');
 
     if ($imp eq 'snv') {
 	$gHGVS .= $pos.$ref.'>'.$alt;
@@ -2212,6 +2212,58 @@ sub get_flanks {
 }
 
 
+=head2 getTrPosition
+
+=cut
+sub getTrPosition {
+    my ($var, $rannodb, $aeIndex) = @_;
+    
+    # gather the covered entries
+    my $new_aeIndex;
+    my @hitted_entries = ();
+    for (my $k = $aeIndex; $k < @$rannodb; $k ++) {
+	if ($$rannodb[$k]{sto} < $var->{pos}) { # not reach var
+	    $aeIndex ++;
+	    next;
+	}
+        elsif ( $$rannodb[$k]{sta} <= $var->{pos}
+            and $var->{pos} <= $$rannodb[$k]{sto} )
+        { # pos hitted
+	    $new_aeIndex = $k;
+	    if (!exists $$rannodb[$k]{detail}) {
+		$$rannodb[$k]{detail} = assign_detail($$rannodb[$k]);
+	    }
+	    push ( @hitted_entries, $k );
+        }
+	elsif ( $$rannodb[$k]{sta} > $var->{end} ) { # past var
+	    last;
+	}
+	else { # covered by var
+	    if (!exists $$rannodb[$k]{detail}) {
+		$$rannodb[$k]{detail} = assign_detail($$rannodb[$k]);
+	    }
+	    push ( @hitted_entries, $k );
+	}
+    }
+    $new_aeIndex ||= $aeIndex;
+
+    return $new_aeIndex;
+}
+
+sub assign_detail {
+    my $rannodb_k = shift;
+    my %detail = ();
+    foreach my $annoblk (sort keys %{$$rannodb_k{annos}}) {
+	my $offset = $$rannodb_k{annos}{$annoblk};
+	my ($tid, $ranno) = parse_annoent($annoblk);
+	$detail{$tid} = $ranno;
+	$detail{$tid}{offset} = $offset;
+    }
+    $rannodb_k->{detail} = shared_clone( {%detail} );
+    return $rannodb_k;
+}
+
+
 =head2 select_position
 
     About   : Select the position that should be annotated on and get pairs by transcript ids
@@ -2225,7 +2277,8 @@ sub select_position {
 
     $$var{sel} = {};
     if (!exists $$var{'+'} or (!exists $$var{'+'}{p} and $$var{guess} ne 'rep')) {
-    # simple variation or same pos(strand) non-repeat variation which caused by complex delins or multiple samples
+    # simple variation or same pos(strand) non-repeat variation
+    # which caused by complex delins or multiple samples
 	my $anno_sels = [];
 
 	$_ = $$var{guess};
@@ -2986,6 +3039,7 @@ sub getUnifiedVar {
             {
                 chr    => $chr,
                 pos    => $start,          # 0-based start
+		end    => $end,
                 ref    => $ref,
                 alt    => $alt,
                 reflen => $ref_len,
@@ -3079,6 +3133,7 @@ sub parse_var {
         chr    => $chr,
         pos    => $start,
         ref    => $ref,
+	end    => $end,
         alt    => $alt,
         reflen => $len_ref,
 	guess  => $varType,
