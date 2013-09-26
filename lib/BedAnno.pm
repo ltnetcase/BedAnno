@@ -211,6 +211,8 @@ foreach my $threebase (sort keys %C3) {
 
 %Name2SO = reverse(%SO2name);
 
+our $REF_BUILD = 'GRCh37';
+
 =head2 new
 
 =over
@@ -454,6 +456,7 @@ sub new {
         );
     }
 
+    $self->{refbuild} = $REF_BUILD;
     my $anno_all_opt = 1;
 
     my %open_args;
@@ -577,6 +580,19 @@ sub new {
     $self->{trInfo} = shared_clone( $self->readtr() );
     $self->{annodb} = shared_clone( $self->load_anno(%open_args) )
       if ( exists $self->{batch} );
+    return $self;
+}
+
+=head2 set_refbuild
+
+    About   : set the reference build parameter
+    Usage   : $self->set_refbuild($refbuild);
+
+=cut
+sub set_refbuild {
+    my $self = shift;
+    my $custom_build_info = shift;
+    $self->{refbuild} = $custom_build_info;
     return $self;
 }
 
@@ -877,7 +893,8 @@ sub parse_annoent {
 sub anno {
     my $self = shift;
     my $var = parse_var(@_);
-    return $self->varanno($var);
+    my ($annoEnt, $idx) = $self->varanno($var);
+    return $annoEnt;
 }
 
 =head2 varanno
@@ -895,13 +912,15 @@ sub anno {
 			# and add the following keys by this method.
 
                         # information
-                        cytoBand  => $cytoBand,
                         varTypeSO => $varTypeSO,
                         gHGVS     => $gHGVS,
                         refbuild  => $referenceBuild,
 
                         # Here's some optional parts which may be generated
                         # when extra resource is available:
+
+                        cytoBand  => $cytoBand,
+
                         dbsnp => {
                             $rsID => {
                                 AN => $dbsnp_total_allele_count,
@@ -972,7 +991,12 @@ sub anno {
 
 =cut
 sub varanno {
-    my ($self, $var) = @_;
+    my ($self, $var, $AEIndex) = @_;
+    $AEIndex ||= 0;
+
+    $var->{varTypeSO} = $Name2SO{$var->{guess}};
+    $var->{refbuild}  = $self->{refbuild};
+    $var->get_gHGVS();
 
     # Due to the bed format database, 
     # add flank left and right 1bp to query the database
@@ -990,49 +1014,15 @@ sub varanno {
 	$localdb = $self->{annodb}->{$var->{chr}};
     }
 
-    if (!exists $$var{sel}) {	# no position annotation
-	my $pos1 = get_anno_pos($var);
-	if ( $pos1 >  0 ) {
-	    my $hit_db = 0;
-	    foreach my $rbed (@{$$self{annodb}{$$var{chr}}}) {
-		next if ($$rbed{sto} < $pos1);
-		last if ($$rbed{sta} >= $pos1);
-		if (!exists $$rbed{detail}) {
-		    foreach my $annoblk (keys %{$$rbed{annos}}) {
-			my $offset1 = $$rbed{annos}{$annoblk};
-			my ($tid, $ranno) = parse_annoent($annoblk);
-			$$rbed{detail}{$tid} = $ranno;
-			$$rbed{detail}{$tid}{offset} = $offset1;
-		    }
-		}
-		$hit_db = 1;
-		my $ofst1 = $pos1 - $$rbed{sta} - 1;
-		my %oneline_cPos;
-		foreach my $t (sort keys %{$$rbed{detail}}) {
-		    $oneline_cPos{$pos1}{$t} = in_reg_cPos($$rbed{detail}{$t}, $ofst1);
-		}
-		$var = $self->select_position($var, \%oneline_cPos);
-		last;
-	    }
-	    if ($hit_db == 0) {
-		return { var => $var, info => {} };
-	    }
-	}
-	else {
-	    $var = $self->select_position($var, {});
-	}
-    }
+    my $annoEnt : shared;
+    $annoEnt->{var} = $var;
+    $annoEnt->{trInfo} = shared_clone({});
+    bless $annoEnt, 'BedAnno::Anno';
 
-    my %ret_anno = ( var => $var, info => {} );
-    if (exists $$var{sel} and exists $$var{sel}{std}) {
-	my %infos = ();
-	foreach my $sel (@{$$var{sel}{std}}) {
-	    my ($tid, $ranno) = $self->pairanno($var, $sel);
-	    $infos{$tid} = $ranno;
-	}
-	$ret_anno{info} = \%infos;
-    }
-    return \%ret_anno;
+    $AEIndex = $annoEnt->getTrPosition($localdb, $AEIndex);
+
+
+    return ($annoEnt, $AEIndex);
 }
 
 =head2 get_gHGVS
@@ -1046,7 +1036,7 @@ sub varanno {
 sub get_gHGVS {
     my $var = shift;
     my $gHGVS = 'g.';
-    if ($var->{chr} =~ /M/) { # hit mito chromosome
+    if ($var->{chr} =~ /^M/) { # hit mito chromosome
 	$gHGVS = 'm.';
     }
 
@@ -1087,8 +1077,9 @@ sub get_gHGVS {
     else {
 	confess "Can not recognize type $imp.";
     }
+    $var->{gHGVS} = $gHGVS;
 
-    return $gHGVS;
+    return $var;
 }
 
 
@@ -2214,38 +2205,49 @@ sub get_flanks {
 
 =head2 getTrPosition
 
+    
+
 =cut
 sub getTrPosition {
-    my ($var, $rannodb, $aeIndex) = @_;
+    my ($annEnt, $rannodb, $aeIndex) = @_;
+
+    my $var = $annEnt->{var};
     
     # gather the covered entries
     my $new_aeIndex;
-    my @hitted_entries = ();
+    my %hitted_tr_lr = ();
     for (my $k = $aeIndex; $k < @$rannodb; $k ++) {
 	if ($$rannodb[$k]{sto} < $var->{pos}) { # not reach var
 	    $aeIndex ++;
 	    next;
 	}
-        elsif ( $$rannodb[$k]{sta} <= $var->{pos}
-            and $var->{pos} <= $$rannodb[$k]{sto} )
-        { # pos hitted
-	    $new_aeIndex = $k;
-	    if (!exists $$rannodb[$k]{detail}) {
-		$$rannodb[$k]{detail} = assign_detail($$rannodb[$k]);
-	    }
-	    push ( @hitted_entries, $k );
-        }
 	elsif ( $$rannodb[$k]{sta} > $var->{end} ) { # past var
 	    last;
 	}
 	else { # covered by var
-	    if (!exists $$rannodb[$k]{detail}) {
+        {
+	    $new_aeIndex = $k if ($$rannodb[$k]{sta} <= $var->{pos}
+		and $var->{pos} < $$rannodb[$k]{sto} );
+	    if (!exists $$rannodb[$k]{detail}) { # parse anno db
 		$$rannodb[$k]{detail} = assign_detail($$rannodb[$k]);
 	    }
-	    push ( @hitted_entries, $k );
-	}
+
+	    $new_aeIndex = $k if ($var->{pos} == $$rannodb[$k]{sto}
+		    and $$rannodb{$k}{detail}{mismatch} ne "");
+
+	    foreach my $tid (keys %{$$rannodb[$k]{detail}}) {
+		if (!exists $hitted_tr_lr{$tid}) { # assign left rna positions
+		}
+		# assign right rna positions
+		$hitted_tr_lr{$tid}{r} = {
+
+		};
+	    }
+        }
     }
     $new_aeIndex ||= $aeIndex;
+
+    
 
     return $new_aeIndex;
 }
@@ -2259,7 +2261,8 @@ sub assign_detail {
 	$detail{$tid} = $ranno;
 	$detail{$tid}{offset} = $offset;
     }
-    $rannodb_k->{detail} = shared_clone( {%detail} );
+    $rannodb_k->{detail} =
+      ( is_shared($rannodb_k) ) ? shared_clone( {%detail} ) : {%detail};
     return $rannodb_k;
 }
 
@@ -2292,7 +2295,8 @@ sub select_position {
 	elsif ($_ eq 'ins') { # the pos and pos+1 are selected: c.123_124insTG
 	    $anno_sels = $self->get_cover($$var{chr}, $$var{pos}, ($$var{pos}+1));
 	}
-	elsif ($_ eq 'del' or ($_ eq 'delins' and $$var{reflen} != $$var{altlen})) { # the pos+1 and pos+reflen-1 are selected
+	elsif ($_ eq 'del' or ($_ eq 'delins' and $$var{reflen} != $$var{altlen})) {
+	    # the pos+1 and pos+reflen-1 are selected
 	    if ($$var{reflen} == 2) { # 1 bp deletion : c.123delT, c.123delTinsGAC
 		if (exists $$rcPos{($$var{pos}+1)}) {
 		    foreach my $tid (sort keys %{$$rcPos{($$var{pos}+1)}}) {
@@ -2308,7 +2312,8 @@ sub select_position {
 		);
 	    }
 	}
-	elsif ($_ eq 'delins' and $$var{reflen} == $$var{altlen}) { # substitution case for CompleteGenomics.
+	elsif ($_ eq 'delins' and $$var{reflen} == $$var{altlen}) {
+	    # substitution case for CompleteGenomics.
 	    $anno_sels = $self->get_cover(
 		$$var{chr}, $$var{pos}, ($$var{pos} + $$var{reflen} - 1)
 	    );
@@ -2500,18 +2505,13 @@ sub select_position {
 sub batch_anno {
     my ($self, $chr, $rVars) = @_;
     my @all_annoRst = ();
+    my @sorted_vars = sort {$a->{pos} <=> $b->{pos}} @$rVars;
 
-    my %all_pos = ();
-    foreach my $v (@$rVars) {
-	my $single_pos = get_anno_pos($v);
-	$all_pos{$single_pos} = 1 if ($single_pos > 0);
-    }
-    my @poses = sort {$a<=>$b} keys %all_pos;
-    
-    my $cPos = $self->get_cPos( $chr, \@poses );
-    for (my $i = 0; $i < @$rVars; $i ++) {
-	my $var = $self->select_position($$rVars[$i], $cPos);
-	push (@all_annoRst, $self->varanno($var));
+    my $anno_idx = 0;
+    foreach my $var (@$sorted_vars) {
+	my $annoEnt;
+	($annoEnt, $anno_idx) = $self->varanno($var, $anno_idx);
+	push (@all_annoRst, $annoEnt);
     }
     return \@all_annoRst;
 }
