@@ -1020,7 +1020,7 @@ sub varanno {
     bless $annoEnt, 'BedAnno::Anno';
 
     $AEIndex = $annoEnt->getTrPosition($localdb, $AEIndex);
-
+    
 
     return ($annoEnt, $AEIndex);
 }
@@ -2205,14 +2205,18 @@ sub get_flanks {
 
 =head2 getTrPosition
 
-    
+    About   : Assign the BedAnno::Anno obj's trInfo with affected regions
+    Usage   : my $AEIndex = $annoEnt->getTrPosition($rannodb, $AEIndex);
+    Args    : $rannodb is a BedAnno::Anno object created by varanno(),
+	      $AEIndex is the current index for annodb searching.
+    Returns : A new AEIndex for next query.
+    Notes   : $AEIndex is used for same chr batch mode.
 
 =cut
 sub getTrPosition {
-    my ($annEnt, $rannodb, $aeIndex) = @_;
+    my ($annoEnt, $rannodb, $aeIndex) = @_;
 
-    my $var = $annEnt->{var};
-    
+    my $var = $annoEnt->{var};
     # gather the covered entries
     my $new_aeIndex;
     my %hitted_tr_lr = ();
@@ -2227,16 +2231,23 @@ sub getTrPosition {
 	else { # covered by var
         {
 	    $new_aeIndex = $k if ($$rannodb[$k]{sta} <= $var->{pos}
-		and $var->{pos} < $$rannodb[$k]{sto} );
+		and $var->{pos} <= $$rannodb[$k]{sto} );
 	    if (!exists $$rannodb[$k]{detail}) { # parse anno db
 		$$rannodb[$k]{detail} = assign_detail($$rannodb[$k]);
 	    }
 
-	    $new_aeIndex = $k if ($var->{pos} == $$rannodb[$k]{sto}
-		    and $$rannodb{$k}{detail}{mismatch} ne "");
-
 	    foreach my $tid (keys %{$$rannodb[$k]{detail}}) {
+		my $rtidDetail = $$rannodb[$k]{detail}{$tid};
+                my ($p, $r, $a, $rl, $al) =
+                  $var->getUnifiedVar( $$rtidDetail{strand} );
+		next if ($p > $$rannodb[$k]{sto} or ($p+$rl) < $$rannodb[$k]{sta});
 		if (!exists $hitted_tr_lr{$tid}) { # assign left rna positions
+                    my $total_lofst =
+                      $$rtidDetail{offset} + ( $p - $$rannodb[$k]{sta} );
+		    
+		    $hitted_tr_lr{$tid}{l} = {
+
+		    };
 		}
 		# assign right rna positions
 		$hitted_tr_lr{$tid}{r} = {
@@ -2252,14 +2263,126 @@ sub getTrPosition {
     return $new_aeIndex;
 }
 
+=head2 cal_hgvs_pos
+
+    About   : calculate nDot, cDot HGVS position, depend on given offset.
+    Usage   : my ($nDot, $cDot) = $annoEnt->cal_hgvs_pos($ofst, $rtidDetail, $lr);
+    Args    : ofst is total offset to the start(left) of currunt annoblk
+              rtidDetail is the currunt annoblk detail
+              lr indicate this offset is left or right pos,
+              1 for left, 0 for right.
+    Returns : nDot is the transcript position, n.HGVS named position.
+              cDot is the coding region based position, c.HGVS named.
+              (can be empty if not available)
+    Notes   : For position mirror on transcript, there are 2 other cases 
+              than normal case:
+              1. annotation fail, which can not be annotated in the region
+                 of it except for its promoter region.
+              2. block with length changing mismatches, or long substitution
+                 mismatch, which contain the following three cases:
+                 
+                 a. insertion (I) on refSeq
+
+                        +-------+---+--------+  refgenome
+                         \       \ /        /
+                          +-------+--------+    refSeq
+
+                 b. deletion (D) on refSeq 
+
+                          +-------+--------+    refgenome
+                         /       / \        \
+                        +-------+---+--------+  refSeq
+
+                 c. delins (DI) on refSeq
+
+                        +-------+---+--------+  refgenome
+                        |       |  /        /
+                        +-------+-+--------+    refSeq
+
+                 Insertion will have an reversed start/end position on refSeq,
+		 due to the 1-based position description system.
+		 
+		 Any position located in a non-zero length refgenome mismatch
+		 block have to extend to total region of mismatched block.
+
+
+=cut
+sub cal_hgvs_pos {
+    my $annoEnt = shift;
+    my ($ofst, $rtidDetail, $lr) = @_;
+    if ($lr) { # offset for left 
+        if ($lofst < 0) {
+	    if ($$rtidDetail{strand} eq '+') { # outside 5'promoter region
+		
+	    }
+	    else { # outside transcript region into 3'downstream
+	    }
+        }
+	elsif ($lofst > $$rtidDetail{wlen}) { # not proper called
+	    confess "Error: exceed the whole length [$lofst>$$rtidDetail{wlen}]";
+	}
+	else { # 0 <= $lofst <= $$rtidDetail{wlen}
+        
+	    # 1. check if annotation-fail
+	    if ($rtidDetail->{gpSO} eq 'annotation-fail') {
+	    }
+	    # 2. check if a mismatch block (exon)
+	    elsif ($rtidDetail->{mismatch} ne "") {
+		
+	    }
+	    # 3. check if a promoter
+	    elsif ($rtidDetail->{blka} =~ /^PROM/) {
+	    }
+	    # 4. check if an exon
+	    elsif ($rtidDetail->{exin} =~ /EX/) {
+	    }
+	    # 5. an intron
+	    else {
+	    }
+	}
+    }
+    else { # offset for right
+	if ($ofst > $$rtidDetail{wlen}) {
+	    if ($$rtidDetail{strand} eq '+') { # outside 5'promoter region
+		
+	    }
+	    else { # outside transcript region into 3'downstream
+	    }
+	}
+	elsif ($ofst < 0) { # not proper called
+	    confess "Error: right preceed the block [$lofst < 0]";
+	}
+	else { # hit in the region
+
+	    # 1. check if annotation-fail
+	    if ($rtidDetail->{gpSO} eq 'annotation-fail') {
+	    }
+	    # 2. check if a mismatch block (exon)
+	    elsif ($rtidDetail->{mismatch} ne "") {
+		
+	    }
+	    # 3. check if a promoter
+	    elsif ($rtidDetail->{blka} =~ /^PROM/) {
+	    }
+	    # 4. check if an exon
+	    elsif ($rtidDetail->{exin} =~ /EX/) {
+	    }
+	    # 5. an intron
+	    else {
+	    }
+	}
+    }
+}
+
+# involke parse_annoent to assign detail information to annodb.
 sub assign_detail {
     my $rannodb_k = shift;
     my %detail = ();
     foreach my $annoblk (sort keys %{$$rannodb_k{annos}}) {
-	my $offset = $$rannodb_k{annos}{$annoblk};
-	my ($tid, $ranno) = parse_annoent($annoblk);
-	$detail{$tid} = $ranno;
-	$detail{$tid}{offset} = $offset;
+        my $offset = $$rannodb_k{annos}{$annoblk};
+        my ($tid, $ranno) = parse_annoent($annoblk);
+        $detail{$tid} = $ranno;
+        $detail{$tid}{offset} = $offset;
     }
     $rannodb_k->{detail} =
       ( is_shared($rannodb_k) ) ? shared_clone( {%detail} ) : {%detail};
@@ -2269,7 +2392,8 @@ sub assign_detail {
 
 =head2 select_position
 
-    About   : Select the position that should be annotated on and get pairs by transcript ids
+    About   : Select the position that should be annotated 
+	      on and get pairs by transcript ids.
     Usage   : $var = $beda->select_position($var, \%cPos);
     Args    : var entry and cPos hash ref.
     Returns : var with standard {sel}{std}, and possible backward compatible {sel}{bc}
