@@ -984,6 +984,7 @@ sub anno {
                             pp2divScore => $Polyphen2HumDivScore,
                             pp2varPred  => $Polyphen2HumVarPred,
                             pp2varScore => $Polyphen2HumVarScore,
+			    trAlt	=> $alt_string_on_transcript,
                         },
                         ...
                     }
@@ -2219,7 +2220,7 @@ sub getTrPosition {
     my $var = $annoEnt->{var};
     # gather the covered entries
     my $new_aeIndex;
-    my %hitted_tr_lr = ();
+
     for (my $k = $aeIndex; $k < @$rannodb; $k ++) {
 	if ($$rannodb[$k]{sto} < $var->{pos}) { # not reach var
 	    $aeIndex ++;
@@ -2238,21 +2239,36 @@ sub getTrPosition {
 
 	    foreach my $tid (keys %{$$rannodb[$k]{detail}}) {
 		my $rtidDetail = $$rannodb[$k]{detail}{$tid};
-                my ($p, $r, $a, $rl, $al) =
+                my ( $unify_p, $unify_r, $unify_a, $unify_rl, $unify_al ) =
                   $var->getUnifiedVar( $$rtidDetail{strand} );
-		next if ($p > $$rannodb[$k]{sto} or ($p+$rl) < $$rannodb[$k]{sta});
-		if (!exists $hitted_tr_lr{$tid}) { # assign left rna positions
-                    my $total_lofst =
-                      $$rtidDetail{offset} + ( $p - $$rannodb[$k]{sta} );
-		    
-		    $hitted_tr_lr{$tid}{l} = {
+                next
+                  if ( $unify_p > $$rannodb[$k]{sto}
+                    or ( $unify_p + $unify_rl ) < $$rannodb[$k]{sta} );
+                my $total_left_ofst =
+                  $$rtidDetail{offset} + ( $unify_p - $$rannodb[$k]{sta} );
+                my $total_right_rofst = $total_left_ofst + $unify_rl;
 
-		    };
-		}
+                if (   !exists $annoEnt->{trInfo}
+                    or !exists $annoEnt->{trInfo}->{$tid}
+                    or !exists $annoEnt->{trInfo}->{$tid}->{trAlt} )
+                {
+                    $annoEnt->{trInfo}->{$tid}->{trAlt} =
+                      (       $unify_a =~ /^[ACGTN]+$/
+                          and $rtidDetail->{strand} eq '-' )
+                      ? rev_comp($unify_al)
+                      : $unify_al;
+                }
+                if (   !exists $annoEnt->{trInfo}
+                    or !exists $annoEnt->{trInfo}->{$tid} )
+                {    # assign left rna positions
+                    $annoEnt->cal_hgvs_pos(
+                        tid       => $tid,
+                        tidDetail => $rtidDetail,
+                        offset    => $total_left_ofst,
+                        LR        => 1,
+                    );
+                }
 		# assign right rna positions
-		$hitted_tr_lr{$tid}{r} = {
-
-		};
 	    }
         }
     }
@@ -2265,12 +2281,20 @@ sub getTrPosition {
 
 =head2 cal_hgvs_pos
 
-    About   : calculate nDot, cDot HGVS position, depend on given offset.
-    Usage   : my ($nDot, $cDot) = $annoEnt->cal_hgvs_pos($ofst, $rtidDetail, $lr);
-    Args    : ofst is total offset to the start(left) of currunt annoblk
-              rtidDetail is the currunt annoblk detail
-              lr indicate this offset is left or right pos,
-              1 for left, 0 for right.
+    About   : calculate nDot, cDot HGVS position, depend on given offset,
+	      assign trAlt string and nDot HGVS and cDot HGVS positions.
+    Usage   : $annoEnt->cal_hgvs_pos(
+		    offset => $offset, 
+		    tid	   => $tid,
+		    LR	   => $lr,
+		    tidDetail => $rh_tidDetail,
+	      );
+    Args    : ofst is total offset to the start(left) of currunt annoblk,
+	      tid is the transcript id for the detail entry
+              tidDetail is the currunt annoblk detail
+              LR indicate this offset is left or right pos,
+		1 for left and assign sta group,
+		0 for right and assign end group.
     Returns : nDot is the transcript position, n.HGVS named position.
               cDot is the coding region based position, c.HGVS named.
               (can be empty if not available)
@@ -2310,11 +2334,20 @@ sub getTrPosition {
 =cut
 sub cal_hgvs_pos {
     my $annoEnt = shift;
-    my ( $ofst, $rtidDetail, $lr ) = @_;
+    my %cal_args = @_;
+    
+    my ( $ofst, $tid, $rtidDetail, $lr ) =
+      @cal_args{qw(offset tid tidDetail LR)};
     my ( $nDot, $cDot ) = ( '', '' );
+    my $strd = ($$rtidDetail{strand} eq '+') ? 1 : 0;
+    my $trAlt = $annoEnt->{trInfo}->{$tid}->{trAlt};
+    my $lofst = $ofst;
+    my $rofst = $$rtidDetail{wlen} - $ofst - 1;
     if ($lr) { # offset for left 
         if ($lofst < 0) {
-	    if ($$rtidDetail{strand} eq '+') { # outside 5'promoter region
+	    if ($strd) { # outside 5'promoter region
+
+		# 5'promoter is always available
 		$nDot = $$rtidDetail{nsta} + $lofst;
 		if ($$rtidDetail{csta} =~ /^(\S+)\-u(\d+)/) {
                     $cDot = $1 . '-u' . ( $2 - $lofst );
@@ -2336,36 +2369,116 @@ sub cal_hgvs_pos {
 	    if ($rtidDetail->{gpSO} eq 'annotation-fail') {
 		( $nDot, $cDot ) = ( '?', '?' );
 	    }
-	    # 2. check if a mismatch block (exon)
+	    # 2. check if a mismatch block (only exon have this)
 	    elsif ( $rtidDetail->{mismatch} ne "" ) {
-                my ( $type, $mSta, $mEnd, $strdRef ) =
-                  split( /,/, $rtidDetail->{mismatch} );
-
-		if ( $type eq 'D' ) {
+		# for each kind of mismatch block,
+		# hit the left edge of var, the refSeq ref will
+		# contain start from the start of the mismatch
+		# block, case I in database already has
+		# a reversed coordinate between left and right.
+		# transcript-alt string shoule be assigned to 
+		# this tid
+		$nDot = $rtidDetail->{nsta};
+		$cDot = $rtidDetail->{csta};
+		if ($lofst>0) {
+		    # mismatch info record the transcript-stranded
+		    # reference sequence
+                    my ( $mType, $mStart, $mEnd, $strand_ref ) =
+                      split( /,/, $rtidDetail->{mismatch} );
 		    
-		}
-		elsif ( $type eq 'I' ) {
-		}
-		else { # 'DI' 
+		    if ($strd) { # cut left
+			$trAlt = substr($strand_ref, 0, $lofst).$trAlt;
+		    }
+		    else { # cut right
+			$trAlt .= substr($strand_ref, -$lofst, $lofst);
+		    }
 		}
 	    }
-	    # 3. check if a promoter
-	    elsif ($rtidDetail->{blka} =~ /^PROM/) {
+	    # 3. check if hit a normal block's right edge
+	    elsif ( $lofst == $$rtidDetail{wlen} ) {
+		delete $annoEnt->{trInfo}->{$tid};
+		return;
 	    }
-	    # 4. check if an exon
+	    # 4. check if a promoter
+	    elsif ($rtidDetail->{blka} eq 'PROM') {
+                $nDot =
+                    ($strd)
+                  ? ( $rtidDetail->{nsta} + $lofst )
+                  : ( $rtidDetail->{nsta} - $lofst );
+		if ($rtidDetail->{csta} =~ /^(\S+)\-u(\d+)$/) {
+                    $cDot =
+                        ($strd)
+                      ? ( $1 . '-u' . ( $2 - $lofst ) )
+                      : ( $1 . '-u' . ( $2 + $lofst ) );
+		}
+	    }
+	    # 5. check if an exon
 	    elsif ($rtidDetail->{exin} =~ /EX/) {
+                $nDot =
+                    ($strd)
+                  ? ( $rtidDetail->{nsta} + $lofst )
+                  : ( $rtidDetail->{nsta} - $lofst );
+		if ($rtidDetail->{csta} =~ /^(\*?)(\-?\d+)$/) {
+		    $cDot = ($strd) ? $1.($2 + $lofst) : $1.($2 - $lofst);
+		}
 	    }
-	    # 5. an intron
+	    # 6. intron
+	    elsif ($rtidDetail->{exin} =~ /IVS/) {
+		my $half_length = $rtidDetail->{wlen} / 2;
+		if ($lofst > $half_length) { # drop into latter part
+                    if (   $rtidDetail->{nsto} =~ /^\d+\d+$/
+                        or $rtidDetail->{csto} =~ /^\d+\d+$/ )
+                    {
+                        confess "Error format of database, ",
+                          "intron right pos description error!\n";
+                    }
+
+		    if ($rtidDetail->{nsto} =~ /^(\d+\+?)(\-?\d+)$/) {
+                        $nDot =
+                            ($strd)
+                          ? ( $1 . ( $2 - $rofst ) )
+                          : ( $1 . ( $2 + $rofst ) );
+		    }
+		    if ($rtidDetail->{csto} =~ /^([\*\-]?\d+\+?)(\-?\d+)$/) {
+                        $cDot =
+                            ($strd)
+                          ? ( $1 . ( $2 - $rofst ) )
+                          : ( $1 . ( $2 + $rofst ) );
+		    }
+		}
+		else {
+                    if (   $rtidDetail->{nsta} =~ /^\d+\d+$/
+                        or $rtidDetail->{csta} =~ /^\d+\d+$/ )
+                    {
+                        confess "Error format of database, ",
+                          "intron left pos description error!\n";
+                    }
+
+		    if ($rtidDetail->{nsta} =~ /^(\d+\+?)(\-?\d+)$/) {
+                        $nDot =
+                            ($strd)
+                          ? ( $1 . ( $2 + $lofst ) )
+                          : ( $1 . ( $2 - $lofst ) );
+		    }
+		    if ($rtidDetail->{csta} =~ /^([\*\-]?\d+\+?)(\-?\d+)$/) {
+                        $cDot =
+                            ($strd)
+                          ? ( $1 . ( $2 + $lofst ) )
+                          : ( $1 . ( $2 - $lofst ) );
+		    }
+		}
+	    }
 	    else {
+		confess "Error: what's this? $rtidDetail->{exin}\n";
 	    }
 	}
     }
     else { # offset for right
 	if ($ofst > $$rtidDetail{wlen}) {
-	    if ($$rtidDetail{strand} eq '+') { # outside 5'promoter region
-		
+	    if ($strd) { # outside transcript region into 3'downstream
+		$nDot = '+'.($lofst - $$rtidDetail{wlen});
 	    }
-	    else { # outside transcript region into 3'downstream
+	    else { # outside 5'promoter region
 	    }
 	}
 	elsif ($ofst < 0) { # not proper called
@@ -2379,13 +2492,17 @@ sub cal_hgvs_pos {
 	    # 2. check if a mismatch block (exon)
 	    elsif ($rtidDetail->{mismatch} ne "") {
 	    }
+	    # 3. check if the right end at the left edge of block
+	    elsif ($ofst == 0) {
+		return;
+	    }
 	    # 3. check if a promoter
 	    elsif ($rtidDetail->{blka} =~ /^PROM/) {
 	    }
 	    # 4. check if an exon
 	    elsif ($rtidDetail->{exin} =~ /EX/) {
 	    }
-	    # 5. an intron
+	    # 5. intron
 	    else {
 	    }
 	}
