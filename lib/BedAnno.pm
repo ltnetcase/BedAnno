@@ -2303,19 +2303,28 @@ sub getTrPosition {
 		 due to the 1-based position description system.
 		 
 		 Any position located in a non-zero length refgenome mismatch
-		 block have to extend to total region of mismatched block.
+		 block have to extend to total region of mismatched block,
+		 and assign pseudo_ref, and pseudo_alt
 
 
 =cut
 sub cal_hgvs_pos {
     my $annoEnt = shift;
-    my ($ofst, $rtidDetail, $lr) = @_;
+    my ( $ofst, $rtidDetail, $lr ) = @_;
+    my ( $nDot, $cDot ) = ( '', '' );
     if ($lr) { # offset for left 
         if ($lofst < 0) {
 	    if ($$rtidDetail{strand} eq '+') { # outside 5'promoter region
-		
+		$nDot = $$rtidDetail{nsta} + $lofst;
+		if ($$rtidDetail{csta} =~ /^(\S+)\-u(\d+)/) {
+                    $cDot = $1 . '-u' . ( $2 - $lofst );
+		}
 	    }
 	    else { # outside transcript region into 3'downstream
+		$nDot = '+'.(0-$lofst);
+		if ($$rtidDetail{csta} =~ /^\*?\d+$/) {
+                    $cDot = $$rtidDetail{csta} . '+d' . ( 0 - $lofst );
+		}
 	    }
         }
 	elsif ($lofst > $$rtidDetail{wlen}) { # not proper called
@@ -2325,10 +2334,20 @@ sub cal_hgvs_pos {
         
 	    # 1. check if annotation-fail
 	    if ($rtidDetail->{gpSO} eq 'annotation-fail') {
+		( $nDot, $cDot ) = ( '?', '?' );
 	    }
 	    # 2. check if a mismatch block (exon)
-	    elsif ($rtidDetail->{mismatch} ne "") {
-		
+	    elsif ( $rtidDetail->{mismatch} ne "" ) {
+                my ( $type, $mSta, $mEnd, $strdRef ) =
+                  split( /,/, $rtidDetail->{mismatch} );
+
+		if ( $type eq 'D' ) {
+		    
+		}
+		elsif ( $type eq 'I' ) {
+		}
+		else { # 'DI' 
+		}
 	    }
 	    # 3. check if a promoter
 	    elsif ($rtidDetail->{blka} =~ /^PROM/) {
@@ -2359,7 +2378,6 @@ sub cal_hgvs_pos {
 	    }
 	    # 2. check if a mismatch block (exon)
 	    elsif ($rtidDetail->{mismatch} ne "") {
-		
 	    }
 	    # 3. check if a promoter
 	    elsif ($rtidDetail->{blka} =~ /^PROM/) {
