@@ -1,0 +1,1163 @@
+ok 1 - use BedAnno;
+ok 2 - tabix .. tabix -f -p bed ../data/test_db.bed.gz
+ok 3 - for [ chr1,14410,C,A ]
+ok 4 - for [ chr1,14410,C,CGAATAGCTA ]
+ok 5 - for [ chr1,14410,CTAGATCG,C ]
+ok 6 - for [ chr1,14410,CTAGA,CTAGTAGTAGTAGA ]
+ok 7 - for [ chr1,14410,CTAGA,GT ]
+ok 8 - for [ chr1,14410,CATGA,TGTGT ]
+ok 9 - for [ chr1,14410,14410,,? ]
+not ok 10 - for [ snv ]
+# The anno infomations are: bless( {
+#   'trInfo' => {
+#     'NR_024540.1' => {
+#       'c' => 'n.1721G>T',
+#       'cdsBegin' => '',
+#       'cdsEnd' => '',
+#       'ei_Begin' => 'EX11E',
+#       'ei_End' => 'EX11E',
+#       'exin' => 'EX11E',
+#       'exonIndex' => '11',
+#       'func' => 'ncRNA',
+#       'funcSO' => '',
+#       'funcSOname' => 'unknown',
+#       'geneId' => '653635',
+#       'geneSym' => 'WASH7P',
+#       'genepart' => 'ncRNA',
+#       'genepartIndex' => '11',
+#       'genepartSO' => 'SO:0000655',
+#       'intronIndex' => '.',
+#       'prot' => '',
+#       'protBegin' => '',
+#       'protEnd' => '',
+#       'r' => 'R11E',
+#       'r_Begin' => 'R11E',
+#       'r_End' => 'R11E',
+#       'rnaBegin' => 1721,
+#       'rnaEnd' => 1721,
+#       'strd' => '-',
+#       'trAlt' => 'T',
+#       'trRef' => 'G',
+#       'trRefComp' => {
+#         'EX11E' => 1
+#       }
+#     }
+#   },
+#   'var' => bless( {
+#     'alt' => 'A',
+#     'altlen' => 1,
+#     'cg54' => {
+#       'AF' => 0,
+#       'AN' => 0
+#     },
+#     'chr' => '1',
+#     'cytoBand' => '1p36.33',
+#     'dbsnp' => {},
+#     'end' => 14410,
+#     'esp6500' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'gHGVS' => 'g.14409C>A',
+#     'guess' => 'snv',
+#     'imp' => 'snv',
+#     'pos' => 14409,
+#     'ref' => 'C',
+#     'refbuild' => 'GRCh37',
+#     'reflen' => 1,
+#     'sm' => 1,
+#     'tgp' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'varTypeSO' => 'SO:0001483'
+#   }, 'BedAnno::Var' )
+# }, 'BedAnno::Anno' )
+not ok 11 - for [ ins ]
+# The anno infomations are: bless( {
+#   'trInfo' => {
+#     'NR_024540.1' => {
+#       'c' => 'n.1720_1721insTAGCTATTC',
+#       'cdsBegin' => '',
+#       'cdsEnd' => '',
+#       'ei_Begin' => 'EX11E',
+#       'ei_End' => 'EX11E',
+#       'exin' => 'EX11E',
+#       'exonIndex' => '11',
+#       'func' => 'ncRNA',
+#       'funcSO' => '',
+#       'funcSOname' => 'unknown',
+#       'geneId' => '653635',
+#       'geneSym' => 'WASH7P',
+#       'genepart' => 'ncRNA',
+#       'genepartIndex' => '11',
+#       'genepartSO' => 'SO:0000655',
+#       'intronIndex' => '.',
+#       'prot' => '',
+#       'protBegin' => '',
+#       'protEnd' => '',
+#       'r' => 'R11E',
+#       'r_Begin' => 'R11E',
+#       'r_End' => 'R11E',
+#       'rnaBegin' => 1721,
+#       'rnaEnd' => 1720,
+#       'strd' => '-',
+#       'trAlt' => 'TAGCTATTC',
+#       'trRef' => '',
+#       'trRefComp' => {
+#         'EX11E' => 0
+#       }
+#     }
+#   },
+#   'var' => bless( {
+#     'alt' => 'GAATAGCTA',
+#     'altlen' => 9,
+#     'cg54' => {
+#       'AF' => 0,
+#       'AN' => 0
+#     },
+#     'chr' => '1',
+#     'cytoBand' => '1p36.33',
+#     'dbsnp' => {},
+#     'end' => 14410,
+#     'esp6500' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'gHGVS' => 'g.14410_14411insGAATAGCTA',
+#     'guess' => 'ins',
+#     'imp' => 'ins',
+#     'pos' => 14410,
+#     'ref' => '',
+#     'refbuild' => 'GRCh37',
+#     'reflen' => 0,
+#     'sm' => 0,
+#     'tgp' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'varTypeSO' => 'SO:0000667'
+#   }, 'BedAnno::Var' )
+# }, 'BedAnno::Anno' )
+not ok 12 - for [ del ]
+# The anno infomations are: bless( {
+#   'trInfo' => {
+#     'NR_024540.1' => {
+#       'c' => 'n.1714_1720del',
+#       'cdsBegin' => '',
+#       'cdsEnd' => '',
+#       'ei_Begin' => 'EX11E',
+#       'ei_End' => 'EX11E',
+#       'exin' => 'EX11E',
+#       'exonIndex' => '11',
+#       'func' => 'ncRNA',
+#       'funcSO' => '',
+#       'funcSOname' => 'unknown',
+#       'geneId' => '653635',
+#       'geneSym' => 'WASH7P',
+#       'genepart' => 'ncRNA',
+#       'genepartIndex' => '11',
+#       'genepartSO' => 'SO:0000655',
+#       'intronIndex' => '.',
+#       'prot' => '',
+#       'protBegin' => '',
+#       'protEnd' => '',
+#       'r' => 'R11E',
+#       'r_Begin' => 'R11E',
+#       'r_End' => 'R11E',
+#       'rnaBegin' => 1714,
+#       'rnaEnd' => 1720,
+#       'strd' => '-',
+#       'trAlt' => '',
+#       'trRef' => 'GAACTGA',
+#       'trRefComp' => {
+#         'EX11E' => 7
+#       }
+#     }
+#   },
+#   'var' => bless( {
+#     'alt' => '',
+#     'altlen' => 0,
+#     'cg54' => {
+#       'AF' => 0,
+#       'AN' => 0
+#     },
+#     'chr' => '1',
+#     'cytoBand' => '1p36.33',
+#     'dbsnp' => {},
+#     'end' => 14417,
+#     'esp6500' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'gHGVS' => 'g.14411_14417delTAGATCG',
+#     'guess' => 'del',
+#     'imp' => 'del',
+#     'pos' => 14410,
+#     'ref' => 'TAGATCG',
+#     'refbuild' => 'GRCh37',
+#     'reflen' => 7,
+#     'sm' => 2,
+#     'tgp' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'varTypeSO' => 'SO:0000159'
+#   }, 'BedAnno::Var' )
+# }, 'BedAnno::Anno' )
+not ok 13 - for [ rep ]
+# The anno infomations are: bless( {
+#   'trInfo' => {
+#     'NR_024540.1' => {
+#       'c' => 'n.1718_1719delinsCTACTACTACT',
+#       'cdsBegin' => '',
+#       'cdsEnd' => '',
+#       'ei_Begin' => 'EX11E',
+#       'ei_End' => 'EX11E',
+#       'exin' => 'EX11E',
+#       'exonIndex' => '11',
+#       'func' => 'ncRNA',
+#       'funcSO' => '',
+#       'funcSOname' => 'unknown',
+#       'geneId' => '653635',
+#       'geneSym' => 'WASH7P',
+#       'genepart' => 'ncRNA',
+#       'genepartIndex' => '11',
+#       'genepartSO' => 'SO:0000655',
+#       'intronIndex' => '.',
+#       'prot' => '',
+#       'protBegin' => '',
+#       'protEnd' => '',
+#       'r' => 'R11E',
+#       'r_Begin' => 'R11E',
+#       'r_End' => 'R11E',
+#       'rnaBegin' => 1718,
+#       'rnaEnd' => 1720,
+#       'strd' => '-',
+#       'trAlt' => 'CTACTACTACTA',
+#       'trRef' => 'TGA',
+#       'trRefComp' => {
+#         'EX11E' => 3
+#       }
+#     }
+#   },
+#   'var' => bless( {
+#     '+' => {
+#       'ba' => 'TAGTAGTAG',
+#       'bal' => 9,
+#       'bp' => 14413,
+#       'br' => '',
+#       'brl' => 0
+#     },
+#     '-' => {
+#       'ba' => 'TAGTAGTAG',
+#       'bal' => 9,
+#       'bp' => 14410,
+#       'br' => '',
+#       'brl' => 0
+#     },
+#     'a' => 'TAGTAGTAGTAG',
+#     'al' => 12,
+#     'alt' => 'TAGTAGTAGTAGA',
+#     'alt_cn' => 4,
+#     'altlen' => 13,
+#     'cg54' => {
+#       'AF' => 0,
+#       'AN' => 0
+#     },
+#     'chr' => '1',
+#     'cytoBand' => '1p36.33',
+#     'dbsnp' => {},
+#     'end' => 14414,
+#     'esp6500' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'gHGVS' => 'g.14411TAG[1>4]',
+#     'guess' => 'delins',
+#     'imp' => 'rep',
+#     'p' => 14410,
+#     'pos' => 14410,
+#     'r' => 'TAG',
+#     'ref' => 'TAGA',
+#     'ref_cn' => 1,
+#     'refbuild' => 'GRCh37',
+#     'reflen' => 4,
+#     'rep' => 'TAG',
+#     'replen' => 3,
+#     'rl' => 3,
+#     'sm' => 2,
+#     'tgp' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'varTypeSO' => 'SO:1000032'
+#   }, 'BedAnno::Var' )
+# }, 'BedAnno::Anno' )
+not ok 14 - for [ delins ]
+# The anno infomations are: bless( {
+#   'trInfo' => {
+#     'NR_024540.1' => {
+#       'c' => 'n.1717_1721delinsAC',
+#       'cdsBegin' => '',
+#       'cdsEnd' => '',
+#       'ei_Begin' => 'EX11E',
+#       'ei_End' => 'EX11E',
+#       'exin' => 'EX11E',
+#       'exonIndex' => '11',
+#       'func' => 'ncRNA',
+#       'funcSO' => '',
+#       'funcSOname' => 'unknown',
+#       'geneId' => '653635',
+#       'geneSym' => 'WASH7P',
+#       'genepart' => 'ncRNA',
+#       'genepartIndex' => '11',
+#       'genepartSO' => 'SO:0000655',
+#       'intronIndex' => '.',
+#       'prot' => '',
+#       'protBegin' => '',
+#       'protEnd' => '',
+#       'r' => 'R11E',
+#       'r_Begin' => 'R11E',
+#       'r_End' => 'R11E',
+#       'rnaBegin' => 1717,
+#       'rnaEnd' => 1721,
+#       'strd' => '-',
+#       'trAlt' => 'AC',
+#       'trRef' => 'CTGAG',
+#       'trRefComp' => {
+#         'EX11E' => 5
+#       }
+#     }
+#   },
+#   'var' => bless( {
+#     'alt' => 'GT',
+#     'altlen' => 2,
+#     'cg54' => {
+#       'AF' => 0,
+#       'AN' => 0
+#     },
+#     'chr' => '1',
+#     'cytoBand' => '1p36.33',
+#     'dbsnp' => {},
+#     'end' => 14414,
+#     'esp6500' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'gHGVS' => 'g.14410_14414delCTAGAinsGT',
+#     'guess' => 'delins',
+#     'imp' => 'delins',
+#     'pos' => 14409,
+#     'ref' => 'CTAGA',
+#     'refbuild' => 'GRCh37',
+#     'reflen' => 5,
+#     'sm' => 2,
+#     'tgp' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'varTypeSO' => 'SO:1000032'
+#   }, 'BedAnno::Var' )
+# }, 'BedAnno::Anno' )
+not ok 15 - for [ delins ]
+# The anno infomations are: bless( {
+#   'trInfo' => {
+#     'NR_024540.1' => {
+#       'c' => 'n.1717_1721delinsACACA',
+#       'cdsBegin' => '',
+#       'cdsEnd' => '',
+#       'ei_Begin' => 'EX11E',
+#       'ei_End' => 'EX11E',
+#       'exin' => 'EX11E',
+#       'exonIndex' => '11',
+#       'func' => 'ncRNA',
+#       'funcSO' => '',
+#       'funcSOname' => 'unknown',
+#       'geneId' => '653635',
+#       'geneSym' => 'WASH7P',
+#       'genepart' => 'ncRNA',
+#       'genepartIndex' => '11',
+#       'genepartSO' => 'SO:0000655',
+#       'intronIndex' => '.',
+#       'prot' => '',
+#       'protBegin' => '',
+#       'protEnd' => '',
+#       'r' => 'R11E',
+#       'r_Begin' => 'R11E',
+#       'r_End' => 'R11E',
+#       'rnaBegin' => 1717,
+#       'rnaEnd' => 1721,
+#       'strd' => '-',
+#       'trAlt' => 'ACACA',
+#       'trRef' => 'CTGAG',
+#       'trRefComp' => {
+#         'EX11E' => 5
+#       }
+#     }
+#   },
+#   'var' => bless( {
+#     'alt' => 'TGTGT',
+#     'altlen' => 5,
+#     'cg54' => {
+#       'AF' => 0,
+#       'AN' => 0
+#     },
+#     'chr' => '1',
+#     'cytoBand' => '1p36.33',
+#     'dbsnp' => {},
+#     'end' => 14414,
+#     'esp6500' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'gHGVS' => 'g.14410_14414delCATGAinsTGTGT',
+#     'guess' => 'delins',
+#     'imp' => 'delins',
+#     'pos' => 14409,
+#     'ref' => 'CATGA',
+#     'refbuild' => 'GRCh37',
+#     'reflen' => 5,
+#     'sep_snvs' => [
+#       14410,
+#       14411,
+#       14414
+#     ],
+#     'sm' => 3,
+#     'tgp' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'varTypeSO' => 'SO:1000032'
+#   }, 'BedAnno::Var' )
+# }, 'BedAnno::Anno' )
+not ok 16 - for [ ins ]
+# The anno infomations are: bless( {
+#   'trInfo' => {
+#     'NR_024540.1' => {
+#       'c' => 'n.1720_1721ins?',
+#       'cdsBegin' => '',
+#       'cdsEnd' => '',
+#       'ei_Begin' => 'EX11E',
+#       'ei_End' => 'EX11E',
+#       'exin' => 'EX11E',
+#       'exonIndex' => '11',
+#       'func' => 'unknown-no-call',
+#       'funcSO' => '',
+#       'funcSOname' => 'unknown-no-call',
+#       'geneId' => '653635',
+#       'geneSym' => 'WASH7P',
+#       'genepart' => 'ncRNA',
+#       'genepartIndex' => '11',
+#       'genepartSO' => 'SO:0000655',
+#       'intronIndex' => '.',
+#       'prot' => '',
+#       'protBegin' => '',
+#       'protEnd' => '',
+#       'r' => 'R11E',
+#       'r_Begin' => 'R11E',
+#       'r_End' => 'R11E',
+#       'rnaBegin' => 1721,
+#       'rnaEnd' => 1720,
+#       'strd' => '-',
+#       'trAlt' => '?',
+#       'trRef' => '',
+#       'trRefComp' => {
+#         'EX11E' => 0
+#       }
+#     }
+#   },
+#   'var' => bless( {
+#     'alt' => '?',
+#     'cg54' => {
+#       'AF' => 0,
+#       'AN' => 0
+#     },
+#     'chr' => '1',
+#     'cytoBand' => '1p36.33',
+#     'dbsnp' => {},
+#     'end' => 14410,
+#     'esp6500' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'gHGVS' => 'g.14410_14411ins?',
+#     'guess' => 'no-call',
+#     'imp' => 'ins',
+#     'pos' => 14410,
+#     'ref' => '',
+#     'refbuild' => 'GRCh37',
+#     'reflen' => 0,
+#     'sm' => 0,
+#     'tgp' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'varTypeSO' => 'no-call'
+#   }, 'BedAnno::Var' )
+# }, 'BedAnno::Anno' )
+ok 17 - for [ chr8,24811065,24811066,G,A ]
+ok 18 - for [ chr8,24811064,24811065,G, ]
+ok 19 - for [ chr8,24811066,24811067,G,T ]
+ok 20 - for [ chr8,24811066,24811067,G, ]
+ok 21 - for [ chr8,24811067,24811067,,GGG ]
+ok 22 - for [ chr3,49395673,GGCCGCCGCCGCCGCCGCC,GGCCGCCGCCGCC ]
+ok 23 - for [ chr1,865533,AG,TC ]
+ok 24 - for [ chr1,861319,861320,T,N ]
+not ok 25 - for [ snv ]
+# The anno infomations are: bless( {
+#   'trInfo' => {
+#     'NM_006158.3' => {
+#       'c' => 'c.1412_1413insT',
+#       'cdsBegin' => '1413',
+#       'cdsEnd' => '1413',
+#       'ei_Begin' => 'EX3',
+#       'ei_End' => 'EX3',
+#       'exin' => 'EX3',
+#       'exonIndex' => '3',
+#       'func' => 'frameshift',
+#       'funcSO' => 'SO:0001589',
+#       'funcSOname' => 'frameshift_variant',
+#       'geneId' => '4747',
+#       'geneSym' => 'NEFL',
+#       'genepart' => 'CDS',
+#       'genepartIndex' => '3',
+#       'genepartSO' => 'SO:0000316',
+#       'intronIndex' => '.',
+#       'p' => 'p.S472fs*?',
+#       'pfamId' => '.',
+#       'pfamName' => '.',
+#       'prot' => 'NP_006149.2',
+#       'protBegin' => 471,
+#       'protEnd' => 544,
+#       'r' => 'C3',
+#       'r_Begin' => 'C3',
+#       'r_End' => 'C3',
+#       'rnaBegin' => 1515,
+#       'rnaEnd' => '1515',
+#       'strd' => '-',
+#       'trAlt' => 'TC',
+#       'trRef' => 'C',
+#       'trRefComp' => {
+#         'EX3' => 1
+#       }
+#     }
+#   },
+#   'var' => bless( {
+#     'alt' => 'A',
+#     'altlen' => 1,
+#     'cg54' => {
+#       'AF' => 0,
+#       'AN' => 0
+#     },
+#     'chr' => '8',
+#     'cytoBand' => '8p21.2',
+#     'dbsnp' => {},
+#     'end' => 24811066,
+#     'esp6500' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'gHGVS' => 'g.24811065G>A',
+#     'guess' => 'snv',
+#     'imp' => 'snv',
+#     'pos' => 24811065,
+#     'ref' => 'G',
+#     'refbuild' => 'GRCh37',
+#     'reflen' => 1,
+#     'sm' => 1,
+#     'tgp' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'varTypeSO' => 'SO:0001483'
+#   }, 'BedAnno::Var' )
+# }, 'BedAnno::Anno' )
+not ok 26 - for [ del ]
+# The anno infomations are: bless( {
+#   'trInfo' => {
+#     'NM_006158.3' => {
+#       'c' => 'c.=',
+#       'cdsBegin' => '1414',
+#       'cdsEnd' => '1413',
+#       'ei_Begin' => 'EX3',
+#       'ei_End' => 'EX3',
+#       'exin' => 'EX3',
+#       'exonIndex' => '3',
+#       'func' => 'no-change',
+#       'funcSO' => '',
+#       'funcSOname' => 'no-change',
+#       'geneId' => '4747',
+#       'geneSym' => 'NEFL',
+#       'genepart' => 'CDS',
+#       'genepartIndex' => '3',
+#       'genepartSO' => 'SO:0000316',
+#       'intronIndex' => '.',
+#       'prot' => 'NP_006149.2',
+#       'protBegin' => '',
+#       'protEnd' => '',
+#       'r' => 'C3',
+#       'r_Begin' => 'C3',
+#       'r_End' => 'C3',
+#       'rnaBegin' => 1516,
+#       'rnaEnd' => '1515',
+#       'strd' => '-',
+#       'trAlt' => '',
+#       'trRef' => '',
+#       'trRefComp' => {
+#         'EX3' => 0
+#       }
+#     }
+#   },
+#   'var' => bless( {
+#     'alt' => '',
+#     'altlen' => 0,
+#     'cg54' => {
+#       'AF' => '0.990741',
+#       'AN' => 108
+#     },
+#     'chr' => '8',
+#     'cytoBand' => '8p21.2',
+#     'dbsnp' => {
+#       'rs11300136' => {
+#         'AC' => '2175',
+#         'AF' => '0.994058',
+#         'Alleles' => '-,G,',
+#         'bitfields' => '',
+#         'class' => 'deletion',
+#         'exception' => '',
+#         'func' => 'frameshift',
+#         'weight' => '1'
+#       }
+#     },
+#     'end' => 24811065,
+#     'esp6500' => {
+#       'AF' => '0.999742',
+#       'AN' => 11636
+#     },
+#     'gHGVS' => 'g.24811065delG',
+#     'guess' => 'del',
+#     'imp' => 'del',
+#     'pos' => 24811064,
+#     'ref' => 'G',
+#     'refbuild' => 'GRCh37',
+#     'reflen' => 1,
+#     'sm' => 1,
+#     'tgp' => {
+#       'AF' => '0.990000',
+#       'AN' => 2184
+#     },
+#     'varTypeSO' => 'SO:0000159'
+#   }, 'BedAnno::Var' )
+# }, 'BedAnno::Anno' )
+not ok 27 - for [ snv ]
+# The anno infomations are: bless( {
+#   'trInfo' => {
+#     'NM_006158.3' => {
+#       'c' => 'c.1412C>A',
+#       'cc' => 'CCC=>CAC',
+#       'cdsBegin' => '1412',
+#       'cdsEnd' => '1412',
+#       'ei_Begin' => 'EX3',
+#       'ei_End' => 'EX3',
+#       'exin' => 'EX3',
+#       'exonIndex' => '3',
+#       'func' => 'missense',
+#       'funcSO' => 'SO:0001583',
+#       'funcSOname' => 'missense_variant',
+#       'geneId' => '4747',
+#       'geneSym' => 'NEFL',
+#       'genepart' => 'CDS',
+#       'genepartIndex' => '3',
+#       'genepartSO' => 'SO:0000316',
+#       'intronIndex' => '.',
+#       'p' => 'p.P471H',
+#       'pfamId' => '.',
+#       'pfamName' => '.',
+#       'polar' => 'NP=>P+',
+#       'prot' => 'NP_006149.2',
+#       'protBegin' => 471,
+#       'protEnd' => 471,
+#       'r' => 'C3',
+#       'r_Begin' => 'C3',
+#       'r_End' => 'C3',
+#       'rnaBegin' => 1514,
+#       'rnaEnd' => 1514,
+#       'strd' => '-',
+#       'trAlt' => 'A',
+#       'trRef' => 'C',
+#       'trRefComp' => {
+#         'EX3' => 1
+#       }
+#     }
+#   },
+#   'var' => bless( {
+#     'alt' => 'T',
+#     'altlen' => 1,
+#     'cg54' => {
+#       'AF' => 0,
+#       'AN' => 0
+#     },
+#     'chr' => '8',
+#     'cytoBand' => '8p21.2',
+#     'dbsnp' => {},
+#     'end' => 24811067,
+#     'esp6500' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'gHGVS' => 'g.24811066G>T',
+#     'guess' => 'snv',
+#     'imp' => 'snv',
+#     'pos' => 24811066,
+#     'ref' => 'G',
+#     'refbuild' => 'GRCh37',
+#     'reflen' => 1,
+#     'sm' => 1,
+#     'tgp' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'varTypeSO' => 'SO:0001483'
+#   }, 'BedAnno::Var' )
+# }, 'BedAnno::Anno' )
+not ok 28 - for [ del ]
+# The anno infomations are: bless( {
+#   'trInfo' => {
+#     'NM_006158.3' => {
+#       'c' => 'c.1412delC',
+#       'cdsBegin' => '1412',
+#       'cdsEnd' => '1412',
+#       'ei_Begin' => 'EX3',
+#       'ei_End' => 'EX3',
+#       'exin' => 'EX3',
+#       'exonIndex' => '3',
+#       'func' => 'frameshift',
+#       'funcSO' => 'SO:0001589',
+#       'funcSOname' => 'frameshift_variant',
+#       'geneId' => '4747',
+#       'geneSym' => 'NEFL',
+#       'genepart' => 'CDS',
+#       'genepartIndex' => '3',
+#       'genepartSO' => 'SO:0000316',
+#       'intronIndex' => '.',
+#       'p' => 'p.P471fs*?',
+#       'pfamId' => '.',
+#       'pfamName' => '.',
+#       'prot' => 'NP_006149.2',
+#       'protBegin' => 471,
+#       'protEnd' => 544,
+#       'r' => 'C3',
+#       'r_Begin' => 'C3',
+#       'r_End' => 'C3',
+#       'rnaBegin' => 1514,
+#       'rnaEnd' => 1514,
+#       'strd' => '-',
+#       'trAlt' => '',
+#       'trRef' => 'C',
+#       'trRefComp' => {
+#         'EX3' => 1
+#       }
+#     }
+#   },
+#   'var' => bless( {
+#     'alt' => '',
+#     'altlen' => 0,
+#     'cg54' => {
+#       'AF' => 0,
+#       'AN' => 0
+#     },
+#     'chr' => '8',
+#     'cytoBand' => '8p21.2',
+#     'dbsnp' => {},
+#     'end' => 24811067,
+#     'esp6500' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'gHGVS' => 'g.24811067delG',
+#     'guess' => 'del',
+#     'imp' => 'del',
+#     'pos' => 24811066,
+#     'ref' => 'G',
+#     'refbuild' => 'GRCh37',
+#     'reflen' => 1,
+#     'sm' => 1,
+#     'tgp' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'varTypeSO' => 'SO:0000159'
+#   }, 'BedAnno::Var' )
+# }, 'BedAnno::Anno' )
+not ok 29 - for [ ins ]
+# The anno infomations are: bless( {
+#   'trInfo' => {
+#     'NM_006158.3' => {
+#       'c' => 'c.1411_1412insCCC',
+#       'cdsBegin' => '1412',
+#       'cdsEnd' => '1411',
+#       'ei_Begin' => 'EX3',
+#       'ei_End' => 'EX3',
+#       'exin' => 'EX3',
+#       'exonIndex' => '3',
+#       'func' => 'cds-ins',
+#       'funcSO' => 'SO:0001821',
+#       'funcSOname' => 'inframe_insertion',
+#       'geneId' => '4747',
+#       'geneSym' => 'NEFL',
+#       'genepart' => 'CDS',
+#       'genepartIndex' => '3',
+#       'genepartSO' => 'SO:0000316',
+#       'intronIndex' => '.',
+#       'p' => 'p.P471dup',
+#       'pfamId' => '.',
+#       'pfamName' => '.',
+#       'prot' => 'NP_006149.2',
+#       'protBegin' => 471,
+#       'protEnd' => 471,
+#       'r' => 'C3',
+#       'r_Begin' => 'C3',
+#       'r_End' => 'C3',
+#       'rnaBegin' => 1514,
+#       'rnaEnd' => 1513,
+#       'strd' => '-',
+#       'trAlt' => 'CCC',
+#       'trRef' => '',
+#       'trRefComp' => {
+#         'EX3' => 0
+#       }
+#     }
+#   },
+#   'var' => bless( {
+#     'alt' => 'GGG',
+#     'altlen' => 3,
+#     'cg54' => {
+#       'AF' => 0,
+#       'AN' => 0
+#     },
+#     'chr' => '8',
+#     'cytoBand' => '8p21.2',
+#     'dbsnp' => {},
+#     'end' => 24811067,
+#     'esp6500' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'gHGVS' => 'g.24811067_24811068insGGG',
+#     'guess' => 'ins',
+#     'imp' => 'ins',
+#     'pos' => 24811067,
+#     'ref' => '',
+#     'refbuild' => 'GRCh37',
+#     'reflen' => 0,
+#     'sm' => 0,
+#     'tgp' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'varTypeSO' => 'SO:0000667'
+#   }, 'BedAnno::Var' )
+# }, 'BedAnno::Anno' )
+not ok 30 - for [ rep ]
+# The anno infomations are: bless( {
+#   'trInfo' => {
+#     'NM_000581.2' => {
+#       'c' => 'c.21GGC[6>4]',
+#       'cdsBegin' => '21',
+#       'cdsEnd' => '38',
+#       'ei_Begin' => 'EX1',
+#       'ei_End' => 'EX1',
+#       'exin' => 'EX1',
+#       'exonIndex' => '1',
+#       'func' => 'cds-del',
+#       'funcSO' => 'SO:0001822',
+#       'funcSOname' => 'inframe_deletion',
+#       'geneId' => '2876',
+#       'geneSym' => 'GPX1',
+#       'genepart' => 'CDS',
+#       'genepartIndex' => '1',
+#       'genepartSO' => 'SO:0000316',
+#       'intronIndex' => '.',
+#       'p' => 'p.A7[7>5]',
+#       'pfamId' => '.',
+#       'pfamName' => '.',
+#       'prot' => 'NP_000572.2',
+#       'protBegin' => 7,
+#       'protEnd' => 13,
+#       'r' => 'C1',
+#       'r_Begin' => 'C1',
+#       'r_End' => 'C1',
+#       'rnaBegin' => 101,
+#       'rnaEnd' => 118,
+#       'strd' => '-',
+#       'trAlt' => 'GGCGGCGGCGGC',
+#       'trRef' => 'GGCGGCGGCGGCGGCGGC',
+#       'trRefComp' => {
+#         'EX1' => 18
+#       }
+#     },
+#     'NM_201397.1' => {
+#       'c' => 'c.21GGC[6>4]',
+#       'cdsBegin' => '21',
+#       'cdsEnd' => '38',
+#       'ei_Begin' => 'EX1E',
+#       'ei_End' => 'EX1E',
+#       'exin' => 'EX1E',
+#       'exonIndex' => '1',
+#       'func' => 'cds-del',
+#       'funcSO' => 'SO:0001822',
+#       'funcSOname' => 'inframe_deletion',
+#       'geneId' => '2876',
+#       'geneSym' => 'GPX1',
+#       'genepart' => 'CDS',
+#       'genepartIndex' => '1',
+#       'genepartSO' => 'SO:0000316',
+#       'intronIndex' => '.',
+#       'p' => 'p.A7[7>5]',
+#       'pfamId' => '.',
+#       'pfamName' => '.',
+#       'prot' => 'NP_958799.1',
+#       'protBegin' => 7,
+#       'protEnd' => 13,
+#       'r' => 'C1E',
+#       'r_Begin' => 'C1E',
+#       'r_End' => 'C1E',
+#       'rnaBegin' => 101,
+#       'rnaEnd' => 118,
+#       'strd' => '-',
+#       'trAlt' => 'GGCGGCGGCGGC',
+#       'trRef' => 'GGCGGCGGCGGCGGCGGC',
+#       'trRefComp' => {
+#         'EX1E' => 18
+#       }
+#     }
+#   },
+#   'var' => bless( {
+#     '+' => {
+#       'ba' => '',
+#       'bal' => 0,
+#       'bp' => 49395685,
+#       'br' => 'GCCGCC',
+#       'brl' => 6
+#     },
+#     '-' => {
+#       'ba' => '',
+#       'bal' => 0,
+#       'bp' => 49395673,
+#       'br' => 'GCCGCC',
+#       'brl' => 6
+#     },
+#     'a' => 'GCCGCCGCCGCC',
+#     'al' => 12,
+#     'alt' => 'GCCGCCGCCGCC',
+#     'alt_cn' => 4,
+#     'altlen' => 12,
+#     'cg54' => {
+#       'AF' => 0,
+#       'AN' => 0
+#     },
+#     'chr' => '3',
+#     'cytoBand' => '3p21.31',
+#     'dbsnp' => {},
+#     'end' => 49395691,
+#     'esp6500' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'gHGVS' => 'g.49395674GCC[6>4]',
+#     'guess' => 'delins',
+#     'imp' => 'rep',
+#     'p' => 49395673,
+#     'pos' => 49395673,
+#     'r' => 'GCCGCCGCCGCCGCCGCC',
+#     'ref' => 'GCCGCCGCCGCCGCCGCC',
+#     'ref_cn' => 6,
+#     'refbuild' => 'GRCh37',
+#     'reflen' => 18,
+#     'rep' => 'GCC',
+#     'replen' => 3,
+#     'rl' => 18,
+#     'sm' => 2,
+#     'tgp' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'varTypeSO' => 'SO:1000032'
+#   }, 'BedAnno::Var' )
+# }, 'BedAnno::Anno' )
+not ok 31 - for [ delins ]
+# The anno infomations are: bless( {
+#   'trInfo' => {
+#     'NM_152486.2' => {
+#       'c' => 'c.73-2_73-1delinsTC',
+#       'cdsBegin' => '73-2',
+#       'cdsEnd' => '73-1',
+#       'ei_Begin' => 'IVS2',
+#       'ei_End' => 'IVS2',
+#       'exin' => 'IVS2',
+#       'exonIndex' => '.',
+#       'func' => 'splice-3',
+#       'funcSO' => '',
+#       'funcSOname' => 'unknown-likely-deleterious',
+#       'geneId' => '148398',
+#       'geneSym' => 'SAMD11',
+#       'genepart' => 'three_prime_cis_splice_site',
+#       'genepartIndex' => '2',
+#       'genepartSO' => 'SO:0000164',
+#       'intronIndex' => '2',
+#       'prot' => 'NP_689699.2',
+#       'protBegin' => '',
+#       'protEnd' => '',
+#       'r' => 'AC1',
+#       'r_Begin' => 'AC1',
+#       'r_End' => 'AC1',
+#       'rnaBegin' => '153-2',
+#       'rnaEnd' => '153-1',
+#       'strd' => '+',
+#       'trAlt' => 'TC',
+#       'trRef' => 'AG',
+#       'trRefComp' => {
+#         'IVS2' => [
+#           0,
+#           2
+#         ]
+#       }
+#     }
+#   },
+#   'var' => bless( {
+#     'alt' => 'TC',
+#     'altlen' => 2,
+#     'cg54' => {
+#       'AF' => 0,
+#       'AN' => 0
+#     },
+#     'chr' => '1',
+#     'cytoBand' => '1p36.33',
+#     'dbsnp' => {},
+#     'end' => 865534,
+#     'esp6500' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'gHGVS' => 'g.865533_865534delAGinsTC',
+#     'guess' => 'delins',
+#     'imp' => 'delins',
+#     'pos' => 865532,
+#     'ref' => 'AG',
+#     'refbuild' => 'GRCh37',
+#     'reflen' => 2,
+#     'sep_snvs' => [
+#       865533,
+#       865534
+#     ],
+#     'sm' => 3,
+#     'tgp' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'varTypeSO' => 'SO:1000032'
+#   }, 'BedAnno::Var' )
+# }, 'BedAnno::Anno' )
+not ok 32 - for [ snv ]
+# The anno infomations are: bless( {
+#   'trInfo' => {
+#     'NM_152486.2' => {
+#       'c' => 'c.-2T>N',
+#       'cdsBegin' => '-2',
+#       'cdsEnd' => '-2',
+#       'ei_Begin' => 'EX2',
+#       'ei_End' => 'EX2',
+#       'exin' => 'EX2',
+#       'exonIndex' => '2',
+#       'func' => 'utr-5',
+#       'funcSO' => '',
+#       'funcSOname' => 'unknown',
+#       'geneId' => '148398',
+#       'geneSym' => 'SAMD11',
+#       'genepart' => 'five_prime_UTR',
+#       'genepartIndex' => '2',
+#       'genepartSO' => 'SO:0000204',
+#       'intronIndex' => '.',
+#       'prot' => 'NP_689699.2',
+#       'protBegin' => '',
+#       'protEnd' => '',
+#       'r' => '5U1',
+#       'r_Begin' => '5U1',
+#       'r_End' => '5U1',
+#       'rnaBegin' => 79,
+#       'rnaEnd' => 79,
+#       'strd' => '+',
+#       'trAlt' => 'N',
+#       'trRef' => 'T',
+#       'trRefComp' => {
+#         'EX2' => 1
+#       }
+#     },
+#     'NR_026874.1' => {
+#       'c' => 'n.-6503A>N',
+#       'cdsBegin' => '',
+#       'cdsEnd' => '',
+#       'ei_Begin' => '.',
+#       'ei_End' => '.',
+#       'exin' => '.',
+#       'exonIndex' => '.',
+#       'func' => 'promoter',
+#       'funcSO' => '',
+#       'funcSOname' => 'unknown',
+#       'geneId' => '100130417',
+#       'geneSym' => 'LOC100130417',
+#       'genepart' => 'promoter',
+#       'genepartIndex' => 0,
+#       'genepartSO' => 'SO:0000167',
+#       'intronIndex' => '.',
+#       'prot' => '',
+#       'protBegin' => '',
+#       'protEnd' => '',
+#       'r' => 'PROM',
+#       'r_Begin' => 'PROM',
+#       'r_End' => 'PROM',
+#       'rnaBegin' => -6503,
+#       'rnaEnd' => -6503,
+#       'strd' => '-',
+#       'trAlt' => 'N',
+#       'trRef' => 'A',
+#       'trRefComp' => {
+#         'P0' => [
+#           0,
+#           1
+#         ]
+#       }
+#     }
+#   },
+#   'var' => bless( {
+#     'alt' => 'N',
+#     'altlen' => 1,
+#     'cg54' => {
+#       'AF' => 0,
+#       'AN' => 0
+#     },
+#     'chr' => '1',
+#     'cytoBand' => '1p36.33',
+#     'dbsnp' => {},
+#     'end' => 861320,
+#     'esp6500' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'gHGVS' => 'g.861319T>N',
+#     'guess' => 'no-call',
+#     'imp' => 'snv',
+#     'pos' => 861319,
+#     'ref' => 'T',
+#     'refbuild' => 'GRCh37',
+#     'reflen' => 1,
+#     'sm' => 1,
+#     'tgp' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'varTypeSO' => 'no-call'
+#   }, 'BedAnno::Var' )
+# }, 'BedAnno::Anno' )
+1..32
