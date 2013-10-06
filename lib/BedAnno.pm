@@ -3,19 +3,7 @@ package BedAnno;
 use strict;
 use warnings;
 use threads::shared; # if threads used before BedAnno, then this will be threaded
-use Thread::Queue;
-use Scalar::Util qw(refaddr);
 use Carp;
-
-require Exporter;
-
-our @ISA = qw(Exporter);
-
-our @EXPORT_OK = qw(
-    parse_var fetchseq Code2Pep C3toC1 C1toC3
-);
-
-our %EXPORT_TAGS = ( all => [ @EXPORT_OK ] );
 
 our $VERSION = '0.32';
 
@@ -29,12 +17,13 @@ From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
 with reformatted database format, and won't give any individual
 annotation, so the individual_anno() is no longer available.
+VCF4.1 format variant description (chr, pos, ref, alt) will also
+be supported.
 
 =head1 SYNOPSIS
 
-  use threads;
   use BedAnno;
-  my $beda = BedAnno->new( db => "in.bed.gz", tr => 'in.trans.fas.gz', short => 1 );
+  my $beda = BedAnno->new( db => "in.bed.gz", tr => 'in.trans.fas.gz' );
   my $anno = $beda->anno( 'chr20', 1234567, 1234569, 'AG', 'TGGG' );
 
 =head1 DESCRIPTION
@@ -43,27 +32,27 @@ This module need bgzipped BED+1 format database, combined with tabix index,
 tabix is require for fast extract anno infomation randomly.
 The fasta sequences are indexed by samtools faidx, sequence splicing also requires
 samtools. If allele frequency information, prediction information or cytoBand 
-information is needed, then extra dependencies will be required
+information is needed, then extra dependencies will be required.
 
-=head2 EXPORT_OK for all
+=head1 PARALLELED
+    
+This module can be used by multiple threads by:
 
-    parse_var()		- parse variation information stand-alone, giving
-			  the guess information and possible coordinates.
-    fetchseq()		- used to batched fetch genomic sequences (flanks), 
-			  this depend on samtools installed, and a faidx(ed) 
-			  fasta file.
-    Code2Pep()		- encode 3 bp nucleotides to peptide code, the format
-			  of return code, depend on the option you used in 
-			  inition method, if "short" exists, then C1 will be
-			  the output format, default C3 format.
-    C3toC1()		- encode 3 chars peptide code to 1 char peptide code.
-    C1toC3()		- encode 1 chars peptide code to 3 char peptide code.
+    use threads;
+    use threads::shared;
+    use Thread::Queue;
+
+to deal with large amount of variants.
 
 =head1 Methods
 
 =cut
 
-our (%C3, %C1, %Code2Pep, %SO2Name, %Name2SO, %Polar, %C3toC1, %C1toC3) :shared;
+our (
+    %C3,      %C1,    %SO2Name, %func2SO,
+    %Name2SO, %Polar, %C1toC3,  %AAnumber,
+    $AAcount,
+) : shared;
 
 %C3 = (
     TTT=>"Phe",	CTT=>"Leu", ATT=>"Ile",	GTT=>"Val",
@@ -117,17 +106,18 @@ our (%C3, %C1, %Code2Pep, %SO2Name, %Name2SO, %Polar, %C3toC1, %C1toC3) :shared;
 	      CTN=>"L",		  GCN=>"A",
 	      CGN=>"R",		  GGN=>"G",
     
-    UAA=>"X",   UAG=>"X",
+    UAA=>"X", UAG=>"X",
 
     UGA=>"U"
 );
 
-%C3toC1 = ();
 %C1toC3 = ();
-foreach my $threebase (sort keys %C3) {
-    $C3toC1{$C3{$threebase}} = $C1{$threebase};
+foreach my $threebase (sort keys %C1) {
     $C1toC3{$C1{$threebase}} = $C3{$threebase};
 }
+
+$AAcount = scalar keys %C1toC3;
+@AAnumber{sort keys %C1toC3} = (1 .. $AAcount);
 
 %Polar = (
     Ala => "NP", Asn => "P0", Arg => "P+", Asp => "P-",
@@ -143,7 +133,6 @@ foreach my $threebase (sort keys %C3) {
     'X' => '.',  '*' => '.'
 );
 
-%Code2Pep = %C3;
 @Polar{@C1{(sort keys %C1)}} = @Polar{@C3{(sort keys %C1)}};
 
 %SO2Name = (
@@ -168,8 +157,6 @@ foreach my $threebase (sort keys %C3) {
     "SO:0000164"      => 'three_prime_cis_splice_site',
     "SO:0000167"      => 'promoter',
     "span"            => 'span',
-    "abnormal_intron" => 'abnormal_intron',
-    "annotation-fail" => 'annotation-fail',
 
     # Function Parts
     "SO:0001819" => 'synonymous_variant',
@@ -206,10 +193,46 @@ foreach my $threebase (sort keys %C3) {
     "SO:0001623" => '5_prime_UTR_variant',
     "SO:0001624" => '3_prime_UTR_variant',
     "SO:0001619" => 'nc_transcript_variant',
-    "SO:0001627" => 'intron_variant'
+    "SO:0001627" => 'intron_variant',
+
+    "annotation-fail" => 'annotation-fail',
+    "abnormal-intron" => 'abnormal-intron',
+    "abnormal-inseq-stop" => "abnormal-inseq-stop",
 );
 
-%Name2SO = reverse(%SO2name);
+%Name2SO = reverse(%SO2Name);
+
+%func2SO = (
+    "abnormal-inseq-stop" => "abnormal-inseq-stop",
+    "abnormal-intron"     => "abnormal-intron",
+    "annotation-fail"     => 'annotation-fail',
+    "cds-del"             => "SO:0001822",
+    "cds-indel"           => "inframe_delins",
+    "cds-ins"             => "SO:0001821",
+    "cds-loss"		  => "unknown-likely-deleterious",
+    "coding-synon"        => "SO:0001819",
+    "init-loss"           => "SO:0001582",
+    "no-change"           => "no-change",
+    "splice"              => "unknown-likely-deleterious",
+    "splice-3"            => "unknown-likely-deleterious",
+    "splice-5"            => "unknown-likely-deleterious",
+    "stop-gain"           => "SO:0001587",
+    "stop-loss"           => "SO:0001578",
+    "stop-retained"       => "SO:0001567",
+    "unknown-no-call"     => 'unknown-no-call',
+    "utr-3"               => "unknown",
+    "utr-5"               => "unknown",
+    altstart              => "SO:0001582",
+    frameshift            => "SO:0001589",
+    intron                => "unknown",
+    knockout              => "SO:0001893",
+    missense              => "SO:0001583",
+    ncRNA                 => "unknown",
+    nonsense              => "SO:0001587",
+    promoter		  => "unknown",
+    span		  => "unknown-likely-deleterious",
+    unknown               => "unknown",
+);
 
 our $REF_BUILD = 'GRCh37';
 
@@ -258,14 +281,6 @@ our $REF_BUILD = 'GRCh37';
 =item Common options :
 
 =over 
-
-=item I<threads> [number]
-
-=over
-
-=item support paralleled annotation, give the number of threads be used for annotation.
-
-=back
 
 =item I<cytoBand> [cytoBand.bed.gz]
 
@@ -336,14 +351,6 @@ our $REF_BUILD = 'GRCh37';
 =over
 
 =item add ESP6500 allele frequency information from NHLBI
-
-=back
-
-=item I<short> [boolean]
-
-=over
-
-=item use 1 char peptide code instead of 3 chars format
 
 =back
 
@@ -501,83 +508,66 @@ sub new {
     if ( exists $self->{mmap} ) {
         $open_args{mmap} = $self->{mmap};
     }
-    if ( exists $self->{short} ) {
-        %Code2Pep = %C1;
-    }
 
     if ( exists $self->{cytoBand} ) {
-        confess "Error: [$self->{cytoBand}] no exist or cannot be read."
-          if ( !-e $self->{cytoBand} or !-r $self->{cytoBand} );
-        require GetCytoband;
+        require GetCytoBand;
         my $cytoBand_h = GetCytoBand->new( db => $self->{cytoBand} );
         $self->{cytoBand_h} = shared_clone($cytoBand_h);
     }
 
     if ( exists $self->{pfam} ) {
-        confess "Error: [$self->{pfam}] no exist or cannot be read."
-          if ( !-e $self->{pfam} or !-r $self->{pfam} );
         require GetPfam;
         my $pfam_h = GetPfam->new( db => $self->{pfam} );
         $self->{pfam_h} = shared_clone($pfam_h);
     }
 
     if ( exists $self->{prediction} ) {
-        confess "Error: [$self->{prediction}] no exist or cannot be read."
-          if ( !-e $self->{prediction} or !-r $self->{prediction} );
         require GetPrediction;
         my $prediction_h = GetPrediction->new( db => $self->{prediction} );
         $self->{prediction_h} = shared_clone($prediction_h);
     }
 
     if ( exists $self->{phyloP} ) {
-        confess "Error: [$self->{phyloP}] no exist or cannot be read."
-          if ( !-e $self->{phyloP} or !-r $self->{phyloP} );
-        require GetPhyloP;
-        my $phyloP_h = GetPhyloP->new( db => $self->{phyloP} );
+        require GetPhyloP46wayScore;
+        my $phyloP_h = GetPhyloP46wayScore->new( db => $self->{phyloP} );
         $self->{phyloP_h} = shared_clone($phyloP_h);
     }
 
     if ( exists $self->{dbSNP} ) {
-        confess "Error: [$self->{dbSNP}] no exist or cannot be read."
-          if ( !-e $self->{dbSNP} or !-r $self->{dbSNP} );
         require GetDBSNP;
         my $dbSNP_h = GetDBSNP->new( db => $self->{dbSNP} );
         $self->{dbSNP_h} = shared_clone($dbSNP_h);
     }
 
-    if ( exists $self->{tgp} ) {
-        confess "Error: [$self->{tgp}] no exist or cannot be read."
-          if ( !-e $self->{tgp} or !-r $self->{tgp} );
-        require GetTgp;
-        my $tgp_h = GetTgp->new( db => $self->{tgp} );
-        $self->{tgp_h} = shared_clone($tgp_h);
+    if ( exists $self->{tgp} or exists $self->{esp6500} ) {
+        require GetVcfAF;
+
+	if (exists $self->{tgp}) {
+	    my $tgp_h = GetVcfAF->new( db => $self->{tgp} );
+	    $self->{tgp_h} = shared_clone($tgp_h);
+	}
+
+	if (exists $self->{esp6500}) {
+	    my $esp6500_h = GetVcfAF->new( db => $self->{esp6500} );
+	    $self->{esp6500_h} = shared_clone($esp6500_h);
+	}
     }
 
-    if ( exists $self->{cg54} ) {
-        confess "Error: [$self->{cg54}] no exist or cannot be read."
-          if ( !-e $self->{cg54} or !-r $self->{cg54} );
+    if ( exists $self->{cg54} or exists $self->{wellderly} ) {
         require GetCGpub;
-        my $cg54_h = GetCGpub->new( db => $self->{cg54} );
-        $self->{cg54_h} = shared_clone($cg54_h);
+
+	if (exists $self->{cg54}) {
+	    my $cg54_h = GetCGpub->new( db => $self->{cg54} );
+	    $self->{cg54_h} = shared_clone($cg54_h);
+	}
+
+	if (exists $self->{wellderly}) {
+	    my $wellderly_h = GetCGpub->new( db => $self->{wellderly} );
+	    $self->{wellderly_h} = shared_clone($wellderly_h);
+	}
     }
 
-    if ( exists $self->{wellderly} ) {
-        confess "Error: [$self->{wellderly}] no exist or cannot be read."
-          if ( !-e $self->{wellderly} or !-r $self->{wellderly} );
-        require GetCGpub;
-        my $wellderly_h = GetCGpub->new( db => $self->{wellderly} );
-        $self->{wellderly_h} = shared_clone($wellderly_h);
-    }
-
-    if ( exists $self->{esp6500} ) {
-        confess "Error: [$self->{esp6500}] no exist or cannot be read."
-          if ( !-e $self->{esp6500} or !-r $self->{esp6500} );
-        require GetPfam;
-        my $esp6500_h = GetPfam->new( db => $self->{esp6500} );
-        $self->{esp6500_h} = shared_clone($esp6500_h);
-    }
-
-    $self->{trInfo} = shared_clone( $self->readtr() );
+    $self->{trInfodb} = shared_clone( $self->readtr() );
     $self->{annodb} = shared_clone( $self->load_anno(%open_args) )
       if ( exists $self->{batch} );
     return $self;
@@ -619,7 +609,11 @@ sub set_refbuild {
 		    X	     => 1,		     # inseqStop
 		    U	     => 1,		     # selenocysteine
 		    A	     => 1,		     # polyATail
-		    altstart => $startCodons,	     # alt start codons
+		    altstart => {		     # altstart codons
+			$startCodons1 => 1,
+			$startCodons2 => 1,
+			...
+		    },
 		},
 		...
 	      }
@@ -700,38 +694,38 @@ sub readtr {
     Args    : Using %args to override class's properties: region, regbed, genes, trans
 	      if no args, use the the class's properties as default.
     Returns : a localized merged anno db, The returned annotation database is a hash ref.
+	{
+	    $chr => [
 		{
-		    $chr => [
-			{
-			    sta   => $start, (0 based)
-			    sto   => $stop,  (1 based)
-			    annos => {
-				$anno_string => $offset, ...
-			    }
+		    sta   => $start, (0 based)
+		    sto   => $stop,  (1 based)
+		    annos => {
+			$anno_string => $offset, ...
+		    }
 
-			    detail => {
-				$tid => {
-				    gsym => $gsym,    (gene symbol)
-				    gid	 => $gid,     (Entrez gene id)
-				    gpSO => $gpSO,    (GeneParts SO)
-				    blka => $blka,    (block attribute)
-				    exin => $exin,    (exon intron number)
-				    nsta => $nsta,    (n./r. left  of whole block)
-				    nsto => $nsto,    (n./r. right of whole block)
-				    csta => $csta,    (c.    left  of whole block)
-				    csto => $csto,    (c.    right of whole block)
-				    wlen => $wlen,    (length of whole block)
-				    pr   => $pr,      (primary tag)
-				    strand => $strd,  (strand)
-				    offset => $offset,(offset of current block to whole block)
-				    mismatch => $mismatch (non-equal length block descripter)
-				}, ...
-			    }
-			}, ... 
-		    ], ...
-		}
-	      Note: when variation hit one of the annotation entry, the anno_string will be parsed.
-	      and the "detail" tag will be added then.
+		    detail => {
+			$tid => {
+			    gsym => $gsym,    (gene symbol)
+			    gid	 => $gid,     (Entrez gene id)
+			    gpSO => $gpSO,    (GeneParts SO)
+			    blka => $blka,    (block attribute)
+			    exin => $exin,    (exon intron number)
+			    nsta => $nsta,    (n./r. left  of whole block)
+			    nsto => $nsto,    (n./r. right of whole block)
+			    csta => $csta,    (c.    left  of whole block)
+			    csto => $csto,    (c.    right of whole block)
+			    wlen => $wlen,    (length of whole block)
+			    pr   => $pr,      (primary tag)
+			    strd => $strd,    (strand)
+			    offset => $offset,(offset of current block to whole block)
+			    mismatch => $mismatch (non-equal length block descripter)
+			}, ...
+		    }
+		}, ... 
+	    ], ...
+	}
+      Note: when variation hit one of the annotation entry, the anno_string will be parsed.
+      and the "detail" tag will be added then.
 
 =cut
 sub load_anno {
@@ -863,137 +857,244 @@ sub region_merge {
     return \%local_radb;
 }
 
+# involke parse_annoent to assign detail information to annodb.
+sub assign_detail {
+    my $self = shift;
+    my $rannodb_k = shift;
+    my %detail = ();
+    foreach my $annoblk (sort keys %{$$rannodb_k{annos}}) {
+        my $offset = $$rannodb_k{annos}{$annoblk};
+        my ($tid, $ranno) = parse_annoent($annoblk);
+        $detail{$tid} = $ranno;
+        $detail{$tid}{offset} = $offset;
+    }
+    $rannodb_k->{detail} =
+      ( is_shared($rannodb_k) ) ? shared_clone( {%detail} ) : {%detail};
+    return $rannodb_k;
+}
+
 # just parse annoents when mutation hits.
 sub parse_annoent {
-    my $annoent = shift;
+    my $annoent  = shift;
     my %annoinfo = ();
-    # tid         gsym  gid strand blka gpgo exin nsta nsto csta csto wlen mismatch    pr
-    # NM_015658.3|NOC2L|26155|-|3U1E|205|EX19E|2817|2801|*508|*492|0|D,879582,879582,.|Y
-    my @infos = split(/\|/, $annoent);
-    confess "Error format of anno ents [$annoent]" if (14 != @infos);
+
+# tid         gsym  gid strd blka gpgo exin nsta nsto csta csto wlen mismatch    pr
+# NM_015658.3|NOC2L|26155|-|3U1E|205|EX19E|2817|2801|*508|*492|0|D,879582,879582,.|Y
+    my @infos = split( /\|/, $annoent );
+    confess "Error format of anno ents [$annoent]" if ( 14 != @infos );
 
     my $tid = shift @infos;
-    my @tags  = qw(gsym gid strand blka gpSO exin nsta nsto csta csto wlen mismatch pr);
+    my @tags =
+      qw(gsym gid strd blka gpSO exin nsta nsto csta csto wlen mismatch pr);
     @annoinfo{@tags} = @infos;
-    return ($tid, \%annoinfo);
+    return ( $tid, \%annoinfo );
 }
+
 
 =head2 anno
 
     About   : Annotate single short variation by annotation db.
     Usage   : my $anno_ent = $beda->anno( 'chr20', 1234567, 1234569, 'AG', 'TGGG' );
 	      or $anno_ent = $beda->anno( 'chr20', 1234568, 'AG', 'AGGG' );
-    Args    : for CG's shell variants, need 5 args in UCSC coordinates (0-based start):
+    Args    : for CG's shell variants, need 5 args in UCSC coordinates
+	      (0-based start), they are:
 		chr id, chr start, chr end, reference, alternative.
 	      for variants in VCF, need 4 args, which is lack of 
-	      chr end, in 1-based coordinates.
+	        chr end, and "chr start" is in 1-based coordinates.
     Returns : a hash ref of annotation informations, see varanno().
 
 =cut
 sub anno {
     my $self = shift;
-    my $var = parse_var(@_);
+    my $var = BedAnno::Var->new(@_);
     my ($annoEnt, $idx) = $self->varanno($var);
     return $annoEnt;
 }
 
+
 =head2 varanno
 
-    About   : generate all the needed annotation for a var entry
-    Usage   : my $rAnnoRst = $beda->varanno($var);
-    Args    : see parse_var()
-    Returns : a hash ref:
-                {
-                    var => {
+    About   : implicitly create a new BedAnno::Anno entry, and 
+	      assign all the needed annotation for to it.
+    Usage   : ($rAnnoRst, $AEIndex) = $beda->varanno($var, $AEIndex);
+    Args    : The BedAnno entry, BedAnno::Var entry and current dbidx, 
+	      current dbidx should be always 0, if used for non-batch mode.
+    Returns : A BedAnno::Anno entry and current dbidx for nex query in batch.
+	    {
+		var => {
 
-                        # the first part is from var parsing result.
-                        # please see parse_var().
-                        # import all the keys from original parsed var entry
-			# and add the following keys by this method.
+		    # the first part is from var parsing result.
+		    # please see "BedAnno::Var new()".
+		    # import all the keys from original parsed var entry
+		    # and add the following keys by this method.
 
-                        # information
-                        varTypeSO => $varTypeSO,
-                        gHGVS     => $gHGVS,
-                        refbuild  => $referenceBuild,
+		    # information
+		    varTypeSO => $varTypeSO,
+		    gHGVS     => $gHGVS,
+		    refbuild  => $referenceBuild,
 
-                        # Here's some optional parts which may be generated
-                        # when extra resource is available:
+		    # Here's some optional parts which may be generated
+		    # when extra resource is available:
 
-                        cytoBand  => $cytoBand,
+		    cytoBand  => $cytoBand,
 
-                        dbsnp => {
-                            $rsID => {
-                                AN => $dbsnp_total_allele_count,
-                                AF => $dbsnp_alt_allele_frequency,  # though ref
-                            },
-                            ...
-                        },
+		    # For single position for now
+		    phyloPpm    => $PhyloPscorePlacentalMammals,
+		    phyloPpr    => $PhyloPscorePrimates,
+		    phyloPve    => $PhyloPscoreVetebrates,
 
-                        tgp => {
-                            AN => $tgp_total_allele_count,
-                            AF => $tgp_alt_allele_frequency,
-                        },
+		    dbsnp => {
+			$rsID => {
+			    AN => $dbsnp_total_allele_count,
+			    AF => $dbsnp_alt_allele_frequency,  # though ref
+			},
+			...
+		    },
 
-                        cg54 => {
-                            AN => $cg54_total_allele_count,
-                            AF => $cg54_alt_allele_frequency,
-                        },
+		    tgp => {
+			AN => $tgp_total_allele_count,
+			AF => $tgp_alt_allele_frequency,
+		    },
 
-                        wellderly => {
-                            AN => $wellderly_total_allele_count,
-                            AF => $wellderly_alt_allele_frequency,
-                        },
+		    cg54 => {
+			AN => $cg54_total_allele_count,
+			AF => $cg54_alt_allele_frequency,
+		    },
 
-                        esp6500 => {
-                            AN => $esp6500_total_allele_count,
-                            AF => $esp6500_alt_allele_frequency,
-                        },
-                    },
-                    trInfo => {
-                        $tid => {
-                            geneId        => $Entrez_Gene_ID,
-                            geneSym       => $Gene_Symbol,
-                            prot          => $Protein_Acc_Ver,
-                            strd          => $strand,
-                            rnaBegin      => $Begin_in_RNA_transcript,
-                            rnaEnd        => $End_in_RNA_transcript,
-                            protBegin     => $Begin_in_Protein,
-                            protEnd       => $End_in_Protein,
-                            c             => $cHGVS,
-                            p             => $pHGVS,
-                            cc            => $codon_change,
-                            polar         => $polar_change,
-                            r             => $imp_funcRegion,
-                            func          => $imp_funcCode,
-                            exin          => $exIntr_number,
-                            genepart      => $GenePart,
-                            genepartSO    => $GenePartSO,
-                            genepartIndex => $GenePartIndex,
-                            exonIndex   => $exonIndex,          # '.' for N/A
-                            intronIndex => $intronIndex,        # '.' for N/A
-                            funcSOname  => $FunctionImpact,
-                            funcSO      => $FunctionImpactSO,
-                            pfamId      => $PFAM_ID,
-                            pfamName    => $PFAM_NAME,
-                            phyloPpm    => $PhyloPscorePlacentalMammals,
-                            phyloPpr    => $PhyloPscorePrimates,
-                            phyloPve    => $PhyloPscoreVetebrates,
-                            siftPref    => $SIFTpred,
-                            siftScore   => $SIFTscore,
-                            pp2divPred  => $Polyphen2HumDivPred,
-                            pp2divScore => $Polyphen2HumDivScore,
-                            pp2varPred  => $Polyphen2HumVarPred,
-                            pp2varScore => $Polyphen2HumVarScore,
-			    trAlt	=> $alt_string_on_transcript,
-                        },
-                        ...
-                    }
-                }
+		    wellderly => {
+			AN => $wellderly_total_allele_count,
+			AF => $wellderly_alt_allele_frequency,
+		    },
+
+		    esp6500 => {
+			AN => $esp6500_total_allele_count,
+			AF => $esp6500_alt_allele_frequency,
+		    },
+		},
+		trInfo => {
+		    $tid => {
+			geneId        => $Entrez_Gene_ID,
+			geneSym       => $Gene_Symbol,
+			prot          => $Protein_Acc_Ver,
+			strd          => $strand,
+			rnaBegin      => $Begin_in_RNA_transcript,
+			rnaEnd        => $End_in_RNA_transcript,
+			cdsBegin	  => $Begin_in_CDS,    # cDot format
+			cdsEnd	  => $End_in_CDS,      # cDot format
+			protBegin     => $Begin_in_Protein,
+			protEnd       => $End_in_Protein,
+			c             => $cHGVS,
+			p             => $pHGVS,
+			cc            => $codon_change,
+			polar         => $polar_change,
+			r             => $imp_funcRegion,
+			r_Begin	  => $imp_beginfuncRegion,
+			r_End	  => $imp_endfuncRegion,
+			func          => $imp_funcCode,
+			exin          => $exIntr_number,
+			ei_Begin	  => $imp_Begin_exIntr_number,
+			ei_End	  => $imp_End_exIntr_number,
+			genepart      => $GenePart,
+			genepartSO    => $GenePartSO,
+			genepartIndex => $GenePartIndex,
+			exonIndex   => $exonIndex,          # '.' for N/A
+			intronIndex => $intronIndex,        # '.' for N/A
+			funcSOname  => $FunctionImpact,
+			funcSO      => $FunctionImpactSO,
+			trAlt	=> $alt_string_on_transcript,
+			trRef	=> $ref_string_on_transcript,
+			trRefComp   => {
+			    # some trRef components
+			}
+
+
+			# The following parts will be exists if extra resource
+			# is available.
+			pfamId      => $PFAM_ID,
+			pfamName    => $PFAM_NAME,
+			siftPred    => $SIFTpred,
+			siftScore   => $SIFTscore,
+			pp2divPred  => $Polyphen2HumDivPred,
+			pp2divScore => $Polyphen2HumDivScore,
+			pp2varPred  => $Polyphen2HumVarPred,
+			pp2varScore => $Polyphen2HumVarScore,
+		    },
+		    ...
+		}
+	    }
 
 =cut
 sub varanno {
     my ($self, $var, $AEIndex) = @_;
     $AEIndex ||= 0;
+
+    if (exists $self->{cytoBand}) {
+	$var->{cytoBand} = $self->{cytoBand_h}->getCB(@$var{qw(chr pos end)});
+    }
+
+    if (exists $self->{phyloP}) {
+	if ($var->{sm} == 1) {
+	    @$var{qw(phyloPpm phyloPpr phyloPve)} = 
+		$self->{phyloP_h}->getPhyloP46wayScore($var->{chr}, ($var->{pos}+1));
+	}
+    }
+
+    if ( exists $self->{dbSNP} ) {
+        if ( exists $var->{sep_snvs} ) {
+            my @new_sqls  = ();
+            my $cur_start = $var->{sep_snvs}->[0];
+            for my $i ( 0 .. $#{ $var->{sep_snvs} } ) {
+                if (   $i == $#{ $var->{sep_snvs} }
+                    or $var->{sep_snvs}->[ $i + 1 ] - $cur_start > 1 )
+                {
+                    my $new_ref = substr(
+                        $var->{ref},
+                        ( $cur_start - $var->{pos} - 1 ),
+                        ( $var->{sep_snvs}->[$i] - $cur_start + 1 )
+                    );
+                    my $new_alt = substr(
+                        $var->{alt},
+                        ( $cur_start - $var->{pos} - 1 ),
+                        ( $var->{sep_snvs}->[$i] - $cur_start + 1 )
+                    );
+                    push(
+                        @new_sqls,
+                        [
+                            $cur_start, $var->{sep_snvs}->[$i],
+                            $new_ref,   $new_alt
+                        ]
+                    );
+                    $cur_start = $var->{sep_snvs}->[ $i + 1 ]
+                      if ( $i < $#{ $var->{sep_snvs} } );
+                }
+            }
+            foreach my $rSE (@new_sqls) {
+                my $rOneSql = $self->{dbSNP_h}->getRS( $var->{chr}, @$rSE );
+                @{ $$var{dbsnp} }{ sort keys %$rOneSql } =
+                  @$rOneSql{ sort keys %$rOneSql };
+            }
+        }
+        else {
+            $var->{dbsnp} =
+              $self->{dbSNP_h}->getRS( @$var{qw(chr pos end ref alt)} );
+        }
+    }
+
+    if (exists $self->{tgp}) {
+	$var->{tgp} = $self->{tgp_h}->getAF(@$var{qw(chr pos end ref alt)});
+    }
+
+    if (exists $self->{esp6500}) {
+	$var->{esp6500} = $self->{esp6500_h}->getAF(@$var{qw(chr pos end ref alt)});
+    }
+
+    if (exists $self->{cg54}) {
+	$var->{cg54} = $self->{cg54_h}->getAF(@$var{qw(chr pos end ref alt)});
+    }
+
+    if (exists $self->{wellderly}) {
+	$var->{wellderly} = $self->{wellderly_h}->getAF(@$var{qw(chr pos end ref alt)});
+    }
 
     $var->{varTypeSO} = $Name2SO{$var->{guess}};
     $var->{refbuild}  = $self->{refbuild};
@@ -1015,1759 +1116,1492 @@ sub varanno {
 	$localdb = $self->{annodb}->{$var->{chr}};
     }
 
-    my $annoEnt : shared;
-    $annoEnt->{var} = $var;
-    $annoEnt->{trInfo} = shared_clone({});
-    bless $annoEnt, 'BedAnno::Anno';
-
+    my $annoEnt = BedAnno::Anno->new($var);
     $AEIndex = $annoEnt->getTrPosition($localdb, $AEIndex);
-    
+    $annoEnt = $self->getTrChange($annoEnt);
+    $annoEnt = $self->finaliseAnno($annoEnt);
 
     return ($annoEnt, $AEIndex);
 }
 
-=head2 get_gHGVS
+=head2 finaliseAnno
 
-    About   : get genomic (chromosomal) HGVS string of variation
-    Usage   : my $gHGVS = $var->get_gHGVS();
-    Args    : variation entry, after parse_var(), see parse_var().
-    Returns : chromosomal HGVS string.
-
-=cut
-sub get_gHGVS {
-    my $var = shift;
-    my $gHGVS = 'g.';
-    if ($var->{chr} =~ /^M/) { # hit mito chromosome
-	$gHGVS = 'm.';
-    }
-
-    my $imp = $var->{imp};
-    my $sm  = $var->{sm};
-    my ($pos, $ref, $alt, $reflen, $altlen) = $var->getUnifiedVar('+');
-
-    if ($imp eq 'snv') {
-	$gHGVS .= $pos.$ref.'>'.$alt;
-    }
-    elsif ($imp eq 'ins') {
-	$gHGVS .= $pos.'_'.($pos+1).'ins'.$alt;
-    }
-    elsif ($imp eq 'del' or $imp eq 'delins') {
-	# 1bp del/delins
-	$gHGVS .= ($pos+1);
-	if ($sm > 1) {
-	    $gHGVS .= '_'.($pos + $reflen);
-	}
-	$gHGVS .= 'del'.$ref;
-	$gHGVS .= 'ins'.$alt if (/delins/);
-    }
-    elsif ($imp eq 'rep') {
-	$gHGVS .= ($pos + 1);
-	if ($ref_cn == 1 and $alt_cn == 2) { # dup
-	    if ($sm > 1) {
-		$gHGVS .= '_' . ($pos + $replen);
-	    }
-	    $gHGVS .= 'dup'. $rep;
-	}
-	else {
-	    $gHGVS .= $rep.'['.$ref_cn.'>'.$alt_cn.']';
-	}
-    }
-    elsif ($imp eq 'ref') {
-	$gHGVS .= '=';
-    }
-    else {
-	confess "Can not recognize type $imp.";
-    }
-    $var->{gHGVS} = $gHGVS;
-
-    return $var;
-}
-
-
-=head2 pairanno
-
-    About   : get infomations from select_position(), (std grp) besides function,
-	      codon-change, flank_region position, polar and HGVS strings:
-		  for coding gene region gives c. HGVS and p. HGVS
-		  for non-coding RNA gives n. HGVS, 
-		  for non-available gives '.'.
-	      function of mutation, follow the definitions mainly from dbSNP:
-		  for intergenic or non-target region: using '.'
-		  utr-3, utr-5, ncRNA, 
-		  misstart, missense, nonsense, coding-synon, 
-		  intron, splice-3, splice-5,
-		  cds-indel, frameshift, stop-gain, stop-loss, init-loss, 
-		  unknown for 'c.?'
-		  abnormal-inseq-stop for non-end stop codon in refseq.
-		  abnormal-intron for too short intron (<4bp) due to mapping deduced.
-	      Sub-region and Exon/Intron number infomation
-    Usage   : my $h_annos = $beda->pairanno($var, $sel);
-    Args    : a var entry and a selected anno
-    Returns : ( $tid, { c => c.HGVS, p => p.HGVS,  cc => condon-change,
-			r => region, exin => exin, func => func,  polar => pol, 
-			strd => [+-],
-			flanks => { l => left_region, r => right_region }
-	              } )
+    About   : finalise the BedAnno::Anno entry by check all tag values,
+	      and uniform them for AE output usage, query transcript
+	      oringinated additional resources and add them into the data
+	      frame.
+    Usage   : $beda->finaliseAnno($annEnt);
+    Args    : BedAnno entry and a BedAnno::Anno entry
+    Returns : A finalised BedAnno::Anno entry
 
 =cut
-sub pairanno {
-    my ($self, $var, $sel) = @_;
-
-    # annotated by paired (sta, sto) cPos
-    my ($tid, $cL, $cR) = @$sel;
-    return ( $tid, {} ) if (!exists $$cL{cpos});
-
-    my ( $ref, $alt, $pos, $rl, $al ) =
-      ( $$var{ref}, $$var{alt}, $$var{pos}, $$var{reflen}, $$var{altlen} );
-    if (exists $$var{'+'} and exists $$var{'+'}{p}) {
-	# for diff strand position cases
-	$ref = $$var{$$cL{strd}}{r};
-	$alt = $$var{$$cL{strd}}{a};
-	$pos = $$var{$$cL{strd}}{p};
-	$rl  = $$var{$$cL{strd}}{rl};
-	$al  = $$var{$$cL{strd}}{al};
-    }
-
-    if ($rl > 1 or $al > 1 and $rl != $al) { # get the real diff base in ref
-	$ref = substr($ref, 1);
-	$alt = substr($alt, 1);
-	$rl --;
-	$al --;
-	$pos ++;
-    }
-
-    # get flank region string ready for fetchseq
-    my $flanks = get_flanks($$var{chr}, $pos, $rl);
-
-    my $strandopt = ($$cL{strd} eq '-') ? 0 : 1;
-    my $t_ref = ($strandopt) ? uc($ref) : rev_comp(uc($ref));
-    my $t_alt = ($strandopt) ? uc($alt) : rev_comp(uc($alt));
-
-    my ($cHGVS, $pHGVS, $cc, $reg, $exin, $func, $polar, $bc_cHGVS) = ('.') x 8;
-
-    if ($$cL{cpos} =~ /\?/) {
-	return (
-	    $tid,
-	    {
-		c      => '.',
-		p      => '.',
-		cc     => '.',
-		r      => $$cL{reg},
-		exin   => $$cL{exin},
-		func   => 'unknown',
-		polar  => '.',
-		strd   => $$cL{strd},
-		bc     => $bc_cHGVS,
-		flanks => $flanks
-	    }
-	);
-    }
-
-    my $query_tid = $tid;
-    $query_tid =~ s/\-\d+$//;
-    if (!defined $cR) {  # snv or 1bp deletion or 1bp repeat
-	$cR = $cL;
-    }
-    if (!$strandopt) { # swap LR is '-'
-	my $tmp = $cL;
-	$cL = $cR;
-	$cR = $tmp;
-    }
-    # get cPos without c./n. 
-    my $cP_L  = substr( $$cL{cpos}, 2 );
-    my $cP_R  = substr( $$cR{cpos}, 2 );
-    my $pre_L = substr( $$cL{cpos}, 0, 2 );
-    my $pre_R = substr( $$cR{cpos}, 0, 2 );
-
-    my $coding_max = int(length($$self{codonseq}{$query_tid})/3) if (exists $$self{codonseq}{$query_tid});
-
-    $_ = $$var{guess};
-
-    if ($_ eq 'snv') { # only one position
-	$cHGVS = $$cL{cpos}.$t_ref.'>'.$t_alt; # c.123A>G
-	$reg = $$cL{reg};
-	$exin = $$cL{exin};
-	($func, $cc, $pHGVS, $polar) = $self->parse_cPos($tid, $$cL{cpos}, $t_alt);
-	if ($$cL{reg} =~ /^I/ and $$cL{bd} =~ /1/) {
-	    $func = 'abnormal-intron';
-	}
-    }
-    elsif ($_ eq 'ins') {
-
-	if ($pre_L eq $pre_R) {
-	    $cHGVS = $$cL{cpos}.'_'.$cP_R.'ins'.$t_alt;
-	}
-	else {
-	    $cHGVS = $$cL{cpos}.'_'.$$cR{cpos}.'ins'.$t_alt;
-	    return (
-		$tid,
-		{
-		    c      => $cHGVS,
-		    p      => $pHGVS,
-		    cc     => $cc,
-		    r      => $reg,
-		    exin   => $exin,
-		    func   => $func,
-		    polar  => $polar,
-		    strd   => $$cL{strd},
-		    bc     => $bc_cHGVS,
-		    flanks => $flanks
-		}
-	    );
-	}
-
-	if ($$cL{reg} eq $$cR{reg}) { # non-edge insertion
-
-	    $reg  = $$cL{reg};
-	    $exin = $$cL{exin};
-
-	    if ($reg =~ /^C/) { # coding region
-		( $pHGVS, $func ) = $self->get_aaInsInfo($query_tid, $cP_L, $t_alt, 1);
-	    }
-	    elsif ($reg =~ /^I/) {
-		if ($$cL{bd} =~ /0/ and $$cR{bd} =~ /0/) {
-		    $func = 'intron';
-		}
-		elsif ($$cL{bd} =~ /b/) {
-		    $func = 'splice-5';
-		}
-		elsif ($$cR{bd} =~ /B/) {
-		    $func = 'splice-3';
-		}
-		else {
-		    $func = 'abnormal-intron';
-		}
-	    }
-	    elsif ($reg =~ /^5/) {
-		$func = 'utr-5';
-	    }
-	    elsif ($reg =~ /^3/) {
-		$func = 'utr-3';
-	    }
-	    elsif ($reg =~ /^R/) {
-		$func = 'ncRNA';
-	    }
-	    else { $self->throw("unexpected region string [$reg]"); }
-	}
-	else { # insertion on the edge of region
-	    $reg = $$cL{reg}.'-'.$$cR{reg};
-	    $exin = ( $$cL{exin} eq $$cR{exin} ) ? $$cL{exin} : $$cL{exin}.'-'.$$cR{exin};
-
-	    my $indicator = substr($$cL{reg},0,1).substr($$cR{reg},0,1);
-
-	    if ($indicator eq 'IC') { # 5' coding exon insertion
-		( $pHGVS, $func ) = $self->get_aaInsInfo($query_tid, $cP_R, $t_alt, -1);
-	    }
-	    elsif ($indicator eq 'CI') { # 3' conding exon insertion
-		( $pHGVS, $func ) = $self->get_aaInsInfo($query_tid, $cP_L, $t_alt, 1);
-	    }
-	    elsif ($indicator =~ /5/) {
-		$func = 'utr-5';
-	    }
-	    elsif ($indicator =~ /3/) {
-		$func = 'utr-3';
-	    }
-	    elsif ($indicator =~ /R/) {
-		$func = 'ncRNA';
-	    }
-	    else { $self->throw("unexpected indicator [$indicator]"); }
-	}
-    }
-    elsif ( $_ eq 'del' or $_ eq 'delins' ) {
-
-	if ( $pre_L eq $pre_R ) {
-	    if ( $$cL{cpos} eq $$cR{cpos} ) {
-		$cHGVS = $$cL{cpos} . 'del' . $t_ref;
-	    }
-	    else {
-		$cHGVS = $$cL{cpos} . '_' . $cP_R . 'del' . $t_ref;
-	    }
-	    
-	    $cHGVS .= 'ins' . $t_alt if (/delins/);
-
-	}
-	else { # $pre_L ne $pre_R
-	    $cHGVS = $$cL{cpos} . '_' . $$cR{cpos} . 'del' . $t_ref;
-	    $cHGVS .= 'ins' . $t_alt if (/delins/);
-	    $reg =
-	      ( $$cL{reg} eq $$cR{reg} )
-	      ? $$cL{reg}
-	      : $$cL{reg} . '-' . $$cR{reg};
-	    $exin =
-	      ( $$cL{exin} eq $$cR{exin} )
-	      ? $$cL{exin}
-	      : $$cL{exin} . '-' . $$cR{exin};
-
-	    if (($pre_L eq '--') and ($pre_R eq '++')) { # whole transcript is missing
-		$pHGVS = 'p.0?';
-		$func  = 'knockout'; # which may not be exists in variation calling result.
-	    }
-	    elsif ($pre_L eq '--') { # the 5' end of transcript is missing
-		if ($$cR{reg} =~ /^5/) {
-		    $func = 'utr-5';
-		}
-		elsif ($$cR{reg} =~ /^C/) {
-		    $pHGVS = 'p.0?';
-		    $func  = 'init-loss';
-		}
-		elsif ($$cR{reg} =~ /^3/) {
-		    $pHGVS = 'p.0?';
-		    $func  = 'knockout';
-		}
-		elsif ($$cR{reg} =~ /^R/) {
-		    $func  = 'ncRNA';
-		}
-		elsif ($$cR{reg} =~ /^I/) {
-		    if ($pre_R eq 'n.') {
-			$func = 'ncRNA';
-		    }
-		    elsif ($cP_R =~ /^\-|^1\-\d/) {
-			$func = 'utr-5';
-		    }
-		    elsif ($cP_R =~ /^\d+/) {
-			$pHGVS = 'p.0?';
-			$func  = 'init-loss';
-		    }
-		    elsif ($cP_R =~ /^\*/) {
-			$pHGVS = 'p.0?';
-			$func  = 'knockout';
-		    }
-		    else {
-			$self->throw("unexpected cP_R [$cP_R]");
-		    }
-		}
-		else {
-		    $self->throw("unexpected region [$$cR{reg}]");
-		}
-	    }
-	    else { # $pre_R eq '++' the 3'end of transcript is missing.
-		if ($$cL{reg} =~ /^5/) {
-		    $pHGVS = 'p.0?';
-		    $func = 'knockout';
-		}
-		elsif ($$cL{reg} =~ /^C/) {
-		    my $pP_L = aaNum($cP_L);
-		    my $aa_L = get_aa($$self{codonseq}, $query_tid, $pP_L);
-		    if ($aa_L ne '') {
-			$pHGVS = 'p.'.$aa_L.$pP_L.'_*'.$coding_max.'del';
-			$func  = 'stop-loss';
-		    }
-		    else {
-			$func  = 'unknown';
-		    }
-		}
-		elsif ($$cL{reg} =~ /^3/) {
-		    $func  = 'utr-3';
-		}
-		elsif ($$cL{reg} =~ /^R/) {
-		    $func  = 'ncRNA';
-		}
-		elsif ($$cL{reg} =~ /^I/) {
-		    if ($pre_L eq 'n.') {
-			$func = 'ncRNA';
-		    }
-		    elsif ($cP_L =~ /^\-/) {
-			$pHGVS = 'p.0?';
-			$func  = 'knockout';
-		    }
-		    elsif ($cP_L =~ /^\*/) {
-			$func = 'utr-3';
-		    }
-		    elsif ($cP_L =~ /^(\d+)\+/) {
-			if (exists $$self{codonseq}{$query_tid}) {
-			    if ($1 == length($$self{codonseq}{$query_tid})) {
-				$func = 'utr-3';
-			    }
-			    else {
-				my $pP_L = aaNum($1+1);
-				if ($pP_L < $coding_max) {
-				    my $aa_L = get_aa($$self{codonseq}, $query_tid, $pP_L);
-				    $pHGVS = 'p.'.$aa_L.$pP_L.'_*'.$coding_max.'del';
-				}
-				else {
-				    $pHGVS = 'p.'.$coding_max.'del*';
-				}
-				$func  = 'stop-loss';
-			    }
-			}
-			else {
-			    $func = 'unknown';
-			}
-		    }
-		    elsif ($cP_L =~ /^(\d+)\-/) {
-			if (exists $$self{codonseq}{$query_tid}) {
-			    my $pP_L = aaNum($1);
-			    if ($pP_L < $coding_max) {
-				my $aa_L = get_aa($$self{codonseq}, $query_tid, $pP_L);
-				$pHGVS = 'p.'.$aa_L.$pP_L.'_*'.$coding_max.'del';
-			    }
-			    else {
-				$pHGVS = 'p.'.$coding_max.'del*';
-			    }
-			    $func  = 'stop-loss';
-			}
-			else {
-			    $func = 'unknown';
-			}
-		    }
-		    else {
-			$self->throw("unexpected cP_L [$cP_L]");
-		    }
-		}
-		else {
-		    $self->throw("unexpected region [$$cL{reg}]");
-		}
-	    }
-
-	    return (
-		$tid,
-		{
-		    c      => $cHGVS,
-		    p      => $pHGVS,
-		    cc     => $cc,
-		    r      => $reg,
-		    exin   => $exin,
-		    func   => $func,
-		    polar  => $polar,
-		    strd   => $$cL{strd},
-		    bc     => $bc_cHGVS,
-		    flanks => $flanks
-		}
-	    );
-	    
-	}
-
-	my $indicator = substr($$cL{reg},0,1).substr($$cR{reg},0,1);
-
-	if ( $$cL{reg} eq $$cR{reg} ) {
-	    $reg  = $$cL{reg};
-	    $exin = $$cL{exin};
-
-	    if ($indicator eq 'CC') {
-		($pHGVS, $func) = $self->get_aaDelInfo($query_tid, $cP_L, $cP_R, $t_alt);
-	    }
-	    elsif ($indicator eq 'II') {
-		if ($$cL{bd} =~ /1/) {
-		    $func = 'abnormal-intron';
-		}
-		elsif ($$cL{bd} =~ /0/ and $$cR{bd} =~ /0/) {
-		    $func = 'intron';
-		}
-		elsif ($$cL{bd} =~ /b/ and $$cR{bd} =~ /B/) {
-		    $func = 'splice';
-		}
-		elsif ($$cL{bd} =~ /b/) {
-		    $func = 'splice-5';
-		}
-		elsif ($$cR{bd} =~ /B/) {
-		    $func = 'splice-3';
-		}
-	    }
-	    elsif ($indicator eq '55') {
-		$func = 'utr-5';
-	    }
-	    elsif ($indicator eq '33') {
-		$func = 'utr-3';
-	    }
-	    elsif ($indicator eq 'RR') {
-		$func = 'ncRNA';
-	    }
-	    else {
-		$self->throw("unexpected region [$$cL{reg}]");
-	    }
-	}
-	else { # multiple region del/delins
-	    $reg  = $$cL{reg} . '-' . $$cR{reg};
-	    $exin = ( $$cL{exin} eq $$cR{exin} ) ? $$cL{exin} : $$cL{exin} . '-' . $$cR{exin};
-
-	    if ($indicator eq 'CC') {
-		($pHGVS, $func) = $self->get_aaDelInfo($query_tid, $cP_L, $cP_R, $t_alt);
-	    }
-	    elsif ($indicator eq '55') {
-		$func = 'utr-5';
-	    }
-	    elsif ($indicator eq '33') {
-		$func = 'utr-3';
-	    }
-	    elsif ($indicator eq 'RR') {
-		$func = 'ncRNA';
-	    }
-	    elsif ($indicator eq 'II') {
-		if ($$cL{bd} =~ /1/) {
-		    $func = 'abnormal-intron';
-		}
-		elsif ($$cL{bd} =~ /0/ and $$cR{bd} =~ /0/) {
-		    if ($pre_L eq 'n.') {
-			$func = 'ncRNA';
-		    }
-		    else {
-			my ($cds_L, $cds_R);
-			if ($cP_L =~ /^(\d+)\-/) {
-			    $cds_L = $1;
-			}
-			elsif ($cP_L =~ /^(\d+)\+/) {
-			    $cds_L = $1 + 1;
-			}
-
-			if ($cP_R =~ /^(\d+)\+/) {
-			    $cds_R = $1;
-			}
-			elsif ($cP_R =~ /^(\d+)\-/) {
-			    $cds_R = $1 - 1;
-			}
-
-			($pHGVS, $func) = $self->get_aaDelInfo($query_tid, $cds_L, $cds_R);
-		    }
-		}
-		else { # ($$cL{bd} =~ /b/i or $$cR{bd} =~ /b/i) the splice cases is too complex to parse
-		    # give splice to indicate either or both of side are at splice site.
-		    $func = 'splice';
-		}
-	    }
-	    elsif ($indicator eq '5C') {
-		$pHGVS = 'p.0?';
-		$func  = 'init-loss';
-	    }
-	    elsif ($indicator eq 'C3') {
-		my $pP_L = aaNum($cP_L);
-		my $aa_L = get_aa($$self{codonseq}, $query_tid, $pP_L);
-		if ($aa_L eq '') {
-		    $func = 'unknown';
-		}
-		else {
-		    if ($pP_L == $coding_max) {
-			$pHGVS = 'p.'.$coding_max.'del*';
-		    }
-		    else {
-			$pHGVS = 'p.'.$aa_L.$pP_L.'_*'.$coding_max.'del';
-		    }
-		    $func  = 'stop-loss';
-		}
-	    }
-	    elsif ($indicator eq '53') {
-		$pHGVS = 'p.0?';
-		$func  = 'knockout';
-	    }
-	    else { # for other complex cases
-		if ($$cR{exin} =~ /C1/) {
-		    $pHGVS = 'p.0?';
-		    $func = 'splice-3';
-		}
-		elsif ($$cL{exin} =~ /C\d+E/) {
-		    my $pP_L = aaNum($cP_L);
-		    my $aa_L = get_aa($$self{codonseq}, $query_tid, $pP_L);
-		    if ($aa_L ne '') {
-			if ($pP_L == $coding_max) {
-			    $pHGVS = 'p.'.$coding_max.'del*';
-			}
-			else {
-			    $pHGVS = 'p.'.$aa_L.$pP_L.'_*'.$coding_max.'del';
-			}
-		    }
-		    $func = 'splice-5';
-		}
-		else {
-		    $func = 'splice';
-		}
-	    }
-	}
-    }
-    # when meet repeats, the input selection must come from
-    # the standard group: (repeat element cds position), 
-    # the backward compatible cds position is used to calculate
-    # the bcHGVS, pHGVS and give the function prediction as well.
-    # the standard cds position is only for the cHGVS.
-    elsif ( $_ eq 'rep' ) {
-	my $t_rep = ($$cL{strd} eq '+') ? $$var{rep} : rev_comp($$var{rep});
-	if ($$var{ref_cn} == 1 and $$var{alt_cn} == 2) { # duplication
-	    if ($$var{replen} > 1) {
-		if ($pre_L ne $pre_R) {
-		    $cHGVS = $$cL{cpos}.'_'.$$cR{cpos}.'dup'.$t_rep;
-		}
-		else {
-		    $cHGVS = $$cL{cpos}.'_'.$cP_R.'dup'.$t_rep;
-		}
-	    }
-	    else {
-		$cHGVS = $$cL{cpos}.'dup'.$t_rep;
-	    }
-	}
-	else { # simple repeats
-	    $cHGVS = $$cL{cpos}.$t_rep.'['.$$var{ref_cn}.'>'.$$var{alt_cn}.']';
-	}
-
-	# if backward compatible selection exists, the pHGVS and function
-	# will be assigned to the variation.
-	if (exists $$var{sel}{bc}) {
-	    my $sel_for_bc;
-	    foreach my $bc_sel (@{$$var{sel}{bc}}) {
-		my ($bc_tid, $bc_cL, $bc_cR) = @{$bc_sel};
-		next if ($bc_tid ne $tid);
-		$sel_for_bc = $bc_sel;
-		last;
-	    }
-	    if (defined $sel_for_bc) {
-		my %bc_var; # create a backward compatible var
-		my $rbc_var_info = $$var{$$cL{strd}};
-		$bc_var{chr}   = $$var{chr};
-		$bc_var{guess} = guess_type();
-		$bc_var{pos}   = $$rbc_var_info{bp};
-		$bc_var{ref}   = $$rbc_var_info{br};
-		$bc_var{alt}   = $$rbc_var_info{ba};
-		$bc_var{reflen} = $$rbc_var_info{brl};
-		$bc_var{altlen} = $$rbc_var_info{bal};
-
-		my ( $ret_tid, $ret_rbc_annos ) =
-		  $self->pairanno( \%bc_var, $sel_for_bc );
-		$pHGVS         = $$ret_rbc_annos{p};
-		$func          = $$ret_rbc_annos{func};
-		$reg           = $$ret_rbc_annos{r};
-		$exin          = $$ret_rbc_annos{exin};
-		$bc_cHGVS      = $$ret_rbc_annos{c};
-		$flanks        = $$ret_rbc_annos{flanks};
-	    }
-	}
-    }
-    elsif ($_ eq 'ref') {
-        $cHGVS = ( $$var{chr} =~ /M/ ) ? 'm.=' : 'g.=';
-        $reg =
-          ( $$cL{reg} eq $$cR{reg} ) ? $$cL{reg} : $$cL{reg} . '-' . $$cR{reg};
-        $exin =
-          ( $$cL{exin} eq $$cR{exin} )
-          ? $$cL{exin}
-          : $$cL{exin} . '-' . $$cR{exin};
-    }
-    else { $self->throw("unexpected type of variation [$$var{guess}]."); }
-
-    return (
-        $tid,
-        {
-            c      => $cHGVS,
-            p      => $pHGVS,
-            cc     => $cc,
-            r      => $reg,
-            exin   => $exin,
-            func   => $func,
-            polar  => $polar,
-	    strd   => $$cL{strd},
-	    bc     => $bc_cHGVS,
-            flanks => $flanks
-        }
-    );
-}
-
-
-# get aa sequence from nucl string
-sub get_aaseq {
-    my $new_codon = shift;
-    my $new_aa = "";
-    for (my $i = 0; $i < length($new_codon); $i+=3) {
-	my $add_codon = substr($new_codon, $i, 3);
-	my $add_aa = (exists $Code2Pep{$add_codon}) ? $Code2Pep{$add_codon} : "";
-	if ($add_aa ne '') {
-	    $new_aa .= $add_aa;
-	}
-	last if ($add_aa eq '' or $add_aa eq '*');
-    }
-    return $new_aa;
-}
-
-
-=head2 parse_cPos
-
-    About   : parse the cds position of snv variation
-    Usage   : my ($func, $cc, $pHGVS, $polar) = $beda->parse_cPos($query_tid, $cpos, $t_alt);
-    Args    : query_tid is transcript id with out tail [-n], cpos is cds pos in hgvs c./n. format.
-	      t_alt are strand specific alt char.
-    Returns : the function code, codon-change, 'p.' format HGVS string, polar-change. see pairanno()
-
-=cut
-sub parse_cPos {
-    my ($self, $query_tid, $cpos, $t_alt) = @_;
-    my ($func, $cc, $pHGVS, $polar) = ('.') x 4;
-
-    if ($cpos =~ /^c\.(\d+)$/) { # coding region
-	my $cP = $1;
-	my ($codon, $aa, $pol, $frame) = get_codon($$self{codonseq}, $query_tid, $cP);
-	my $new_codon = $codon;
-	if ($aa ne '') {
-	    substr($new_codon, $frame, 1, $t_alt);
-	    my $new_aa = (exists $Code2Pep{$new_codon}) ? $Code2Pep{$new_codon} : ".";
-	    my $new_pol = (exists $Polar{$new_aa}) ? $Polar{$new_aa} : ".";
-	    $func = $self->get_aafunc($aa, $new_aa, $query_tid, $cP);
-	    $pHGVS = get_aaHGVS($aa, $new_aa, $func, $cP);
-
-	    $pHGVS .= 'ext*?' if ($func eq 'stop-loss');
-
-	    $cc = $codon.'=>'.$new_codon;
-	    $polar = ($pol eq $new_pol) ? '.' : $pol.'=>'.$new_pol;
-	    if ($aa eq '*' and $cP + 3 <= length($$self{codonseq}{$query_tid})) {
-		$func = 'abnormal-inseq-stop';
-	    }
-	}
-    }
-    elsif ($cpos =~ /^[cr]\.[\-\*]?\d+([\-\+])(\d+)/) { # intron region
-	if ($2 > 2) {
-	    $func = 'intron';
-	}
-	elsif ($1 eq '+') {
-	    $func = 'splice-5';
-	}
-	elsif ($1 eq '-') {
-	    $func = 'splice-3';
-	}
-    }
-    elsif ($cpos =~ /^c\.-\d+$/) { # 5' UTR
-	$func = 'utr-5';
-    }
-    elsif ($cpos =~ /^c\.\*\d+$/) { # 3' UTR
-	$func = 'utr-3';
-    }
-    elsif ($cpos =~ /^n\.\d+$/) { # ncRNA
-	$func = 'ncRNA';
-    }
-    else { $func = 'unknown'; }
-
-    return ($func, $cc, $pHGVS, $polar);
-}
-
-=head2 get_aaDelInfo
+sub finaliseAnno {
+    my ($self, $annoEnt) = @_;
     
-    About   : get pHGVS and function code from coding deletion or delins.
-    Usage   : my ($pHGVS, $func) = $beda->get_aaDelInfo($qid, $cP_L, $cP_R, $insBase);
-    Args    : query_tid see get_aaInsInfo(), cP_L and cP_R is the coding region deletion start and end.
-	      insBase is the inserted bases if delins.
-	      currently pHGVS prediction won't extend outside the cds region, so it will mis-predict
-	      the represent of stop-codon and will issue a "stop-loss".
-    Returns : the protein level HGVS and the function code.
+    foreach my $tid (sort keys %{$annoEnt->{trInfo}}) {
+	my $trAnnoEnt = $annoEnt->{trInfo}->{$tid};
+	my $trdbEnt = $self->{trInfodb}->{$tid};
+        $trAnnoEnt->{prot} =
+          ( !exists $trdbEnt->{prot} or $trdbEnt->{prot} eq '.' )
+          ? ""
+          : $trdbEnt->{prot};
 
-=cut
-sub get_aaDelInfo {
-    my ($self, $query_tid, $cP_L, $cP_R, $t_alt) = @_;
-    $t_alt ||= '';
-    my ($pHGVS, $func) = ( '.', '.' );
-    my ($codon_L, $aa_L, $pol_L, $frame_L) = get_codon($$self{codonseq}, $query_tid, $cP_L);
-    if ($aa_L eq '') { # no cds seq
-	return ( $pHGVS, 'unknown' );
-    }
-    my $pP_L = aaNum($cP_L);
-    my $remain_L = substr($codon_L, 0, $frame_L);
-    my ($codon_R, $aa_R, $pol_R, $frame_R, $pP_R);
-    if ($cP_L == $cP_R) { # 1bp deletion
-	($codon_R, $aa_R, $pol_R, $frame_R) = ($codon_L, $aa_L, $pol_L, $frame_L);
-	$pP_R = $pP_L;
-    }
-    else {
-	($codon_R, $aa_R, $pol_R, $frame_R) = get_codon($$self{codonseq}, $query_tid, $cP_R);
-	$pP_R = aaNum($cP_R);
-    }
+	my ($strd) = ($trAnnoEnt->{strd} eq '+') ? 1 : 0;
 
-    my $todel_aa = "";
-    my $todel_aalen = $pP_R - $pP_L + 1;
-    for (my $i = $pP_L; $i <= $pP_R; $i++) {
-	$todel_aa .= get_aa($$self{codonseq}, $query_tid, $i);
-    }
-
-    my $remain_R = substr($codon_R, ($frame_R + 1));
-    my $fsOpt = (($cP_R - $cP_L + 1 - length($t_alt)) % 3 == 0) ? 0 : 1;
-
-    my $total_remain   = $remain_L.$t_alt.$remain_R;
-    my $tail_flank_len = (3 - (length($total_remain) % 3)) % 3;
-
-    my $add_tail = "";
-    if ($tail_flank_len > 0 and $cP_R < length($$self{codonseq}{$query_tid})-$tail_flank_len) {
-	$add_tail = substr($$self{codonseq}{$query_tid}, $cP_R, $tail_flank_len);
-    }
-    $total_remain .= $add_tail;
-
-    my $ins_aa = get_aaseq($total_remain);
-    my $ins_aalen = (length($ins_aa) % 3 == 0) ? (length($ins_aa)/3) : (int(length($ins_aa)/3)+1);
-    if ($ins_aa =~ /^$/) { #frameshit or cds deletion without insertion 
-	if ($pP_L == 1) {
-
-	    $pHGVS = 'p.0?';
-	    $func  = 'init-loss';
-	    return ( $pHGVS, $func );
-	    
+	# complete informations depend on already assigned values
+	my $genepartSO;
+	if ($trAnnoEnt->{rnaBegin} =~ /^\+/ or $trAnnoEnt->{rnaEnd} =~ /^\+/) {
+	    $genepartSO = 'span'; # 3'downstream span
 	}
+        elsif ( $trAnnoEnt->{r_Begin} eq $trAnnoEnt->{r_End} ) {
+            $genepartSO =
+              ( $trAnnoEnt->{genepartSO} =~ /^\d+$/ )
+              ? sprintf( "SO:%07d", $trAnnoEnt->{genepartSO} )
+              : $trAnnoEnt->{genepartSO};
 
-	if ($pP_L == $pP_R) {
-	    $pHGVS =
-	      ($fsOpt)
-	      ? 'p.' . $aa_L . $pP_L . 'fs*?'
-	      : 'p.' . $aa_L . $pP_L . 'del';
-	}
-	else {
-	    $pHGVS =
-	      ($fsOpt)
-	      ? 'p.' . $aa_L . $pP_L . '_' . $aa_R . $pP_R . 'del'
-	      : 'p.' . $aa_L . $pP_L . '_' . $aa_R . $pP_R . 'delfs*?';
-	}
+	    $trAnnoEnt->{r} = $trAnnoEnt->{r_Begin};
+	    $trAnnoEnt->{exin} = $trAnnoEnt->{ei_Begin};
 
-	$func =
-	  ($fsOpt) ? 'frameshift'
-	  : ( ( $cP_R + 3 > length( $$self{codonseq}{$query_tid} ) )
-	    ? 'stop-loss'
-	    : 'cds-indel' );
-
-    }
-    elsif ($ins_aa =~ /\*/) { # stop gain after delins
-	if ($aa_R eq '*') { # cds-indel
-	    my $local_ins_aa = $`; # $` prematch
-	    my $local_ins_aalen = $ins_aalen - 1;
-
-	    if ($cP_L == $cP_R) {
-		if ($local_ins_aa eq '') {
-
-		    $pHGVS = 'p.=';
-		    $func  = 'coding-synon';
-
-		}
-		else { # delins caused insertion
-		    my $aa_pre = get_aa($$self{codonseq}, $query_tid, ($pP_L - 1));
-
-		    $pHGVS = 'p.'. $aa_pre. ($pP_L - 1) . '_' . $aa_R . $pP_R . 'ins' . $local_ins_aa;
-		    $func  = 'cds-indel';
-		}
+	    if ($trAnnoEnt->{exin} =~ /^EX(\d+)/) {
+		$trAnnoEnt->{genepartIndex} = $1;
+		$trAnnoEnt->{exonIndex} = $1;
 	    }
-	    else { # for inconvinience of realign the protein del and ins, delins may be false predicting, except for head/tail align.
-		my $local_todel = $todel_aa;
-		$local_todel =~ s/\*$//;
-		my $local_todel_len = $todel_aalen - 1;
-
-		if ($local_todel eq $local_ins_aa) {
-
-		    $pHGVS = 'p.=';
-		    $func  = 'coding-synon';
-		    return ( $pHGVS, $func );
-
-		}
-
-		$func = 'cds-indel';
-
-		my ($local_pP_L, $local_pP_R, $local_aa_L, $local_aa_R, $local_toins_aa);
-		if ($local_todel =~ /^$local_ins_aa/) { # deletion is longer
-		    $local_pP_L = $pP_L + $local_ins_aalen;
-		    $local_pP_R = $pP_R - 1;
-		    $local_aa_L = get_aa($$self{codonseq}, $query_tid, $local_pP_L);
-		    if ($local_pP_L == $local_pP_R) {
-			$pHGVS = 'p.'.$local_aa_L.$local_pP_L.'del';
-		    }
-		    else {
-			$local_aa_R = get_aa($$self{codonseq}, $query_tid, $local_pP_R);
-			$pHGVS = 'p.'.$local_aa_L.$local_pP_L.'_'.$local_aa_R.$local_pP_R.'del';
-		    }
-		}
-		elsif ($local_todel =~ /$local_ins_aa$/) {
-		    $local_pP_R = $pP_R - 1 - $local_ins_aalen;
-		    $local_aa_R = get_aa($$self{codonseq}, $query_tid, $local_pP_R);
-		    if ($local_pP_R == $pP_L) {
-			$pHGVS = 'p.'.$aa_L.$pP_L.'del';
-		    }
-		    else {
-			$pHGVS = 'p.'.$aa_L.$pP_L.'_'.$local_aa_R.$local_pP_R.'del';
-		    }
-		}
-		elsif ($local_ins_aa =~ /^$local_todel/) { # insertion is longer
-		    $local_pP_L = $pP_R - 1;
-		    $local_toins_aa = $'; # $' post match
-		    $local_aa_L = get_aa($$self{codonseq}, $query_tid, $local_pP_L);
-		    
-		    $pHGVS = 'p.'.$local_aa_L.$local_pP_L.'_'.$aa_R.$pP_R.'ins'.$local_toins_aa;
-		}
-		elsif ($local_ins_aa =~ /$local_todel$/) {
-		    $local_pP_R = $pP_L + 1;
-		    $local_toins_aa = $`; # $` prematch
-		    $local_aa_R = get_aa($$self{codonseq}, $query_tid, $local_pP_R);
-
-		    $pHGVS = 'p.'.$aa_L.$pP_L.'_'.$local_aa_R.$local_pP_R.'ins'.$local_toins_aa;
-		}
-		else { # delins
-		    $local_pP_R = $pP_R - 1;
-		    $local_aa_R = get_aa($$self{codonseq}, $query_tid, $local_pP_R);
-
-		    $pHGVS = 'p.'.$aa_L.$pP_L.'_'.$local_aa_R.$local_pP_R.'delins'.$ins_aa;
-		}
-	    }
-	}
-	else { # $aa_R ne '*'
-	    $func  = 'stop-gain';
-	    if ($pP_L == $pP_R) {
-		if (length($ins_aa) < 4) {
-		    $pHGVS = 'p.'.$aa_L.$pP_L.$ins_aa;
-		}
-		else {
-		    $pHGVS = 'p.'.$aa_L.$pP_L.'delins'.$ins_aa;
-		}
+	    elsif ($trAnnoEnt->{exin} =~ /^IVS(\d+)/) {
+		$trAnnoEnt->{genepartIndex} = $1;
+		$trAnnoEnt->{intronIndex} = $1;
 	    }
 	    else {
-		$pHGVS = 'p.'.$aa_L.$pP_L.'_'.$aa_R.$pP_R.'delins'.$ins_aa;
+		$trAnnoEnt->{genepartIndex} = 0;
 	    }
+        }
+        elsif ( $trAnnoEnt->{ei_Begin} =~ /^IVS/ 
+            and $trAnnoEnt->{ei_Begin} eq $trAnnoEnt->{ei_End} )
+        { # span splice or interior intron
+	    $genepartSO = 'span'; # need to discuss? whether to use interior
+            $trAnnoEnt->{r} =
+              ($strd)
+              ? $trAnnoEnt->{r_Begin} . '-' . $trAnnoEnt->{r_End}
+              : $trAnnoEnt->{r_End} . '-' . $trAnnoEnt->{r_Begin};
+            $trAnnoEnt->{exin}          = $trAnnoEnt->{ei_Begin};
+            $trAnnoEnt->{genepartIndex} = $1 if ($trAnnoEnt->{ei_Begin} =~ /(\d+)/);
+            $trAnnoEnt->{intronIndex}   = $trAnnoEnt->{genepartIndex};
+        }
+	else { # non-equal exon intron number or UTR/CDS span
+	    $genepartSO = 'span';
+            $trAnnoEnt->{r} =
+              ($strd)
+              ? $trAnnoEnt->{r_Begin} . '-' . $trAnnoEnt->{r_End}
+              : $trAnnoEnt->{r_End} . '-' . $trAnnoEnt->{r_Begin};
+	    if ($trAnnoEnt->{ei_Begin} eq $trAnnoEnt->{ei_End}) {
+		$trAnnoEnt->{exin} = $trAnnoEnt->{ei_Begin};
+                $trAnnoEnt->{genepartIndex} = $1
+                  if ( $trAnnoEnt->{ei_Begin} =~ /EX(\d+)/ );
+		$trAnnoEnt->{exonIndex} = $trAnnoEnt->{genepartIndex};
+	    }
+	    else { # for same index exon intron give this index
+                $trAnnoEnt->{exin} =
+                  ($strd)
+                  ? $trAnnoEnt->{ei_Begin} . '-' . $trAnnoEnt->{ei_End}
+                  : $trAnnoEnt->{ei_End} . '-' . $trAnnoEnt->{ei_Begin};
+
+                if ( $trAnnoEnt->{exin} =~ /(\d+)\D+(\d+)/ and $1 eq $2 ) {
+                    $trAnnoEnt->{genepartIndex} = $1;
+                }
+	    }
+	}
+
+        confess "Error: unknown genepartSO [$genepartSO]."
+          if ( !exists $SO2Name{$genepartSO} );
+
+        $trAnnoEnt->{genepart} = $SO2Name{$genepartSO};
+        $trAnnoEnt->{genepartSO} = ( $genepartSO =~ /^SO:/ ) ? $genepartSO : "";
+        $trAnnoEnt->{genepartIndex} = '.'
+          if ( !exists $trAnnoEnt->{genepartIndex} );
+        $trAnnoEnt->{exonIndex} = '.' if ( !exists $trAnnoEnt->{exonIndex} );
+        $trAnnoEnt->{intronIndex} = '.'
+          if ( !exists $trAnnoEnt->{intronIndex} );
+
+        # change annotation-fail 's other value to empty?
+
+        # uniform rnaBegin end and protBegin end
+        $trAnnoEnt->{rnaBegin} =
+          ( $trAnnoEnt->{rnaBegin} =~ /^\+/ ) ? "" : $trAnnoEnt->{rnaBegin};
+        $trAnnoEnt->{rnaEnd} =
+          ( $trAnnoEnt->{rnaEnd} =~ /^\+/ ) ? "" : $trAnnoEnt->{rnaEnd};
+        $trAnnoEnt->{protBegin} =
+          ( !exists $trAnnoEnt->{protBegin} or $trAnnoEnt->{protBegin} eq '0' ) ? "" : $trAnnoEnt->{protBegin};
+        $trAnnoEnt->{protEnd} =
+          ( !exists $trAnnoEnt->{protEnd} or $trAnnoEnt->{protEnd} eq '0' ) ? "" : $trAnnoEnt->{protEnd};
+
+	$trAnnoEnt->{func} = 'unknown' if (!exists $trAnnoEnt->{func});
+        # uniform function group
+        confess "Error: unknown func code [$trAnnoEnt->{func}]."
+          if ( !exists $func2SO{ $trAnnoEnt->{func} } );
+        $trAnnoEnt->{funcSO}     = $func2SO{ $trAnnoEnt->{func} };
+        $trAnnoEnt->{funcSOname} = $SO2Name{ $trAnnoEnt->{funcSO} };
+        $trAnnoEnt->{funcSO} =
+          ( $trAnnoEnt->{funcSO} =~ /^SO:/ ) ? $trAnnoEnt->{funcSO} : "";
+
+	
+	# add additional resource
+	if (exists $trAnnoEnt->{prot} and $trAnnoEnt->{prot} ne "") {
+            $trAnnoEnt->{protBegin} =
+              ( $trAnnoEnt->{protBegin} eq '0' ) ? "" : $trAnnoEnt->{protBegin};
+            $trAnnoEnt->{protEnd} =
+              ( $trAnnoEnt->{protEnd} eq '0' ) ? "" : $trAnnoEnt->{protEnd};
+	    if ($trAnnoEnt->{protBegin} ne "" and $trAnnoEnt->{protEnd} ne "") {
+		if (exists $self->{pfam}) {
+		    my ($pb, $pe) = ($trAnnoEnt->{protBegin}, $trAnnoEnt->{protEnd});
+		    if ($pb > $pe) {
+			my $tmp = $pb;
+			$pb = $pe;
+			$pe = $tmp;
+		    }
+                    ( $trAnnoEnt->{pfamId}, $trAnnoEnt->{pfamName} ) =
+                      $self->{pfam_h}->getPfam( $trAnnoEnt->{prot}, $pb, $pe );
+		}
+	    }
+            if ( exists $trAnnoEnt->{p}
+                and $trAnnoEnt->{p} =~ /^p.[A-Z](\d+)([A-Z])$/ )
+            {
+                if ( exists $self->{prediction} ) {
+                    my $rpred =
+                      $self->{prediction_h}->getPredScore( $trAnnoEnt->{prot}, $1, $2 );
+                    if ( exists $rpred->{sift} ) {
+                        $trAnnoEnt->{siftPred}  = $rpred->{sift}->[0];
+                        $trAnnoEnt->{siftScore} = $rpred->{sift}->[1];
+                    }
+                    if ( exists $rpred->{polyphen2_humdiv} ) {
+                        $trAnnoEnt->{pp2divPred} =
+                          $rpred->{polyphen2_humdiv}->[0];
+                        $trAnnoEnt->{pp2divScore} =
+                          $rpred->{polyphen2_humdiv}->[1];
+                    }
+                    if ( exists $rpred->{polyphen2_humvar} ) {
+                        $trAnnoEnt->{pp2varPred} =
+                          $rpred->{polyphen2_humvar}->[0];
+                        $trAnnoEnt->{pp2varScore} =
+                          $rpred->{polyphen2_humvar}->[1];
+                    }
+
+                }
+            }
 	}
     }
-    else {
-	if ($todel_aa eq $ins_aa) { # frameshift or delins 
 
-	    $pHGVS = ($fsOpt) ? 'p.' . $aa_R . $pP_R . 'fs*?' : 'p.=';
-	    $func  = ($fsOpt) ? 'frameshift' : 'coding-synon';
-
-	}
-	elsif ($pP_L == 1 and substr($todel_aa, 0, 3) ne substr($ins_aa, 0, 3)) {
-
-	    $pHGVS = 'p.0?';
-	    $func  = 'init-loss';
-
-	}
-	else {
-	    if ($pP_L == $pP_R) {
-		if (length($ins_aa) < 4) {
-		    $pHGVS = 'p.' . $aa_L . $pP_L . $ins_aa;
-		}
-		else {
-		    $pHGVS = 'p.' . $aa_L . $pP_L . 'delins' . $ins_aa;
-		}
-	    }
-	    else {
-		$pHGVS = 'p.' . $aa_L . $pP_L . '_' . $aa_R . $pP_R . 'delins' . $ins_aa;
-	    }
-	    $pHGVS .= 'fs*?' if ($fsOpt);
-
-	    $func =
-	      ($fsOpt) ? 'frameshift'
-	      : ( ( $cP_R + 3 > length( $$self{codonseq}{$query_tid} ) )
-		? 'stop-loss'
-		: 'cds-indel' );
-
-	}
-    }
-    return ( $pHGVS, $func );
+    return $annoEnt;
 }
 
-=head2 get_aaInsInfo
+=head2 getTrChange
 
-    About   : get pHGVS and function code from coding insertion
-    Usage   : my ($pHGVS, $func) = $beda->get_aaInsInfo($query_tid, $cP, $t_alt, $tp);
-    Args    : query_tid is the tid for query refseq codon, [no -N tail]
-	      cP is the anchored cds position
-	      t_alt is the strand specific insertion string
-	      tp gives the insert position of t_alt:
-	      -1 for inserting before cP
-	       1 for inserting after cP
-    Returns : see pairanno()
+    About   : Calculate the transcript changes, based on TrPostition
+    Usage   : $beda->getTrChange($annoEnt);
+    Returns : assign the following tags in annoEnt
+		trRef, prot, c, p, cc, polar, func
 
 =cut
-sub get_aaInsInfo {
-    my ($self, $query_tid, $cP, $t_alt, $tp) = @_;
-    my ($pHGVS, $func) = ('.', '.');
+sub getTrChange {
+    my ($self, $annoEnt) = @_;
 
-    my ($codon, $aa, $pol, $frame) = get_codon($$self{codonseq}, $query_tid, $cP);
-    if ($aa eq '') {
-	return ( $pHGVS, 'unknown' );
-    }
-
-    my $pP = aaNum($cP);
-    my $pP_pre = $pP - 1;
-    my $pP_nex = $pP + 1;
-
-    return ( $pHGVS, 'utr-5') if ( $tp < 0 and $frame == 0 and $pP_pre < 0 ); # insert before init codon
-    return ( $pHGVS, 'utr-3') if ( $tp > 0 and $frame == 2 and ( $cP + 3 ) > length( $$self{codonseq}{$query_tid} ) ); # insert after stop codon
-
-    my ($aa_pre, $aa_nex);
-    $aa_pre = get_aa($$self{codonseq}, $query_tid, $pP_pre);
-    $aa_pre = '?' if ($aa_pre eq '');
-    $aa_nex = get_aa($$self{codonseq}, $query_tid, $pP_nex);
-    $aa_nex = '?' if ($aa_nex eq '');
-
-    if (($tp < 0 and $frame == 0) or ($tp > 0 and $frame == 2)) {
-	my $ret_aa = get_aaseq($t_alt);
-
-	# insert before anchor aa, transfer to insert after the previous aa.
-	if ($tp < 0 and $frame == 0) { 
-	    $aa = $aa_pre;
-	    $aa_nex = $aa;
-	    $pP = $pP_pre;
-	    $pP_nex = $pP;
-	}
-
-	if ($ret_aa =~ /\*/) {
-
-	    $pHGVS = 'p.'. $aa . $pP . '_' . $aa_nex. $pP_nex . 'ins' . $` .'*';    # $` prematch
-	    $func  = 'stop-gain';
-
-	}
-	elsif ( length($t_alt) % 3 != 0 ) {
-
-	    $pHGVS = 'p.'. $aa_nex. $pP_nex. 'fs*?';
-	    $func  = 'frameshift';
-
-	}
-	else {
-
-	    $pHGVS = 'p.'. $aa . $pP . '_' . $aa_nex. $pP_nex . 'ins' . $ret_aa;
-	    $func  = 'cds-indel';
-
-	}
-    }
-    else { # insert into anchor aa : p.Arg21delinsLeuTyr*, p.Arg21fs*?
-	if ($tp < 0) {
-	    $frame -= 1;  # transfer to insert after the previous frame
-	}
-
-	my $new_codon = $codon;
-	substr($new_codon, ($frame+1), 0, $t_alt); # get alternate codon seq
-	my $fsOpt = (length($new_codon) % 3 == 0) ? 0 : 1;
-
-	my $new_aa = get_aaseq($new_codon);
-
-	if ($pP == 1 and ($fsOpt or $new_aa !~ /$aa/)) {
-
-	    $pHGVS = 'p.0?';
-	    $func  = 'init-loss';
-
-	}
-	elsif ($pP == 1 and $new_aa =~ /$aa$/) { # non-frameshift with inition code tail
-
-	    $pHGVS = 'p.=';
-	    $func  = 'coding-synon';
-
-	}
-	elsif ($pP == 1 and $new_aa =~ /$aa/) { # non-frameshift with insert a inition code
-	    my $ins_aa = $';			    # $' is the post match, actually the insertion
-
-            $pHGVS = 'p.' . $aa . $pP . '_' . $aa_nex . $pP_nex . 'ins' . $ins_aa;
-	    $func  = 'cds-indel';
-
-	}
-	elsif ($new_aa !~ /\*/ and $fsOpt) { # non-stop-gain  with frameshift
-
-	    $pHGVS = 'p.'.$aa.$pP.'fs*?';
-	    $func = 'frameshift';
-
-	}
-	else {
-
-	    if ($new_aa !~ /\*/) { # non-frameshift, non-stop-gain
-
-		if ($new_aa !~ /^$aa/ and $new_aa !~ /$aa$/) {
-
-		    $pHGVS = 'p.' . $aa . $pP . 'delins' . $new_aa;
-		    $func  = ($aa eq '*') ? 'stop-loss' : 'cds-indel';
-
-		}
-		elsif ($new_aa =~ /^$aa/ ) {
-
-		    $pHGVS = 'p.' . $aa . $pP . '_' . $aa_nex . $pP_nex . 'ins' . $'; # $' is the actually post insertion
-		    $func  = 'cds-indel';
-
-		}
-		else {
-
-		    $new_aa =~ /$aa$/;
-		    $pHGVS  = 'p.' . $aa_pre . $pP_pre . '_' . $aa . $pP . 'ins' . $`; # $` is the actually prefix insertion
-		    $func   = 'cds-indel';
-
-		}
-
-	    }
-	    else { # $new_aa =~ /\*/ gain stop codon
-
-		if ($new_aa =~ /^\*/ and $aa eq '*') {
-
-		    $pHGVS = 'p.=';
-		    $func  = 'coding-synon';
-
-		}  
-		elsif ($aa eq '*') {
-
-		    $pHGVS = 'p.' . $aa_pre . $pP_pre . '_' . $aa . $pP . 'ins' . $`;  # $` prematch
-		    $func  = 'cds-indel';
-
-		}
-		else {
-
-		    $new_aa =~ /\*/;
-		    $pHGVS = 'p.' . $aa . $pP . 'delins' . $`;			       # $` prematch
-		    $func  = 'stop-gain';
-
-		}
-	    }
-	}
-    }
-
-    if ( ( $cP + 3 ) <= length( $$self{codonseq}{$query_tid} )
-        and $aa eq '*' )
+    # do nothing if not hit any transcript
+    if ( !exists $annoEnt->{trInfo}
+        or 0 == ( scalar keys %{ $annoEnt->{trInfo} } ) )
     {
-        $func = 'abnormal-inseq-stop';
+        return;
     }
 
-    return ( $pHGVS, $func );
-}
+    my $trInfodb = $self->{trInfodb};
+    my @tids = sort keys %{$annoEnt->{trInfo}};
 
-
-# get pHGVS for aa change.
-sub get_aaHGVS {
-    my ($aa, $new_aa, $func, $cP) = @_;
-    return '.' if ($aa eq '' or $new_aa eq '' or $func eq '');
-    if ($func eq 'misstart') {
-	return 'p.0?';
-    }
-    elsif ($func eq 'coding-synon') {
-	return 'p.='; # HGVS suggest to not to give this kind of changing in pHGVS.
+    my %trSeqs = ();
+    if (exists $self->{batch}) {
+	@trSeqs{@tids} = map {$_->{seq}} @$trInfodb{@tids};
     }
     else {
-	my $codon_num = aaNum($cP);
-	return 'p.'.$aa.$codon_num.$new_aa;
-    }
-}
-
-# get aa char by aa position
-sub get_aa {
-    my ($rseq, $qtid, $aa_num) = @_;
-    my $start = ($aa_num - 1) * 3;
-    if ($start >= (length($$rseq{$qtid}) - 2)) {
-	return "";
-    }
-    else {
-	my $codon = uc(substr($$rseq{$qtid}, $start, 3));
-	return ((!exists $Code2Pep{$codon}) ? "" : $Code2Pep{$codon});
-    }
-}
-
-sub aaNum {
-    my $cP = shift;
-    return (($cP % 3 == 0) ? ($cP / 3) : (int($cP/3)+1));
-}
-
-# get function code from aa change
-sub get_aafunc {
-    my ($self, $aa, $new_aa, $query_tid, $cP) = @_;
-    my $func = '.';
-    return $func if ($aa eq '' or $new_aa eq '');
-    if ($aa eq $new_aa) {
-	$func = 'coding-synon';
-    }
-    elsif ($cP < 4) {
-	$func = 'misstart';
-    }
-    elsif ($aa eq '*') {
-	if ($cP + 3 > (length($$self{codonseq}{$query_tid}))) {
-	    $func = 'stop-loss';
-	}
-	else {
-	    $func = 'abnormal-inseq-stop';
+	# due to a bug in samtools faidx, when meet "|" 
+	# in a fasta's header, and the id is the last id of input
+	# then it will fail to generate correct result.
+	# here we can only try to use single transcript,
+	# It may become a little slow for annotation
+	#my $rtrs = fetchseq($self->{tr}, \@tids);
+	#%trSeqs = %$rtrs;
+	
+	foreach my $t (@tids) {
+	    $trSeqs{$t} = fetchseq($self->{tr}, $t);
 	}
     }
-    elsif ($new_aa eq '*') {
-	$func = 'nonsense';
-    }
-    else {
-	$func = 'missense';
-    }
-    return $func;
-}
 
-=head2 get_codon
+#    print STDERR Data::Dumper->Dump( [\@tids, \%trSeqs], ["tids", "trSeqs"] );
 
-    About   : Get codon and its frame info
-    Usage   : my ($codon, $aa, $pol, $frame) = get_codon($rseqs, $tid, $cpos);
-    Args    : a hash ref of coding sequences, transcript id, and the cds postition.
-    Returns : codon string, amino-acid, polar and the cpos's frame.
+    foreach my $tid (@tids) {
+	my $trdbEnt = $self->{trInfodb}->{$tid};
+	my $trannoEnt = $annoEnt->{trInfo}->{$tid};
 
-=cut
-sub get_codon {
-    my ($rseq, $tid, $cpos) = @_;
-    my $frame = ($cpos - 1) % 3; # 0, 1, 2
-    if (!exists $$rseq{$tid}) {
-	return ("", "", "", $frame);
-    }
-    my $codon = uc(substr($$rseq{$tid}, ($cpos - $frame - 1), 3));
-    my $aa = (exists $Code2Pep{$codon}) ? $Code2Pep{$codon} : "";
-    my $pol = (exists $Polar{$aa}) ? $Polar{$aa} : "";
-    return ($codon, $aa, $pol, $frame);
-}
+	my ( $unify_p, $unify_r, $unify_a, $unify_rl, $unify_al ) =
+	  $annoEnt->{var}->getUnifiedVar( $trannoEnt->{strd} );
 
-=head2 get_flanks
+	# 1. check if annotation-fail
+        if (   $trannoEnt->{genepartSO} eq 'annotation-fail'
+            or $trannoEnt->{rnaBegin} eq '?'
+            or $trannoEnt->{rnaEnd} eq '?' )
+        {
+            $trannoEnt->{func} = 'annotation-fail';
+            next;
+        }
 
-    About   : get region string for flanks, ready to fetchseq in batch mode.
-    Usage   : my $flank = get_flanks($chr, $sta, $len);
-    Returns : a hash ref like this:
-		{ l => 'chr20:123-124', r => 'chr20:125-126' } 
+	my $cdsOpt = (exists $trdbEnt->{prot}) ? 1 : 0;
+	my $strd   = ($trannoEnt->{strd} eq '+') ? 1 : 0;
 
-=cut
-sub get_flanks {
-    my ($chr, $sta, $len) = @_;
-    my %flank = (
-	    l => $chr . ':' . ( $sta - 2 ) . '-' . ( $sta - 1 ),
-	    r => $chr . ':' . ( $sta + $len ) . '-' . ( $sta + $len + 1 )
-    );
-    return \%flank;
-}
+	# fix the trRefComp when ended in 3'downstream
+
+	# debug
+#	print STDERR Data::Dumper->Dump( [$tid, $trannoEnt, $unify_r, $trSeqs{$tid}, $strd], ["tid", "trannoEnt", "unify_r", "trSeq", "strd"] );
+
+	my $trRef = getTrRef($trannoEnt, $unify_r, $trSeqs{$tid}, $strd);
+	$trannoEnt->{trRef} = $trRef;
+	my $trAlt = $trannoEnt->{trAlt};
+
+	$trannoEnt->{prot} = $trdbEnt->{prot} if ($cdsOpt);
+	my $f = ($cdsOpt) ? 'c.' : 'n.';
+	my $chgvs_5 = ($cdsOpt) ? $trannoEnt->{cdsBegin} : $trannoEnt->{rnaBegin};
+	my $chgvs_3 = ($cdsOpt) ? $trannoEnt->{cdsEnd}   : $trannoEnt->{rnaEnd};
+
+	# [ aaPos, codon, aa, polar, frame ]
+        my @cInfo5 =
+          getCodonPos( $trdbEnt, $trSeqs{$tid}, $trannoEnt->{rnaBegin} );
+        my @cInfo3 =
+          getCodonPos( $trdbEnt, $trSeqs{$tid}, $trannoEnt->{rnaEnd} );
+
+	# we just use position comparison to show transcript ref
+	# stat, instead of sm in var, because there may exists
+	# indel difference bewteen refgenome and refSeq
+	my $cmpPos = $self->cmpPos( $chgvs_5, $chgvs_3 );
 
 
-=head2 getTrPosition
+	# 2. check if no-call
+	if ( $trAlt eq '?' ) {
+	    $trannoEnt->{func} = 'unknown-no-call';
+	    if ($cmpPos == 0) { # 1 bp
+		$trannoEnt->{c} = $f . $chgvs_5 . $trRef . '>?';
+		if ($cInfo5[0] > 0) {
+                    my $aaOut = $cInfo5[2];
+                    $trannoEnt->{p} =
+                      'p.' . $aaOut . $cInfo5[0] . '?';
+		    $trannoEnt->{cc} = $cInfo5[1].'=>?';
+		    $trannoEnt->{polar} = $cInfo5[3].'=>?';
+		    $trannoEnt->{protBegin} = $cInfo5[0];
+		    $trannoEnt->{protEnd} = $cInfo5[0];
+		}
+	    }
+	    elsif ($cmpPos == 1) { # multiple bp
+		$trannoEnt->{c} = $f . $chgvs_5 . '_' . $chgvs_3 . 'del'
+		    . $trRef . 'ins?';
+		if ($cInfo5[0] > 0 and $cInfo3[0] > 0) {
+		    if ($cInfo5[0] == $cInfo3[0]) {
+			my $aaOut = $cInfo5[2];
+			$trannoEnt->{p} =
+			  'p.' . $aaOut . $cInfo5[0] . '?';
+			$trannoEnt->{cc} = $cInfo5[1].'=>?';
+			$trannoEnt->{polar} = $cInfo5[3].'=>?';
+			$trannoEnt->{protBegin} = $cInfo5[0];
+			$trannoEnt->{protEnd} = $cInfo5[0];
+		    }
+		    else {
+			my $aa5 = $cInfo5[2];
+			my $aa3 = $cInfo3[2];
 
-    About   : Assign the BedAnno::Anno obj's trInfo with affected regions
-    Usage   : my $AEIndex = $annoEnt->getTrPosition($rannodb, $AEIndex);
-    Args    : $rannodb is a BedAnno::Anno object created by varanno(),
-	      $AEIndex is the current index for annodb searching.
-    Returns : A new AEIndex for next query.
-    Notes   : $AEIndex is used for same chr batch mode.
+                        $trannoEnt->{p} = 'p.'
+                          . $aa5
+                          . $cInfo5[0] . '_'
+                          . $aa3
+                          . $cInfo3[0]
+                          . 'delins?';
+			
+			$trannoEnt->{protBegin} = $cInfo5[0];
+			$trannoEnt->{protEnd} = $cInfo3[0];
+		    }
+		}
+	    }
+	    else { # ins : reverse the positions
+		$trannoEnt->{c} = $f . $chgvs_3 . '_' . $chgvs_5 . 'ins?';
+		if ($cInfo5[0] > 0 and $cInfo3[0] > 0) {
+		    if ($cInfo5[0] == $cInfo3[0]) {
+			my $aaOut = $cInfo5[2];
+			$trannoEnt->{p} =
+			  'p.' . $aaOut . $cInfo5[0] . 'delins?';
+			$trannoEnt->{protBegin} = $cInfo5[0];
+			$trannoEnt->{protEnd} = $cInfo5[0];
+		    }
+		    else {
+			my $aa5 = $cInfo5[2];
+			my $aa3 = $cInfo3[2];
 
-=cut
-sub getTrPosition {
-    my ($annoEnt, $rannodb, $aeIndex) = @_;
+                        $trannoEnt->{p} = 'p.'
+                          . $aa3
+                          . $cInfo3[0] . '_'
+                          . $aa5
+                          . $cInfo5[0]
+                          . 'ins?';
+			
+			$trannoEnt->{protBegin} = $cInfo5[0];
+			$trannoEnt->{protEnd} = $cInfo3[0];
+		    }
+		}
+	    }
 
-    my $var = $annoEnt->{var};
-    # gather the covered entries
-    my $new_aeIndex;
-
-    for (my $k = $aeIndex; $k < @$rannodb; $k ++) {
-	if ($$rannodb[$k]{sto} < $var->{pos}) { # not reach var
-	    $aeIndex ++;
 	    next;
 	}
-	elsif ( $$rannodb[$k]{sta} > $var->{end} ) { # past var
-	    last;
-	}
-	else { # covered by var
-        {
-	    $new_aeIndex = $k if ($$rannodb[$k]{sta} <= $var->{pos}
-		and $var->{pos} <= $$rannodb[$k]{sto} );
-	    if (!exists $$rannodb[$k]{detail}) { # parse anno db
-		$$rannodb[$k]{detail} = assign_detail($$rannodb[$k]);
-	    }
 
-	    foreach my $tid (keys %{$$rannodb[$k]{detail}}) {
-		my $rtidDetail = $$rannodb[$k]{detail}{$tid};
-                my ( $unify_p, $unify_r, $unify_a, $unify_rl, $unify_al ) =
-                  $var->getUnifiedVar( $$rtidDetail{strand} );
-                next
-                  if ( $unify_p > $$rannodb[$k]{sto}
-                    or ( $unify_p + $unify_rl ) < $$rannodb[$k]{sta} );
-                my $total_left_ofst =
-                  $$rtidDetail{offset} + ( $unify_p - $$rannodb[$k]{sta} );
-                my $total_right_rofst = $total_left_ofst + $unify_rl;
-
-                if (   !exists $annoEnt->{trInfo}
-                    or !exists $annoEnt->{trInfo}->{$tid}
-                    or !exists $annoEnt->{trInfo}->{$tid}->{trAlt} )
-                {
-                    $annoEnt->{trInfo}->{$tid}->{trAlt} =
-                      (       $unify_a =~ /^[ACGTN]+$/
-                          and $rtidDetail->{strand} eq '-' )
-                      ? rev_comp($unify_al)
-                      : $unify_al;
-                }
-                if (   !exists $annoEnt->{trInfo}
-                    or !exists $annoEnt->{trInfo}->{$tid} )
-                {    # assign left rna positions
-                    $annoEnt->cal_hgvs_pos(
-                        tid       => $tid,
-                        tidDetail => $rtidDetail,
-                        offset    => $total_left_ofst,
-                        LR        => 1,
-                    );
-                }
-		# assign right rna positions
-	    }
-        }
-    }
-    $new_aeIndex ||= $aeIndex;
-
-    
-
-    return $new_aeIndex;
-}
-
-=head2 cal_hgvs_pos
-
-    About   : calculate nDot, cDot HGVS position, depend on given offset,
-	      assign trAlt string and nDot HGVS and cDot HGVS positions.
-    Usage   : $annoEnt->cal_hgvs_pos(
-		    offset => $offset, 
-		    tid	   => $tid,
-		    LR	   => $lr,
-		    tidDetail => $rh_tidDetail,
-	      );
-    Args    : ofst is total offset to the start(left) of currunt annoblk,
-	      tid is the transcript id for the detail entry
-              tidDetail is the currunt annoblk detail
-              LR indicate this offset is left or right pos,
-		1 for left and assign sta group,
-		0 for right and assign end group.
-    Returns : nDot is the transcript position, n.HGVS named position.
-              cDot is the coding region based position, c.HGVS named.
-              (can be empty if not available)
-    Notes   : For position mirror on transcript, there are 2 other cases 
-              than normal case:
-              1. annotation fail, which can not be annotated in the region
-                 of it except for its promoter region.
-              2. block with length changing mismatches, or long substitution
-                 mismatch, which contain the following three cases:
-                 
-                 a. insertion (I) on refSeq
-
-                        +-------+---+--------+  refgenome
-                         \       \ /        /
-                          +-------+--------+    refSeq
-
-                 b. deletion (D) on refSeq 
-
-                          +-------+--------+    refgenome
-                         /       / \        \
-                        +-------+---+--------+  refSeq
-
-                 c. delins (DI) on refSeq
-
-                        +-------+---+--------+  refgenome
-                        |       |  /        /
-                        +-------+-+--------+    refSeq
-
-                 Insertion will have an reversed start/end position on refSeq,
-		 due to the 1-based position description system.
-		 
-		 Any position located in a non-zero length refgenome mismatch
-		 block have to extend to total region of mismatched block,
-		 and assign pseudo_ref, and pseudo_alt
-
-
-=cut
-sub cal_hgvs_pos {
-    my $annoEnt = shift;
-    my %cal_args = @_;
-    
-    my ( $ofst, $tid, $rtidDetail, $lr ) =
-      @cal_args{qw(offset tid tidDetail LR)};
-    my ( $nDot, $cDot ) = ( '', '' );
-    my $strd = ($$rtidDetail{strand} eq '+') ? 1 : 0;
-    my $trAlt = $annoEnt->{trInfo}->{$tid}->{trAlt};
-    my $lofst = $ofst;
-    my $rofst = $$rtidDetail{wlen} - $ofst - 1;
-    if ($lr) { # offset for left 
-        if ($lofst < 0) {
-	    if ($strd) { # outside 5'promoter region
-
-		# 5'promoter is always available
-		$nDot = $$rtidDetail{nsta} + $lofst;
-		if ($$rtidDetail{csta} =~ /^(\S+)\-u(\d+)/) {
-                    $cDot = $1 . '-u' . ( $2 - $lofst );
-		}
-	    }
-	    else { # outside transcript region into 3'downstream
-		$nDot = '+'.(0-$lofst);
-		if ($$rtidDetail{csta} =~ /^\*?\d+$/) {
-                    $cDot = $$rtidDetail{csta} . '+d' . ( 0 - $lofst );
-		}
-	    }
-        }
-	elsif ($lofst > $$rtidDetail{wlen}) { # not proper called
-	    confess "Error: exceed the whole length [$lofst>$$rtidDetail{wlen}]";
-	}
-	else { # 0 <= $lofst <= $$rtidDetail{wlen}
-        
-	    # 1. check if annotation-fail
-	    if ($rtidDetail->{gpSO} eq 'annotation-fail') {
-		( $nDot, $cDot ) = ( '?', '?' );
-	    }
-	    # 2. check if a mismatch block (only exon have this)
-	    elsif ( $rtidDetail->{mismatch} ne "" ) {
-		# for each kind of mismatch block,
-		# hit the left edge of var, the refSeq ref will
-		# contain start from the start of the mismatch
-		# block, case I in database already has
-		# a reversed coordinate between left and right.
-		# transcript-alt string shoule be assigned to 
-		# this tid
-		$nDot = $rtidDetail->{nsta};
-		$cDot = $rtidDetail->{csta};
-		if ($lofst>0) {
-		    # mismatch info record the transcript-stranded
-		    # reference sequence
-                    my ( $mType, $mStart, $mEnd, $strand_ref ) =
-                      split( /,/, $rtidDetail->{mismatch} );
-		    
-		    if ($strd) { # cut left
-			$trAlt = substr($strand_ref, 0, $lofst).$trAlt;
-		    }
-		    else { # cut right
-			$trAlt .= substr($strand_ref, -$lofst, $lofst);
-		    }
-		}
-	    }
-	    # 3. check if hit a normal block's right edge
-	    elsif ( $lofst == $$rtidDetail{wlen} ) {
-		delete $annoEnt->{trInfo}->{$tid};
-		return;
-	    }
-	    # 4. check if a promoter
-	    elsif ($rtidDetail->{blka} eq 'PROM') {
-                $nDot =
-                    ($strd)
-                  ? ( $rtidDetail->{nsta} + $lofst )
-                  : ( $rtidDetail->{nsta} - $lofst );
-		if ($rtidDetail->{csta} =~ /^(\S+)\-u(\d+)$/) {
-                    $cDot =
-                        ($strd)
-                      ? ( $1 . '-u' . ( $2 - $lofst ) )
-                      : ( $1 . '-u' . ( $2 + $lofst ) );
-		}
-	    }
-	    # 5. check if an exon
-	    elsif ($rtidDetail->{exin} =~ /EX/) {
-                $nDot =
-                    ($strd)
-                  ? ( $rtidDetail->{nsta} + $lofst )
-                  : ( $rtidDetail->{nsta} - $lofst );
-		if ($rtidDetail->{csta} =~ /^(\*?)(\-?\d+)$/) {
-		    $cDot = ($strd) ? $1.($2 + $lofst) : $1.($2 - $lofst);
-		}
-	    }
-	    # 6. intron
-	    elsif ($rtidDetail->{exin} =~ /IVS/) {
-		my $half_length = $rtidDetail->{wlen} / 2;
-		if ($lofst > $half_length) { # drop into latter part
-                    if (   $rtidDetail->{nsto} =~ /^\d+\d+$/
-                        or $rtidDetail->{csto} =~ /^\d+\d+$/ )
-                    {
-                        confess "Error format of database, ",
-                          "intron right pos description error!\n";
-                    }
-
-		    if ($rtidDetail->{nsto} =~ /^(\d+\+?)(\-?\d+)$/) {
-                        $nDot =
-                            ($strd)
-                          ? ( $1 . ( $2 - $rofst ) )
-                          : ( $1 . ( $2 + $rofst ) );
-		    }
-		    if ($rtidDetail->{csto} =~ /^([\*\-]?\d+\+?)(\-?\d+)$/) {
-                        $cDot =
-                            ($strd)
-                          ? ( $1 . ( $2 - $rofst ) )
-                          : ( $1 . ( $2 + $rofst ) );
-		    }
-		}
-		else {
-                    if (   $rtidDetail->{nsta} =~ /^\d+\d+$/
-                        or $rtidDetail->{csta} =~ /^\d+\d+$/ )
-                    {
-                        confess "Error format of database, ",
-                          "intron left pos description error!\n";
-                    }
-
-		    if ($rtidDetail->{nsta} =~ /^(\d+\+?)(\-?\d+)$/) {
-                        $nDot =
-                            ($strd)
-                          ? ( $1 . ( $2 + $lofst ) )
-                          : ( $1 . ( $2 - $lofst ) );
-		    }
-		    if ($rtidDetail->{csta} =~ /^([\*\-]?\d+\+?)(\-?\d+)$/) {
-                        $cDot =
-                            ($strd)
-                          ? ( $1 . ( $2 + $lofst ) )
-                          : ( $1 . ( $2 - $lofst ) );
-		    }
-		}
-	    }
-	    else {
-		confess "Error: what's this? $rtidDetail->{exin}\n";
-	    }
-	}
-    }
-    else { # offset for right
-	if ($ofst > $$rtidDetail{wlen}) {
-	    if ($strd) { # outside transcript region into 3'downstream
-		$nDot = '+'.($lofst - $$rtidDetail{wlen});
-	    }
-	    else { # outside 5'promoter region
-	    }
-	}
-	elsif ($ofst < 0) { # not proper called
-	    confess "Error: right preceed the block [$lofst < 0]";
-	}
-	else { # hit in the region
-
-	    # 1. check if annotation-fail
-	    if ($rtidDetail->{gpSO} eq 'annotation-fail') {
-	    }
-	    # 2. check if a mismatch block (exon)
-	    elsif ($rtidDetail->{mismatch} ne "") {
-	    }
-	    # 3. check if the right end at the left edge of block
-	    elsif ($ofst == 0) {
-		return;
-	    }
-	    # 3. check if a promoter
-	    elsif ($rtidDetail->{blka} =~ /^PROM/) {
-	    }
-	    # 4. check if an exon
-	    elsif ($rtidDetail->{exin} =~ /EX/) {
-	    }
-	    # 5. intron
-	    else {
-	    }
-	}
-    }
-}
-
-# involke parse_annoent to assign detail information to annodb.
-sub assign_detail {
-    my $rannodb_k = shift;
-    my %detail = ();
-    foreach my $annoblk (sort keys %{$$rannodb_k{annos}}) {
-        my $offset = $$rannodb_k{annos}{$annoblk};
-        my ($tid, $ranno) = parse_annoent($annoblk);
-        $detail{$tid} = $ranno;
-        $detail{$tid}{offset} = $offset;
-    }
-    $rannodb_k->{detail} =
-      ( is_shared($rannodb_k) ) ? shared_clone( {%detail} ) : {%detail};
-    return $rannodb_k;
-}
-
-
-=head2 select_position
-
-    About   : Select the position that should be annotated 
-	      on and get pairs by transcript ids.
-    Usage   : $var = $beda->select_position($var, \%cPos);
-    Args    : var entry and cPos hash ref.
-    Returns : var with standard {sel}{std}, and possible backward compatible {sel}{bc}
-
-=cut
-sub select_position {
-    my ($self, $var, $rcPos) = @_;
-
-    $$var{sel} = {};
-    if (!exists $$var{'+'} or (!exists $$var{'+'}{p} and $$var{guess} ne 'rep')) {
-    # simple variation or same pos(strand) non-repeat variation
-    # which caused by complex delins or multiple samples
-	my $anno_sels = [];
-
-	$_ = $$var{guess};
-	if ($_ eq 'snv') { # only select pos for the case: c.123A>G
-	    if (exists $$rcPos{$$var{pos}}) {
-		foreach my $tid (sort keys %{$$rcPos{$$var{pos}}}) {
-		    push (@$anno_sels, [ $tid, $$rcPos{$$var{pos}}{$tid} ]);
-		}
-	    }
-	}
-	elsif ($_ eq 'ins') { # the pos and pos+1 are selected: c.123_124insTG
-	    $anno_sels = $self->get_cover($$var{chr}, $$var{pos}, ($$var{pos}+1));
-	}
-	elsif ($_ eq 'del' or ($_ eq 'delins' and $$var{reflen} != $$var{altlen})) {
-	    # the pos+1 and pos+reflen-1 are selected
-	    if ($$var{reflen} == 2) { # 1 bp deletion : c.123delT, c.123delTinsGAC
-		if (exists $$rcPos{($$var{pos}+1)}) {
-		    foreach my $tid (sort keys %{$$rcPos{($$var{pos}+1)}}) {
-			push (@$anno_sels, [ $tid, $$rcPos{($$var{pos}+1)}{$tid} ]);
-		    }
-		}
-	    }
-	    else { # multiple bases deletion: c.124_125delTG
-		$anno_sels = $self->get_cover(
-		    $$var{chr},
-		    ( $$var{pos} + 1 ),
-		    ( $$var{pos} + $$var{reflen} - 1 )
-		);
-	    }
-	}
-	elsif ($_ eq 'delins' and $$var{reflen} == $$var{altlen}) {
-	    # substitution case for CompleteGenomics.
-	    $anno_sels = $self->get_cover(
-		$$var{chr}, $$var{pos}, ($$var{pos} + $$var{reflen} - 1)
-	    );
-	}
-	elsif ($_ eq 'ref') {
-	    if ($$var{reflen} == 1 and exists $$rcPos{$$var{pos}}) {
-		foreach my $tid (sort keys %{$$rcPos{$$var{pos}}}) {
-		    push (@$anno_sels, [ $tid, $$rcPos{$$var{pos}}{$tid} ]);
-		}
-	    }
-	    else {
-		$anno_sels = $self->get_cover($$var{chr}, $$var{pos}, ($$var{pos} + $$var{reflen} - 1));
-	    }
-	}
-	else { $self->throw("Error: unexpected guess for normal case: $$var{guess}"); }
-
-	$$var{sel}{std} = $anno_sels;
-    }
-    elsif (exists $$var{'+'}{p}) { # strand different pos
-	my ($f_annos, $r_annos) = ([], []);
-	my @sel_std = ();
-	$_ = $$var{guess}; # modified repeat caused ambiguous
-	if ($_ eq 'ins') {
-	    $f_annos = $self->get_cover( $$var{chr}, $$var{'+'}{p},
-		( $$var{'+'}{p} + 1 ) );
-	    $r_annos = $self->get_cover( $$var{chr}, $$var{'-'}{p},
-		( $$var{'-'}{p} + 1 ) );
-	}
-	elsif ($_ eq 'del' or $_ eq 'delins') {
-	    if ($$var{'+'}{rl} == 2) { # 1bp deletion or delins : c.123delT  c.123delAinsGT
-		my $localrcp = $self->get_cPos( $$var{chr},
-		    [ ( $$var{'+'}{p} + 1 ), ( $$var{'-'}{p} + 1 ) ]
-		);
-		if ( exists $$localrcp{ ( $$var{'+'}{p} + 1 ) } ) {
-		    foreach my $tid (
-			sort
-			keys %{ $$localrcp{ ( $$var{'+'}{p} + 1 ) } } )
-		    {
-			push(
-			    @$f_annos,
-			    [
-				$tid,
-				$$localrcp{ ( $$var{'+'}{p} + 1 ) }{$tid}
-			    ]
-			  );
-		    }
-		}
-		if ( exists $$localrcp{ ( $$var{'-'}{p} + 1 ) } ) {
-		    foreach my $tid (
-			sort
-			keys %{ $$localrcp{ ( $$var{'-'}{p} + 1 ) } } )
-		    {
-			push(
-			    @$r_annos,
-			    [
-				$tid,
-				$$localrcp{ ( $$var{'-'}{p} + 1 ) }{$tid}
-			    ]
-			  );
-		    }
-		}
-	    }
-	    else {
-		$f_annos = $self->get_cover(
-		    $$var{chr},
-		    ( $$var{'+'}{p} + 1 ),
-		    ( $$var{'+'}{p} + $$var{'+'}{rl} - 1 )
-		);
-		$r_annos = $self->get_cover(
-		    $$var{chr},
-		    ( $$var{'-'}{p} + 1 ),
-		    ( $$var{'-'}{p} + $$var{'-'}{rl} - 1 )
-		);
-	    }
-	}
-	else { $self->throw("Error: unexpected guess for different fr pos $$var{guess}"); }
-	
-	foreach my $f_cpp (@$f_annos) {
-	    push (@sel_std, $f_cpp) if ($$f_cpp[1]{strd} eq '+');
-	}
-	foreach my $r_cpp (@$r_annos) {
-	    push (@sel_std, $r_cpp) if ($$r_cpp[1]{strd} eq '-');
-	}
-
-	$$var{sel}{std} = [@sel_std];
-    }
-    else {  # repeat
-	my $whole_ref_annos = $self->get_cover( $$var{chr}, ($$var{pos}+1), ($$var{pos}+$$var{reflen}-1) );
-
-	if ($$var{ref_cn} == 1 and $$var{alt_cn} == 2 and $$var{replen} > 1) { # for c.123_125dupGCA
-	    my ($left_annos, $right_annos);
-	    $left_annos = $self->get_cover(
-		$$var{chr},
-		($$var{pos} + 1),
-		( $$var{pos} + $$var{replen} )
-	    );
-	    $right_annos = $self->get_cover(
-		$$var{chr},
-		( $$var{pos} + $$var{reflen} - $$var{replen} ),
-		( $$var{pos} + $$var{reflen} - 1 )
-	    );
-
-	    my @sel_std = ();
-	    foreach my $forw (@$left_annos) {
-		push (@sel_std, $forw) if ($$forw[1]{strd} eq '+');
-	    }
-	    foreach my $rev (@$right_annos) {
-		push (@sel_std, $rev)  if ($$rev[1]{strd} eq '-');
-	    }
-	    $$var{sel}{std} = [@sel_std];
-	}
-	else { # c.172AGT[3>5], c.123dupA
-	    my @std_single = ();
-	    foreach my $w_cpp (@$whole_ref_annos) {
-		my ($tid, $rcpL, $rcpR) = @$w_cpp;
-		if ($$rcpL{strd} eq '+') { # forward strand tid
-		    push (@std_single, [ $tid, $rcpL ]);
-		}
-		else {
-		    push (@std_single, [ $tid, $rcpR ]);
-		}
-	    }
-	    $$var{sel}{std} = [@std_single];
+	# reparse the transcript originated var
+	my $real_var = BedAnno::Var->new( $tid, 0, length($trRef), $trRef, $trAlt );
+	if ($real_var->{guess} eq 'ref') {
+	    $trannoEnt->{func} = 'no-change';
+	    $trannoEnt->{c}    = $f . '=';
+	    next;
 	}
 	
-	# for convinience of plotting protein give the backward compatible mutation name
-	if ($$var{replen} == 1 and ($$var{ref_cn} - $$var{alt_cn} == 1)) { # actually 1bp deletion: c.123delT
-	    my @bc_single_del = ();
-	    foreach my $w_cpp (@$whole_ref_annos) {
-		my ($tid, $rcpL, $rcpR) = @$w_cpp;
-		if ($$rcpL{strd} eq '+') { # forward strand tid
-		    push (@bc_single_del,  [ $tid, $rcpR ]);
-		}
-		else { # reverse strand tid
-		    push (@bc_single_del,  [ $tid, $rcpL ]);
-		}
+	my ($real_p, $real_r, $real_a, $real_rl, $real_al) = 
+	    $real_var->getUnifiedVar('+');
+
+	# debug	
+#	print STDERR Data::Dumper->Dump([$trannoEnt, $real_var], ["trannoEnt", "real_var"]);
+	
+	my ($trBegin, $trEnd);
+	$trBegin = reCalTrPos_by_ofst( $trannoEnt, $real_p );
+        $trEnd = reCalTrPos_by_ofst( $trannoEnt, ( $real_p + $real_rl - 1 ) );
+        $chgvs_5 =
+          ($cdsOpt)
+          ? cPosMark( $trBegin, $trdbEnt->{csta}, $trdbEnt->{csto},
+            $trdbEnt->{len} )
+          : $trBegin;
+        $chgvs_3 =
+          ($cdsOpt)
+          ? cPosMark( $trEnd, $trdbEnt->{csta}, $trdbEnt->{csto},
+            $trdbEnt->{len} )
+          : $trEnd;
+        $cmpPos = $self->cmpPos( $chgvs_5, $chgvs_3 );
+
+	# debug
+#	print STDERR Data::Dumper->Dump([$trBegin, $trEnd, $chgvs_5, $chgvs_3, $cmpPos], ["trBegin", "trEnd", "chgvs_5", "chgvs_3", "cmpPos"]);
+
+	# * check if a repeat case, and use cerntain chgvs string
+	# * assign cHGVS string
+	if ($real_var->{imp} eq 'rep') {
+            my $trRep = $real_var->{rep};
+
+            if (    $real_var->{ref_cn} == 1
+                and $real_var->{alt_cn} == 2 )
+            {
+                if ( $real_var->{replen} == 1 ) {
+                    $trannoEnt->{c} = $f . $chgvs_5 . 'dup' . $trRep;
+                }
+                else {
+                    $trannoEnt->{c} =
+                      $f . $chgvs_5 . '_' . $chgvs_3 . 'dup' . $trRep;
+                }
+            }
+	    else {
+		$trannoEnt->{c} =
+		    $f
+		  . $chgvs_5
+		  . $trRep . '['
+		  . $real_var->{ref_cn} . '>'
+		  . $real_var->{alt_cn} . ']';
 	    }
-	    $$var{sel}{bc}  = [@bc_single_del];
 	}
 	else {
-	    my ($bcf_annos, $bcr_annos); 
-	    my @bc_annos = ();
-	    if ($$var{ref_cn} > $$var{alt_cn}) { # deletion: c.123_125delTGT
-		$bcf_annos = $self->get_cover(
-		    $$var{chr},
-		    ( $$var{'+'}{bp} + 1 ),
-		    ( $$var{'+'}{bp} + $$var{'+'}{brl} - 1 )
-		  );
-		$bcr_annos = $self->get_cover(
-		    $$var{chr},
-		    ( $$var{'-'}{bp} + 1 ),
-		    ( $$var{'-'}{bp} + $$var{'-'}{brl} - 1 )
-		  );
+	    if ( $cmpPos == 0 ) {    # 1 bp
+
+		$trannoEnt->{c} = $f . $chgvs_5;
+		if ($real_al == 1) {
+		    $trannoEnt->{c} .= $real_r . '>' . $real_a; # 1bp alt
+		}
+		elsif ($real_al == 0) {
+		    $trannoEnt->{c} .= 'del' . $real_r;
+		}
+		else {
+		    $trannoEnt->{c} .= 'delins' . $real_a;
+		}
+
 	    }
-	    else { # insertion: c.234_235insTTTT
-		$bcf_annos = $self->get_cover(
-		    $$var{chr},
-		    ( $$var{'+'}{bp} + $$var{'+'}{brl} - 1 ),
-		    ( $$var{'+'}{bp} + $$var{'+'}{brl} )
-		);
-		$bcr_annos = $self->get_cover(
-		    $$var{chr},
-		    $$var{'-'}{bp}, ($$var{'-'}{bp}+1)
-		);
+	    elsif ( $cmpPos > 0 ) {    # multiple bp
+
+		$trannoEnt->{c} =
+		  $f . $chgvs_5 . '_' . $chgvs_3 . 'del';
+		if ($real_al > 0) {
+		    $trannoEnt->{c} .= 'ins' . $real_a;
+		}
 	    }
-	    foreach my $bc_cppf (@$bcf_annos) {
-		push (@bc_annos, $bc_cppf) if ($$bc_cppf[1]{strd} eq '+');
+	    else {                      # ins : reverse the positions
+		$trannoEnt->{c} =
+		  $f . $chgvs_3 . '_' . $chgvs_5 . 'ins' . $real_a;
 	    }
-	    foreach my $bc_cppr (@$bcr_annos) {
-		push (@bc_annos, $bc_cppr) if ($$bc_cppr[1]{strd} eq '-');
-	    }
-	    $$var{sel}{bc}  = [@bc_annos];
 	}
+
+        # 3. check if transcript-ablation
+        if (( $trBegin =~ /^\-/ or $trBegin eq '1' ) 
+		and ( $trEnd =~ /^\+/ or $trEnd eq "$trdbEnt->{len}" ) )
+        {
+            $trannoEnt->{func} = 'knockout';
+	    # need prot begin end?
+
+            next;
+        }
+	
+	# 4. check if span different exon/intron/promoter/downstream
+        if (
+            (
+                   $chgvs_3 =~ /^\+|\+d/
+                or $trannoEnt->{ei_Begin} ne $trannoEnt->{ei_End}
+            )
+            and $cmpPos >= 0	    # not insertion at the edge
+          )
+        {
+            $trannoEnt->{func} = 'span';
+
+	    # need prot begin end?
+
+            next;
+        }
+	
+	# 5. check if all promoter
+        if (    $trannoEnt->{r_Begin} eq 'PROM'
+            and $trannoEnt->{r_Begin} eq $trannoEnt->{r_End} )
+        {
+            $trannoEnt->{func} = 'promoter';
+	    
+            next;
+        }
+
+	# 6. check if all intron
+        if (    $trannoEnt->{ei_Begin} =~ /IVS/
+            and $trannoEnt->{ei_Begin} eq $trannoEnt->{ei_End} )
+        {
+            if ( $trannoEnt->{genepartSO} eq 'abnormal-intron' ) {
+                $trannoEnt->{func} = 'abnormal-intron';
+            }
+            elsif ( $trannoEnt->{r_Begin} =~ /^D/
+                and $trannoEnt->{r_End} =~ /^A/ )
+            {
+                $trannoEnt->{func} = 'splice';
+            }
+            elsif ( $trannoEnt->{r_Begin} =~ /^D/ ) {
+                $trannoEnt->{func} = 'splice-5';
+            }
+            elsif ( $trannoEnt->{r_End} =~ /^A/ ) {
+                $trannoEnt->{func} = 'splice-3';
+            }
+            else {
+                $trannoEnt->{func} = 'intron';
+            }
+
+            next;
+        }
+
+
+	# 7. check if all exon or ex/intron edge insertion
+	#    count all this insertion to be exon region insertion
+        if (
+            (
+                    $trannoEnt->{ei_Begin} eq $trannoEnt->{ei_End}
+                and $trannoEnt->{ei_Begin} =~ /EX/
+            )
+            or
+            ( $cmpPos < 0 and $trannoEnt->{ei_Begin} ne $trannoEnt->{ei_End} )
+          )
+	{ # any edge-insertion case will count on the exon change
+	  # any coding-utr edge insertion case will count on the
+	  # utr parts
+	    if (!$cdsOpt) {
+		if ($chgvs_5 =~ /^\+/) {
+		    $trannoEnt->{func} = 'unknown';
+		}
+		elsif ($chgvs_3 =~ /^\-/) {
+		    $trannoEnt->{func} = 'promoter';
+		}
+		elsif ($chgvs_5 eq '1' and $chgvs_3 eq $trdbEnt->{len}) {
+		    $trannoEnt->{func} = 'knockout';
+		}
+		else {
+		    $trannoEnt->{func} = 'ncRNA';
+		}
+		next;
+	    }
+	    else { # coding RNA
+		if ($chgvs_3 =~ /\-u1$/) {
+		    $trannoEnt->{func} = 'promoter';
+		    next;
+		}
+		elsif ($chgvs_5 =~ /\+d1$/) { # 3' downstream edge insertion
+		    $trannoEnt->{func} = 'unknown';
+		}
+		elsif ($chgvs_3 =~ /^\-/) { # besides utr-5 - cds edge
+		    $trannoEnt->{func} = 'utr-5';
+		    next;
+		}
+		elsif ($chgvs_5 =~ /^\*/) { # besides utr-3 - cds edge
+		    $trannoEnt->{func} = 'utr-3';
+		    next;
+		}
+		elsif ($chgvs_5 =~ /^\-/ and $chgvs_3 =~ /^\*/) {
+                    my $utr5_len = $1 if ( $chgvs_5 =~ /^\-(\d+)$/ );
+                    my $utr3_len = $1 if ( $chgvs_3 =~ /^\*(\d+)$/ );
+                    if (    $utr5_len eq $trdbEnt->{csta}
+                        and $utr3_len eq ( $trdbEnt->{len} - $trdbEnt->{csto} )
+                      )
+                    {
+                        $trannoEnt->{func} = 'knockout';
+                    }
+                    else {
+                        $trannoEnt->{func} = 'cds-loss';
+                    }
+                    $trannoEnt->{p} = 'p.0?';
+                    next;
+		}
+		elsif ($chgvs_5 =~ /^\-/) {
+		    $trannoEnt->{func} = 'init-loss';
+		    $trannoEnt->{p}    = 'p.0?';
+		    next;
+		}
+		elsif ($chgvs_3 eq '1-1') { # cds-begin - last 5'utr intron edge
+		    $trannoEnt->{func} = 'utr-5';
+		    next;
+		}
+                elsif ( $chgvs_5 =~ /^(\d+)\+1/
+                    and $1 == ( $trannoEnt->{csto} - $trannoEnt->{csta} ) )
+                {
+                    $trannoEnt->{func} = 'utr-3';
+                    next;
+                }
+		# here protein sequence var should be reparsed
+		else {
+		    $chgvs_5 = $1+1 if ($chgvs_5 =~ /^(\d+)\+1/);
+		    $chgvs_3 = $1-1 if ($chgvs_3 =~ /^(\d+)\-1/);
+
+		    # 5' end should be in coding region.
+		    # leave this as debug information
+                    $self->throw(
+                        "Error: unavailable cDot HGVS. [$chgvs_5, $chgvs_3]")
+                      if ( $chgvs_5 !~ /^\d+$/
+                        or $chgvs_3 !~ /^\d+$/
+                        or $chgvs_5 == 0
+                        or $chgvs_3 == 0 );
+
+		    @cInfo5 =
+		      getCodon_by_cdsPos( $trdbEnt, $trSeqs{$tid}, $chgvs_5 );
+		    @cInfo3 =
+		      getCodon_by_cdsPos( $trdbEnt, $trSeqs{$tid}, $chgvs_3 );
+
+                    if ( !exists $trdbEnt->{pseq} ) {
+                        my $whole_cds = substr( $trSeqs{$tid}, $trdbEnt->{csta},
+                            ( $trdbEnt->{csto} - $trdbEnt->{csta} ) );
+                        my ( $pseq, $frame_next ) = translate(
+                            $whole_cds,
+                            (
+                                (
+                                         exists $trdbEnt->{X}
+                                      or exists $trdbEnt->{U}
+                                ) ? 1 : 0
+                            ),
+                            ( exists $trdbEnt->{A} ) ? 1 : 0
+                        );
+                        $trdbEnt->{pseq} = $pseq;
+                    }
+
+		    my ($prBegin, $prEnd, $prRef, $prAlt);
+
+		    $prBegin = $cInfo5[0];
+
+		    my $ready_to_add_5 = substr($cInfo5[1], 0, $cInfo5[4]);
+
+		    my $diff_ra = $real_rl - $real_al;
+
+		    # probably frame shift flag
+		    my $frameshift_flag = ($diff_ra % 3 > 0) ? 1 : 0;
+
+		    # end in cds or not.
+                    my $end_in_cds_flag = (
+                             $chgvs_3 =~ /^\*/
+                          or $chgvs_3 > ( $trdbEnt->{csto} - 3 )
+                    ) ? 0 : 1;
+
+                    my $ready_to_add_3;
+                    if ( !$end_in_cds_flag or $frameshift_flag ) {
+                        $ready_to_add_3 = substr( $trSeqs{$tid}, $real_p+$real_rl );
+			# this variants's effect will be end at the terminal
+			$prEnd = $trdbEnt->{plen} + 1; # terminal
+                    }
+                    else {    # chgvs_3 in cds region with no frameshift
+                        $ready_to_add_3 = substr(
+                            $cInfo3[1],
+                            ( $cInfo3[4] + 1 ),
+                            ( 2 - $cInfo3[4] )
+                        );
+			$prEnd = $cInfo3[0];
+                    }
+
+		    # Make protBegin and protEnd be coordinate to the 
+		    # coordinates of nucl variants, extend the 
+		    # frameshift's effect to the end of protein
+		    $trannoEnt->{protBegin} = $prBegin;
+		    $trannoEnt->{protEnd} = $prEnd;
+
+		    # make the order of func assignment as follow:
+		    # * total
+		    # 1. init-loss
+		    # 2. frameshift
+		    # 3. coding-synon
+		    # 
+		    # * 1bp aa change
+		    # 0. abnormal-inseq-stop
+		    # 1. stop-retained
+		    # 2. stop-loss
+		    # 3. nonsense
+		    # 4. missense
+		    # 
+		    # * other variants
+		    # 0. abnormal-inseq-stop
+		    # 1. stop-retained
+		    # 2. frameshift
+		    # 3. stop-loss
+		    # 4. stop-gain
+		    # 5. cds-ins
+		    # 6. cds-del
+		    # 7. cds-indel
+		    
+		    # extend the altered sequence to codon coordinates
+		    my $codon_alt = $ready_to_add_5 . $real_a . $ready_to_add_3;
+
+		    # init codon flag
+                    my $hit_init_flag = ( $trBegin > $trdbEnt->{csta}
+                          and $trBegin <= ( $trdbEnt->{csta} + 3 ) ) ? 1 : 0;
+		    # stop codon flag
+                    my $hit_stop_flag =
+                    ( $trEnd > ( $trdbEnt->{csta} + 3 * $trdbEnt->{plen} ) )
+                      ? 1
+                      : 0;
+
+		    # check if an alterstart
+		    my %start_codons = ('ATG' => -1);
+                    if ( exists $trdbEnt->{altstart} ) {
+                        %start_codons =
+                          map { $_ => -1 } keys %{ $trdbEnt->{altstart} };
+                    }
+
+		    my $init_synon = 0; # indicate start codon search result
+		    my $init_frame_shift = 0; # indicate if init frameshift
+		    my $current_startCodon = substr($trSeqs{$tid},$trdbEnt->{csta},3);
+                    if ($hit_init_flag) {
+			# check if altered sequence have new start codon
+                        foreach my $startCodon ( sort keys %start_codons ) {
+                            $start_codons{$startCodon} =
+                              index( $codon_alt, $startCodon );
+                            if ( $start_codons{$startCodon} > -1 ) {
+                                $init_synon = 1;
+                                $current_startCodon = $startCodon;
+
+				# trim the leading non-coding region
+                                $codon_alt  = substr( $codon_alt,
+                                    $start_codons{$startCodon} );
+
+				# init frameshift
+                                if ( $start_codons{$startCodon} % 3 > 0 ) {
+                                    $init_frame_shift = 1;
+                                    my $original_var_frame = $diff_ra % 3;
+                                    my $reparsed_frame =
+                                      $start_codons{$startCodon} % 3;
+                                    if ($original_var_frame == $reparsed_frame )
+                                    { # correct to non-frameshift
+                                        $frameshift_flag = 0;
+                                    }
+                                    elsif ( $original_var_frame == 0 ) {
+					# change to a frameshift case
+                                        $codon_alt .= substr(
+                                            $trSeqs{$tid},
+                                            (
+                                                $trdbEnt->{csta} +
+                                                  ( 3 * $cInfo3[0] )
+                                            )
+                                        );
+                                        $frameshift_flag = 1;
+					$prEnd = $trdbEnt->{plen} + 1;
+					$trannoEnt->{protEnd} = $prEnd;
+                                    }
+                                }
+                                last;
+                            }
+                        }
+			if ($init_synon == 0) {
+			    $trannoEnt->{func} = 'init-loss';
+			    $trannoEnt->{p}    = 'p.0?';
+			    next;
+			}
+			else {
+			    $trannoEnt->{func} = 'altstart';
+			    # can it continue to be assigned
+			    # other function code and pHGVS
+			    # or just finished as altstart?
+			    #
+			    # I choose to continue.
+			}
+                    }
+
+		    # give out the first of single codon to be
+		    my $codon_to_be = substr($codon_alt, 0, 3);
+
+		    # debug
+#		    print STDERR Data::Dumper->Dump( [$trdbEnt, $prBegin, $prEnd, $codon_alt], ["trdbEnt", "prBegin", "prEnd", "codon_alt"] );
+
+                    $prRef = substr(
+                        $trdbEnt->{pseq},
+                        ( $prBegin - 1 ),
+                        ( $prEnd - $prBegin + 1 )
+                    );
+
+		    # we can not allow inseq stop codon in altered sequence
+		    # due to frameshift and ambiguity.
+		    my $next_alt_frame;
+                    ( $prAlt, $next_alt_frame ) = translate( $codon_alt, 0,
+                        ( ( exists $trdbEnt->{A} ) ? 1 : 0 ) );
+
+		    # to indicate whether the alternate sequence 
+		    # encode a stop codon or non-frameshift, or otherwise
+		    # with a non stopped frameshift.
+		    my $non_stop_flag = ($next_alt_frame) ? 1 : 0;
+
+		    # parse the protein variants
+		    # to recognize the repeat and adjust to correct position
+                    my $prVar = BedAnno::Var->new( $trdbEnt->{prot}, ( $prBegin - 1 ),
+                        $prEnd, $prRef, $prAlt );
+		    #    0-based
+                    my ( $p_P, $p_r, $p_a, $prl, $pal ) =
+                      $prVar->getUnifiedVar('+');
+
+
+		    my $prStart = substr($trdbEnt->{pseq}, $p_P, 1);
+                    my $prStop = substr( $trdbEnt->{pseq}, $p_P + $prl - 1, 1 )
+                      if ( $p_P > 0 or $prl > 0 );
+
+		    # assign cc and polar to the same length, 
+		    # single aa substitution, no matter which position.
+		    if ($diff_ra == 0 and $cInfo5[0] == $cInfo3[0]) {
+			# using trim due to terminal codon
+			my ($aa_to_be, $polar_to_be) = getAAandPolar($codon_to_be);
+			$trannoEnt->{cc} = $cInfo5[1].'=>'.$codon_to_be;
+			$trannoEnt->{polar} = $cInfo5[3].'=>'.$polar_to_be;
+		    }
+
+
+		    # non stop frameshift with extra non-coded base
+		    if ($non_stop_flag) {
+                        $trannoEnt->{func} =
+                          ( $p_P >= $trdbEnt->{plen} )
+                          ? 'stop-loss'
+                          : 'frameshift';
+			$trannoEnt->{p}    = 'p.'.$prStart.($p_P+1).'fs*?';
+			next;
+		    }
+
+		    # identical to reference (can be from any kind of vars)
+		    if ($prVar->{imp} eq 'ref') {
+                        if ($init_synon)
+                        { # altstart
+                            # do nothing
+                        }
+			elsif ($hit_stop_flag) {
+
+			    # need this special assertion?
+			    $trannoEnt->{func} = 'stop-retained';
+			}
+			else {
+			    $trannoEnt->{func} = 'coding-synon';
+			}
+			$trannoEnt->{p}    = 'p.=';
+			next;
+		    }
+
+		    # frameshift
+		    if (!$end_in_cds_flag or $frameshift_flag) {
+			$trannoEnt->{func} = 'frameshift';
+			$trannoEnt->{p}    = 'p.'.$prStart.($p_P+1).'fs*';
+			if ($p_a =~ /\*$/) { # ext length estimated
+			    $trannoEnt->{p} .= $pal;
+			}
+			else { # don't meet a stop codon
+			    $trannoEnt->{p} .= '?';
+			}
+			next;
+		    }
+
+		    # single substitution
+                    if ( $prVar->{imp} eq 'snv' ) {
+                        if ( $p_r eq 'X' ) {
+			    $trannoEnt->{func} = 'abnormal-inseq-stop';
+                        }
+			elsif ( $p_r eq '.' ) { # N in refseq transcript
+			    $trannoEnt->{func} = 'unknown';
+			}
+			elsif ( $p_r eq '*' ) {
+			    $trannoEnt->{func} = 'stop-loss';
+			}
+                        elsif ( $p_a eq '*' ) {
+			    $trannoEnt->{func} = 'nonsense';
+                        }
+			elsif ($init_synon) {
+			    $trannoEnt->{func} = 'altstart';
+			}
+                        else {
+                            $trannoEnt->{func} = 'missense';
+                        }
+                        $trannoEnt->{p} = 'p.' . $p_r . ($p_P + 1) . $p_a;
+                        next;
+                    }
+
+		    # repeat
+		    if ( $prVar->{imp} eq 'rep' ) {
+			if ( $prVar->{ref_cn} < $prVar->{alt_cn} ) {
+			    $trannoEnt->{func} = 'cds-ins';
+			}
+			else {
+			    $trannoEnt->{func} = 'cds-del';
+			}
+
+			if ($prVar->{replen} == 1) {
+			    $trannoEnt->{p} = 'p.' . $prVar->{rep} . ( $p_P + 1 );
+			}
+			else {
+                            $trannoEnt->{p} = 'p.'
+                              . $prStart
+                              . ( $p_P + 1 ) . '_'
+                              . substr( $prVar->{rep}, -1, 1 )
+                              . ( $p_P + $prVar->{replen} );
+			}
+                        if (    $prVar->{ref_cn} == 1
+                            and $prVar->{alt_cn} == 2 )
+                        {
+                            $trannoEnt->{p} .= 'dup';
+                        }
+                        else {
+                            $trannoEnt->{p} .= '['
+                              . $prVar->{ref_cn} . '>'
+                              . $prVar->{alt_cn} . ']';
+                        }
+
+			next;
+		    }
+
+		    # insertion
+		    if ( $prVar->{sm} == 0 ) {
+			# insert into the 5'edge of start codon
+			# this may caused by a insertion or delins
+			# around init-codon to recreat a new init-codon
+			# in the altered sequence
+			if ($p_P == 0) {
+			    # altstart don't fix this
+			    # use pHGVS to indicate 
+			    # altstart here
+			    $trannoEnt->{p} = 'p.=';
+
+			    # can it be utr-5?
+			    $trannoEnt->{func} = 'utr-5';
+			    next;
+			}
+			# insert between the last aa and stop codon
+			# this may caused by a insertion or delins
+			# aroud the stop codon
+			elsif ($hit_stop_flag) {
+			    $trannoEnt->{func} = 'stop-retained';
+			}
+			else {
+			    $trannoEnt->{func} = 'cds-ins';
+			}
+
+                        $trannoEnt->{p} = 'p.'
+                          . $prStop
+                          . $p_P . '_'
+                          . $prStart
+                          . ( $p_P + 1 ) . 'ins'
+                          . $p_a;
+			next;
+		    }
+
+                    if ( $prVar->{sm} >= 1 ) {
+                        if ( $p_r =~ /\*/ ) {
+                            $trannoEnt->{func} = 'stop-loss';
+                        }
+                        elsif ($hit_stop_flag) {
+                            $trannoEnt->{func} = 'stop-retained';
+                        }
+                        elsif ( $pal == 0 ) {
+                            $trannoEnt->{func} = 'cds-del';
+                        }
+                        elsif ( $p_a =~ /\*/ ) {
+                            $trannoEnt->{func} = 'stop-gain';
+                        }
+                        elsif ( $pal == $prl ) {
+                            $trannoEnt->{func} = 'missense';
+                        }
+                        else {
+                            $trannoEnt->{func} = 'cds-indel';
+                        }
+
+                        $trannoEnt->{p} = 'p.' . $prStart . ( $p_P + 1 );
+                        if ( $prVar->{sm} == 1 ) {
+                            $trannoEnt->{p} .= 'del';
+                        }
+                        else {
+                            $trannoEnt->{p} .=
+                              '_' . $prStop . ( $p_P + $prl ) . 'del';
+                        }
+                        $trannoEnt->{p} .= 'ins' . $p_a if ( $p_a ne "" );
+                        next;
+                    }
+		}
+	    }
+        }
+
+	# any other cases?
     }
-    return $var;
+
+    return $annoEnt;
 }
 
+=head2 cmpPos
+
+    About   : judge the order or p1 and p2, because the insertion
+	      will have a reverted order of left & right position
+    Usage   : my $cmpRst = BedAnno->cmpPos($p1, $p2);
+    Args    : hgvs positio p1 and p2, with out 'c.' or 'n.' flag
+    Return  : 0 for same, 1 for normal order, -1 for reversed order.
+
+=cut
+sub cmpPos {
+    my $self = shift;
+    my ($p1, $p2) = @_;
+    return 0 if ($p1 eq $p2);
+    my ($s1, $s2, $anc1, $anc2, $int_s1, $int_s2, $ofst1, $ofst2);
+
+    my %order_s = (
+	'-u' => 1,
+	'-' => 2,
+	''  => 3,
+	'+' => 4,
+	'*' => 5,
+	'+d' => 6,
+    );
+
+
+    if ($p1 =~ /^([\-\+\*]?)(\d+)([\+\-]?[ud]?)(\d*)$/) {
+	$s1 = $1; $anc1 = $2; $int_s1 = $3; $ofst1 = $4;
+    }
+    if ($p2 =~ /^([\-\+\*]?)(\d+)([\+\-]?[ud]?)(\d*)$/) {
+	$s2 = $1; $anc2 = $2; $int_s2 = $3; $ofst2 = $4;
+    }
+
+    if ($order_s{$s1} < $order_s{$s2}) {
+	return 1;
+    }
+    elsif ($order_s{$s1} > $order_s{$s2}) {
+	return -1;
+    }
+    else { # $s1 eq $s2
+	if ($s1 eq '-') {
+	    if ($anc1 > $anc2) {
+		return 1;
+	    }
+	    elsif ($anc1 < $anc2) {
+		return -1;
+	    }
+	}
+	else {
+	    if ($anc1 < $anc2) {
+		return 1;
+	    }
+	    elsif ($anc1 > $anc2) {
+		return -1;
+	    }
+	}
+
+	# anc1 eq anc2
+	if ($order_s{$int_s1} < $order_s{$int_s2}) {
+	    return 1;
+	}
+	elsif ($order_s{$int_s1} > $order_s{$int_s2}) {
+	    return -1;
+	}
+	else { # int_s2 same
+	    if ( $int_s1 =~ /\-/ ) {
+		if ($ofst1 > $ofst2) {
+		    return 1;
+		}
+		elsif ($ofst1 < $ofst2) {
+		    return -1;
+		}
+	    }
+	    else {
+		if ($ofst1 < $ofst2) {
+		    return 1;
+		}
+		elsif ($ofst1 > $ofst2) {
+		    return -1;
+		}
+	    }
+	}
+    }
+    return 0;
+}
+
+=head2 fetchseq
+
+    About   : get sequence from fasta db using samtools faidx
+    Usage   : my $seq = fetchseq('db.fasta', $region_str);
+	      my $rhash = fetchseq('db.fasta', \@regions);
+    Args    : a list of region in format: (chr1:123-456, chr1:789-1000, chr2:234-567, or NM_01130.1:345 )
+    Returns : a hash ref of { region => seq }
+
+=cut
+sub fetchseq {
+    my ($fasta, $rRegs) = @_;
+    local $/ = ">";
+    if (!ref($rRegs)) { # a scalar string
+	if ($rRegs =~ /[\S]\s+[\S]/) { # multiple regions
+	    $rRegs = [split(/\s+/, $rRegs)];
+	}
+	else { # single region
+	    open (FASTA,"samtools faidx $fasta $rRegs |") or confess "samtools faidx: $!";
+	    <FASTA>; # shift first ">";
+	    my $seq = <FASTA>;
+	    close FASTA;
+	    $seq =~ s/^[^\n]+//;
+	    $seq =~ s/[\s>]+//g;
+	    return uc($seq);
+	}
+    }
+    my @localRegs = @$rRegs;
+    my %seqs = ();
+    while (0 < @localRegs) {
+	my @set = ();
+	if (1000 < @localRegs) { 
+	    @set = splice (@localRegs, 0, 1000);
+	}
+	else {
+	    @set = @localRegs;
+	    @localRegs = ();
+	}
+	my $regions = join(" ", @set);
+        open( FASTA, "samtools faidx $fasta $regions |" )
+          or confess "samtools faidx: $!";
+	my @all_seq = <FASTA>;
+	close FASTA;
+	shift @all_seq;
+	foreach my $rec (@all_seq) {
+	    chomp $rec;
+	    my $hd = $1 if ($rec =~ s/^(\S+)[^\n]*//);
+	    $rec =~ s/[\s>]+//g;
+	    next if ($rec =~ /^$/);
+	    if (!defined $hd) {
+		confess "Error: exists empty header in fasta [$rec]";
+	    }
+	    $seqs{$hd} = uc($rec);
+	}
+    }
+    return \%seqs;
+}
+
+
+=head2 getCodon_by_cdsPos
+
+    About   : similar to getCodonPos, but accept cds Position as input position
+	      see "getCodonPos()"
+
+=cut
+sub getCodon_by_cdsPos {
+    my ($trdbEnt, $trSeq, $p) = @_;
+    if (   !exists $trdbEnt->{csta}
+        or $trdbEnt->{csta} eq '.'
+	or $p !~ /^\d+$/
+        or $p <= 0
+        or $p > ($trdbEnt->{csto} - $trdbEnt->{csta}) )
+    {
+        return ( 0, "", "", "", -1 );
+    }
+
+    $trSeq = substr( $trSeq, $trdbEnt->{csta},
+        ( $trdbEnt->{csto} - $trdbEnt->{csta} ) );
+    my $cds_p = $p; # > 0
+    my $pP = int($cds_p / 3);
+    if ($cds_p % 3 > 0) {
+	$pP ++;
+    }
+    my $frame = 2 - ($pP * 3 - $cds_p);
+    my $codon = uc(substr($trSeq, ($p - $frame - 1), 3));
+    if ($pP <= $trdbEnt->{plen}) { # plen not involve terminal codon
+	if (exists $trdbEnt->{U}) {
+	    $codon =~ s/TGA/UGA/;
+	}
+	if (exists $trdbEnt->{X}) {
+	    $codon =~ s/TAA/UAA/;
+	    $codon =~ s/TAG/UAG/;
+	}
+    }
+    elsif ($pP == $trdbEnt->{plen} + 1) { # terminal
+	if (exists $trdbEnt->{A}) { # polyA-tail
+	    $codon .= 'A' x (3 - length($codon));
+	}
+    }
+    else {
+	confess "Error: may be not correct protein length in transcript database.";
+    }
+
+    my ($aa, $polar) = getAAandPolar($codon);
+    $codon =~ s/^UA/TA/; # change back special codon except selenocysteine
+    return ($pP, $codon, $aa, $polar, $frame);
+}
+
+
+=head2 getCodonPos
+
+    About   : get codon position, codon string, aa string, and frame info
+	      for one single transcript position
+    Usage   : my ($pP, $codon, $aa, $polar, $frame) = getCodonPos($trdbEnt, $trSeq, $p);
+    Args    : trdbEnt is a sub hash in trInfodb which contains csta, csto
+	      for cds start/end position
+    Returns : AA position  - 0 for not in cds region
+	      codon string - codon string, e.g. "ATA"
+	      aa char	   - AA code, 1 bp mode, e.g. "E"
+	      polar	   - Polar properties, e.g. "P+"
+	      frame	   - current position's frame info,
+			     -1 for not available.
+
+=cut
+sub getCodonPos {
+    my ($trdbEnt, $trSeq, $p) = @_;
+    if (   !exists $trdbEnt->{csta}
+        or $trdbEnt->{csta} eq '.'
+	or $p !~ /^\d+$/
+        or $p <= $trdbEnt->{csta}
+        or $p > $trdbEnt->{csto} )
+    {
+        return ( 0, "", "", "", -1 );
+    }
+    my $cds_p = $p - $trdbEnt->{csta}; # > 0
+    my $pP = int($cds_p / 3);
+    if ($cds_p % 3 > 0) {
+	$pP ++;
+    }
+    my $frame = 2 - ($pP * 3 - $cds_p);
+    my $codon = uc(substr($trSeq, ($p - $frame - 1), 3));
+    if ($pP <= $trdbEnt->{plen}) { # plen not involve terminal codon
+	if (exists $trdbEnt->{U}) {
+	    $codon =~ s/TGA/UGA/;
+	}
+	if (exists $trdbEnt->{X}) {
+	    $codon =~ s/TAA/UAA/;
+	    $codon =~ s/TAG/UAG/;
+	}
+    }
+    elsif ($pP == $trdbEnt->{plen} + 1) { # terminal
+	if (exists $trdbEnt->{A}) { # polyA-tail
+	    $codon .= 'A' x (3 - length($codon));
+	}
+    }
+    else {
+	confess "Error: may be not correct protein length in transcript database.";
+    }
+
+    my ($aa, $polar) = getAAandPolar($codon);
+    $codon =~ s/^UA/TA/; # change back special codon except selenocysteine
+    return ($pP, $codon, $aa, $polar, $frame);
+}
+
+sub getAAandPolar {
+    my $codon = shift;
+    my $aa = (exists $C1{$codon}) ? $C1{$codon} : '.';
+    my $polar = (exists $Polar{$aa}) ? $Polar{$aa} : '.';
+    return ($aa, $polar);
+}
+
+# change the 1based nDot position into cDot format
+sub cPosMark {
+    #	1based	0-based 1based
+    my ($trPos, $csta, $csto, $trlen) = @_;
+    return $trPos if ($trPos eq "");
+
+    my $cDot;
+    if ($trPos =~ /^([\+\-]?)(\d+)([\+\-]?)(\d*)$/) {
+        my ( $s1, $anchor, $s2, $ofst ) = ( $1, $2, $3, $4 );
+        if ( $s1 eq '' and $s2 eq '' ) {
+            $cDot = $anchor - $csta;
+            $cDot -= 1 if ( $cDot <= 0 );
+            if ( $anchor > $csto ) {
+                $cDot = '*' . ( $anchor - $csto );
+            }
+        }
+        elsif ( $s1 ne '' and $s2 ne '' ) {
+            confess "Error: not a valid nDot string: [$trPos]";
+        }
+        elsif ( $s1 eq '-' ) {
+            $cDot = ( ( $csta == 0 ) ? 1 : ( -$csta ) ) . '-u' . $anchor;
+        }
+        elsif ( $s1 eq '+' ) {
+            $cDot = ( ( $csto == $trlen )
+                ? ( $csto - $csta )
+                : '*' . ( $trlen - $csto ) )
+              . '+d'
+              . $anchor;
+        }
+	elsif ( $s2 =~ /[\+\-]/ ) {
+	    my $cDot_tmp = cPosMark($anchor, $csta, $csto, $trlen);
+	    $cDot = $cDot_tmp.$s2.$ofst;
+	}
+	else {
+	    confess "Error: unmatched nDot string: [$trPos]";
+	}
+    }
+    return $cDot;
+}
+
+sub translate {
+    my ($nucl, $nostop, $polyA) = @_;
+    my $lenN = length($nucl);
+    my $frame_next = $lenN % 3;
+    if ($frame_next != 0 and $polyA) {
+	$nucl .= 'A' x (3 - $frame_next);
+    }
+    $nucl = uc($nucl);
+    my $prot = "";
+    for (my $i = 0; $i < length($nucl); $i+=3) {
+	my $codon = substr($nucl,$i,3);
+	my $aa = (exists $C1{$codon}) ? $C1{$codon} : '.';
+	if ($aa eq '*' and $nostop) {
+	    $aa = ($codon eq 'TGA') ? 'U' : 'X';
+	}
+	elsif ($aa eq '*') {
+	    $prot .= $aa;
+	    return ($prot, 0);
+	}
+	$prot .= $aa;
+    }
+    $prot =~ s/[UX]$/*/g if ($nostop);
+    $prot =~ s/\.$// if ($frame_next != 0);
+    return ($prot, $frame_next);
+}
+
+# new var generated from new() in BedAnnoVar the real transcript var
+# will bring some new transcript start/end information
+# here will recalculate it from the offset.
+sub reCalTrPos_by_ofst {
+    my ( $trannoEnt, $trRef_ofst ) = @_;
+    return $trannoEnt->{rnaBegin} if ($trRef_ofst == 0);
+
+    my @tag_sort = sort trRefSort keys %{ $trannoEnt->{trRefComp} };
+    my $cumulate_len = 0;
+    my ($cur_ex_start, $intOfst);
+    if ($trannoEnt->{rnaBegin} =~ /^(\-?\d+)([\+\-]?\d*)$/) {
+	$cur_ex_start = $1;
+	$intOfst = $2;
+    }
+    if ($cur_ex_start =~ /^-/) {
+	$intOfst = $cur_ex_start;
+	$cur_ex_start = 1;
+    }
+    if ($intOfst eq '') {
+	$intOfst = 0;
+    }
+    
+    foreach my $exin (@tag_sort) {
+	my $cur_blk_len;
+	if ( $exin !~ /^EX/ ) {
+            $cur_blk_len =
+              ( $trannoEnt->{trRefComp}->{$exin}->[1] -
+                  $trannoEnt->{trRefComp}->{$exin}->[0] );
+	}
+	else {
+	    $cur_blk_len = $trannoEnt->{trRefComp}->{$exin};
+	}
+
+	my $cur_blk_ofst = ($trRef_ofst - $cumulate_len);
+
+	if ( $cur_blk_ofst > $cur_blk_len ) {
+	    $cumulate_len += $cur_blk_len;
+	    if ($exin =~ /^EX/) { # only cumulate ex pos
+		$cur_ex_start += $cur_blk_len;
+		$intOfst = 0;
+	    }
+	}
+	else { # hit current block
+	    if ( $exin !~ /^EX/) {
+		if ($intOfst < 0 and $cur_ex_start == 1) { # in promoter
+		    confess "Error: non-zero cumulate_len in promoter [$cumulate_len]." if ($cumulate_len > 0);
+		    return ($intOfst + $cur_blk_ofst);
+		}
+		elsif ($exin =~ /^Z/) {
+		    return '+'.($cur_blk_ofst + 1);
+		}
+		else { # intron
+		    my ($blk_begin, $blk_end);
+		    if ($exin eq $tag_sort[0]) {
+			$blk_begin = $trannoEnt->{rnaBegin};
+		    }
+		    else {
+			$blk_begin = ($cur_ex_start - 1)."+1";
+		    }
+		    if ($exin eq $tag_sort[-1]) {
+			$blk_end = $trannoEnt->{rnaEnd};
+		    }
+		    else {
+			$blk_end   = $cur_ex_start."-1";
+		    }
+
+                    return getIntrPos( $blk_begin, $blk_end, $cur_blk_ofst,
+                        $cur_blk_len );
+		}
+	    }
+	    else {
+		return ($cur_ex_start + $cur_blk_ofst);
+	    }
+	}
+    }
+    confess "Error: out of trRefComp range [$trRef_ofst].";
+}
+
+# calculate position in intron region
+sub getIntrPos {
+    my ($begin, $end, $ofst, $blk_len) = @_;
+    
+    my ($exPosBegin, $exPosEnd, $intPosBegin, $intPosEnd);
+    if ($begin =~ /^(\d+)([\+\-]\d+)$/) {
+	$exPosBegin = $1;
+	$intPosBegin = $2;
+    }
+    if ($end =~ /^(\d+)([\+\-]\d+)$/) {
+	$exPosEnd = $1;
+	$intPosEnd = $2;
+    }
+
+    if ($exPosBegin eq $exPosEnd) {
+        return
+            $exPosBegin
+          . ( ( $intPosBegin < 0 ) ? "" : '+' )
+          . ( $intPosBegin + $ofst );
+    }
+    else {
+	my $wlen = $intPosBegin - $intPosEnd + $blk_len - 2;
+	my $lofst = $intPosBegin + $ofst - 1;
+	if ($lofst < ($wlen / 2 - 1)) {
+	    return ($exPosBegin . '+' . ($lofst + 1));
+	}
+	else {
+	    return ($exPosEnd . '-' . ($wlen - $lofst));
+	}
+    }
+}
+
+
+=head2 getTrRef
+
+    About   : generate concatenated transcript originated reference
+    Usage   : my $trRef = getTrRef( $trannoEnt, $refgenome, $trSeq, $strd );
+    Args    : trannoEnt - BedAnno::Anno -> {trInfo} -> {$tid}
+	      refgenome - Unified reference in BedAnno::Var
+	      trSeq     - whole transcript
+	      strd	- strand of transcript.
+    Returns : transcript originated reference
+    Notes   : Using sequence from transcript as the exon part,
+	      and using the sequence from reference genome
+	      as the intron part. and concatenate them.
+
+=cut
+sub getTrRef {
+    my ( $trannoEnt, $refgenome, $trSeq, $strd ) = @_;
+    my @tag_sort = sort trRefSort keys %{ $trannoEnt->{trRefComp} };
+    my $trRef    = "";
+    my $trStart  = getTrStart( $trannoEnt->{rnaBegin} );
+    foreach my $exin (@tag_sort) {
+        if ( $exin !~ /^EX/ ) {
+            my $int_seq = substr(
+                $refgenome,
+                $trannoEnt->{trRefComp}->{$exin}->[0],
+                (
+                    $trannoEnt->{trRefComp}->{$exin}->[1] -
+                      $trannoEnt->{trRefComp}->{$exin}->[0]
+                )
+            );
+            $int_seq = BedAnno->rev_comp($int_seq) if ( !$strd );
+            $trRef .= $int_seq;
+        }
+        else {
+            $trRef .=
+              substr( $trSeq, $trStart, $trannoEnt->{trRefComp}->{$exin} );
+            $trStart += $trannoEnt->{trRefComp}->{$exin};
+        }
+    }
+    return $trRef;
+}
+
+# get the next or current on-transcript position
+# from any nDot format HGVS position string.
+sub getTrStart {
+    my $trStart = shift;
+    if ($trStart =~ /^-/) {
+	return 0;
+    }
+    elsif ($trStart =~ /^(\d+)\-/) {
+	return ($1 - 1);
+    }
+    elsif ($trStart =~ /^(\d+)\+/) {
+	return $1;
+    }
+    elsif ($trStart =~ /^(\d+)$/) {
+	return ($1 - 1);
+    }
+    else {
+	confess "Error: not available trStart [$trStart]";
+    }
+}
+
+sub trRefSort {
+    my ( $atag, $anum, $btag, $bnum );
+    if ( $a =~ /^(\D+)(\d+)/ ) {
+        $atag = $1;
+        $anum = $2;
+    }
+    if ( $b =~ /^(\D+)(\d+)/ ) {
+        $btag = $1;
+        $bnum = $2;
+    }
+    confess "Error exon intron number [$a, $b]"
+      if ( !defined $atag
+        or !defined $anum
+        or !defined $btag
+        or !defined $bnum );
+    $anum <=> $bnum or $atag cmp $btag;
+}
 
 =head2 batch_anno
 
     About   : The fastest way to annotate multiple snv and 1bp deletion variations,
 	      indel and other types also can be annotated, but no faster than annotated
 	      one by one.
-    Usage   : $beda = BedAnno->new( db => 'in.bed.gz', tr => 'in.trans.fas'); 
-    Args    : chr, and an array ref of vars.
-    Returns : an array ref of annos, see anno().
+    Usage   : $beda = BedAnno->new( db => 'in.bed.gz', tr => 'in.trans.fas', batch => 1);
+	      $rAnnoRst = $beda->batch_anno($rVars);
+    Args    : an array ref of BedAnno::Var entries.
+    Returns : an array ref of BedAnno::Anno entries, see varanno().
 
 =cut
 sub batch_anno {
-    my ($self, $chr, $rVars) = @_;
+    my ($self, $rVars) = @_;
     my @all_annoRst = ();
-    my @sorted_vars = sort {$a->{pos} <=> $b->{pos}} @$rVars;
+    my @sorted_vars =
+      sort { $a->{chr} cmp $b->{chr} or $a->{pos} <=> $b->{pos} } @$rVars;
 
+    my $cur_chr = "";
     my $anno_idx = 0;
-    foreach my $var (@$sorted_vars) {
+    foreach my $var (@sorted_vars) {
+	if ($var->{chr} ne $cur_chr) {
+	    $cur_chr = $var->{chr};
+	    $anno_idx = 0;
+	}
 	my $annoEnt;
 	($annoEnt, $anno_idx) = $self->varanno($var, $anno_idx);
 	push (@all_annoRst, $annoEnt);
@@ -2775,525 +2609,44 @@ sub batch_anno {
     return \@all_annoRst;
 }
 
+sub rev_comp {
+    my $self = shift;
+    my $Seq = shift;
+    $Seq = reverse($Seq);
+    $Seq =~ tr/ATCG/TAGC/; # only deal with 'A', 'T', 'G', 'C'
+    return $Seq;
+}
 
-=head2 get_anno_pos
+sub throw {
+    my ($self,@msg) = @_;
+    confess @msg,"\n";
+}
 
-    About   : get snv and variation with 1bp deletion positions.
-    Usage   : my @toAnno = get_anno_pos($var);
+sub warn {
+    my ($self, @msg) = @_;
+    carp @msg,"\n";
+}
+
+
+=head1 BedAnno::Var
+
+    BedAnno::Var sub module
 
 =cut
-sub get_anno_pos {
-    my $var = shift;
-    if (exists $$var{'+'}) {	# for multiple samples caused pseudo-complex
-	if ($$var{'+'}{brl} == 1 and $$var{'+'}{bal} == 1) { # back compatible snv
-	    return $$var{'+'}{bp};
-	}
-	elsif ($$var{'+'}{brl} == 2) { # 1bp deletion or delins
-	    return ($$var{'+'}{bp} + 1);
-	}
-    }
-    elsif ($$var{guess} eq 'snv' or $$var{guess} eq 'ref') {
-	return $$var{pos};
-    }
-    elsif ($$var{guess} eq 'del' and $$var{reflen} == 2) {
-	return ($$var{pos} + 1);
-    }
-    return 0;
-}
+package BedAnno::Var;
+use base qw(BedAnno);
+use strict;
+use warnings;
+use Carp;
+ 
+=head1 METHOD
 
-=head2 get_cPos
+=head2 new
 
-    About   : get cPos for all needed positions on the same chromosome, 
-	      and also parse the anno bedent by the way.
-    Usage   : my $rcPos = $beda->get_cPos( $chr, \@pos, local => 1 );
-    Args    : chromosome positions should be sorted from small to large, 
-	      if 'local' tag used, a localized bed will be load without
-	      override the original db entry, other restriction will
-	      also be available to use, just like genes, trans...
-    Returns : an hash ref of cPos, cPos format:
-	      border-indicater
-		0 for non-border
-		b for 5'end border
-		B for 3'end border
-		1 for too short block
-
-	       { $pos1 => { 
-			    $tid => {
-				      gsym => $gsym, 
-				      reg  => $region, 
-				      exin => $exin,
-				      cpos => $cpos, 
-				      strd => [+-], 
-				      bd   => [bB01]
-				    }, ... 
-			   }, ... 
-	       }
-
-=cut
-sub get_cPos {
-    my ($self, $chr, $rpos, %args) = @_;
-
-    my $rAnnos;
-    if (exists $args{local} and $args{local}) {
-	$rAnnos = $self->load_anno( %args, region => $chr.":".$$rpos[0]."-".$$rpos[-1] );
-    }
-    else {
-	$rAnnos = $$self{annodb};
-    }
-    return {} if (!exists $$rAnnos{$chr});
-
-    my $rbed = $$rAnnos{$chr};
-
-    my %rmdup = map {$_ => 1} @$rpos;
-    my @sortp = sort {$a <=> $b} keys %rmdup;
-    my %cPos = ();
-    my $k = 0;
-    foreach my $pos (@sortp) { # one by one from small to large
-	while ($k < @$rbed) {
-	    if ($$rbed[$k]{sto} < $pos) {
-		$k ++;
-		next;
-	    }
-	    if ($$rbed[$k]{sta} >= $pos) {
-		$k = ($k - 1 < 0) ? 0 : ($k - 1);
-		last;
-	    }
-	    if (!exists $$rbed[$k]{detail}) {
-		foreach my $annoblk (keys %{$$rbed[$k]{annos}}) {
-		    my $offset1 = $$rbed[$k]{annos}{$annoblk};
-		    my ($tid, $ranno) = parse_annoent($annoblk);
-		    $$rbed[$k]{detail}{$tid} = $ranno;
-		    $$rbed[$k]{detail}{$tid}{offset} = $offset1;
-		}
-	    }
-
-	    my $offset = $pos - $$rbed[$k]{sta} - 1;
-	    foreach my $t (sort keys %{$$rbed[$k]{detail}}) {
-		my $rh = $$rbed[$k]{detail}{$t};
-		$cPos{$pos}{$t} = in_reg_cPos($rh, $offset);
-	    }
-	    last;
-	}
-    }
-    return \%cPos;
-}
-
-sub in_reg_cPos {
-    my ($rh, $left_offset) = @_;
-    my $total_left_offset  = $left_offset + $$rh{offset};
-    my $total_right_offset = $$rh{wlen} - $total_left_offset - 1;
-    my $border;
-    if ( $total_left_offset < 2 and $total_right_offset < 2 ) {
-	$border = 1;
-    }
-    elsif (( $total_left_offset < 2 and $$rh{strand} eq '+' )
-	or ( $total_right_offset < 2 and $$rh{strand} eq '-' ) )
-    {
-	$border = 'b';
-    }
-    elsif (( $total_left_offset < 2 and $$rh{strand} eq '-' )
-	or ( $total_right_offset < 2 and $$rh{strand} eq '+' ) )
-    {
-	$border = 'B';
-    }
-    else {
-	$border = 0;
-    }
-    
-    if ($$rh{nsta} eq '') { # for incomplete cds cases
-	return { gsym => $$rh{gsym}, reg => $$rh{blka}, exin => $$rh{exin}, cpos => 'c.?', strd => $$rh{strand}, bd => $border };
-    }
-
-    my $cpos;
-    my $strandopt = ($$rh{strand} eq '+') ? 1 : 0;
-
-    $_ = $$rh{blka};
-    if (/^C/ or /^5/) { # cds or utr-5
-	if ($strandopt) {
-	    $cpos = 'c.'.($$rh{csta} + $total_left_offset);
-	}
-	else {
-	    $cpos = 'c.'.($$rh{csto} + $total_right_offset);
-	}
-    }
-    elsif (/^I/) { # intron
-	if ($$rh{csta} ne '') { # coding rna
-	    if ($total_left_offset < $total_right_offset) {
-		my $opt = ($strandopt) ? '+' : '-';
-		$cpos = 'c.'.$$rh{csta}.$opt.($total_left_offset + 1);
-	    }
-	    else {
-		my $opt = ($strandopt) ? '-' : '+';
-		$cpos = 'c.'.$$rh{csto}.$opt.($total_right_offset + 1);
-	    }
-	}
-	else { # ncRNA
-	    if ($total_left_offset < $total_right_offset) {
-		my $opt = ($strandopt) ? '+' : '-';
-		$cpos = 'n.'.$$rh{nsta}.$opt.($total_left_offset + 1);
-	    }
-	    else {
-		my $opt = ($strandopt) ? '-' : '+';
-		$cpos = 'n.'.$$rh{nsto}.$opt.($total_right_offset + 1);
-	    }
-	}
-    }
-    elsif (/^3/) { # utr-3
-	if ($strandopt) {
-	    my $p = $$rh{csta}; $p =~ s/^\*//;
-	    $cpos = 'c.*'.($p + $total_left_offset);
-	}
-	else {
-	    my $p = $$rh{csto}; $p =~ s/\*//;
-	    $cpos = 'c.*'.($p + $total_right_offset);
-	}
-    }
-    elsif (/^R/) { # ncRNA
-	if ($strandopt) {
-	    $cpos = 'n.'.($$rh{nsta} + $total_left_offset);
-	}
-	else {
-	    $cpos = 'n.'.($$rh{nsto} + $total_right_offset);
-	}
-    }
-    else { confess "unrecognized block attribution!"; }
-
-    return { gsym => $$rh{gsym}, reg => $$rh{blka}, exin => $$rh{exin}, cpos => $cpos, strd => $$rh{strand}, bd => $border };
-}
-
-
-=head2 get_cover
-
-    About   : get covered region infos for deletions, and also for insertion pos pairs.
-    Usage   : my $rcover = $beda->get_cover($chr, $start, $stop, local => 1);
-    Args    : use 'local' tag to call tabix to get bed annotation locally.
-    Returns : an array ref of covered region cPos pairs, cPos with "--" or "++" indicate 
-	      outside of transcripts.
-		[ [ $tid, $left_cPos, $right_cPos ], ... ]
-
-=cut
-sub get_cover {
-    my ($self, $chr, $start, $stop, %args) = @_;
-
-    my $rAnnos;
-    if (exists $args{local} and $args{local}) {
-	# also allow other open_args to restrict the return bed ents, override the ori class args.
-	$rAnnos = $self->load_anno( %args, region => $chr.":".$start."-".$stop );
-    }
-    else {
-	$rAnnos = $$self{annodb};
-    }
-
-    return [] if (!exists $$rAnnos{$chr});
-    my @covbeds = ();
-    my %min_left = ();
-    my %min_right = ();
-    my %left_most = ();
-    my %right_most = ();
-    my $k = 0;
-    foreach my $bedent (@{$$rAnnos{$chr}}) {
-	next if ($start > $$bedent{sto});
-	last if ($stop  <= $$bedent{sta});
-	if (!exists $$bedent{detail}) {
-	    foreach my $annoblk (keys %{$$bedent{annos}}) {
-		my $offset1 = $$bedent{annos}{$annoblk};
-		my ($tid, $ranno) = parse_annoent($annoblk);
-		$$bedent{detail}{$tid} = $ranno;
-		$$bedent{detail}{$tid}{offset} = $offset1;
-	    }
-	}
-	push (@covbeds, $bedent);
-	foreach my $tid (sort keys %{$$bedent{detail}}) {
-	    if (!exists $min_left{$tid}) {
-		$min_left{$tid} = $$bedent{sta} + 1 - $start;
-		$left_most{$tid} = $k;
-	    }
-	    if (!exists $min_right{$tid}) {
-		$min_right{$tid} = $stop - $$bedent{sto};
-		$right_most{$tid} = $k;
-	    }
-	    elsif ($min_right{$tid} > ($stop - $$bedent{sto})) {
-		$min_right{$tid} = $stop - $$bedent{sto};
-		$right_most{$tid} = $k;
-	    }
-	}
-	$k ++;
-    }
-    return [] if (0 == @covbeds);
-
-    my @ret_pairs;
-    foreach my $tid (sort keys %left_most) {
-	my ($left_cPos, $right_cPos);
-        my ( $left_bed, $right_bed ) =
-          ( $covbeds[ $left_most{$tid} ], $covbeds[ $right_most{$tid} ] );
-
-	if ($min_left{$tid} > 0) {  # extend off the left of tid
-	    my $left_cp;
-	    my $bd = 0;
-	    if ($$left_bed{detail}{$tid}{strand} eq '+') {
-		$bd = "b" if ($min_left{$tid} < 2);
-		$left_cp = "--".$min_left{$tid};
-	    }
-	    else {
-		$bd = "B" if ($min_left{$tid} < 2);
-		$left_cp = "++".$min_left{$tid};
-	    }
-            $left_cPos = {
-                gsym => $$left_bed{detail}{$tid}{gsym},
-                reg  => $$left_bed{detail}{$tid}{blka},
-                exin => $$left_bed{detail}{$tid}{exin},
-                strd => $$left_bed{detail}{$tid}{strand},
-                cpos => $left_cp,
-                bd   => $bd
-              };
-	}
-	else {
-	    $left_cPos = in_reg_cPos($$left_bed{detail}{$tid}, -$min_left{$tid});
-	}
-	if ($min_right{$tid} > 0) { # extend off the right of tid
-	    my $right_cp;
-	    my $rbd = 0;
-	    if ($$right_bed{detail}{$tid}{strand} eq '+') {
-		$rbd = "B" if ($min_right{$tid} < 2);
-		$right_cp = "++".$min_right{$tid};
-	    }
-	    else {
-		$rbd = "b" if ($min_right{$tid} < 2);
-		$right_cp = "--".$min_right{$tid};
-	    }
-            $right_cPos = {
-                gsym => $$right_bed{detail}{$tid}{gsym},
-                reg  => $$right_bed{detail}{$tid}{blka},
-                exin => $$right_bed{detail}{$tid}{exin},
-                strd => $$right_bed{detail}{$tid}{strand},
-                cpos => $right_cp,
-                bd   => $rbd
-              };
-	}
-	else {
-            my $converse_left =
-              ( $$right_bed{sto} - $$right_bed{sta} + $min_right{$tid} - 1 );
-            $right_cPos =
-              in_reg_cPos( $$right_bed{detail}{$tid}, $converse_left );
-	}
-	push (@ret_pairs, [ $tid, $left_cPos, $right_cPos ]);
-    }
-    return \@ret_pairs;
-}
-
-
-=head2 get_cover_batch
-
-    About   : get covered region in batch mode
-    Usage   : my $cover_href = $beda->get_cover_batch( $chr, \@stasto );
-    Args    : a chromosome id, and an array ref of [ [ $start, $stop ], ... ]
-    Returns : a hash ref of:
-		{
-		    "$start-$stop" => [ 
-					[ $tid, $left_cPos, $right_cPos ], ... 
-				      ], ...
-		}
-	      Note: the pos-pair which do not hit any annotation blocks, will
-		    not exist in the returned results.
-
-=cut
-sub get_cover_batch {
-    my ($self, $chr, $stasto_aref) = @_;
-    my $rAnnos = $$self{annodb};
-    return {} if (!exists $$rAnnos{$chr});
-
-    my @sorted_stasto = sort pairsort @$stasto_aref;
-    return {} if (0 == @sorted_stasto);
-
-    my %ret_cov = ();
-
-    my $cur_blkId = 0;
-    for (my $i = 0; $i < @{$$rAnnos{$chr}}; $i++) {
-	my $cur_bedent = $$rAnnos{$chr}[$i];
-
-	last if ($cur_blkId >= @sorted_stasto);
-	# skip left anno blocks
-	next if ($sorted_stasto[$cur_blkId][0] > $$cur_bedent{sto});
-
-	# skip no hit pos-pair
-	while ($sorted_stasto[$cur_blkId][1] <= $$cur_bedent{sta}) {
-	    $cur_blkId ++;
-	    return \%ret_cov if ($cur_blkId == @sorted_stasto);
-	}
-
-	# skip left anno blocks again for the new shifted pos-pair.
-	next if ($sorted_stasto[$cur_blkId][0] > $$cur_bedent{sto});
-
-	# hit the annotation blks
-	my $pospair = join( "-", @{$sorted_stasto[$cur_blkId]} );
-	$ret_cov{$pospair} = cal_covered( $$rAnnos{$chr}, $i, @{$sorted_stasto[$cur_blkId]} );
-	$cur_blkId ++; 
-	$i --; # keep annotation block to stay at current index
-    }
-    return \%ret_cov;
-}
-
-sub cal_covered {
-    my ($rchrAnnos, $k, $start, $stop) = @_;
-
-    my %min_left = ();
-    my %min_right = ();
-    my %left_most = ();
-    my %right_most = ();
-
-    while ($k < @$rchrAnnos and $$rchrAnnos[$k]{sta} < $stop) {
-	my $bedent = $$rchrAnnos[$k];
-	if (!exists $$bedent{detail}) {
-	    foreach my $annoblk (keys %{$$bedent{annos}}) {
-		my $offset1 = $$bedent{annos}{$annoblk};
-		my ($tid, $ranno) = parse_annoent($annoblk);
-		$$bedent{detail}{$tid} = $ranno;
-		$$bedent{detail}{$tid}{offset} = $offset1;
-	    }
-	}
-	
-	foreach my $tid (sort keys %{$$bedent{detail}}) {
-	    if (!exists $min_left{$tid}) {
-		$min_left{$tid} = $$bedent{sta} + 1 - $start;
-		$left_most{$tid} = $k;
-	    }
-	    if (!exists $min_right{$tid}) {
-		$min_right{$tid} = $stop - $$bedent{sto};
-		$right_most{$tid} = $k;
-	    }
-	    elsif ($min_right{$tid} > ($stop - $$bedent{sto})) {
-		$min_right{$tid} = $stop - $$bedent{sto};
-		$right_most{$tid} = $k;
-	    }
-	}
-	$k ++;
-    }
-
-    my @ret_pairs = ();
-    foreach my $tid (sort keys %left_most) {
-	my ($left_cPos, $right_cPos);
-	my ( $left_bed, $right_bed ) =
-	  ( $$rchrAnnos[ $left_most{$tid} ], $$rchrAnnos[ $right_most{$tid} ] );
-
-	if ($min_left{$tid} > 0) {  # extend off the left of tid
-	    my $left_cp;
-	    my $bd = 0;
-	    if ($$left_bed{detail}{$tid}{strand} eq '+') {
-		$bd = "b" if ($min_left{$tid} < 2);
-		$left_cp = "--".$min_left{$tid};
-	    }
-	    else {
-		$bd = "B" if ($min_left{$tid} < 2);
-		$left_cp = "++".$min_left{$tid};
-	    }
-	    $left_cPos = {
-		gsym => $$left_bed{detail}{$tid}{gsym},
-		reg  => $$left_bed{detail}{$tid}{blka},
-		exin => $$left_bed{detail}{$tid}{exin},
-		strd => $$left_bed{detail}{$tid}{strand},
-		cpos => $left_cp,
-		bd   => $bd
-	      };
-	}
-	else {
-	    $left_cPos = in_reg_cPos($$left_bed{detail}{$tid}, -$min_left{$tid});
-	}
-	if ($min_right{$tid} > 0) { # extend off the right of tid
-	    my $right_cp;
-	    my $rbd = 0;
-	    if ($$right_bed{detail}{$tid}{strand} eq '+') {
-		$rbd = "B" if ($min_right{$tid} < 2);
-		$right_cp = "++".$min_right{$tid};
-	    }
-	    else {
-		$rbd = "b" if ($min_right{$tid} < 2);
-		$right_cp = "--".$min_right{$tid};
-	    }
-	    $right_cPos = {
-		gsym => $$right_bed{detail}{$tid}{gsym},
-		reg  => $$right_bed{detail}{$tid}{blka},
-		exin => $$right_bed{detail}{$tid}{exin},
-		strd => $$right_bed{detail}{$tid}{strand},
-		cpos => $right_cp,
-		bd   => $rbd
-	      };
-	}
-	else {
-	    my $converse_left =
-	      ( $$right_bed{sto} - $$right_bed{sta} + $min_right{$tid} - 1 );
-	    $right_cPos =
-	      in_reg_cPos( $$right_bed{detail}{$tid}, $converse_left );
-	}
-	push (@ret_pairs, [ $tid, $left_cPos, $right_cPos ]);
-    }
-    return \@ret_pairs;
-}
-
-sub pairsort {
-    $$a[0] <=> $$b[0] or $$a[1] <=> $$b[1]
-}
-
-=head2 getUnifiedVar
-
-    About   : uniform the pos and ref/alt pair selection,
-	      after parse_var(), give info for HGVS naming.
-    Usage   : my @unified_desc = $var->getUnifiedVar($strd);
-    Args    : BedAnno::Var entry and current strand for annotation.
-    Returns : an array of ( 
-		$pos,  # 0-based start pos
-		$ref,  # reference bases
-		$alt,  # called bases
-		$reflen, # reference len
-		$altlen )# called len, undef if no-call
-
-=cut
-sub getUnifiedVar {
-    my $var = shift;
-    my $strd = shift;
-
-    my $consPos = $$var{pos};
-    my $consRef = $$var{ref};
-    my $consAlt = $$var{alt};
-    my $consRL	= $$var{reflen};
-
-    if (!exists $$var{altlen}) {
-	return ($consPos, $consRef, $consAlt, $consRL);
-    }
-
-    my $consAL	= $$var{altlen};
-    
-    if (exists $var->{p}) { # rep
-	$consPos = $$var{p};
-	$consRef = $$var{r};
-	$consAlt = $$var{a};
-	$consRL	 = $$var{rl};
-	$consAL	 = $$var{al};
-    }
-    elsif (exists $var->{bp}) { # complex bc strand same
-	$consPos = $$var{bp};
-	$consRef = $$var{br};
-	$consAlt = $$var{ba};
-	$consRL	 = $$var{brl};
-	$consAL	 = $$var{bal};
-    }
-    elsif (exists $var->{$strd}) { # complex bc strand diff
-	$consPos = $$var{$strd}{bp};
-	$consRef = $$var{$strd}{br};
-	$consAlt = $$var{$strd}{ba};
-	$consRL	 = $$var{$strd}{brl};
-	$consAL	 = $$var{$strd}{bal};
-    }
-
-    return ($consPos, $consRef, $consAlt, $consRL, $consAL);
-}
-
-
-=head2 parse_var
-
-    About   : implicitly create a new object class entry, BedAnno::Var,
+    About   : Create a new object class entry, BedAnno::Var,
 	      parse the variation directly by the ref and alt string.
-    Usage   : my $var = parse_var( $chr, $start, $end, $ref, $alt );
-	   or my $var = parse_var( $chr, $pos, $ref, $alt );
+    Usage   : my $var = BedAnno::Var->new( $chr, $start, $end, $ref, $alt );
+	   or my $var = BedAnno::Var->new( $chr, $pos, $ref, $alt );
     Returns : a new BedAnno::Var entry :
             {
                 chr    => $chr,
@@ -3353,19 +2706,15 @@ sub getUnifiedVar {
 
 		# for equal length long substitution
 		# record the separated snvs positions
+		# all positions are 1 based.
 		sep_snvs => [ $snv_pos1, $snv_pos2, ... ],
-
-		# entries selection which cover by var
-		sel    => {
-		    # please see select_position()
-		},
             }
 
 =cut
-sub parse_var {
+sub new {
+    my $class = shift;
     confess "Error: not enough args [",scalar(@_),"], need at least 4 args." if (4 > @_);
     my ($chr, $start, $end, $ref, $alt) = @_;
-    $chr = normalise_chr($chr);
 
     my %var;
 
@@ -3374,7 +2723,6 @@ sub parse_var {
 	$ref = $end;
 	$ref = normalise_seq($ref);
 	$alt = normalise_seq($alt);
-	my $rl = length($ref);
 	if (substr($ref,0,1) eq substr($alt,0,1)) {
 	    $ref = substr($ref,1);
 	    $alt = substr($alt,1);
@@ -3382,12 +2730,14 @@ sub parse_var {
 	else {
 	    $start -= 1; # change to 0-based start
 	}
+	my $rl = length($ref);
 	$end = $start + $rl;
     }
 
     my $len_ref = $end - $start;            # chance to annotate long range
     my ($varType, $implicit_varType, $sm) = guess_type($len_ref, $ref, $alt);
 
+    $chr = normalise_chr($chr);
     %var = (
         chr    => $chr,
         pos    => $start,
@@ -3401,16 +2751,71 @@ sub parse_var {
     );
     $var{altlen} = length($alt) if ($alt ne '?');
 
-    my $var : shared;
-    $var = shared_clone({%var});
-    bless $var, 'BedAnno::Var';
+    my $var;
+    $var = {%var};
+    bless $var, ref($class) || $class;
 
-    if ($guess eq 'no-call' or $implicit_varType ne 'delins') {
+    if ($varType eq 'no-call' or $implicit_varType ne 'delins') {
 	return $var;
     }
     
     return $var->parse_complex();
 }
+
+=head2 getUnifiedVar
+
+    About   : uniform the pos and ref/alt pair selection,
+	      after new(), give info for HGVS naming.
+    Usage   : my @unified_desc = $var->getUnifiedVar($strd);
+    Args    : BedAnno::Var entry and current strand for annotation.
+    Returns : an array of ( 
+		$pos,  # 0-based start pos
+		$ref,  # reference bases
+		$alt,  # called bases
+		$reflen, # reference len
+		$altlen )# called len, undef if no-call
+
+=cut
+sub getUnifiedVar {
+    my $var = shift;
+    my $strd = shift;
+
+    my $consPos = $$var{pos};
+    my $consRef = $$var{ref};
+    my $consAlt = $$var{alt};
+    my $consRL	= $$var{reflen};
+
+    if (!exists $$var{altlen}) {
+	return ($consPos, $consRef, $consAlt, $consRL);
+    }
+
+    my $consAL	= $$var{altlen};
+    
+    if (exists $var->{p}) { # rep
+	$consPos = $$var{p};
+	$consRef = $$var{r};
+	$consAlt = $$var{a};
+	$consRL	 = $$var{rl};
+	$consAL	 = $$var{al};
+    }
+    elsif (exists $var->{bp}) { # complex bc strand same
+	$consPos = $$var{bp};
+	$consRef = $$var{br};
+	$consAlt = $$var{ba};
+	$consRL	 = $$var{brl};
+	$consAL	 = $$var{bal};
+    }
+    elsif (exists $var->{$strd}) { # complex bc strand diff
+	$consPos = $$var{$strd}{bp};
+	$consRef = $$var{$strd}{br};
+	$consAlt = $$var{$strd}{ba};
+	$consRL	 = $$var{$strd}{brl};
+	$consAL	 = $$var{$strd}{bal};
+    }
+
+    return ($consPos, $consRef, $consAlt, $consRL, $consAL);
+}
+
 
 sub normalise_chr {
     my $chr = shift;
@@ -3453,7 +2858,7 @@ sub normalise_seq {
     Usage   : my $var = $var->parse_complex();
     Args    : variantion entry, which have been uniform to 
 	      CG's shell list format, with its 'guess':delins.
-    Returns : see parse_var()
+    Returns : see BedAnno::Var->new()
 
 =cut
 sub parse_complex {
@@ -3489,14 +2894,14 @@ sub parse_complex {
 	my @separate_snvs = ();
 	for (my $i = 0; $i < $var->{reflen}; $i++) {
 	    next if (substr($var->{ref}, $i, 1) eq substr($var->{alt}, $i, 1));
-	    push (@separate_snvs,  $var->{pos} + $i + 1);
+	    push (@separate_snvs,  $var->{pos} + $i + 1); # 1-based
 	}
-	$var->{sep_snvs} = shared_clone([@separate_snvs]);
+	$var->{sep_snvs} = [@separate_snvs];
     }
 
     my $rc_ref = count_content($ref);
     my $rc_alt = count_content($alt);
-    my @diff = map { $$rc_ref[$_] - $$rc_alt[$_] } (0 .. 5);
+    my @diff = map { $$rc_ref[$_] - $$rc_alt[$_] } (0 .. $AAcount);
 
     # check if the sign of all base diff are consistent.
     if (check_sign( \@diff )) { # possible short tandom repeat variation
@@ -3517,7 +2922,7 @@ sub parse_complex {
 
 	my %has = ();
 	for (my $rep = $llen; $rep > 0; $rep--) {
-	    while ($larger =~ /([ACGTN]+)(?:\1){$rep}/g) {
+	    while ($larger =~ /([A-Z]+)(?:\1){$rep}/g) {
 		next if (exists $has{$1});
 
                 my $rep_el = $1;
@@ -3564,17 +2969,6 @@ sub parse_complex {
     return $var;
 }
 
-
-# deal with the GATK multiple-sample cases
-# if the smaller cstr (string after the first base) only exists at the end of 
-# the larger cstr, 
-sub check_trim_tail {
-    my ($larger, $llen, $smaller, $slen) = @_;
-    if (($llen - $slen) == index($larger, $smaller) and (substr($larger, -$slen, $slen) eq $smaller)) {
-	return 1;
-    }
-    return 0;
-}
 
 # guess only by length for get_internal result
 # the only delins without no-call left
@@ -3637,7 +3031,12 @@ sub guess_type {
     #		   3 - for equal-length multiple bases delins
     my ($imp_varType, $varType, $sm);
     if ($len_ref == 0) {
-	$imp_varType = 'ins';
+	if ($ref eq $alt) {
+	    $imp_varType = 'ref';
+	}
+	else {
+	    $imp_varType = 'ins';
+	}
 	$sm = 0;
     }
     elsif ($len_ref == 1) {
@@ -3673,7 +3072,7 @@ sub guess_type {
 	    $sm = 3; # equal-length subs
 	}
     }
-    $varType = ($alt eq '?') ? 'no-call' : $varType;
+    $varType = ($alt eq '?' or $alt eq 'N') ? 'no-call' : $imp_varType;
     return ($varType, $imp_varType, $sm);
 }
 
@@ -3769,7 +3168,7 @@ sub check_div {
     my $rcs = count_content($s);
     return 0 unless ($$rc[0] % $$rcs[0] == 0);
     my $div = $$rc[0] / $$rcs[0];
-    for (1 .. 5) {
+    for (1 .. $AAcount) {
         return 0 if ($$rc[$_] != $$rcs[$_] * $div);
     }
     return $div;
@@ -3777,106 +3176,753 @@ sub check_div {
 
 sub count_content {
     my $s = uc(shift);
-    my $l = ($s =~ tr/ACGTN/12345/);
-    my @count = ($l, 0, 0, 0, 0, 0);
-    while ($s=~/(\d)/g) {
-	$count[$1] ++;
+    my $l = length($s);
+    my @count = ($l, (0) x $AAcount);
+    while ($s=~/(.)/g) {
+	confess "unknown base [$1]" if (!exists $AAnumber{$1});
+	$count[$AAnumber{$1}] ++;
     }
     return \@count;
 }
 
+=head2 get_gHGVS
 
-=head2 fetchseq
-
-    About   : get sequence from fasta db using samtools faidx
-    Usage   : my $seq = fetchseq('db.fasta', $region_str);
-	      my $rhash = fetchseq('db.fasta', \@regions);
-    Args    : a list of region in format: (chr1:123-456, chr1:789-1000, chr2:234-567, or NM_01130.1:345 )
-    Returns : a hash ref of { region => seq }
+    About   : get genomic (chromosomal) HGVS string of variation
+    Usage   : my $gHGVS = $var->get_gHGVS();
+    Args    : variation entry, after BedAnno::Var->new().
+    Returns : chromosomal HGVS string.
 
 =cut
-sub fetchseq {
-    my ($fasta, $rRegs) = @_;
-    local $/ = ">";
-    if (!ref($rRegs)) { # a scalar string
-	if ($rRegs =~ /[\S]\s+[\S]/) { # multiple regions
-	    $rRegs = [split(/\s+/, $rRegs)];
-	}
-	else { # single region
-	    open (FASTA,"samtools faidx $fasta $rRegs |") or confess "samtools faidx: $!";
-	    <FASTA>; # shift first ">";
-	    my $seq = <FASTA>;
-	    close FASTA;
-	    $seq =~ s/^[^\n]+$//;
-	    $seq =~ s/[\s>]+//g;
-	    return $seq;
-	}
+sub get_gHGVS {
+    my $var = shift;
+    my $gHGVS = 'g.';
+    if ($var->{chr} =~ /^M/) { # hit mito chromosome
+	$gHGVS = 'm.';
     }
-    my %seqs = ();
-    while (0 < @$rRegs) {
-	my @set = splice (@$rRegs, 0, 1000);
-	my $regions = join(" ", @set);
-        open( FASTA, "samtools faidx $fasta $regions |" )
-          or confess "samtools faidx: $!";
-	my @all_seq = <FASTA>;
-	close FASTA;
-	shift @all_seq;
-	foreach my $rec (@all_seq) {
-	    chomp $rec;
-	    my $hd = $1 if ($rec =~ s/^(\S+)[^\n]*$//);
-	    $rec =~ s/[\s>]+//g;
-	    next if ($rec =~ /^$/);
-	    $seqs{$hd} = uc($rec);
-	}
-    }
-    return \%seqs;
-}
 
-sub Code2Pep {
-    my $code = shift;
-    if (exists $Code2Pep{$code}) {
-	return $Code2Pep{$code};
+    my $imp = $var->{imp};
+    my $sm  = $var->{sm};
+    my ($pos, $ref, $alt, $reflen, $altlen) = $var->getUnifiedVar('+');
+
+    if ($imp eq 'snv') {
+	$gHGVS .= $pos.$ref.'>'.$alt;
+    }
+    elsif ($imp eq 'ins') {
+	$gHGVS .= $pos.'_'.($pos+1).'ins'.$alt;
+    }
+    elsif ($imp eq 'del' or $imp eq 'delins') {
+	# 1bp del/delins
+	$gHGVS .= ($pos+1);
+	if ($sm > 1) {
+	    $gHGVS .= '_'.($pos + $reflen);
+	}
+	$gHGVS .= 'del'.$ref;
+	$gHGVS .= 'ins'.$alt if ( $imp =~ /delins/);
+    }
+    elsif ($imp eq 'rep') {
+	$gHGVS .= ($pos + 1);
+	if ($var->{ref_cn} == 1 and $var->{alt_cn} == 2) { # dup
+	    if ($sm > 1) {
+		$gHGVS .= '_' . ($pos + $var->{replen});
+	    }
+	    $gHGVS .= 'dup'. $var->{rep};
+	}
+	else {
+	    $gHGVS .= $var->{rep}.'['.$var->{ref_cn}.'>'.$var->{alt_cn}.']';
+	}
+    }
+    elsif ($imp eq 'ref') {
+	$gHGVS .= '=';
     }
     else {
-	return '.';
+	confess "Can not recognize type $imp.";
     }
+    $var->{gHGVS} = $gHGVS;
+
+    return $var;
 }
 
-sub C3toC1 {
-    my $c3 = shift;
-    if (exists $C3toC1{$c3}) {
-	return $C3toC1{$c3};
-    }
-    else {
-	return '.';
-    }
+=head1 BedAnno::Anno
+
+    BedAnno::Anno sub package
+
+=cut
+
+package BedAnno::Anno;
+use base qw(BedAnno BedAnno::Var);
+use threads::shared;
+use strict;
+use warnings;
+
+use Data::Dumper;
+use Carp;
+
+=head1 METHOD
+
+=head2 new
+
+    About   : Create BedAnno::Anno object
+    Usage   : my $annoEnt = BedAnno::Anno->new($var);
+    Args    : BedAnno::Var entry
+    Returns : BedAnno::Anno entry
+
+=cut
+sub new {
+    my $class = shift;
+    my $var = shift;
+    my $self;
+    $self->{var} = $var;
+    bless $self, ref($class) || $class;
+    return $self;
 }
 
-sub C1toC3 {
-    my $c1 = shift;
-    if (exists $C1toC3{$c1}) {
-	return $C1toC3{$c1};
+=head2 getTrPosition
+
+    About   : Assign the BedAnno::Anno obj's trInfo with affected regions
+    Usage   : my $AEIndex = $annoEnt->getTrPosition($rannodb, $AEIndex);
+    Args    : $rannodb is a BedAnno::Anno object created by varanno(),
+	      $AEIndex is the current index for annodb searching.
+    Returns : A new AEIndex for next query.
+    Notes   : $AEIndex is used for same chr batch mode.
+	      assign the following tag to $annoEnt
+	      {
+		trInfo => {
+		    $tid => {
+			geneId,   geneSym, strd,
+			trAlt => $stranded_alt_string_with_ext_at_mismatches,
+
+			trRefComp => {
+			    $exon_number   => $transcript_exon_length,
+                            $intron_number => [
+                                $start_in_non_stranded_reference,
+                                $stop_in_non_stranded_reference
+                              ],
+			    ...
+			},
+		    },
+		    ...
+		}
+	      }
+
+=cut
+sub getTrPosition {
+    my ($annoEnt, $rannodb, $aeIndex) = @_;
+
+    my $var = $annoEnt->{var};
+    # gather the covered entries
+    my $new_aeIndex;
+
+    my %tidExblk = ();
+    for (my $k = $aeIndex; $k < @$rannodb; $k ++) {
+	if ($$rannodb[$k]{sto} < $var->{pos}) { # not reach var
+	    $aeIndex ++;
+	    next;
+	}
+	elsif ( $$rannodb[$k]{sta} > $var->{end} ) { # past var
+	    last;
+	}
+	else { # covered by var
+	    $new_aeIndex = $k if ($$rannodb[$k]{sta} <= $var->{pos}
+		and $var->{pos} <= $$rannodb[$k]{sto} );
+	    if (!exists $$rannodb[$k]{detail}) { # parse anno db
+		$$rannodb[$k] = BedAnno->assign_detail($$rannodb[$k]);
+	    }
+
+	    foreach my $tid (keys %{$$rannodb[$k]{detail}}) {
+		my $rtidDetail = $$rannodb[$k]{detail}{$tid};
+
+		my $strd = ($rtidDetail->{strd} eq '+') ? 1 : 0;
+
+                my ( $unify_p, $unify_r, $unify_a, $unify_rl, $unify_al ) =
+                  $var->getUnifiedVar( $$rtidDetail{strd} );
+
+		# skip non hitted block
+                next
+                  if ( $unify_p > $$rannodb[$k]{sto}
+                    or ( $unify_p + $unify_rl ) < $$rannodb[$k]{sta} );
+
+
+                my $total_left_ofst =
+                  $$rtidDetail{offset} + ( $unify_p - $$rannodb[$k]{sta} );
+                my $total_right_ofst = $total_left_ofst + $unify_rl;
+
+
+                if (   !exists $annoEnt->{trInfo}
+                    or !exists $annoEnt->{trInfo}->{$tid}
+                    or !exists $annoEnt->{trInfo}->{$tid}->{trAlt} )
+                {
+                    $annoEnt->{trInfo}->{$tid}->{trAlt} =
+                      (       $unify_a =~ /^[ACGTN]+$/
+                          and $rtidDetail->{strd} eq '-' )
+                      ? BedAnno->rev_comp($unify_a)
+                      : $unify_a;
+
+		    my $tmp_trInfo = $annoEnt->{trInfo}->{$tid};
+
+		    $tmp_trInfo->{geneId}  = $rtidDetail->{gid};
+		    $tmp_trInfo->{geneSym} = $rtidDetail->{gsym}; 
+		    $tmp_trInfo->{strd}    = $rtidDetail->{strd};
+                    # assign left rna positions
+		    # if no assignment then skip the right position assignment
+                    if (
+                        $annoEnt->cal_hgvs_pos(
+                            tid       => $tid,
+                            tidDetail => $rtidDetail,
+                            offset    => $total_left_ofst,
+                            LR        => 1,                  # left mode
+                        )
+                      )
+                    {
+                        if ( $rtidDetail->{blka} =~ /^PROM/ ) {
+
+                            #			              use P0 for sort
+                            $tmp_trInfo->{trRefComp}->{P0}->[0]
+                              = 0;
+                        }
+                        elsif ( $rtidDetail->{exin} =~ /^IVS/ ) {
+                            $tmp_trInfo->{trRefComp}
+                              ->{ $rtidDetail->{exin} }->[0] = 0;
+                        }
+			elsif ( !$strd and $tmp_trInfo->{rnaEnd} =~ /^\+(\d+)/ ) {
+			    $tmp_trInfo->{trRefComp}->{ Z999 }->[0] = 0;
+			    $tmp_trInfo->{trRefComp}->{ Z999 }->[1] = $1;
+			}
+			# let right rna positions to record Exon block
+                    }
+                    else {
+                        next;
+                    }
+                }
+
+		my $trinfoEnt = $annoEnt->{trInfo}->{$tid};
+		# assign right rna positions
+                if (
+                    $annoEnt->cal_hgvs_pos(
+                        tid       => $tid,
+                        tidDetail => $rtidDetail,
+                        offset    => $total_right_ofst,
+                        LR        => 0,                   # right mode
+                    )
+                  )
+                {
+		    # assign the trRefComp
+		    my $tmp_exin = $rtidDetail->{exin};
+                    if ( $tmp_exin =~ /^EX/ ) {
+                        if (   !exists $tidExblk{$tid}
+                            or !exists $tidExblk{$tid}{$tmp_exin}
+                            or !exists $tidExblk{$tid}{$tmp_exin}{
+				$rtidDetail->{nsta} . ',' . $rtidDetail->{nsto}
+				}
+                          )
+                        {    # non Insertion on refseq, and first occured exon
+                            $tidExblk{$tid}{$tmp_exin}{
+				    $rtidDetail->{nsta} . ','
+                                  . $rtidDetail->{nsto} } = 1;
+
+                            my ( $cmpStart, $cmpEnd );
+                            if ($strd) {
+                                $cmpStart =
+                                  (
+                                    0 < BedAnno->cmpPos(
+                                        $trinfoEnt->{rnaBegin},
+                                        $rtidDetail->{nsta}
+                                    )
+                                  )
+                                  ? $rtidDetail->{nsta}
+                                  : $trinfoEnt->{rnaBegin}
+                                  ;    # select the larger one
+				$cmpEnd = 
+                                  (
+                                    0 < BedAnno->cmpPos(
+                                        $trinfoEnt->{rnaEnd},
+                                        $rtidDetail->{nsto}
+                                    )
+                                  )
+                                  ? $trinfoEnt->{rnaEnd}
+                                  : $rtidDetail->{nsto}
+                                  ;    # select the smaller one
+			    }
+			    else {
+                                $cmpStart =
+                                  (
+                                    0 < BedAnno->cmpPos(
+                                        $trinfoEnt->{rnaBegin},
+                                        $rtidDetail->{nsto}
+                                    )
+                                  )
+                                  ? $rtidDetail->{nsto}
+                                  : $trinfoEnt->{rnaBegin}
+                                  ;    # select the larger one
+                                $cmpEnd =
+                                  (
+                                    0 < BedAnno->cmpPos(
+                                        $trinfoEnt->{rnaEnd},
+                                        $rtidDetail->{nsta}
+                                    )
+                                  )
+                                  ? $trinfoEnt->{rnaEnd}
+                                  : $rtidDetail->{nsta}
+                                  ;    # select the smaller one
+                            }
+
+                            if ( $cmpStart !~ /^\d+$/ or $cmpEnd !~ /^\d+$/ ) {
+                                confess "Error: unknown bug cmpStart ",
+				    "[$cmpStart], cmpEnd [$cmpEnd]";
+                            }
+
+                            $trinfoEnt->{trRefComp}->{$tmp_exin} +=
+                              $cmpEnd - $cmpStart + 1;
+                            if (    $tmp_exin =~ /E$/
+                                and $strd
+                                and $trinfoEnt->{rnaEnd} =~ /^\+(\d+)/ )
+                            {
+                                $trinfoEnt->{trRefComp}->{Z999}->[0] =
+                                  $unify_rl - $1;
+                                $trinfoEnt->{trRefComp}->{Z999}->[1] =
+                                  $unify_rl;
+                            }
+                        }
+
+                    }
+		    else { # for intron region and PROM
+			if ( $rtidDetail->{blka} =~ /^PROM/ ) {
+			    $tmp_exin = 'P0'; # for sort
+			}
+                        if (   !exists $trinfoEnt->{trRefComp}
+                            or !exists $trinfoEnt->{trRefComp}
+                            ->{$tmp_exin} )
+                        {
+                            $trinfoEnt->{trRefComp}
+                              ->{$tmp_exin}->[0] =
+                              $$rannodb[$k]{sta} - $unify_p;
+                        }
+                        my $less =
+                          ( $$rannodb[$k]{sto} > ($unify_p + $unify_rl) )
+                          ? ($unify_p + $unify_rl)
+                          : $$rannodb[$k]{sto};
+                        $trinfoEnt->{trRefComp}->{$tmp_exin}
+                          ->[1] = $less - $unify_p;
+			if ( $tmp_exin eq 'P0' and !$strd ) {
+			    $trinfoEnt->{trRefComp}->{$tmp_exin}->[1] = $unify_rl;
+			}
+		    }
+                }
+                else {
+                    next;
+                }
+	    }
+        }
     }
-    else {
-	return '.';
+    $new_aeIndex ||= $aeIndex;
+    return $new_aeIndex;
+}
+
+
+
+
+=head2 cal_hgvs_pos
+
+    About   : calculate nDot, cDot HGVS position, depend on given offset,
+	      assign trAlt string and nDot HGVS and cDot HGVS positions.
+    Usage   : $annoEnt->cal_hgvs_pos(
+		    offset => $offset, 
+		    tid	   => $tid,
+		    LR	   => $lr,
+		    tidDetail => $rh_tidDetail,
+	      );
+    Args    : ofst is total offset to the start(left) of currunt annoblk,
+	      tid is the transcript id for the detail entry
+              tidDetail is the currunt annoblk detail
+              LR indicate this offset is left or right pos,
+		1 for left and assign sta group,
+		0 for right and assign end group.
+	      "noassign" to indicate whether to assign those information
+	      to annoEnt, it's used return the useful information only,
+	      without change the annoEnt. 
+    Returns : if noassign is used, then return a hash ref, which contains
+		{ nDot, cDot, exin, r } if successful.
+	      otherwise, 0 for no assigned status, 1 for successful assigned.
+             
+    Notes   : For position mirror on transcript, there are 2 other cases 
+              than normal case:
+              1. annotation fail, which can not be annotated in the region
+                 of it except for its promoter region.
+              2. block with length changing mismatches, or long substitution
+                 mismatch, which contain the following three cases:
+                 
+                 a. insertion (I) on refSeq
+
+                        +-------+---+--------+  refgenome
+                         \       \ /        /
+                          +-------+--------+    refSeq
+
+                 b. deletion (D) on refSeq 
+
+                          +-------+--------+    refgenome
+                         /       / \        \
+                        +-------+---+--------+  refSeq
+
+                 c. delins (DI) on refSeq (equal/non-equal length)
+
+                        +-------+---+--------+  refgenome
+                        |       |  /        /
+                        +-------+-+--------+    refSeq
+
+                 Insertion will have an reversed start/end position on refSeq,
+		 due to the 1-based position description system.
+		 
+		 Any position located in a non-zero length refgenome mismatch
+		 block have to extend to total region of mismatched block,
+		 and alternate "trAlt" value in annotation entry for this tid.
+
+	      This method assign the following tag to $annoEnt
+		{
+		    trInfo => {
+                        $tid => {
+                            rnaBegin, rnaEnd,  cdsBegin, cdsEnd,
+                            ei_Begin, ei_End,  r_Begin,  r_End,
+                            genepartSO, trAlt,
+                          },
+			...
+		    }
+		}
+=cut
+sub cal_hgvs_pos {
+    my $annoEnt = shift;
+    my %cal_args = @_;
+    if (exists $cal_args{noassign} and $cal_args{noassign} == 0) {
+	delete $cal_args{noassign};
     }
-}
+    
+    my %noassign_return = ();
+    my ( $ofst, $tid, $rtidDetail, $lr ) =
+      @cal_args{qw(offset tid tidDetail LR)};
+    my ( $nDot, $cDot ) = ( '', '' );
+    my $strd = ($$rtidDetail{strd} eq '+') ? 1 : 0;
+    my $trAlt = $annoEnt->{trInfo}->{$tid}->{trAlt};
+    my $lofst = $ofst;
+    if ($lr) { # only one time assignment for one var, offset for left 
+	my $rofst = $$rtidDetail{wlen} - $ofst - 1;
+        if ($lofst < 0) {
+	    if ($strd) { # outside 5'promoter region
 
-sub rev_comp {
-    my $Seq = shift;
-    $Seq = reverse($Seq);
-    $Seq =~ tr/ATCG/TAGC/; # only deal with 'A', 'T', 'G', 'C'
-    return $Seq;
-}
+		# 5'promoter is always available
+		$nDot = $$rtidDetail{nsta} + $lofst;
+		if ($$rtidDetail{csta} =~ /^(\S+)\-u(\d+)/) {
+                    $cDot = $1 . '-u' . ( $2 - $lofst );
+		}
+	    }
+	    else { # outside transcript region into 3'downstream
+		$nDot = '+'.(0-$lofst);
+		if ($$rtidDetail{csta} =~ /^\*?\d+$/) {
+                    $cDot = $$rtidDetail{csta} . '+d' . ( 0 - $lofst );
+		}
+	    }
+        }
+	elsif ($lofst > $$rtidDetail{wlen}) { # not proper called
+	    if (!exists $cal_args{noassign}) {
+		confess "Error: exceed the whole length [$lofst>$$rtidDetail{wlen}]";
+	    }
+	    else {
+		return 0;
+	    }
+	}
+	else { # 0 <= $lofst <= $$rtidDetail{wlen}
+        
+	    # 1. check if a mismatch block (only exon have this)
+	    if ( $rtidDetail->{mismatch} ne "" ) {
+		# for each kind of mismatch block,
+		# hit the left edge of var, the refSeq ref will
+		# contain start from the start of the mismatch
+		# block, case I in database already has
+		# a reversed coordinate between left and right.
+		# transcript-alt string shoule be assigned to 
+		# this tid
+		$nDot = $rtidDetail->{nsta};
+		$cDot = $rtidDetail->{csta};
+		if ($lofst>0) {
+		    # mismatch info record the transcript-stranded
+		    # reference sequence
+                    my ( $mType, $mStart, $mEnd, $strand_ref ) =
+                      split( /,/, $rtidDetail->{mismatch} );
+		    
+		    if ($strd) { # cut left
+			$trAlt = substr($strand_ref, 0, $lofst).$trAlt if ($trAlt ne '?');
+		    }
+		    else { # cut right
+			$trAlt .= substr($strand_ref, -$lofst, $lofst) if ($trAlt ne '?');
+		    }
+		}
+	    }
+	    # 2. check if hit a normal block's right edge
+	    elsif ( $lofst == $$rtidDetail{wlen} ) {
+		# give back the chance for left edge parsing
+		delete $annoEnt->{trInfo}->{$tid} if (!exists $cal_args{noassign});
+		return 0;
+	    }
+	    # 3. check if annotation-fail
+	    elsif ($rtidDetail->{gpSO} eq 'annotation-fail') {
+		( $nDot, $cDot ) = ( '?', '?' );
+	    }
+	    # 4. check if a promoter
+	    elsif ($rtidDetail->{blka} eq 'PROM') {
+                $nDot =
+                    ($strd)
+                  ? ( $rtidDetail->{nsta} + $lofst )
+                  : ( $rtidDetail->{nsta} - $lofst );
+		if ($rtidDetail->{csta} =~ /^(\S+)\-u(\d+)$/) {
+                    $cDot =
+                        ($strd)
+                      ? ( $1 . '-u' . ( $2 - $lofst ) )
+                      : ( $1 . '-u' . ( $2 + $lofst ) );
+		}
+	    }
+	    # 5. check if an exon
+	    elsif ($rtidDetail->{exin} =~ /EX/) {
+                $nDot =
+                    ($strd)
+                  ? ( $rtidDetail->{nsta} + $lofst )
+                  : ( $rtidDetail->{nsta} - $lofst );
+		if ($rtidDetail->{csta} =~ /^(\*?)(\-?\d+)$/) {
+		    $cDot = ($strd) ? $1.($2 + $lofst) : $1.($2 - $lofst);
+		}
+	    }
+	    # 6. intron
+	    elsif ($rtidDetail->{exin} =~ /IVS/) {
+		my $half_length = $rtidDetail->{wlen} / 2;
+		if ($lofst > $half_length) { # drop into latter part
+                    if (   $rtidDetail->{nsto} =~ /^\d+\d+$/
+                        or $rtidDetail->{csto} =~ /^\d+\d+$/ )
+                    {
+                        confess "Error format of database, ",
+                          "intron right pos description error!\n";
+                    }
 
-sub throw {
-    my ($self,@msg) = @_;
-    confess @msg,"\n";
-}
+		    if ($rtidDetail->{nsto} =~ /^(\d+\+?)(\-?\d+)$/) {
+                        $nDot =
+                            ($strd)
+                          ? ( $1 . ( $2 - $rofst ) )
+                          : ( $1 . ( $2 + $rofst ) );
+		    }
+		    if ($rtidDetail->{csto} =~ /^([\*\-]?\d+\+?)(\-?\d+)$/) {
+                        $cDot =
+                            ($strd)
+                          ? ( $1 . ( $2 - $rofst ) )
+                          : ( $1 . ( $2 + $rofst ) );
+		    }
+		}
+		else {
+                    if (   $rtidDetail->{nsta} =~ /^\d+\d+$/
+                        or $rtidDetail->{csta} =~ /^\d+\d+$/ )
+                    {
+                        confess "Error format of database, ",
+                          "intron left pos description error!\n";
+                    }
 
-sub warn {
-    my ($self, @msg) = @_;
-    carp @msg,"\n";
+		    if ($rtidDetail->{nsta} =~ /^(\d+\+?)(\-?\d+)$/) {
+                        $nDot =
+                            ($strd)
+                          ? ( $1 . ( $2 + $lofst ) )
+                          : ( $1 . ( $2 - $lofst ) );
+		    }
+		    if ($rtidDetail->{csta} =~ /^([\*\-]?\d+\+?)(\-?\d+)$/) {
+                        $cDot =
+                            ($strd)
+                          ? ( $1 . ( $2 + $lofst ) )
+                          : ( $1 . ( $2 - $lofst ) );
+		    }
+		}
+	    }
+	    else {
+		confess "Error: what's this? $rtidDetail->{exin}\n";
+	    }
+	}
+
+	if (!exists $cal_args{noassign}) {
+
+	    # the Begin End assignment is always from 5'->3' except for insertion
+	    if ($strd) {
+		$annoEnt->{trInfo}->{$tid}->{rnaBegin} = $nDot;
+		$annoEnt->{trInfo}->{$tid}->{cdsBegin} = $cDot;
+		$annoEnt->{trInfo}->{$tid}->{ei_Begin} = $rtidDetail->{exin}; 
+		$annoEnt->{trInfo}->{$tid}->{r_Begin}  = $rtidDetail->{blka};
+	    }
+	    else {
+		$annoEnt->{trInfo}->{$tid}->{rnaEnd} = $nDot;
+		$annoEnt->{trInfo}->{$tid}->{cdsEnd} = $cDot;
+		$annoEnt->{trInfo}->{$tid}->{ei_End} = $rtidDetail->{exin};
+		$annoEnt->{trInfo}->{$tid}->{r_End}  = $rtidDetail->{blka};
+	    }
+	    $annoEnt->{trInfo}->{$tid}->{genepartSO} = $rtidDetail->{gpSO};
+	    $annoEnt->{trInfo}->{$tid}->{trAlt} = $trAlt;
+	}
+    }
+    else { # can be multiple times assignment if large var, offset for right
+	my $real_ofst = $lofst - 1; # end_ofst change
+	my $rofst = $$rtidDetail{wlen} - $ofst;
+	if ($lofst > $$rtidDetail{wlen}) {
+	    my $ex_ofst = ($lofst - $$rtidDetail{wlen});
+	    if ($strd) { # outside transcript region into 3'downstream
+		$nDot = '+'.$ex_ofst;
+                if ( $$rtidDetail{csto} =~ /^\*?\d+$/ ) {
+                    $cDot = $$rtidDetail{csto} . '+d' . $ex_ofst;
+                }
+	    }
+	    else { # outside 5'promoter region
+		$nDot = $$rtidDetail{nsto} - $ex_ofst;
+		if ( $$rtidDetail{csto} =~ /^(\S+)\-u(\d+)/) {
+		    $cDot = $1 . '-u' . ($2 - $ex_ofst);
+		}
+	    }
+	}
+	elsif ($lofst < 0) { # not proper called
+	    if (!exists $cal_args{noassign}) {
+		confess "Error: right preceed the block [$lofst < 0]";
+	    }
+	    else {
+		return 0;
+	    }
+	}
+	else { # 0 <= $lofst <= $$rtidDetail{wlen}
+
+	    # 1. check if a mismatch block (exon)
+	    if ($rtidDetail->{mismatch} ne "") {
+		$nDot = $rtidDetail->{nsto};
+		$cDot = $rtidDetail->{csto};
+		if ($lofst>0) {
+                    my ( $mType, $mStart, $mEnd, $strand_ref ) =
+                      split( /,/, $rtidDetail->{mismatch} );
+		    
+		    my $cut_len = $rtidDetail->{wlen} - $lofst;
+		    if ($strd) { # cut right
+			$trAlt .= substr($strand_ref, -$cut_len, $cut_len) if ($trAlt ne '?');
+		    }
+		    else { # cut left
+			$trAlt = substr($strand_ref, 0, $cut_len).$trAlt if ($trAlt ne '?');
+		    }
+		}
+	    }
+	    # 2. check if hit a normal block's left edge
+	    elsif ($lofst == 0) {
+		return 0;
+	    }
+	    # 3. check if annotation-fail
+	    elsif ($rtidDetail->{gpSO} eq 'annotation-fail') {
+		( $nDot, $cDot ) = ( '?', '?' );
+	    }
+	    # 4. check if a promoter
+	    elsif ($rtidDetail->{blka} =~ /^PROM/) {
+                $nDot =
+                    ($strd)
+                  ? ( $rtidDetail->{nsta} + $real_ofst )
+                  : ( $rtidDetail->{nsta} - $real_ofst );
+		if ($rtidDetail->{csta} =~ /^(\S+)\-u(\d+)$/) {
+                    $cDot =
+                        ($strd)
+                      ? ( $1 . '-u' . ( $2 - $real_ofst ) )
+                      : ( $1 . '-u' . ( $2 + $real_ofst ) );
+		}
+	    }
+	    # 5. check if an exon
+	    elsif ($rtidDetail->{exin} =~ /EX/) {
+                $nDot =
+                    ($strd)
+                  ? ( $rtidDetail->{nsta} + $real_ofst )
+                  : ( $rtidDetail->{nsta} - $real_ofst );
+		if ($rtidDetail->{csta} =~ /^(\*?)(\-?\d+)$/) {
+		    $cDot = ($strd) ? $1.($2 + $real_ofst) : $1.($2 - $real_ofst);
+		}
+	    }
+	    # 6. intron
+	    elsif ($rtidDetail->{exin} =~ /IVS/) {
+		my $half_length = $rtidDetail->{wlen} / 2;
+		if ($real_ofst > $half_length) { # drop into latter part
+                    if (   $rtidDetail->{nsto} =~ /^\d+\d+$/
+                        or $rtidDetail->{csto} =~ /^\d+\d+$/ )
+                    {
+                        confess "Error format of database, ",
+                          "intron right pos description error!\n";
+                    }
+
+		    if ($rtidDetail->{nsto} =~ /^(\d+\+?)(\-?\d+)$/) {
+                        $nDot =
+                            ($strd)
+                          ? ( $1 . ( $2 - $rofst ) )
+                          : ( $1 . ( $2 + $rofst ) );
+		    }
+		    if ($rtidDetail->{csto} =~ /^([\*\-]?\d+\+?)(\-?\d+)$/) {
+                        $cDot =
+                            ($strd)
+                          ? ( $1 . ( $2 - $rofst ) )
+                          : ( $1 . ( $2 + $rofst ) );
+		    }
+		}
+		else {
+                    if (   $rtidDetail->{nsta} =~ /^\d+\d+$/
+                        or $rtidDetail->{csta} =~ /^\d+\d+$/ )
+                    {
+                        confess "Error format of database, ",
+                          "intron left pos description error!\n";
+                    }
+
+		    if ($rtidDetail->{nsta} =~ /^(\d+\+?)(\-?\d+)$/) {
+                        $nDot =
+                            ($strd)
+                          ? ( $1 . ( $2 + $real_ofst ) )
+                          : ( $1 . ( $2 - $real_ofst ) );
+		    }
+		    if ($rtidDetail->{csta} =~ /^([\*\-]?\d+\+?)(\-?\d+)$/) {
+                        $cDot =
+                            ($strd)
+                          ? ( $1 . ( $2 + $real_ofst ) )
+                          : ( $1 . ( $2 - $real_ofst ) );
+		    }
+		}
+	    }
+	    else {
+		confess "Error: what's this? $rtidDetail->{exin}\n";
+	    }
+	}
+
+	if (!exists $cal_args{noassign}) {
+	    # the Begin End assignment is always from 5'->3' except for insertion
+	    if ($strd) {
+		$annoEnt->{trInfo}->{$tid}->{rnaEnd} = $nDot;
+		$annoEnt->{trInfo}->{$tid}->{cdsEnd} = $cDot;
+		$annoEnt->{trInfo}->{$tid}->{ei_End} = $rtidDetail->{exin};
+		$annoEnt->{trInfo}->{$tid}->{r_End}  = $rtidDetail->{blka};
+	    }
+	    else {
+		$annoEnt->{trInfo}->{$tid}->{rnaBegin} = $nDot;
+		$annoEnt->{trInfo}->{$tid}->{cdsBegin} = $cDot;
+		$annoEnt->{trInfo}->{$tid}->{ei_Begin} = $rtidDetail->{exin}; 
+		$annoEnt->{trInfo}->{$tid}->{r_Begin}  = $rtidDetail->{blka};
+	    }
+	    $annoEnt->{trInfo}->{$tid}->{trAlt} = $trAlt;
+	    
+	    if (    exists $annoEnt->{trInfo}->{$tid}->{genepartSO}
+		and $annoEnt->{trInfo}->{$tid}->{genepartSO} ne "span"
+		and $rtidDetail->{gpSO} ne $annoEnt->{trInfo}->{$tid}->{genepartSO}
+	      )
+	    {
+		$annoEnt->{trInfo}->{$tid}->{genepartSO} = "span";
+	    }
+	    elsif (!exists $annoEnt->{trInfo}->{$tid}->{genepartSO}) {
+		carp "Warning: no genepartSO specified in left?";
+		$annoEnt->{trInfo}->{$tid}->{genepartSO} = $rtidDetail->{gpSO};
+	    }
+	}
+    }
+
+    if (exists $cal_args{noassign}) {
+	return {
+	    nDot => $nDot,
+	    cDot => $cDot,
+	    exin => $rtidDetail->{exin},
+	    r    => $rtidDetail->{blka},
+	};
+    }
+    return 1;
 }
 
 
@@ -3885,7 +3931,41 @@ __END__
 
 =head1 DATABASE FORMAT
 
-    The Format
+The Format of annotation database is listed as following:
+
+=head2 BED+1 FORMAT DATABASE
+
+   Departed block with tag for annotation, Tag entries are separated by "; ",
+   and Infos items in entry are separated by "|".
+
+   Each entry contains the follwing infomation:
+
+   1. Acc.Ver
+   2. GeneID
+   3. Gene Symbol
+   4. Strand
+		 5'=====|>>>|[=============]|>>>>>>|[==========]|>>>>>>|[=============]|>>>>|==3'
+   5. BlockAttr  : PROM 5U2E D5U1 I5U1 A5U1 5U1 C1  DC1 IC1 AC1 C2E 3U1 D3U1 I3U1 A3U1 3U2E
+   6. GenePartsSO: 167  204  163  447  164  204 316 163 191 164 316 205 163  448  164  448
+   7. ExIn Num   :    . |EX1|      IVS1     |  EX2 |    IVS2    |  EX3 |    IVS3       |EX4E|
+   8. nHGVS start for block before departing
+   9. nHGVS end for block before departing
+   10.cHGVS start for block before departing
+   11.cHGVS end for block before departing
+   12.Length for block before departing
+   13.MismatchBlock :  $type,$gstart,$gstop,$gseq
+		       ($gseq is in the strand of refseq, '.' for deletion)
+   14.Primary Tag, the same with it in header line
+   15.Offset to leftmost of non departing block.
+
+=head2 TRANSCRIPT FASTA DATABASE
+
+   One-line sequence fasta file
+   ============================
+   Header format is: ( separate by " ", with "." for unavailable value )
+
+       >rnaAcc.ver rnaLen gene protAcc.ver protLen cdsSta,cdsEnd tags
+
 
 =head1 SEE ALSO
 
