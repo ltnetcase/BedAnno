@@ -1262,7 +1262,7 @@ sub finaliseAnno {
 		}
 	    }
             if ( exists $trAnnoEnt->{p}
-                and $trAnnoEnt->{p} =~ /^p.[A-Z](\d+)([A-Z])$/ )
+                and $trAnnoEnt->{p} =~ /^p\.[A-Z](\d+)([A-Z])$/ )
             {
                 if ( exists $self->{prediction} ) {
                     my $rpred =
