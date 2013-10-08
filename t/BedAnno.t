@@ -7,6 +7,7 @@ our $extradb;
 BEGIN {
     unless ( grep /blib/, @INC ) {
         chdir 't' if -d 't';
+	unshift @INC, '../plugins' if -d '../plugins';
         unshift @INC, '../lib' if -d '../lib';
         $data = '../data';
 	$extradb = '../db';
