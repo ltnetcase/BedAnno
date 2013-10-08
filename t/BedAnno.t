@@ -15,11 +15,11 @@ $data ||= "data";
 use Test::Most;
 BEGIN { use_ok('BedAnno') }
 
-test_tabix("$data/test_db.bed.gz");
 unlink("$data/test_db.bed.gz.tbi");
+test_tabix("$data/test_db.bed.gz");
 my $beda = BedAnno->new(
-    db     => "$data/hg19_refseq_anno.bed.gz",
-    codon  => "$data/hg19_coding_seq.fas.gz",
+    db     => "$data/test_db.bed.gz",
+    codon  => "$data/test_coding_seq.fas.gz",
     regbed => "$data/test.in.bed",
     trans  => "$data/trans.list"
 );
@@ -3448,7 +3448,7 @@ sub test_individual{
 sub test_tabix {
     my ($file) = @_;
     my $cmd;
-    $cmd = "tabix -p bed $file";
+    $cmd = "tabix -f -p bed $file";
     system($cmd);
     if ( !is( $?, 0, "tabix .. $cmd" ) ) {
         exit 1;
