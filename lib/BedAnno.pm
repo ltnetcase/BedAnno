@@ -901,6 +901,9 @@ sub parse_annoent {
 		chr id, chr start, chr end, reference, alternative.
 	      for variants in VCF, need 4 args, which is lack of 
 	        chr end, and "chr start" is in 1-based coordinates.
+	      for crawler: a input object with keys: chr,start,ref,alt,[end].
+		if end is specified, then use 0-based coordinates,
+		otherwise 1-based (VCF) coordinates will be used.
     Returns : a hash ref of annotation informations, see varanno().
 
 =cut
@@ -2647,6 +2650,13 @@ use Carp;
 	      parse the variation directly by the ref and alt string.
     Usage   : my $var = BedAnno::Var->new( $chr, $start, $end, $ref, $alt );
 	   or my $var = BedAnno::Var->new( $chr, $pos, $ref, $alt );
+	   or my $var = BedAnno::Var->new( $varInput );
+    Args    : Input can be variable format
+	      1. 5 parameters format: CG shell list format: chr,start,end,ref,alt
+	      2. 4 parameters format: VCF format: chr,pos,ref,alt
+	      3. Crawler input object: A hash ref with nessesary keys: 
+		 chr,start,ref,alt,  optional key is "end", if end specified,
+		 coordinates are treat as 0-based, otherwise, use 1-based (VCF)
     Returns : a new BedAnno::Var entry :
             {
                 chr    => $chr,
@@ -2713,14 +2723,36 @@ use Carp;
 =cut
 sub new {
     my $class = shift;
-    confess "Error: not enough args [",scalar(@_),"], need at least 4 args." if (4 > @_);
-    my ($chr, $start, $end, $ref, $alt) = @_;
+    my ($chr, $start, $end, $ref, $alt);
+    if (ref($_[0])) {
+        if (   !exists $_[0]->{chr}
+            or !exists $_[0]->{start}
+            or !exists $_[0]->{alt}
+            or !exists $_[0]->{ref} )
+        {
+            confess "Error: unavailable object. need keys: ",
+              "chr, start, alt, ref specified.";
+        }
+	
+	$chr = $_[0]->{chr};
+	$start = $_[0]->{start};
+	$alt = $_[0]->{alt};
+	$ref = $_[0]->{ref};
+	$end = $_[0]->{end} if ( exists $_[0]->{end} );
 
-    my %var;
+    }
+    else {
+	confess "Error: not enough args, need at least 4 args." if (4 > @_);
+	($chr, $start, $end, $ref, $alt) = @_;
+    }
 
-    if ($end !~ /^\d+$/) { # from VCF v4.1 1-based start
-	$alt = $ref;
-	$ref = $end;
+
+    if (!defined $end or $end !~ /^\d+$/) { # from VCF v4.1 1-based start
+	if (defined $end) {
+	    $alt = $ref;
+	    $ref = $end;
+	}
+
 	$ref = normalise_seq($ref);
 	$alt = normalise_seq($alt);
 	if (substr($ref,0,1) eq substr($alt,0,1)) {
@@ -2734,6 +2766,8 @@ sub new {
 	$end = $start + $rl;
     }
 
+    my %var;
+
     my $len_ref = $end - $start;            # chance to annotate long range
     my ($varType, $implicit_varType, $sm) = guess_type($len_ref, $ref, $alt);
 
@@ -2741,9 +2775,9 @@ sub new {
     %var = (
         chr    => $chr,
         pos    => $start,
-        ref    => $ref,
+        ref    => uc($ref),
 	end    => $end,
-        alt    => $alt,
+        alt    => uc($alt),
         reflen => $len_ref,
 	guess  => $varType,
 	imp    => $implicit_varType,
