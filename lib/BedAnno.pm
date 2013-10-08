@@ -3325,6 +3325,14 @@ sub new {
 			geneId,   geneSym, strd,
 			trAlt => $stranded_alt_string_with_ext_at_mismatches,
 
+			preStart => {
+			    nDot, cDot, exin, r
+			},
+
+			postEnd => {
+			    nDot, cDot, exin, r
+			},
+
 			trRefComp => {
 			    $exon_number   => $transcript_exon_length,
                             $intron_number => [
@@ -3628,10 +3636,10 @@ sub cal_hgvs_pos {
 	delete $cal_args{noassign};
     }
     
-    my %noassign_return = ();
     my ( $ofst, $tid, $rtidDetail, $lr ) =
       @cal_args{qw(offset tid tidDetail LR)};
     my ( $nDot, $cDot ) = ( '', '' );
+    my ( $lr_pair_nDot, $lr_pair_cDot ) = ( '', '' );
     my $strd = ($$rtidDetail{strd} eq '+') ? 1 : 0;
     my $trAlt = $annoEnt->{trInfo}->{$tid}->{trAlt};
     my $lofst = $ofst;
@@ -3823,7 +3831,7 @@ sub cal_hgvs_pos {
 	    if ($rtidDetail->{mismatch} ne "") {
 		$nDot = $rtidDetail->{nsto};
 		$cDot = $rtidDetail->{csto};
-		if ($lofst>0) {
+		if ($lofst < $rtidDetail->{wlen}) {
                     my ( $mType, $mStart, $mEnd, $strand_ref ) =
                       split( /,/, $rtidDetail->{mismatch} );
 		    
