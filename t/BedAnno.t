@@ -53,6 +53,14 @@ my $beda = BedAnno->new( %opts );
 
 #explain "The database are:", $beda;
 # ncRNA part
+my $crawler_input = {
+    chr => 1,
+    start => 14409,
+    end => 14410,
+    ref => 'c',
+    alt => 'a',
+};
+
 my $snv_parse = bless(
     {
         'alt'    => 'A',
@@ -68,6 +76,13 @@ my $snv_parse = bless(
     },
     'BedAnno::Var'
 );
+
+my $crawler_input2 = {
+    chr => 1,
+    start => 14410,
+    ref => "C",
+    alt => "CGAATAGCTA",
+};
 
 my $insert_parse = bless(
     {
@@ -617,7 +632,9 @@ my $no_call_varanno = bless(
     'BedAnno::Anno'
 );
 
+test_parse_var( $snv_parse,     $crawler_input );
 test_parse_var( $snv_parse,     "chr1", 14410, "C",        "A" );
+test_parse_var( $insert_parse,  $crawler_input2 );
 test_parse_var( $insert_parse,  "chr1", 14410, "C",        "CGAATAGCTA" );
 test_parse_var( $del_parse,     "chr1", 14410, "CTAGATCG", "C" );
 test_parse_var( $rep_parse,     "chr1", 14410, "CTAGA",    "CTAGTAGTAGTAGA" );

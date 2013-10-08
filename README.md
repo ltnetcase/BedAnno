@@ -21,19 +21,27 @@ Tag parsing rules: Entries are separated by "; ", and for tags in entry are sepa
 2.  GeneID
 3.  Gene Symbol
 4.  Strand
-               5'=====|>>>|[=============]|>>>>>>|[==========]|>>>>>>|[=============]|>>>>|==3'
-5.  BlockAttr  : PROM 5U2E D5U1 I5U1 A5U1 5U1 C1  DC1 IC1 AC1 C2E 3U1 D3U1 I3U1 A3U1 3U2E
-6.  GenePartsSO: 167  204  163  447  164  204 316 163 191 164 316 205 163  448  164  448
-7.  ExIn Num   :    . |EX1|      IVS1     |  EX2 |    IVS2    |  EX3 |    IVS3       |EX4E|
+5.  BlockAttr
+6.  GenePartsSO
+7.  ExIn Num
 8.  nHGVS start for block before departing
 9.  nHGVS end for block before departing
 10. cHGVS start for block before departing
 11. cHGVS end for block before departing
 12. Length for block before departing
 13. MismatchBlock :  $type,$gstart,$gstop,$gseq 
-         	    ($gseq is in the strand of refseq, '.' for deletion)
-14. Primary Tag, the same with it in header line
+                     ($gseq is in the strand of refseq, '.' for deletion)
+14. Primary Tag   :  see [Sort strategy] at the bottom.
 15. Offset to leftmost of non departing block.
+
+
+- The BlockAttr, GenePartsSO, and ExIn Num are defined as following:
+
+       5'====|>>>>|[============]|>>>|>>>|[=========]|>>>|>>>|[============]|>>>>|==3'
+         PROM 5U2E D5U1 I5U1 A5U1 5U1 C1  DC1 IC1 AC1 C2E 3U1 D3U1 I3U1 A3U1 3U2E
+         167  204  163  447  164  204 316 163 191 164 316 205 163  448  164  448
+           . |EX1 |     IVS1     |  EX2  |   IVS2    |  EX3  |    IVS3      |EX4E|
+
 
 **Example:**
 
@@ -49,9 +57,26 @@ Tag parsing rules: Entries are separated by "; ", and for tags in entry are sepa
     1       155254462       155254548       NM_020897.2|HCN3|57657|+|C4|316|EX4|1035|1253|871|1089|219||Y|133; NR_073074.1|HCN3|57657|+|R4|655|EX4|1035|1120|||86||N|0
 
 
-For the primary tag definition, there's a cooresponding sort strategy:
+TRANSCRIPT FASTA DATABASE FORMAT
+--------------------------------
 
- *Rules are list from prior to minor.*
+   One-line sequence fasta file
+   ----------------------------
+   Header format is: ( separate by " ", with "." for unavailable value )
+
+       >rnaAcc.ver rnaLen gene protAcc.ver protLen cdsSta,cdsEnd tags [altStartCodons]
+
+   "tags" are a string of multiple properties separated by "|", which are:
+
+       <alignStat>[|altstart][|selenocysteine][|inseqStop][|polyATail]
+
+    when "tags" contain "altstart", alternative start codons will be list in "altStartCodons",
+    separated by ";"
+
+
+**Sort strategy**
+
+ *For the primary tag definition, Rules are list from prior to minor.*
 
 - whether the transcript is on the primary assembly. "On" is prior.
 - concatenated CDS is longer
@@ -63,8 +88,4 @@ For the primary tag definition, there's a cooresponding sort strategy:
 Then assign the primary tag 'Y' to the first refseq Acc.Ver, 
 and add postfix "-N" (1..n-1) to the other following records
 in the order of sort result.
-
-**Note:**
-
-The master branch is under reconstruction, please use v0.31 branch instead for annotaion purpose.
 
