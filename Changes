@@ -51,4 +51,9 @@
 0.31  Thu Aug 24 09:06:08 2013
 	- change to support short peptide code annotation by add a new parameter: "short",
 	  in the 'new' method. e.g.
+
+0.32  Tue Oct 8  16:43:01 2013
+	- change internal tech and db format to support CG's shell list and VCF, also
+	  will change to annotate on real refSeq sequence, not the cut from refgenome
+	  pseudo ones.
 	  my $beda = BedAnno->new(  db => "in.bed.gz", regbed => 'in.region.bed', codon => 'in.coding.fa', trans => \%trans, short => 1 );
