@@ -34,13 +34,12 @@ Tag parsing rules: Entries are separated by "; ", and for tags in entry are sepa
 14. Primary Tag   :  see [Sort strategy] at the bottom.
 15. Offset to leftmost of non departing block.
 
+*The BlockAttr, GenePartsSO, and ExIn Num are defined as following:*
 
-- The BlockAttr, GenePartsSO, and ExIn Num are defined as following:
-
-       5'====|>>>>|[============]|>>>|>>>|[=========]|>>>|>>>|[============]|>>>>|==3'
-         PROM 5U2E D5U1 I5U1 A5U1 5U1 C1  DC1 IC1 AC1 C2E 3U1 D3U1 I3U1 A3U1 3U2E
-         167  204  163  447  164  204 316 163 191 164 316 205 163  448  164  448
-           . |EX1 |     IVS1     |  EX2  |   IVS2    |  EX3  |    IVS3      |EX4E|
+     5'==|>>>>|[============]|>>>|>>>|[=========]|>>>|>>>|[============]|>>>>|==3'
+     PROM 5U2E D5U1 I5U1 A5U1 5U1 C1  DC1 IC1 AC1 C2E 3U1 D3U1 I3U1 A3U1 3U2E
+     167  204  163  447  164  204 316 163 191 164 316 205 163  448  164  448
+     .   |EX1 |     IVS1     |  EX2  |   IVS2    |  EX3  |    IVS3      |EX4E|               
 
 
 **Example:**
@@ -88,4 +87,3 @@ TRANSCRIPT FASTA DATABASE FORMAT
 Then assign the primary tag 'Y' to the first refseq Acc.Ver, 
 and add postfix "-N" (1..n-1) to the other following records
 in the order of sort result.
-
