@@ -73,7 +73,8 @@ TRANSCRIPT FASTA DATABASE FORMAT
     separated by ";"
 
 
-**Sort strategy**
+Sort strategy
+-------------
 
  *For the primary tag definition, Rules are list from prior to minor.*
 
