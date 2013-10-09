@@ -7,59 +7,63 @@ our $extradb;
 BEGIN {
     unless ( grep /blib/, @INC ) {
         chdir 't' if -d 't';
-	unshift @INC, '../plugins' if -d '../plugins';
-        unshift @INC, '../lib' if -d '../lib';
-        $data = '../data';
-	$extradb = '../db';
+        unshift @INC, '../plugins' if -d '../plugins';
+        unshift @INC, '../lib'     if -d '../lib';
+        $data    = '../data';
+        $extradb = '../db';
     }
 }
-$data ||= "data";
+$data    ||= "data";
 $extradb ||= "db";
 my %opts = (
-    db     => "$data/test.bed.gz",
-    tr     => "$data/test.fas.gz",
-    batch  => 1,
+    db    => "$data/test.bed.gz",
+    tr    => "$data/test.fas.gz",
+    batch => 1,
 );
 
 if ( -e $extradb and -r $extradb ) {
     if ( -e "$extradb/cytoBand/cytoBand_hg19_grch37.txt.gz" ) {
-	$opts{cytoBand} = "$extradb/cytoBand/cytoBand_hg19_grch37.txt.gz";
+        $opts{cytoBand} = "$extradb/cytoBand/cytoBand_hg19_grch37.txt.gz";
     }
     if ( -e "$extradb/dbsnp/snp137.bed.gz" ) {
-	$opts{dbSNP} = "$extradb/dbsnp/snp137.bed.gz";
+        $opts{dbSNP} = "$extradb/dbsnp/snp137.bed.gz";
     }
     if ( -e "$extradb/tgp/tgp_phaseI_version3_hg19.dbdump.bed.gz" ) {
-	$opts{tgp} = "$extradb/tgp/tgp_phaseI_version3_hg19.dbdump.bed.gz";
+        $opts{tgp} = "$extradb/tgp/tgp_phaseI_version3_hg19.dbdump.bed.gz";
     }
     if ( -e "$extradb/CG/CG54_20130709_stats_filtered_ct0.tsv.gz" ) {
-	$opts{cg54} = "$extradb/CG/CG54_20130709_stats_filtered_ct0.tsv.gz";
+        $opts{cg54} = "$extradb/CG/CG54_20130709_stats_filtered_ct0.tsv.gz";
     }
     if ( -e "$extradb/NHLBI/ESP6500SI-V2-SSA137.NHLBI.bed.rmanchor.uniq.gz" ) {
-	$opts{esp6500} = "$extradb/NHLBI/ESP6500SI-V2-SSA137.NHLBI.bed.rmanchor.uniq.gz";
+        $opts{esp6500} =
+          "$extradb/NHLBI/ESP6500SI-V2-SSA137.NHLBI.bed.rmanchor.uniq.gz";
     }
     if ( -e "$extradb/pfam/Pfam-A-ncbi_2012-12-21.bed.gz" ) {
-	$opts{pfam} = "$extradb/pfam/Pfam-A-ncbi_2012-12-21.bed.gz";
+        $opts{pfam} = "$extradb/pfam/Pfam-A-ncbi_2012-12-21.bed.gz";
     }
     if ( -e "$extradb/predictions/predictDB_for_anno104.tab.gz" ) {
-	$opts{prediction} = "$extradb/predictions/predictDB_for_anno104.tab.gz";
+        $opts{prediction} = "$extradb/predictions/predictDB_for_anno104.tab.gz";
     }
-    # phyloP and wellderly need extra test
+    if ( -e "$extradb/phyloP/phyloP_all3class_combin_2013-09-25.bed.gz" ) {
+        $opts{phyloP} =
+          "$extradb/phyloP/phyloP_all3class_combin_2013-09-25.bed.gz";
+    }
 }
 
 use Test::Most;
 BEGIN { use_ok('BedAnno') }
 
 test_tabix("$data/test_db.bed.gz");
-my $beda = BedAnno->new( %opts );
+my $beda = BedAnno->new(%opts);
 
 #explain "The database are:", $beda;
 # ncRNA part
 my $crawler_input = {
-    chr => 1,
+    chr   => 1,
     start => 14409,
-    end => 14410,
-    ref => 'c',
-    alt => 'a',
+    end   => 14410,
+    ref   => 'c',
+    alt   => 'a',
 };
 
 my $snv_parse = bless(
@@ -79,10 +83,10 @@ my $snv_parse = bless(
 );
 
 my $crawler_input2 = {
-    chr => 1,
+    chr   => 1,
     start => 14410,
-    ref => "C",
-    alt => "CGAATAGCTA",
+    ref   => "C",
+    alt   => "CGAATAGCTA",
 };
 
 my $insert_parse = bless(
@@ -224,18 +228,30 @@ my $snv_varanno = bless(
                 'genepartIndex' => '11',
                 'genepartSO'    => 'SO:0000655',
                 'intronIndex'   => '.',
-                'prot'          => '',
-                'protBegin'     => '',
-                'protEnd'       => '',
-                'r'             => 'R11E',
-                'r_Begin'       => 'R11E',
-                'r_End'         => 'R11E',
-                'rnaBegin'      => 1721,
-                'rnaEnd'        => 1721,
-                'strd'          => '-',
-                'trAlt'         => 'T',
-                'trRef'         => 'G',
-                'trRefComp'     => {
+                'postEnt'       => {
+                    'cDot' => '',
+                    'exin' => 'EX11E',
+                    'nDot' => 1722,
+                    'r'    => 'R11E'
+                },
+                'preStart' => {
+                    'cDot' => '',
+                    'exin' => 'EX11E',
+                    'nDot' => 1720,
+                    'r'    => 'R11E'
+                },
+                'prot'      => '',
+                'protBegin' => '',
+                'protEnd'   => '',
+                'r'         => 'R11E',
+                'r_Begin'   => 'R11E',
+                'r_End'     => 'R11E',
+                'rnaBegin'  => 1721,
+                'rnaEnd'    => 1721,
+                'strd'      => '-',
+                'trAlt'     => 'T',
+                'trRef'     => 'G',
+                'trRefComp' => {
                     'EX11E' => 1
                 }
             }
@@ -282,18 +298,30 @@ my $ins_varanno = bless(
                 'genepartIndex' => '11',
                 'genepartSO'    => 'SO:0000655',
                 'intronIndex'   => '.',
-                'prot'          => '',
-                'protBegin'     => '',
-                'protEnd'       => '',
-                'r'             => 'R11E',
-                'r_Begin'       => 'R11E',
-                'r_End'         => 'R11E',
-                'rnaBegin'      => 1721,
-                'rnaEnd'        => 1720,
-                'strd'          => '-',
-                'trAlt'         => 'TAGCTATTC',
-                'trRef'         => '',
-                'trRefComp'     => {
+                'postEnt'       => {
+                    'cDot' => '',
+                    'exin' => 'EX11E',
+                    'nDot' => 1721,
+                    'r'    => 'R11E'
+                },
+                'preStart' => {
+                    'cDot' => '',
+                    'exin' => 'EX11E',
+                    'nDot' => 1720,
+                    'r'    => 'R11E'
+                },
+                'prot'      => '',
+                'protBegin' => '',
+                'protEnd'   => '',
+                'r'         => 'R11E',
+                'r_Begin'   => 'R11E',
+                'r_End'     => 'R11E',
+                'rnaBegin'  => 1721,
+                'rnaEnd'    => 1720,
+                'strd'      => '-',
+                'trAlt'     => 'TAGCTATTC',
+                'trRef'     => '',
+                'trRefComp' => {
                     'EX11E' => 0
                 }
             }
@@ -340,18 +368,30 @@ my $del_varanno = bless(
                 'genepartIndex' => '11',
                 'genepartSO'    => 'SO:0000655',
                 'intronIndex'   => '.',
-                'prot'          => '',
-                'protBegin'     => '',
-                'protEnd'       => '',
-                'r'             => 'R11E',
-                'r_Begin'       => 'R11E',
-                'r_End'         => 'R11E',
-                'rnaBegin'      => 1714,
-                'rnaEnd'        => 1720,
-                'strd'          => '-',
-                'trAlt'         => '',
-                'trRef'         => 'GAACTGA',
-                'trRefComp'     => {
+                'postEnt'       => {
+                    'cDot' => '',
+                    'exin' => 'EX11E',
+                    'nDot' => 1721,
+                    'r'    => 'R11E'
+                },
+                'preStart' => {
+                    'cDot' => '',
+                    'exin' => 'EX11E',
+                    'nDot' => 1713,
+                    'r'    => 'R11E'
+                },
+                'prot'      => '',
+                'protBegin' => '',
+                'protEnd'   => '',
+                'r'         => 'R11E',
+                'r_Begin'   => 'R11E',
+                'r_End'     => 'R11E',
+                'rnaBegin'  => 1714,
+                'rnaEnd'    => 1720,
+                'strd'      => '-',
+                'trAlt'     => '',
+                'trRef'     => 'GAACTGA',
+                'trRefComp' => {
                     'EX11E' => 7
                 }
             }
@@ -398,18 +438,30 @@ my $rep_varanno = bless(
                 'genepartIndex' => '11',
                 'genepartSO'    => 'SO:0000655',
                 'intronIndex'   => '.',
-                'prot'          => '',
-                'protBegin'     => '',
-                'protEnd'       => '',
-                'r'             => 'R11E',
-                'r_Begin'       => 'R11E',
-                'r_End'         => 'R11E',
-                'rnaBegin'      => 1718,
-                'rnaEnd'        => 1720,
-                'strd'          => '-',
-                'trAlt'         => 'CTACTACTACTA',
-                'trRef'         => 'TGA',
-                'trRefComp'     => {
+                'postEnt'       => {
+                    'cDot' => '',
+                    'exin' => 'EX11E',
+                    'nDot' => 1721,
+                    'r'    => 'R11E'
+                },
+                'preStart' => {
+                    'cDot' => '',
+                    'exin' => 'EX11E',
+                    'nDot' => 1717,
+                    'r'    => 'R11E'
+                },
+                'prot'      => '',
+                'protBegin' => '',
+                'protEnd'   => '',
+                'r'         => 'R11E',
+                'r_Begin'   => 'R11E',
+                'r_End'     => 'R11E',
+                'rnaBegin'  => 1718,
+                'rnaEnd'    => 1720,
+                'strd'      => '-',
+                'trAlt'     => 'CTACTACTACTA',
+                'trRef'     => 'TGA',
+                'trRefComp' => {
                     'EX11E' => 3
                 }
             }
@@ -479,18 +531,30 @@ my $delins_varanno = bless(
                 'genepartIndex' => '11',
                 'genepartSO'    => 'SO:0000655',
                 'intronIndex'   => '.',
-                'prot'          => '',
-                'protBegin'     => '',
-                'protEnd'       => '',
-                'r'             => 'R11E',
-                'r_Begin'       => 'R11E',
-                'r_End'         => 'R11E',
-                'rnaBegin'      => 1717,
-                'rnaEnd'        => 1721,
-                'strd'          => '-',
-                'trAlt'         => 'AC',
-                'trRef'         => 'CTGAG',
-                'trRefComp'     => {
+                'postEnt'       => {
+                    'cDot' => '',
+                    'exin' => 'EX11E',
+                    'nDot' => 1722,
+                    'r'    => 'R11E'
+                },
+                'preStart' => {
+                    'cDot' => '',
+                    'exin' => 'EX11E',
+                    'nDot' => 1716,
+                    'r'    => 'R11E'
+                },
+                'prot'      => '',
+                'protBegin' => '',
+                'protEnd'   => '',
+                'r'         => 'R11E',
+                'r_Begin'   => 'R11E',
+                'r_End'     => 'R11E',
+                'rnaBegin'  => 1717,
+                'rnaEnd'    => 1721,
+                'strd'      => '-',
+                'trAlt'     => 'AC',
+                'trRef'     => 'CTGAG',
+                'trRefComp' => {
                     'EX11E' => 5
                 }
             }
@@ -537,18 +601,30 @@ my $subs_varanno = bless(
                 'genepartIndex' => '11',
                 'genepartSO'    => 'SO:0000655',
                 'intronIndex'   => '.',
-                'prot'          => '',
-                'protBegin'     => '',
-                'protEnd'       => '',
-                'r'             => 'R11E',
-                'r_Begin'       => 'R11E',
-                'r_End'         => 'R11E',
-                'rnaBegin'      => 1717,
-                'rnaEnd'        => 1721,
-                'strd'          => '-',
-                'trAlt'         => 'ACACA',
-                'trRef'         => 'CTGAG',
-                'trRefComp'     => {
+                'postEnt'       => {
+                    'cDot' => '',
+                    'exin' => 'EX11E',
+                    'nDot' => 1722,
+                    'r'    => 'R11E'
+                },
+                'preStart' => {
+                    'cDot' => '',
+                    'exin' => 'EX11E',
+                    'nDot' => 1716,
+                    'r'    => 'R11E'
+                },
+                'prot'      => '',
+                'protBegin' => '',
+                'protEnd'   => '',
+                'r'         => 'R11E',
+                'r_Begin'   => 'R11E',
+                'r_End'     => 'R11E',
+                'rnaBegin'  => 1717,
+                'rnaEnd'    => 1721,
+                'strd'      => '-',
+                'trAlt'     => 'ACACA',
+                'trRef'     => 'CTGAG',
+                'trRefComp' => {
                     'EX11E' => 5
                 }
             }
@@ -596,18 +672,30 @@ my $no_call_varanno = bless(
                 'genepartIndex' => '11',
                 'genepartSO'    => 'SO:0000655',
                 'intronIndex'   => '.',
-                'prot'          => '',
-                'protBegin'     => '',
-                'protEnd'       => '',
-                'r'             => 'R11E',
-                'r_Begin'       => 'R11E',
-                'r_End'         => 'R11E',
-                'rnaBegin'      => 1721,
-                'rnaEnd'        => 1720,
-                'strd'          => '-',
-                'trAlt'         => '?',
-                'trRef'         => '',
-                'trRefComp'     => {
+                'postEnt'       => {
+                    'cDot' => '',
+                    'exin' => 'EX11E',
+                    'nDot' => 1721,
+                    'r'    => 'R11E'
+                },
+                'preStart' => {
+                    'cDot' => '',
+                    'exin' => 'EX11E',
+                    'nDot' => 1720,
+                    'r'    => 'R11E'
+                },
+                'prot'      => '',
+                'protBegin' => '',
+                'protEnd'   => '',
+                'r'         => 'R11E',
+                'r_Begin'   => 'R11E',
+                'r_End'     => 'R11E',
+                'rnaBegin'  => 1721,
+                'rnaEnd'    => 1720,
+                'strd'      => '-',
+                'trAlt'     => '?',
+                'trRef'     => '',
+                'trRefComp' => {
                     'EX11E' => 0
                 }
             }
@@ -634,21 +722,21 @@ my $no_call_varanno = bless(
 );
 
 test_parse_var( $snv_parse,     $crawler_input );
-test_parse_var( $snv_parse,     "chr1", 14410, "C",        "A" );
+test_parse_var( $snv_parse,     "chr1", 14410, "C", "A" );
 test_parse_var( $insert_parse,  $crawler_input2 );
-test_parse_var( $insert_parse,  "chr1", 14410, "C",        "CGAATAGCTA" );
+test_parse_var( $insert_parse,  "chr1", 14410, "C", "CGAATAGCTA" );
 test_parse_var( $del_parse,     "chr1", 14410, "CTAGATCG", "C" );
-test_parse_var( $rep_parse,     "chr1", 14410, "CTAGA",    "CTAGTAGTAGTAGA" );
-test_parse_var( $delins_parse,  "chr1", 14410, "CTAGA",    "GT" );
-test_parse_var( $subs_parse,    "chr1", 14410, "CATGA",    "TGTGT" );
-test_parse_var( $no_call_parse, "chr1", 14410, 14410,      "", '?' );
+test_parse_var( $rep_parse,     "chr1", 14410, "CTAGA", "CTAGTAGTAGTAGA" );
+test_parse_var( $delins_parse,  "chr1", 14410, "CTAGA", "GT" );
+test_parse_var( $subs_parse,    "chr1", 14410, "CATGA", "TGTGT" );
+test_parse_var( $no_call_parse, "chr1", 14410, 14410, "", '?' );
 
-test_varanno( $snv_varanno, $snv_parse );
-test_varanno( $ins_varanno, $insert_parse );
-test_varanno( $del_varanno, $del_parse );
-test_varanno( $rep_varanno, $rep_parse );
-test_varanno( $delins_varanno, $delins_parse );
-test_varanno( $subs_varanno, $subs_parse );
+test_varanno( $snv_varanno,     $snv_parse );
+test_varanno( $ins_varanno,     $insert_parse );
+test_varanno( $del_varanno,     $del_parse );
+test_varanno( $rep_varanno,     $rep_parse );
+test_varanno( $delins_varanno,  $delins_parse );
+test_varanno( $subs_varanno,    $subs_parse );
 test_varanno( $no_call_varanno, $no_call_parse );
 
 # =================== END of ncRNA test ====================
@@ -799,11 +887,11 @@ my $cds_no_call = bless(
     'BedAnno::Var'
 );
 
-test_parse_var( $cds_rna_delins, 'chr8', 24811065, 24811066, "G", "A" );  # del-ins?
-test_parse_var( $cds_no_change, 'chr8', 24811064, 24811065, "G", "" ); # no-change?
+test_parse_var( $cds_rna_delins, 'chr8', 24811065, 24811066, "G", "A" );    # del-ins?
+test_parse_var( $cds_no_change, 'chr8', 24811064, 24811065, "G", "" );    # no-change?
 test_parse_var( $cds_snv, 'chr8', 24811066, 24811067, "G", "T" );
 test_parse_var( $cds_del, 'chr8', 24811066, 24811067, "G", "" );
-test_parse_var( $cds_ins, 'chr8', 24811067, 24811067, "", "GGG" );
+test_parse_var( $cds_ins, 'chr8', 24811067, 24811067, "",  "GGG" );
 test_parse_var( $cds_rep, "chr3", 49395673, "GGCCGCCGCCGCCGCCGCC", "GGCCGCCGCCGCC" );
 test_parse_var( $cds_delins, "chr1", 865533, "AG", "TC" );
 test_parse_var( $cds_no_call, "chr1", 861319, 861320, "T", "N" );
@@ -828,19 +916,33 @@ my $cds_rna_delins_anno = bless(
                 'genepartIndex' => '3',
                 'genepartSO'    => 'SO:0000316',
                 'intronIndex'   => '.',
-                'p'             => 'p.S472fs*?',
-                'prot'          => 'NP_006149.2',
-                'protBegin'     => 471,
-                'protEnd'       => 544,
-                'r'             => 'C3',
-                'r_Begin'       => 'C3',
-                'r_End'         => 'C3',
-                'rnaBegin'      => 1515,
-                'rnaEnd'        => '1515',
-                'strd'          => '-',
-                'trAlt'         => 'TC',
-                'trRef'         => 'C',
-                'trRefComp'     => {
+                'p'             => 'p.S472fs*2',
+		'prAlt'		=> 'PL*',
+		'prRef'		=> 'PSEGEAEEEEKDKEEAEEEEAAEEEEAAKEESEEAKEEEEGGEGEEGEETKEAEEEEKKVEGAGEEQAAKKKD*',
+                'postEnt'       => {
+                    'cDot' => '1414',
+                    'exin' => 'EX3',
+                    'nDot' => '1516',
+                    'r'    => 'C3'
+                },
+                'preStart' => {
+                    'cDot' => '1412',
+                    'exin' => 'EX3',
+                    'nDot' => 1514,
+                    'r'    => 'C3'
+                },
+                'prot'      => 'NP_006149.2',
+                'protBegin' => 471,
+                'protEnd'   => 544,
+                'r'         => 'C3',
+                'r_Begin'   => 'C3',
+                'r_End'     => 'C3',
+                'rnaBegin'  => 1515,
+                'rnaEnd'    => '1515',
+                'strd'      => '-',
+                'trAlt'     => 'TC',
+                'trRef'     => 'C',
+                'trRefComp' => {
                     'EX3' => 1
                 }
             }
@@ -886,18 +988,30 @@ my $cds_no_change_anno = bless(
                 'genepartIndex' => '3',
                 'genepartSO'    => 'SO:0000316',
                 'intronIndex'   => '.',
-                'prot'          => 'NP_006149.2',
-                'protBegin'     => '',
-                'protEnd'       => '',
-                'r'             => 'C3',
-                'r_Begin'       => 'C3',
-                'r_End'         => 'C3',
-                'rnaBegin'      => '1516',
-                'rnaEnd'        => '1515',
-                'strd'          => '-',
-                'trAlt'         => '',
-                'trRef'         => '',
-                'trRefComp'     => {
+                'postEnt'       => {
+                    'cDot' => '1414',
+                    'exin' => 'EX3',
+                    'nDot' => 1516,
+                    'r'    => 'C3'
+                },
+                'preStart' => {
+                    'cDot' => '1413',
+                    'exin' => 'EX3',
+                    'nDot' => 1515,
+                    'r'    => 'C3'
+                },
+                'prot'      => 'NP_006149.2',
+                'protBegin' => '',
+                'protEnd'   => '',
+                'r'         => 'C3',
+                'r_Begin'   => 'C3',
+                'r_End'     => 'C3',
+                'rnaBegin'  => '1516',
+                'rnaEnd'    => '1515',
+                'strd'      => '-',
+                'trAlt'     => '',
+                'trRef'     => '',
+                'trRefComp' => {
                     'EX3' => 0
                 }
             }
@@ -946,18 +1060,32 @@ my $cds_snv_anno = bless(
                 'intronIndex'   => '.',
                 'p'             => 'p.P471H',
                 'polar'         => 'NP=>P+',
-                'prot'          => 'NP_006149.2',
-                'protBegin'     => 471,
-                'protEnd'       => 471,
-                'r'             => 'C3',
-                'r_Begin'       => 'C3',
-                'r_End'         => 'C3',
-                'rnaBegin'      => 1514,
-                'rnaEnd'        => 1514,
-                'strd'          => '-',
-                'trAlt'         => 'A',
-                'trRef'         => 'C',
-                'trRefComp'     => {
+                'postEnt'       => {
+                    'cDot' => '1413',
+                    'exin' => 'EX3',
+                    'nDot' => 1515,
+                    'r'    => 'C3'
+                },
+                'preStart' => {
+                    'cDot' => '1411',
+                    'exin' => 'EX3',
+                    'nDot' => 1513,
+                    'r'    => 'C3'
+                },
+		'prAlt'	    => 'H',
+		'prRef'	    => 'P',
+                'prot'      => 'NP_006149.2',
+                'protBegin' => 471,
+                'protEnd'   => 471,
+                'r'         => 'C3',
+                'r_Begin'   => 'C3',
+                'r_End'     => 'C3',
+                'rnaBegin'  => 1514,
+                'rnaEnd'    => 1514,
+                'strd'      => '-',
+                'trAlt'     => 'A',
+                'trRef'     => 'C',
+                'trRefComp' => {
                     'EX3' => 1
                 }
             }
@@ -1003,19 +1131,33 @@ my $cds_del_anno = bless(
                 'genepartIndex' => '3',
                 'genepartSO'    => 'SO:0000316',
                 'intronIndex'   => '.',
-                'p'             => 'p.P471fs*?',
-                'prot'          => 'NP_006149.2',
-                'protBegin'     => 471,
-                'protEnd'       => 544,
-                'r'             => 'C3',
-                'r_Begin'       => 'C3',
-                'r_End'         => 'C3',
-                'rnaBegin'      => 1514,
-                'rnaEnd'        => 1514,
-                'strd'          => '-',
-                'trAlt'         => '',
-                'trRef'         => 'C',
-                'trRefComp'     => {
+                'p'             => 'p.S472fs*78',
+                'postEnt'       => {
+                    'cDot' => '1413',
+                    'exin' => 'EX3',
+                    'nDot' => 1515,
+                    'r'    => 'C3'
+                },
+                'preStart' => {
+                    'cDot' => '1411',
+                    'exin' => 'EX3',
+                    'nDot' => 1513,
+                    'r'    => 'C3'
+                },
+		'prAlt' => 'PLKEKPRRRRRTRKRPRKRRQLKRKKLPRKSLKKQKKKKKEVKVKKERKPKKLKRRRRKLKVLGRNKQLRRKIEPPFP*',
+		'prRef' => 'PSEGEAEEEEKDKEEAEEEEAAEEEEAAKEESEEAKEEEEGGEGEEGEETKEAEEEEKKVEGAGEEQAAKKKD*',
+                'prot'      => 'NP_006149.2',
+                'protBegin' => 471,
+                'protEnd'   => 544,
+                'r'         => 'C3',
+                'r_Begin'   => 'C3',
+                'r_End'     => 'C3',
+                'rnaBegin'  => 1514,
+                'rnaEnd'    => 1514,
+                'strd'      => '-',
+                'trAlt'     => '',
+                'trRef'     => 'C',
+                'trRefComp' => {
                     'EX3' => 1
                 }
             }
@@ -1062,18 +1204,32 @@ my $cds_ins_anno = bless(
                 'genepartSO'    => 'SO:0000316',
                 'intronIndex'   => '.',
                 'p'             => 'p.P471dup',
-                'prot'          => 'NP_006149.2',
-                'protBegin'     => 471,
-                'protEnd'       => 471,
-                'r'             => 'C3',
-                'r_Begin'       => 'C3',
-                'r_End'         => 'C3',
-                'rnaBegin'      => 1514,
-                'rnaEnd'        => 1513,
-                'strd'          => '-',
-                'trAlt'         => 'CCC',
-                'trRef'         => '',
-                'trRefComp'     => {
+                'postEnt'       => {
+                    'cDot' => '1412',
+                    'exin' => 'EX3',
+                    'nDot' => 1514,
+                    'r'    => 'C3'
+                },
+                'preStart' => {
+                    'cDot' => '1411',
+                    'exin' => 'EX3',
+                    'nDot' => 1513,
+                    'r'    => 'C3'
+                },
+		'prAlt'	    => 'PP',
+		'prRef'	    => 'P',
+                'prot'      => 'NP_006149.2',
+                'protBegin' => 471,
+                'protEnd'   => 471,
+                'r'         => 'C3',
+                'r_Begin'   => 'C3',
+                'r_End'     => 'C3',
+                'rnaBegin'  => 1514,
+                'rnaEnd'    => 1513,
+                'strd'      => '-',
+                'trAlt'     => 'CCC',
+                'trRef'     => '',
+                'trRefComp' => {
                     'EX3' => 0
                 }
             }
@@ -1120,18 +1276,32 @@ my $cds_rep_anno = bless(
                 'genepartSO'    => 'SO:0000316',
                 'intronIndex'   => '.',
                 'p'             => 'p.A7[7>5]',
-                'prot'          => 'NP_000572.2',
-                'protBegin'     => 7,
-                'protEnd'       => 13,
-                'r'             => 'C1',
-                'r_Begin'       => 'C1',
-                'r_End'         => 'C1',
-                'rnaBegin'      => 101,
-                'rnaEnd'        => 118,
-                'strd'          => '-',
-                'trAlt'         => 'GGCGGCGGCGGC',
-                'trRef'         => 'GGCGGCGGCGGCGGCGGC',
-                'trRefComp'     => {
+                'postEnt'       => {
+                    'cDot' => '39',
+                    'exin' => 'EX1',
+                    'nDot' => 119,
+                    'r'    => 'C1'
+                },
+                'preStart' => {
+                    'cDot' => '20',
+                    'exin' => 'EX1',
+                    'nDot' => 100,
+                    'r'    => 'C1'
+                },
+		'prAlt'	    => 'AAAAA',
+		'prRef'	    => 'AAAAAAA',
+                'prot'      => 'NP_000572.2',
+                'protBegin' => 7,
+                'protEnd'   => 13,
+                'r'         => 'C1',
+                'r_Begin'   => 'C1',
+                'r_End'     => 'C1',
+                'rnaBegin'  => 101,
+                'rnaEnd'    => 118,
+                'strd'      => '-',
+                'trAlt'     => 'GGCGGCGGCGGC',
+                'trRef'     => 'GGCGGCGGCGGCGGCGGC',
+                'trRefComp' => {
                     'EX1' => 18
                 }
             },
@@ -1153,18 +1323,32 @@ my $cds_rep_anno = bless(
                 'genepartSO'    => 'SO:0000316',
                 'intronIndex'   => '.',
                 'p'             => 'p.A7[7>5]',
-                'prot'          => 'NP_958799.1',
-                'protBegin'     => 7,
-                'protEnd'       => 13,
-                'r'             => 'C1E',
-                'r_Begin'       => 'C1E',
-                'r_End'         => 'C1E',
-                'rnaBegin'      => 101,
-                'rnaEnd'        => 118,
-                'strd'          => '-',
-                'trAlt'         => 'GGCGGCGGCGGC',
-                'trRef'         => 'GGCGGCGGCGGCGGCGGC',
-                'trRefComp'     => {
+                'postEnt'       => {
+                    'cDot' => '39',
+                    'exin' => 'EX1E',
+                    'nDot' => 119,
+                    'r'    => 'C1E'
+                },
+                'preStart' => {
+                    'cDot' => '20',
+                    'exin' => 'EX1E',
+                    'nDot' => 100,
+                    'r'    => 'C1E'
+                },
+		'prAlt'	    => 'AAAAA',
+		'prRef'	    => 'AAAAAAA',
+                'prot'      => 'NP_958799.1',
+                'protBegin' => 7,
+                'protEnd'   => 13,
+                'r'         => 'C1E',
+                'r_Begin'   => 'C1E',
+                'r_End'     => 'C1E',
+                'rnaBegin'  => 101,
+                'rnaEnd'    => 118,
+                'strd'      => '-',
+                'trAlt'     => 'GGCGGCGGCGGC',
+                'trRef'     => 'GGCGGCGGCGGCGGCGGC',
+                'trRefComp' => {
                     'EX1E' => 18
                 }
             }
@@ -1233,18 +1417,30 @@ my $cds_delins_anno = bless(
                 'genepartIndex' => '2',
                 'genepartSO'    => 'SO:0000164',
                 'intronIndex'   => '2',
-                'prot'          => 'NP_689699.2',
-                'protBegin'     => '',
-                'protEnd'       => '',
-                'r'             => 'AC1',
-                'r_Begin'       => 'AC1',
-                'r_End'         => 'AC1',
-                'rnaBegin'      => '153-2',
-                'rnaEnd'        => '153-1',
-                'strd'          => '+',
-                'trAlt'         => 'TC',
-                'trRef'         => 'AG',
-                'trRefComp'     => {
+                'postEnd'       => {
+                    'cDot' => '73',
+                    'exin' => 'EX3',
+                    'nDot' => 153,
+                    'r'    => 'C2'
+                },
+                'preStart' => {
+                    'cDot' => '73-3',
+                    'exin' => 'IVS2',
+                    'nDot' => '153-3',
+                    'r'    => 'IC1'
+                },
+                'prot'      => 'NP_689699.2',
+                'protBegin' => '',
+                'protEnd'   => '',
+                'r'         => 'AC1',
+                'r_Begin'   => 'AC1',
+                'r_End'     => 'AC1',
+                'rnaBegin'  => '153-2',
+                'rnaEnd'    => '153-1',
+                'strd'      => '+',
+                'trAlt'     => 'TC',
+                'trRef'     => 'AG',
+                'trRefComp' => {
                     'IVS2' => [ 0, 2 ]
                 }
             }
@@ -1291,18 +1487,30 @@ my $cds_no_call_anno = bless(
                 'genepartIndex' => '2',
                 'genepartSO'    => 'SO:0000204',
                 'intronIndex'   => '.',
-                'prot'          => 'NP_689699.2',
-                'protBegin'     => '',
-                'protEnd'       => '',
-                'r'             => '5U1',
-                'r_Begin'       => '5U1',
-                'r_End'         => '5U1',
-                'rnaBegin'      => 79,
-                'rnaEnd'        => 79,
-                'strd'          => '+',
-                'trAlt'         => 'N',
-                'trRef'         => 'T',
-                'trRefComp'     => {
+                'postEnd'       => {
+                    'cDot' => '-1',
+                    'exin' => 'EX2',
+                    'nDot' => 80,
+                    'r'    => '5U1'
+                },
+                'preStart' => {
+                    'cDot' => '-3',
+                    'exin' => 'EX2',
+                    'nDot' => 78,
+                    'r'    => '5U1'
+                },
+                'prot'      => 'NP_689699.2',
+                'protBegin' => '',
+                'protEnd'   => '',
+                'r'         => '5U1',
+                'r_Begin'   => '5U1',
+                'r_End'     => '5U1',
+                'rnaBegin'  => 79,
+                'rnaEnd'    => 79,
+                'strd'      => '+',
+                'trAlt'     => 'N',
+                'trRef'     => 'T',
+                'trRefComp' => {
                     'EX2' => 1
                 }
             },
@@ -1323,18 +1531,30 @@ my $cds_no_call_anno = bless(
                 'genepartIndex' => 0,
                 'genepartSO'    => 'SO:0000167',
                 'intronIndex'   => '.',
-                'prot'          => '',
-                'protBegin'     => '',
-                'protEnd'       => '',
-                'r'             => 'PROM',
-                'r_Begin'       => 'PROM',
-                'r_End'         => 'PROM',
-                'rnaBegin'      => -6503,
-                'rnaEnd'        => -6503,
-                'strd'          => '-',
-                'trAlt'         => 'N',
-                'trRef'         => 'A',
-                'trRefComp'     => {
+                'postEnt'       => {
+                    'cDot' => '',
+                    'exin' => '.',
+                    'nDot' => -6502,
+                    'r'    => 'PROM'
+                },
+                'preStart' => {
+                    'cDot' => '',
+                    'exin' => '.',
+                    'nDot' => -6504,
+                    'r'    => 'PROM'
+                },
+                'prot'      => '',
+                'protBegin' => '',
+                'protEnd'   => '',
+                'r'         => 'PROM',
+                'r_Begin'   => 'PROM',
+                'r_End'     => 'PROM',
+                'rnaBegin'  => -6503,
+                'rnaEnd'    => -6503,
+                'strd'      => '-',
+                'trAlt'     => 'N',
+                'trRef'     => 'A',
+                'trRefComp' => {
                     'P0' => [ 0, 1 ]
                 }
             }
@@ -1362,30 +1582,30 @@ my $cds_no_call_anno = bless(
 );
 
 test_varanno( $cds_rna_delins_anno, $cds_rna_delins );
-test_varanno( $cds_no_change_anno, $cds_no_change );
-test_varanno( $cds_snv_anno, $cds_snv );
-test_varanno( $cds_del_anno, $cds_del );
-test_varanno( $cds_ins_anno, $cds_ins );
-test_varanno( $cds_rep_anno, $cds_rep );
-test_varanno( $cds_delins_anno, $cds_delins );
-test_varanno( $cds_no_call_anno, $cds_no_call );
+test_varanno( $cds_no_change_anno,  $cds_no_change );
+test_varanno( $cds_snv_anno,        $cds_snv );
+test_varanno( $cds_del_anno,        $cds_del );
+test_varanno( $cds_ins_anno,        $cds_ins );
+test_varanno( $cds_rep_anno,        $cds_rep );
+test_varanno( $cds_delins_anno,     $cds_delins );
+test_varanno( $cds_no_call_anno,    $cds_no_call );
 
 done_testing();
 exit 0;
 
 sub test_parse_var {
-    my ($expect,@args) = @_;
+    my ( $expect, @args ) = @_;
     my $ranno = BedAnno::Var->new(@args);
-    if (!is_deeply($ranno, $expect, "for [ ".join(",",@args)." ]")) {
+    if ( !is_deeply( $ranno, $expect, "for [ " . join( ",", @args ) . " ]" ) ) {
         explain "The anno infomations are: ", $ranno;
     }
 }
 
-sub test_varanno{
-    my ($expect, $vara)=@_;
-    my ($vAnno, $noneed) = $beda->varanno($vara);
-    if (!is_deeply ($vAnno,$expect,"for [ $vara->{imp} ]")){
-	explain "The anno infomations are: ", $vAnno;
+sub test_varanno {
+    my ( $expect, $vara )   = @_;
+    my ( $vAnno,  $noneed ) = $beda->varanno($vara);
+    if ( !is_deeply( $vAnno, $expect, "for [ $vara->{imp} ]" ) ) {
+        explain "The anno infomations are: ", $vAnno;
     }
 }
 
