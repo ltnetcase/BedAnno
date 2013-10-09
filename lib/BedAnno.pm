@@ -1278,12 +1278,13 @@ sub finaliseAnno {
                       $self->{pfam_h}->getPfam( $trAnnoEnt->{prot}, $pb, $pe );
 		}
 	    }
-            if ( exists $trAnnoEnt->{p}
-                and $trAnnoEnt->{p} =~ /^p\.[A-Z](\d+)([A-Z])$/ )
-            {
-                if ( exists $self->{prediction} ) {
+            if ( exists $self->{prediction} ) {
+                if ( exists $trAnnoEnt->{p}
+                    and $trAnnoEnt->{p} =~ /^p\.[A-Z](\d+)([A-Z])$/ )
+                {
                     my $rpred =
-                      $self->{prediction_h}->getPredScore( $trAnnoEnt->{prot}, $1, $2 );
+                      $self->{prediction_h}
+                      ->getPredScore( $trAnnoEnt->{prot}, $1, $2 );
                     if ( exists $rpred->{sift} ) {
                         $trAnnoEnt->{siftPred}  = $rpred->{sift}->[0];
                         $trAnnoEnt->{siftScore} = $rpred->{sift}->[1];
@@ -1301,6 +1302,44 @@ sub finaliseAnno {
                           $rpred->{polyphen2_humvar}->[1];
                     }
 
+                }
+                elsif ( exists $trAnnoEnt->{prRef}
+                    and exists $trAnnoEnt->{prAlt} )
+                {
+                    my $prReflen = length( $trAnnoEnt->{prRef} );
+                    my $prAltlen = length( $trAnnoEnt->{prAlt} );
+                    if (    $prReflen == 1
+                        and $prAltlen == 1
+                        and $trAnnoEnt->{protBegin} eq '1'
+                        and $trAnnoEnt->{protEnd} eq '1' )
+                    {
+                        my $init_pred =
+                          $self->{prediction_h}
+                          ->getPredScore( $trAnnoEnt->{prot}, 1,
+                            $trAnnoEnt->{prAlt} );
+
+                        if ( exists $init_pred->{sift} ) {
+                            $trAnnoEnt->{siftPred} =
+                              $init_pred->{sift}->[0];
+                            $trAnnoEnt->{siftScore} =
+                              $init_pred->{sift}->[1];
+                        }
+
+                        if ( exists $init_pred->{polyphen2_humdiv} ) {
+                            $trAnnoEnt->{pp2divPred} =
+                              $init_pred->{polyphen2_humdiv}->[0];
+                            $trAnnoEnt->{pp2divScore} =
+                              $init_pred->{polyphen2_humdiv}->[1];
+                        }
+
+                        if ( exists $init_pred->{polyphen2_humvar} ) {
+                            $trAnnoEnt->{pp2varPred} =
+                              $init_pred->{polyphen2_humvar}->[0];
+                            $trAnnoEnt->{pp2varScore} =
+                              $init_pred->{polyphen2_humvar}->[1];
+                        }
+
+                    }
                 }
             }
 	}
@@ -1858,6 +1897,11 @@ sub getTrChange {
 			if ($init_synon == 0) {
 			    $trannoEnt->{func} = 'init-loss';
 			    $trannoEnt->{p}    = 'p.0?';
+			    if ($prBegin eq '1' and $prEnd eq '1') {
+				$trannoEnt->{prRef} = (exists $C1{$current_startCodon}) ? $C1{$current_startCodon} : ".";
+				my $altCodon = substr($codon_alt, 0, 3);
+				$trannoEnt->{prAlt} = (exists $C1{$altCodon}) ? $C1{$altCodon} : ".";
+			    }
 			    next;
 			}
 			else {
