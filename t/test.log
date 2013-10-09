@@ -1,13 +1,15 @@
 ok 1 - use BedAnno;
 ok 2 - tabix .. tabix -f -p bed ../data/test_db.bed.gz
-ok 3 - for [ chr1,14410,C,A ]
-ok 4 - for [ chr1,14410,C,CGAATAGCTA ]
-ok 5 - for [ chr1,14410,CTAGATCG,C ]
-ok 6 - for [ chr1,14410,CTAGA,CTAGTAGTAGTAGA ]
-ok 7 - for [ chr1,14410,CTAGA,GT ]
-ok 8 - for [ chr1,14410,CATGA,TGTGT ]
-ok 9 - for [ chr1,14410,14410,,? ]
-not ok 10 - for [ snv ]
+ok 3 - for [ HASH(0x20072350) ]
+ok 4 - for [ chr1,14410,C,A ]
+ok 5 - for [ HASH(0x20071f30) ]
+ok 6 - for [ chr1,14410,C,CGAATAGCTA ]
+ok 7 - for [ chr1,14410,CTAGATCG,C ]
+ok 8 - for [ chr1,14410,CTAGA,CTAGTAGTAGTAGA ]
+ok 9 - for [ chr1,14410,CTAGA,GT ]
+ok 10 - for [ chr1,14410,CATGA,TGTGT ]
+ok 11 - for [ chr1,14410,14410,,? ]
+not ok 12 - for [ snv ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
@@ -27,6 +29,18 @@ not ok 10 - for [ snv ]
 #       'genepartIndex' => '11',
 #       'genepartSO' => 'SO:0000655',
 #       'intronIndex' => '.',
+#       'postEnt' => {
+#         'cDot' => '',
+#         'exin' => 'EX11E',
+#         'nDot' => 1722,
+#         'r' => 'R11E'
+#       },
+#       'preStart' => {
+#         'cDot' => '',
+#         'exin' => 'EX11E',
+#         'nDot' => 1720,
+#         'r' => 'R11E'
+#       },
 #       'prot' => '',
 #       'protBegin' => '',
 #       'protEnd' => '',
@@ -61,6 +75,9 @@ not ok 10 - for [ snv ]
 #     'gHGVS' => 'g.14409C>A',
 #     'guess' => 'snv',
 #     'imp' => 'snv',
+#     'phyloPpm' => '0.786',
+#     'phyloPpr' => '0.121',
+#     'phyloPve' => '0.803',
 #     'pos' => 14409,
 #     'ref' => 'C',
 #     'refbuild' => 'GRCh37',
@@ -73,7 +90,7 @@ not ok 10 - for [ snv ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 11 - for [ ins ]
+not ok 13 - for [ ins ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
@@ -93,6 +110,18 @@ not ok 11 - for [ ins ]
 #       'genepartIndex' => '11',
 #       'genepartSO' => 'SO:0000655',
 #       'intronIndex' => '.',
+#       'postEnt' => {
+#         'cDot' => '',
+#         'exin' => 'EX11E',
+#         'nDot' => 1721,
+#         'r' => 'R11E'
+#       },
+#       'preStart' => {
+#         'cDot' => '',
+#         'exin' => 'EX11E',
+#         'nDot' => 1720,
+#         'r' => 'R11E'
+#       },
 #       'prot' => '',
 #       'protBegin' => '',
 #       'protEnd' => '',
@@ -139,7 +168,7 @@ not ok 11 - for [ ins ]
 #     'varTypeSO' => 'SO:0000667'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 12 - for [ del ]
+not ok 14 - for [ del ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
@@ -159,6 +188,18 @@ not ok 12 - for [ del ]
 #       'genepartIndex' => '11',
 #       'genepartSO' => 'SO:0000655',
 #       'intronIndex' => '.',
+#       'postEnt' => {
+#         'cDot' => '',
+#         'exin' => 'EX11E',
+#         'nDot' => 1721,
+#         'r' => 'R11E'
+#       },
+#       'preStart' => {
+#         'cDot' => '',
+#         'exin' => 'EX11E',
+#         'nDot' => 1713,
+#         'r' => 'R11E'
+#       },
 #       'prot' => '',
 #       'protBegin' => '',
 #       'protEnd' => '',
@@ -205,7 +246,7 @@ not ok 12 - for [ del ]
 #     'varTypeSO' => 'SO:0000159'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 13 - for [ rep ]
+not ok 15 - for [ rep ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
@@ -225,6 +266,18 @@ not ok 13 - for [ rep ]
 #       'genepartIndex' => '11',
 #       'genepartSO' => 'SO:0000655',
 #       'intronIndex' => '.',
+#       'postEnt' => {
+#         'cDot' => '',
+#         'exin' => 'EX11E',
+#         'nDot' => 1721,
+#         'r' => 'R11E'
+#       },
+#       'preStart' => {
+#         'cDot' => '',
+#         'exin' => 'EX11E',
+#         'nDot' => 1717,
+#         'r' => 'R11E'
+#       },
 #       'prot' => '',
 #       'protBegin' => '',
 #       'protEnd' => '',
@@ -294,7 +347,7 @@ not ok 13 - for [ rep ]
 #     'varTypeSO' => 'SO:1000032'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 14 - for [ delins ]
+not ok 16 - for [ delins ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
@@ -314,6 +367,18 @@ not ok 14 - for [ delins ]
 #       'genepartIndex' => '11',
 #       'genepartSO' => 'SO:0000655',
 #       'intronIndex' => '.',
+#       'postEnt' => {
+#         'cDot' => '',
+#         'exin' => 'EX11E',
+#         'nDot' => 1722,
+#         'r' => 'R11E'
+#       },
+#       'preStart' => {
+#         'cDot' => '',
+#         'exin' => 'EX11E',
+#         'nDot' => 1716,
+#         'r' => 'R11E'
+#       },
 #       'prot' => '',
 #       'protBegin' => '',
 #       'protEnd' => '',
@@ -360,7 +425,7 @@ not ok 14 - for [ delins ]
 #     'varTypeSO' => 'SO:1000032'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 15 - for [ delins ]
+not ok 17 - for [ delins ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
@@ -380,6 +445,18 @@ not ok 15 - for [ delins ]
 #       'genepartIndex' => '11',
 #       'genepartSO' => 'SO:0000655',
 #       'intronIndex' => '.',
+#       'postEnt' => {
+#         'cDot' => '',
+#         'exin' => 'EX11E',
+#         'nDot' => 1722,
+#         'r' => 'R11E'
+#       },
+#       'preStart' => {
+#         'cDot' => '',
+#         'exin' => 'EX11E',
+#         'nDot' => 1716,
+#         'r' => 'R11E'
+#       },
 #       'prot' => '',
 #       'protBegin' => '',
 #       'protEnd' => '',
@@ -431,7 +508,7 @@ not ok 15 - for [ delins ]
 #     'varTypeSO' => 'SO:1000032'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 16 - for [ ins ]
+not ok 18 - for [ ins ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
@@ -451,6 +528,18 @@ not ok 16 - for [ ins ]
 #       'genepartIndex' => '11',
 #       'genepartSO' => 'SO:0000655',
 #       'intronIndex' => '.',
+#       'postEnt' => {
+#         'cDot' => '',
+#         'exin' => 'EX11E',
+#         'nDot' => 1721,
+#         'r' => 'R11E'
+#       },
+#       'preStart' => {
+#         'cDot' => '',
+#         'exin' => 'EX11E',
+#         'nDot' => 1720,
+#         'r' => 'R11E'
+#       },
 #       'prot' => '',
 #       'protBegin' => '',
 #       'protEnd' => '',
@@ -496,15 +585,15 @@ not ok 16 - for [ ins ]
 #     'varTypeSO' => 'no-call'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-ok 17 - for [ chr8,24811065,24811066,G,A ]
-ok 18 - for [ chr8,24811064,24811065,G, ]
-ok 19 - for [ chr8,24811066,24811067,G,T ]
-ok 20 - for [ chr8,24811066,24811067,G, ]
-ok 21 - for [ chr8,24811067,24811067,,GGG ]
-ok 22 - for [ chr3,49395673,GGCCGCCGCCGCCGCCGCC,GGCCGCCGCCGCC ]
-ok 23 - for [ chr1,865533,AG,TC ]
-ok 24 - for [ chr1,861319,861320,T,N ]
-not ok 25 - for [ snv ]
+ok 19 - for [ chr8,24811065,24811066,G,A ]
+ok 20 - for [ chr8,24811064,24811065,G, ]
+ok 21 - for [ chr8,24811066,24811067,G,T ]
+ok 22 - for [ chr8,24811066,24811067,G, ]
+ok 23 - for [ chr8,24811067,24811067,,GGG ]
+ok 24 - for [ chr3,49395673,GGCCGCCGCCGCCGCCGCC,GGCCGCCGCCGCC ]
+ok 25 - for [ chr1,865533,AG,TC ]
+ok 26 - for [ chr1,861319,861320,T,N ]
+not ok 27 - for [ snv ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_006158.3' => {
@@ -524,9 +613,23 @@ not ok 25 - for [ snv ]
 #       'genepartIndex' => '3',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
-#       'p' => 'p.S472fs*?',
+#       'p' => 'p.S472fs*2',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
+#       'postEnt' => {
+#         'cDot' => '1414',
+#         'exin' => 'EX3',
+#         'nDot' => '1516',
+#         'r' => 'C3'
+#       },
+#       'prAlt' => 'PL*',
+#       'prRef' => 'PSEGEAEEEEKDKEEAEEEEAAEEEEAAKEESEEAKEEEEGGEGEEGEETKEAEEEEKKVEGAGEEQAAKKKD*',
+#       'preStart' => {
+#         'cDot' => '1412',
+#         'exin' => 'EX3',
+#         'nDot' => 1514,
+#         'r' => 'C3'
+#       },
 #       'prot' => 'NP_006149.2',
 #       'protBegin' => 471,
 #       'protEnd' => 544,
@@ -561,6 +664,9 @@ not ok 25 - for [ snv ]
 #     'gHGVS' => 'g.24811065G>A',
 #     'guess' => 'snv',
 #     'imp' => 'snv',
+#     'phyloPpm' => '0.064',
+#     'phyloPpr' => '-0.181',
+#     'phyloPve' => '1.215',
 #     'pos' => 24811065,
 #     'ref' => 'G',
 #     'refbuild' => 'GRCh37',
@@ -573,7 +679,7 @@ not ok 25 - for [ snv ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 26 - for [ del ]
+not ok 28 - for [ del ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_006158.3' => {
@@ -593,6 +699,18 @@ not ok 26 - for [ del ]
 #       'genepartIndex' => '3',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
+#       'postEnt' => {
+#         'cDot' => '1414',
+#         'exin' => 'EX3',
+#         'nDot' => 1516,
+#         'r' => 'C3'
+#       },
+#       'preStart' => {
+#         'cDot' => '1413',
+#         'exin' => 'EX3',
+#         'nDot' => 1515,
+#         'r' => 'C3'
+#       },
 #       'prot' => 'NP_006149.2',
 #       'protBegin' => '',
 #       'protEnd' => '',
@@ -638,6 +756,9 @@ not ok 26 - for [ del ]
 #     'gHGVS' => 'g.24811065delG',
 #     'guess' => 'del',
 #     'imp' => 'del',
+#     'phyloPpm' => '0.755',
+#     'phyloPpr' => '-0.165',
+#     'phyloPve' => '0.420',
 #     'pos' => 24811064,
 #     'ref' => 'G',
 #     'refbuild' => 'GRCh37',
@@ -650,7 +771,7 @@ not ok 26 - for [ del ]
 #     'varTypeSO' => 'SO:0000159'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 27 - for [ snv ]
+not ok 29 - for [ snv ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_006158.3' => {
@@ -675,6 +796,20 @@ not ok 27 - for [ snv ]
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'polar' => 'NP=>P+',
+#       'postEnt' => {
+#         'cDot' => '1413',
+#         'exin' => 'EX3',
+#         'nDot' => 1515,
+#         'r' => 'C3'
+#       },
+#       'prAlt' => 'H',
+#       'prRef' => 'P',
+#       'preStart' => {
+#         'cDot' => '1411',
+#         'exin' => 'EX3',
+#         'nDot' => 1513,
+#         'r' => 'C3'
+#       },
 #       'prot' => 'NP_006149.2',
 #       'protBegin' => 471,
 #       'protEnd' => 471,
@@ -709,6 +844,9 @@ not ok 27 - for [ snv ]
 #     'gHGVS' => 'g.24811066G>T',
 #     'guess' => 'snv',
 #     'imp' => 'snv',
+#     'phyloPpm' => '0.393',
+#     'phyloPpr' => '0.655',
+#     'phyloPve' => '1.193',
 #     'pos' => 24811066,
 #     'ref' => 'G',
 #     'refbuild' => 'GRCh37',
@@ -721,7 +859,7 @@ not ok 27 - for [ snv ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 28 - for [ del ]
+not ok 30 - for [ del ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_006158.3' => {
@@ -741,9 +879,23 @@ not ok 28 - for [ del ]
 #       'genepartIndex' => '3',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
-#       'p' => 'p.P471fs*?',
+#       'p' => 'p.S472fs*78',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
+#       'postEnt' => {
+#         'cDot' => '1413',
+#         'exin' => 'EX3',
+#         'nDot' => 1515,
+#         'r' => 'C3'
+#       },
+#       'prAlt' => 'PLKEKPRRRRRTRKRPRKRRQLKRKKLPRKSLKKQKKKKKEVKVKKERKPKKLKRRRRKLKVLGRNKQLRRKIEPPFP*',
+#       'prRef' => 'PSEGEAEEEEKDKEEAEEEEAAEEEEAAKEESEEAKEEEEGGEGEEGEETKEAEEEEKKVEGAGEEQAAKKKD*',
+#       'preStart' => {
+#         'cDot' => '1411',
+#         'exin' => 'EX3',
+#         'nDot' => 1513,
+#         'r' => 'C3'
+#       },
 #       'prot' => 'NP_006149.2',
 #       'protBegin' => 471,
 #       'protEnd' => 544,
@@ -778,6 +930,9 @@ not ok 28 - for [ del ]
 #     'gHGVS' => 'g.24811067delG',
 #     'guess' => 'del',
 #     'imp' => 'del',
+#     'phyloPpm' => '0.393',
+#     'phyloPpr' => '0.655',
+#     'phyloPve' => '1.193',
 #     'pos' => 24811066,
 #     'ref' => 'G',
 #     'refbuild' => 'GRCh37',
@@ -790,7 +945,7 @@ not ok 28 - for [ del ]
 #     'varTypeSO' => 'SO:0000159'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 29 - for [ ins ]
+not ok 31 - for [ ins ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_006158.3' => {
@@ -813,6 +968,20 @@ not ok 29 - for [ ins ]
 #       'p' => 'p.P471dup',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
+#       'postEnt' => {
+#         'cDot' => '1412',
+#         'exin' => 'EX3',
+#         'nDot' => 1514,
+#         'r' => 'C3'
+#       },
+#       'prAlt' => 'PP',
+#       'prRef' => 'P',
+#       'preStart' => {
+#         'cDot' => '1411',
+#         'exin' => 'EX3',
+#         'nDot' => 1513,
+#         'r' => 'C3'
+#       },
 #       'prot' => 'NP_006149.2',
 #       'protBegin' => 471,
 #       'protEnd' => 471,
@@ -859,7 +1028,7 @@ not ok 29 - for [ ins ]
 #     'varTypeSO' => 'SO:0000667'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 30 - for [ rep ]
+not ok 32 - for [ rep ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_000581.2' => {
@@ -882,6 +1051,20 @@ not ok 30 - for [ rep ]
 #       'p' => 'p.A7[7>5]',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
+#       'postEnt' => {
+#         'cDot' => '39',
+#         'exin' => 'EX1',
+#         'nDot' => 119,
+#         'r' => 'C1'
+#       },
+#       'prAlt' => 'AAAAA',
+#       'prRef' => 'AAAAAAA',
+#       'preStart' => {
+#         'cDot' => '20',
+#         'exin' => 'EX1',
+#         'nDot' => 100,
+#         'r' => 'C1'
+#       },
 #       'prot' => 'NP_000572.2',
 #       'protBegin' => 7,
 #       'protEnd' => 13,
@@ -917,6 +1100,20 @@ not ok 30 - for [ rep ]
 #       'p' => 'p.A7[7>5]',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
+#       'postEnt' => {
+#         'cDot' => '39',
+#         'exin' => 'EX1E',
+#         'nDot' => 119,
+#         'r' => 'C1E'
+#       },
+#       'prAlt' => 'AAAAA',
+#       'prRef' => 'AAAAAAA',
+#       'preStart' => {
+#         'cDot' => '20',
+#         'exin' => 'EX1E',
+#         'nDot' => 100,
+#         'r' => 'C1E'
+#       },
 #       'prot' => 'NP_958799.1',
 #       'protBegin' => 7,
 #       'protEnd' => 13,
@@ -986,7 +1183,7 @@ not ok 30 - for [ rep ]
 #     'varTypeSO' => 'SO:1000032'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 31 - for [ delins ]
+not ok 33 - for [ delins ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_152486.2' => {
@@ -1006,6 +1203,18 @@ not ok 31 - for [ delins ]
 #       'genepartIndex' => '2',
 #       'genepartSO' => 'SO:0000164',
 #       'intronIndex' => '2',
+#       'postEnd' => {
+#         'cDot' => '73',
+#         'exin' => 'EX3',
+#         'nDot' => 153,
+#         'r' => 'C2'
+#       },
+#       'preStart' => {
+#         'cDot' => '73-3',
+#         'exin' => 'IVS2',
+#         'nDot' => '153-3',
+#         'r' => 'IC1'
+#       },
 #       'prot' => 'NP_689699.2',
 #       'protBegin' => '',
 #       'protEnd' => '',
@@ -1059,7 +1268,7 @@ not ok 31 - for [ delins ]
 #     'varTypeSO' => 'SO:1000032'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 32 - for [ snv ]
+not ok 34 - for [ snv ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_152486.2' => {
@@ -1079,6 +1288,18 @@ not ok 32 - for [ snv ]
 #       'genepartIndex' => '2',
 #       'genepartSO' => 'SO:0000204',
 #       'intronIndex' => '.',
+#       'postEnd' => {
+#         'cDot' => '-1',
+#         'exin' => 'EX2',
+#         'nDot' => 80,
+#         'r' => '5U1'
+#       },
+#       'preStart' => {
+#         'cDot' => '-3',
+#         'exin' => 'EX2',
+#         'nDot' => 78,
+#         'r' => '5U1'
+#       },
 #       'prot' => 'NP_689699.2',
 #       'protBegin' => '',
 #       'protEnd' => '',
@@ -1111,6 +1332,18 @@ not ok 32 - for [ snv ]
 #       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
+#       'postEnt' => {
+#         'cDot' => '',
+#         'exin' => '.',
+#         'nDot' => -6502,
+#         'r' => 'PROM'
+#       },
+#       'preStart' => {
+#         'cDot' => '',
+#         'exin' => '.',
+#         'nDot' => -6504,
+#         'r' => 'PROM'
+#       },
 #       'prot' => '',
 #       'protBegin' => '',
 #       'protEnd' => '',
@@ -1148,6 +1381,9 @@ not ok 32 - for [ snv ]
 #     'gHGVS' => 'g.861319T>N',
 #     'guess' => 'no-call',
 #     'imp' => 'snv',
+#     'phyloPpm' => '0.689',
+#     'phyloPpr' => '0.402',
+#     'phyloPve' => '2.606',
 #     'pos' => 861319,
 #     'ref' => 'T',
 #     'refbuild' => 'GRCh37',
@@ -1160,4 +1396,4 @@ not ok 32 - for [ snv ]
 #     'varTypeSO' => 'no-call'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-1..32
+1..34

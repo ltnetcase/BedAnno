@@ -975,53 +975,67 @@ sub anno {
 		    },
 		},
 		trInfo => {
-		    $tid => {
-			geneId        => $Entrez_Gene_ID,
-			geneSym       => $Gene_Symbol,
-			prot          => $Protein_Acc_Ver,
-			strd          => $strand,
-			rnaBegin      => $Begin_in_RNA_transcript,
-			rnaEnd        => $End_in_RNA_transcript,
-			cdsBegin	  => $Begin_in_CDS,    # cDot format
-			cdsEnd	  => $End_in_CDS,      # cDot format
-			protBegin     => $Begin_in_Protein,
-			protEnd       => $End_in_Protein,
-			c             => $cHGVS,
-			p             => $pHGVS,
-			cc            => $codon_change,
-			polar         => $polar_change,
-			r             => $imp_funcRegion,
-			r_Begin	  => $imp_beginfuncRegion,
-			r_End	  => $imp_endfuncRegion,
-			func          => $imp_funcCode,
-			exin          => $exIntr_number,
-			ei_Begin	  => $imp_Begin_exIntr_number,
-			ei_End	  => $imp_End_exIntr_number,
-			genepart      => $GenePart,
-			genepartSO    => $GenePartSO,
-			genepartIndex => $GenePartIndex,
-			exonIndex   => $exonIndex,          # '.' for N/A
-			intronIndex => $intronIndex,        # '.' for N/A
-			funcSOname  => $FunctionImpact,
-			funcSO      => $FunctionImpactSO,
-			trAlt	=> $alt_string_on_transcript,
-			trRef	=> $ref_string_on_transcript,
-			trRefComp   => {
-			    # some trRef components
-			}
+                    $tid => {
+                        geneId        => $Entrez_Gene_ID,
+                        geneSym       => $Gene_Symbol,
+                        prot          => $Protein_Acc_Ver,
+                        strd          => $strand,
+                        rnaBegin      => $Begin_in_RNA_transcript,
+                        rnaEnd        => $End_in_RNA_transcript,
+                        cdsBegin      => $Begin_in_CDS,            # cDot format
+                        cdsEnd        => $End_in_CDS,              # cDot format
+                        protBegin     => $Begin_in_Protein,
+                        protEnd       => $End_in_Protein,
+                        c             => $cHGVS,
+                        p             => $pHGVS,
+                        cc            => $codon_change,
+                        polar         => $polar_change,
+                        r             => $imp_funcRegion,
+                        r_Begin       => $imp_beginfuncRegion,
+                        r_End         => $imp_endfuncRegion,
+                        func          => $imp_funcCode,
+                        exin          => $exIntr_number,
+                        ei_Begin      => $imp_Begin_exIntr_number,
+                        ei_End        => $imp_End_exIntr_number,
+                        genepart      => $GenePart,
+                        genepartSO    => $GenePartSO,
+                        genepartIndex => $GenePartIndex,
+                        exonIndex     => $exonIndex,               # '.' for N/A
+                        intronIndex   => $intronIndex,             # '.' for N/A
+                        funcSOname    => $FunctionImpact,
+                        funcSO        => $FunctionImpactSO,
+                        trAlt         => $alt_string_on_transcript,
+                        trRef         => $ref_string_on_transcript,
+                        prAlt         => $protein_alt_sequence,
+                        prRef         => $protein_ref_sequence,
+                        preStart => {    # the position before the start of var
+                            nDot => $rna_hgvs_pos,
+                            cDot => $cds_hgvs_pos,
+                            r    => $func_region,
+                            exin => $exon_intron_number,
+                        },
+                        postEnd => {     # the position after the end of var
+                            nDot => $rna_hgvs_pos,
+                            cDot => $cds_hgvs_pos,
+                            r    => $func_region,
+                            exin => $exon_intron_number,
+                        },
+                        trRefComp => {
 
+                            # some trRef components
+                        },
 
-			# The following parts will be exists if extra resource
-			# is available.
-			pfamId      => $PFAM_ID,
-			pfamName    => $PFAM_NAME,
-			siftPred    => $SIFTpred,
-			siftScore   => $SIFTscore,
-			pp2divPred  => $Polyphen2HumDivPred,
-			pp2divScore => $Polyphen2HumDivScore,
-			pp2varPred  => $Polyphen2HumVarPred,
-			pp2varScore => $Polyphen2HumVarScore,
-		    },
+                        # The following parts will be exists if extra resource
+                        # is available.
+                        pfamId      => $PFAM_ID,
+                        pfamName    => $PFAM_NAME,
+                        siftPred    => $SIFTpred,
+                        siftScore   => $SIFTscore,
+                        pp2divPred  => $Polyphen2HumDivPred,
+                        pp2divScore => $Polyphen2HumDivScore,
+                        pp2varPred  => $Polyphen2HumVarPred,
+                        pp2varScore => $Polyphen2HumVarScore,
+                      },
 		    ...
 		}
 	    }
@@ -1038,7 +1052,7 @@ sub varanno {
     if (exists $self->{phyloP}) {
 	if ($var->{sm} == 1) {
 	    @$var{qw(phyloPpm phyloPpr phyloPve)} = 
-		$self->{phyloP_h}->getPhyloP46wayScore($var->{chr}, ($var->{pos}+1));
+		@{$self->{phyloP_h}->getPhyloP46wayScore($var->{chr}, ($var->{pos}+1))};
 	}
     }
 
@@ -1301,6 +1315,7 @@ sub finaliseAnno {
     Usage   : $beda->getTrChange($annoEnt);
     Returns : assign the following tags in annoEnt
 		trRef, prot, c, p, cc, polar, func
+		prRef, prAlt
 
 =cut
 sub getTrChange {
@@ -1352,7 +1367,7 @@ sub getTrChange {
             next;
         }
 
-	my $cdsOpt = (exists $trdbEnt->{prot}) ? 1 : 0;
+	my $cdsOpt = (exists $trdbEnt->{prot} and $trdbEnt->{prot} ne ".") ? 1 : 0;
 	my $strd   = ($trannoEnt->{strd} eq '+') ? 1 : 0;
 
 	# fix the trRefComp when ended in 3'downstream
@@ -1551,6 +1566,12 @@ sub getTrChange {
             next;
         }
 	
+	# * check if exon remapping introduced special case
+	if ( $chgvs_5 =~ /^\+|\+d/ and $chgvs_3 =~ /^\+|\+d/ ) {
+	    $trannoEnt->{func} = 'unknown';
+	    next;
+	}
+
 	# 4. check if span different exon/intron/promoter/downstream
         if (
             (
@@ -1730,7 +1751,7 @@ sub getTrChange {
 
                     my $ready_to_add_3;
                     if ( !$end_in_cds_flag or $frameshift_flag ) {
-                        $ready_to_add_3 = substr( $trSeqs{$tid}, $real_p+$real_rl );
+                        $ready_to_add_3 = substr( $trSeqs{$tid}, $trEnd );
 			# this variants's effect will be end at the terminal
 			$prEnd = $trdbEnt->{plen} + 1; # terminal
                     }
@@ -1867,14 +1888,19 @@ sub getTrChange {
                     ( $prAlt, $next_alt_frame ) = translate( $codon_alt, 0,
                         ( ( exists $trdbEnt->{A} ) ? 1 : 0 ) );
 
+
+		    $trannoEnt->{prRef} = $prRef;
+		    $trannoEnt->{prAlt} = $prAlt;
+
 		    # to indicate whether the alternate sequence 
 		    # encode a stop codon or non-frameshift, or otherwise
 		    # with a non stopped frameshift.
-		    my $non_stop_flag = ($next_alt_frame) ? 1 : 0;
+		    my $non_stop_flag = ($prAlt !~ /\*$/ and ($next_alt_frame or $frameshift_flag)) ? 1 : 0;
 
 		    # parse the protein variants
 		    # to recognize the repeat and adjust to correct position
-                    my $prVar = BedAnno::Var->new( $trdbEnt->{prot}, ( $prBegin - 1 ),
+                    my $prVar =
+                      BedAnno::Var->new( $trdbEnt->{prot}, ( $prBegin - 1 ),
                         $prEnd, $prRef, $prAlt );
 		    #    0-based
                     my ( $p_P, $p_r, $p_a, $prl, $pal ) =
@@ -1925,10 +1951,14 @@ sub getTrChange {
 
 		    # frameshift
 		    if (!$end_in_cds_flag or $frameshift_flag) {
+			# debug
+#			print STDERR Data::Dumper->Dump( [ $prVar, $codon_alt, $next_alt_frame ], [ "prVar", "codon_alt", "next_alt_frame" ] );
+
 			$trannoEnt->{func} = 'frameshift';
 			$trannoEnt->{p}    = 'p.'.$prStart.($p_P+1).'fs*';
-			if ($p_a =~ /\*$/) { # ext length estimated
-			    $trannoEnt->{p} .= $pal;
+			if ($prAlt =~ /\*$/) { # ext length estimated
+                            $trannoEnt->{p} .=
+                              $prVar->{altlen} - ( $p_P - $prVar->{pos} );
 			}
 			else { # don't meet a stop codon
 			    $trannoEnt->{p} .= '?';
@@ -2395,7 +2425,9 @@ sub translate {
 # here will recalculate it from the offset.
 sub reCalTrPos_by_ofst {
     my ( $trannoEnt, $trRef_ofst ) = @_;
-    return $trannoEnt->{rnaBegin} if ($trRef_ofst == 0);
+    return $trannoEnt->{rnaBegin} if ( $trRef_ofst == 0 );
+    return $trannoEnt->{preStart}->{nDot}
+      if ( $trRef_ofst == -1 and exists $trannoEnt->{preStart} );
 
     my @tag_sort = sort trRefSort keys %{ $trannoEnt->{trRefComp} };
     my $cumulate_len = 0;
@@ -3355,6 +3387,8 @@ sub getTrPosition {
     my $new_aeIndex;
 
     my %tidExblk = ();
+    my %rpreLeft = ();
+    
     for (my $k = $aeIndex; $k < @$rannodb; $k ++) {
 	if ($$rannodb[$k]{sto} < $var->{pos}) { # not reach var
 	    $aeIndex ++;
@@ -3376,7 +3410,7 @@ sub getTrPosition {
 		my $strd = ($rtidDetail->{strd} eq '+') ? 1 : 0;
 
                 my ( $unify_p, $unify_r, $unify_a, $unify_rl, $unify_al ) =
-                  $var->getUnifiedVar( $$rtidDetail{strd} );
+                  $var->getUnifiedVar( $rtidDetail->{strd} );
 
 		# skip non hitted block
                 next
@@ -3393,6 +3427,7 @@ sub getTrPosition {
                     or !exists $annoEnt->{trInfo}->{$tid}
                     or !exists $annoEnt->{trInfo}->{$tid}->{trAlt} )
                 {
+		    # $tid added into trInfo
                     $annoEnt->{trInfo}->{$tid}->{trAlt} =
                       (       $unify_a =~ /^[ACGTN]+$/
                           and $rtidDetail->{strd} eq '-' )
@@ -3430,12 +3465,39 @@ sub getTrPosition {
 			    $tmp_trInfo->{trRefComp}->{ Z999 }->[1] = $1;
 			}
 			# let right rna positions to record Exon block
+
+			if ($total_left_ofst > 0) {
+                            $rpreLeft{$tid} = $annoEnt->cal_hgvs_pos(
+                                tid       => $tid,
+                                tidDetail => $rtidDetail,
+                                offset    => $total_left_ofst,
+                                LR        => 0,                  # preLeft mode
+                                noassign  => 1,
+                            );
+			}
+
+			if (ref($rpreLeft{$tid})) {
+			    if ($strd) {
+				$tmp_trInfo->{preStart} = $rpreLeft{$tid};
+			    }
+			    else {
+				$tmp_trInfo->{postEnt} = $rpreLeft{$tid};
+			    }
+			}
                     }
                     else {
+			$rpreLeft{$tid} = $annoEnt->cal_hgvs_pos(
+			    tid       => $tid,
+			    tidDetail => $rtidDetail,
+			    offset    => $total_left_ofst,
+			    LR        => 0,                  # preLeft mode
+			    noassign  => 1,
+			);
                         next;
                     }
                 }
 
+		# $tid have been added into trInfo in the left end assignment
 		my $trinfoEnt = $annoEnt->{trInfo}->{$tid};
 		# assign right rna positions
                 if (
@@ -3549,9 +3611,21 @@ sub getTrPosition {
 			}
 		    }
                 }
-                else {
-                    next;
-                }
+		my $rpostRight = $annoEnt->cal_hgvs_pos(
+		    tid       => $tid,
+		    tidDetail => $rtidDetail,
+		    offset    => $total_right_ofst,
+		    LR        => 1,                   # post right mode
+		    noassign  => 1,
+		);
+		if (ref($rpostRight)) {
+		    if ($strd) {
+			$trinfoEnt->{postEnd} = $rpostRight;
+		    }
+		    else {
+			$trinfoEnt->{preStart} = $rpostRight;
+		    }
+		}
 	    }
         }
     }
@@ -3641,7 +3715,7 @@ sub cal_hgvs_pos {
     my ( $nDot, $cDot ) = ( '', '' );
     my ( $lr_pair_nDot, $lr_pair_cDot ) = ( '', '' );
     my $strd = ($$rtidDetail{strd} eq '+') ? 1 : 0;
-    my $trAlt = $annoEnt->{trInfo}->{$tid}->{trAlt};
+    my $trAlt = $annoEnt->{trInfo}->{$tid}->{trAlt} if (!exists $cal_args{noassign});
     my $lofst = $ofst;
     if ($lr) { # only one time assignment for one var, offset for left 
 	my $rofst = $$rtidDetail{wlen} - $ofst - 1;
@@ -3682,7 +3756,7 @@ sub cal_hgvs_pos {
 		# this tid
 		$nDot = $rtidDetail->{nsta};
 		$cDot = $rtidDetail->{csta};
-		if ($lofst>0) {
+		if (!exists $cal_args{noassign} and $lofst>0) {
 		    # mismatch info record the transcript-stranded
 		    # reference sequence
                     my ( $mType, $mStart, $mEnd, $strand_ref ) =
@@ -3699,7 +3773,9 @@ sub cal_hgvs_pos {
 	    # 2. check if hit a normal block's right edge
 	    elsif ( $lofst == $$rtidDetail{wlen} ) {
 		# give back the chance for left edge parsing
-		delete $annoEnt->{trInfo}->{$tid} if (!exists $cal_args{noassign});
+		if (!exists $cal_args{noassign}) {
+		    delete $annoEnt->{trInfo}->{$tid};
+		}
 		return 0;
 	    }
 	    # 3. check if annotation-fail
@@ -3831,7 +3907,7 @@ sub cal_hgvs_pos {
 	    if ($rtidDetail->{mismatch} ne "") {
 		$nDot = $rtidDetail->{nsto};
 		$cDot = $rtidDetail->{csto};
-		if ($lofst < $rtidDetail->{wlen}) {
+		if (!exists $cal_args{noassign} and $lofst < $rtidDetail->{wlen}) {
                     my ( $mType, $mStart, $mEnd, $strand_ref ) =
                       split( /,/, $rtidDetail->{mismatch} );
 		    
