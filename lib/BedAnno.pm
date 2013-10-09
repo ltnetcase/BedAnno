@@ -244,7 +244,7 @@ our $REF_BUILD = 'GRCh37';
 
 =item Usage :
 
-    my $beda = $beda = BedAnno->new( db => "in.bed.gz", tr => 'in.trans.fas.gz', short => 1 );
+    my $beda = BedAnno->new( db => "in.bed.gz", tr => 'in.trans.fas.gz', batch => 1 );
 
 =item Args	- (all database files should be tabix indexed)
 
