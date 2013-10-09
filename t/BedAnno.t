@@ -16,7 +16,7 @@ BEGIN {
 $data    ||= "data";
 $extradb ||= "db";
 my %opts = (
-    db    => "$data/test.bed.gz",
+    db    => "$data/test_db.bed.gz",
     tr    => "$data/test.fas.gz",
     batch => 1,
 );
