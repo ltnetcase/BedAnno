@@ -1755,18 +1755,19 @@ sub getTrChange {
 		    @cInfo3 =
 		      getCodon_by_cdsPos( $trdbEnt, $trSeqs{$tid}, $chgvs_3 );
 
+		    my %translate_opts = ();
+		    $translate_opts{mito} = 1 if ($tid =~ /^NM_MT-/);
+		    $translate_opts{polyA} = 1 if (exists $trdbEnt->{A});
+		    $translate_opts{nostop} = 1 if (exists $trdbEnt->{X});
+		    my %altcodon_opts = %translate_opts;
+                    delete $altcodon_opts{nostop}
+                      if ( exists $altcodon_opts{nostop} );
+
                     if ( !exists $trdbEnt->{pseq} ) {
                         my $whole_cds = substr( $trSeqs{$tid}, $trdbEnt->{csta},
                             ( $trdbEnt->{csto} - $trdbEnt->{csta} ) );
                         my ( $pseq, $frame_next ) = translate(
-                            $whole_cds,
-                            (
-                                (
-                                         exists $trdbEnt->{X}
-                                      or exists $trdbEnt->{U}
-                                ) ? 1 : 0
-                            ),
-                            ( exists $trdbEnt->{A} ) ? 1 : 0
+                            $whole_cds, \%translate_opts
                         );
                         $trdbEnt->{pseq} = $pseq;
                     }
@@ -1898,9 +1899,11 @@ sub getTrChange {
 			    $trannoEnt->{func} = 'init-loss';
 			    $trannoEnt->{p}    = 'p.0?';
 			    if ($prBegin eq '1' and $prEnd eq '1') {
-				$trannoEnt->{prRef} = (exists $C1{$current_startCodon}) ? $C1{$current_startCodon} : ".";
-				my $altCodon = substr($codon_alt, 0, 3);
-				$trannoEnt->{prAlt} = (exists $C1{$altCodon}) ? $C1{$altCodon} : ".";
+                                my $zero;
+                                $trannoEnt->{prRef} = 'M';
+                                my $altCodon = substr( $codon_alt, 0, 3 );
+                                ( $trannoEnt->{prAlt}, $zero ) =
+                                  translate( $altCodon, \%altcodon_opts );
 			    }
 			    next;
 			}
@@ -1929,9 +1932,14 @@ sub getTrChange {
 		    # we can not allow inseq stop codon in altered sequence
 		    # due to frameshift and ambiguity.
 		    my $next_alt_frame;
-                    ( $prAlt, $next_alt_frame ) = translate( $codon_alt, 0,
-                        ( ( exists $trdbEnt->{A} ) ? 1 : 0 ) );
+                    ( $prAlt, $next_alt_frame ) =
+                      translate( $codon_alt, \%altcodon_opts );
 
+		    if ($hit_init_flag) {
+			$prRef =~ s/^[A-Z]/M/; # change init pep to M
+			# change alt-init to M
+			$prAlt =~ s/^[A-Z]/M/ if ($init_synon);
+		    }
 
 		    $trannoEnt->{prRef} = $prRef;
 		    $trannoEnt->{prAlt} = $prAlt;
@@ -1939,7 +1947,8 @@ sub getTrChange {
 		    # to indicate whether the alternate sequence 
 		    # encode a stop codon or non-frameshift, or otherwise
 		    # with a non stopped frameshift.
-		    my $non_stop_flag = ($prAlt !~ /\*$/ and ($next_alt_frame or $frameshift_flag)) ? 1 : 0;
+                    my $non_stop_flag = ( $prAlt !~ /\*$/
+                          and ( $next_alt_frame or $frameshift_flag ) ) ? 1 : 0;
 
 		    # parse the protein variants
 		    # to recognize the repeat and adjust to correct position
@@ -2288,8 +2297,19 @@ sub fetchseq {
 
 =head2 getCodon_by_cdsPos
 
-    About   : similar to getCodonPos, but accept cds Position as input position
-	      see "getCodonPos()"
+    About   : get codon position, codon string, aa string, and frame info
+	      for one single cds position
+    Usage   : my ($pP, $codon, $aa, $polar, $frame) = getCodon_by_cdsPos($trdbEnt, $trSeq, $p);
+    Args    : trdbEnt is a sub hash in trInfodb which contains csta, csto
+	      for cds start/end position
+	      trSeq is transcript sequence
+	      p is cds position
+    Returns : AA position  - 0 for not in cds region
+	      codon string - codon string, e.g. "ATA"
+	      aa char	   - AA code, 1 bp mode, e.g. "E"
+	      polar	   - Polar properties, e.g. "P+"
+	      frame	   - current position's frame info,
+			     -1 for not available.
 
 =cut
 sub getCodon_by_cdsPos {
@@ -2312,26 +2332,30 @@ sub getCodon_by_cdsPos {
     }
     my $frame = 2 - ($pP * 3 - $cds_p);
     my $codon = uc(substr($trSeq, ($p - $frame - 1), 3));
+    my $rtrans_opts = {};
+
+    $rtrans_opts->{mito} = 1 if ($trdbEnt->{gene} =~ /^MT\-/); # chrM gene
+
     if ($pP <= $trdbEnt->{plen}) { # plen not involve terminal codon
-	if (exists $trdbEnt->{U}) {
-	    $codon =~ s/TGA/UGA/;
-	}
-	if (exists $trdbEnt->{X}) {
-	    $codon =~ s/TAA/UAA/;
-	    $codon =~ s/TAG/UAG/;
-	}
+	$rtrans_opts->{nostop} = 1;
     }
-    elsif ($pP == $trdbEnt->{plen} + 1) { # terminal
-	if (exists $trdbEnt->{A}) { # polyA-tail
-	    $codon .= 'A' x (3 - length($codon));
-	}
+    elsif ($pP == $trdbEnt->{plen} + 1 and exists $trdbEnt->{A})
+    { # terminal with polyA complement
+	$codon .= 'A' x (3 - length($codon));
     }
     else {
 	confess "Error: may be not correct protein length in transcript database.";
     }
 
-    my ($aa, $polar) = getAAandPolar($codon);
-    $codon =~ s/^UA/TA/; # change back special codon except selenocysteine
+    my ($aa, $polar);
+    if ($pP == 1) {
+	$aa = 'M';
+	$polar = 'NP';
+    }
+    else {
+	($aa, $polar) = getAAandPolar($codon, $rtrans_opts);
+    }
+
     return ($pP, $codon, $aa, $polar, $frame);
 }
 
@@ -2339,16 +2363,8 @@ sub getCodon_by_cdsPos {
 =head2 getCodonPos
 
     About   : get codon position, codon string, aa string, and frame info
-	      for one single transcript position
-    Usage   : my ($pP, $codon, $aa, $polar, $frame) = getCodonPos($trdbEnt, $trSeq, $p);
-    Args    : trdbEnt is a sub hash in trInfodb which contains csta, csto
-	      for cds start/end position
-    Returns : AA position  - 0 for not in cds region
-	      codon string - codon string, e.g. "ATA"
-	      aa char	   - AA code, 1 bp mode, e.g. "E"
-	      polar	   - Polar properties, e.g. "P+"
-	      frame	   - current position's frame info,
-			     -1 for not available.
+	      for one single cds position
+	      See getCodon_by_cdsPos()
 
 =cut
 sub getCodonPos {
@@ -2361,39 +2377,15 @@ sub getCodonPos {
     {
         return ( 0, "", "", "", -1 );
     }
-    my $cds_p = $p - $trdbEnt->{csta}; # > 0
-    my $pP = int($cds_p / 3);
-    if ($cds_p % 3 > 0) {
-	$pP ++;
-    }
-    my $frame = 2 - ($pP * 3 - $cds_p);
-    my $codon = uc(substr($trSeq, ($p - $frame - 1), 3));
-    if ($pP <= $trdbEnt->{plen}) { # plen not involve terminal codon
-	if (exists $trdbEnt->{U}) {
-	    $codon =~ s/TGA/UGA/;
-	}
-	if (exists $trdbEnt->{X}) {
-	    $codon =~ s/TAA/UAA/;
-	    $codon =~ s/TAG/UAG/;
-	}
-    }
-    elsif ($pP == $trdbEnt->{plen} + 1) { # terminal
-	if (exists $trdbEnt->{A}) { # polyA-tail
-	    $codon .= 'A' x (3 - length($codon));
-	}
-    }
-    else {
-	confess "Error: may be not correct protein length in transcript database.";
-    }
 
-    my ($aa, $polar) = getAAandPolar($codon);
-    $codon =~ s/^UA/TA/; # change back special codon except selenocysteine
-    return ($pP, $codon, $aa, $polar, $frame);
+    my $cds_p = $p - $trdbEnt->{csta}; # > 0
+    return getCodon_by_cdsPos($trdbEnt, $trSeq, $cds_p);
 }
 
 sub getAAandPolar {
     my $codon = shift;
-    my $aa = (exists $C1{$codon}) ? $C1{$codon} : '.';
+    my $rtrans_opts = shift;
+    my ($aa, $zero) = translate($codon, $rtrans_opts);
     my $polar = (exists $Polar{$aa}) ? $Polar{$aa} : '.';
     return ($aa, $polar);
 }
@@ -2438,8 +2430,28 @@ sub cPosMark {
     return $cDot;
 }
 
+=head2 translate
+
+    About   : Translate nucleotides to aa seqs
+    Usage   : my ($aa_seq, $next_frame) = translate( $nucl, { mito => 1, polyA => 1 } );
+    Args    : first args should be the nucleotide seq to be translated,
+	      the second args is a hash ref of optional args (all boolean):
+	      mito	: indicate it is for mDNA (mitochondrion)
+	      nostop	: indicate there's no stop codon in aa seq,
+			  translate 'UGA' to 'U', and other stop codon to 'X'
+	      polyA	: indicate extra A should be added to 3'end of codon,
+			  to help encode a stop codon (usually used with mito).
+    Returns : $aa_seq is the aa sequence, 
+	      $next_frame gives the next base's frame to the 3'end of sequence.
+
+=cut
 sub translate {
-    my ($nucl, $nostop, $polyA) = @_;
+    my $nucl = shift;
+    my $ropt = shift if ( @_ );
+    my $mito = (defined $ropt and exists $ropt->{mito}) ? 1 : 0;
+    my $nostop = (defined $ropt and exists $ropt->{nostop}) ? 1 : 0;
+    my $polyA = (defined $ropt and exists $ropt->{polyA}) ? 1 : 0;
+
     my $lenN = length($nucl);
     my $frame_next = $lenN % 3;
     if ($frame_next != 0 and $polyA) {
@@ -2450,14 +2462,19 @@ sub translate {
     for (my $i = 0; $i < length($nucl); $i+=3) {
 	my $codon = substr($nucl,$i,3);
 	my $aa = (exists $C1{$codon}) ? $C1{$codon} : '.';
-	if ($aa eq '*' and $nostop) {
+	if ($aa eq '*' and $mito and $codon eq 'TGA') {
+	    $aa = 'W';
+	}
+	elsif ($aa eq '*' and $nostop) {
 	    $aa = ($codon eq 'TGA') ? 'U' : 'X';
 	}
 	elsif ($aa eq '*') {
 	    $prot .= $aa;
 	    return ($prot, 0);
 	}
-	$prot .= $aa;
+	else {
+	    $prot .= $aa;
+	}
     }
     $prot =~ s/[UX]$/*/g if ($nostop);
     $prot =~ s/\.$// if ($frame_next != 0);
