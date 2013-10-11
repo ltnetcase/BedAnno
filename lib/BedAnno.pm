@@ -591,32 +591,32 @@ sub set_refbuild {
     About   : Read transcript information, and even sequences if in batch mode.
     Usage   : my $rtrSeqs = $beda->readtr( genes => $rh_NewGenes, trans => $rh_NewTrans );
     Args    : Optional args "genes" and "trans" only accept hash ref values.
-	      if no args specified, it will load information based on the
-	      configuration of BedAnno entry.
+              if no args specified, it will load information based on the
+              configuration of BedAnno entry.
     Returns : A hash ref of trSeqs:
-	      {
-		$tr_acc => {
-		    len      => $tr_len,
-		    gene     => $gene_sym,
+              {
+                $tr_acc => {
+                    len      => $tr_len,
+                    gene     => $gene_sym,
 
-		    # optional tags:
-		    prot     => $prot_acc,
-		    plen     => $prot_len,
-		    csta     => $cds_start_on_trSeq, # 1 based
-		    csto     => $cds_end_on_trSeq,   # 1 based
-		    seq      => $tr_sequence,
-		    
-		    X	     => 1,		     # inseqStop
-		    U	     => 1,		     # selenocysteine
-		    A	     => 1,		     # polyATail
-		    altstart => {		     # altstart codons
-			$startCodons1 => 1,
-			$startCodons2 => 1,
-			...
-		    },
-		},
-		...
-	      }
+                    # optional tags:
+                    prot     => $prot_acc,
+                    plen     => $prot_len,
+                    csta     => $cds_start_on_trSeq, # 1 based
+                    csto     => $cds_end_on_trSeq,   # 1 based
+                    seq      => $tr_sequence,
+                    
+                    X        => 1,                   # inseqStop
+                    U        => 1,                   # selenocysteine
+                    A        => 1,                   # polyATail
+                    altstart => {                    # altstart codons
+                        $startCodons1 => 1,
+                        $startCodons2 => 1,
+                        ...
+                    },
+                },
+                ...
+              }
 
 =cut
 sub readtr {
@@ -692,38 +692,38 @@ sub readtr {
     About   : load all needed annotation infomation into memory for multi-process annotation
     Usage   : my $ranndb = $beda->load_anno( region => "chr20:1234567-1234568", trans => \%trans );
     Args    : Using %args to override class's properties: region, regbed, genes, trans
-	      if no args, use the the class's properties as default.
+              if no args, use the the class's properties as default.
     Returns : a localized merged anno db, The returned annotation database is a hash ref.
-	{
-	    $chr => [
-		{
-		    sta   => $start, (0 based)
-		    sto   => $stop,  (1 based)
-		    annos => {
-			$anno_string => $offset, ...
-		    }
+        {
+            $chr => [
+                {
+                    sta   => $start, (0 based)
+                    sto   => $stop,  (1 based)
+                    annos => {
+                        $anno_string => $offset, ...
+                    }
 
-		    detail => {
-			$tid => {
-			    gsym => $gsym,    (gene symbol)
-			    gid	 => $gid,     (Entrez gene id)
-			    gpSO => $gpSO,    (GeneParts SO)
-			    blka => $blka,    (block attribute)
-			    exin => $exin,    (exon intron number)
-			    nsta => $nsta,    (n./r. left  of whole block)
-			    nsto => $nsto,    (n./r. right of whole block)
-			    csta => $csta,    (c.    left  of whole block)
-			    csto => $csto,    (c.    right of whole block)
-			    wlen => $wlen,    (length of whole block)
-			    pr   => $pr,      (primary tag)
-			    strd => $strd,    (strand)
-			    offset => $offset,(offset of current block to whole block)
-			    mismatch => $mismatch (non-equal length block descripter)
-			}, ...
-		    }
-		}, ... 
-	    ], ...
-	}
+                    detail => {
+                        $tid => {
+                            gsym => $gsym,    (gene symbol)
+                            gid  => $gid,     (Entrez gene id)
+                            gpSO => $gpSO,    (GeneParts SO)
+                            blka => $blka,    (block attribute)
+                            exin => $exin,    (exon intron number)
+                            nsta => $nsta,    (n./r. left  of whole block)
+                            nsto => $nsto,    (n./r. right of whole block)
+                            csta => $csta,    (c.    left  of whole block)
+                            csto => $csto,    (c.    right of whole block)
+                            wlen => $wlen,    (length of whole block)
+                            pr   => $pr,      (primary tag)
+                            strd => $strd,    (strand)
+                            offset => $offset,(offset of current block to whole block)
+                            mismatch => $mismatch (non-equal length block descripter)
+                        }, ...
+                    }
+                }, ... 
+            ], ...
+        }
       Note: when variation hit one of the annotation entry, the anno_string will be parsed.
       and the "detail" tag will be added then.
 
@@ -895,15 +895,15 @@ sub parse_annoent {
 
     About   : Annotate single short variation by annotation db.
     Usage   : my $anno_ent = $beda->anno( 'chr20', 1234567, 1234569, 'AG', 'TGGG' );
-	      or $anno_ent = $beda->anno( 'chr20', 1234568, 'AG', 'AGGG' );
+              or $anno_ent = $beda->anno( 'chr20', 1234568, 'AG', 'AGGG' );
     Args    : for CG's shell variants, need 5 args in UCSC coordinates
-	      (0-based start), they are:
-		chr id, chr start, chr end, reference, alternative.
-	      for variants in VCF, need 4 args, which is lack of 
-	        chr end, and "chr start" is in 1-based coordinates.
-	      for crawler: a input object with keys: chr,start,ref,alt,[end].
-		if end is specified, then use 0-based coordinates,
-		otherwise 1-based (VCF) coordinates will be used.
+              (0-based start), they are:
+                chr id, chr start, chr end, reference, alternative.
+              for variants in VCF, need 4 args, which is lack of 
+                chr end, and "chr start" is in 1-based coordinates.
+              for crawler: a input object with keys: chr,start,ref,alt,[end].
+                if end is specified, then use 0-based coordinates,
+                otherwise 1-based (VCF) coordinates will be used.
     Returns : a hash ref of annotation informations, see varanno().
 
 =cut
@@ -918,63 +918,63 @@ sub anno {
 =head2 varanno
 
     About   : implicitly create a new BedAnno::Anno entry, and 
-	      assign all the needed annotation for to it.
+              assign all the needed annotation for to it.
     Usage   : ($rAnnoRst, $AEIndex) = $beda->varanno($var, $AEIndex);
     Args    : The BedAnno entry, BedAnno::Var entry and current dbidx, 
-	      current dbidx should be always 0, if used for non-batch mode.
+              current dbidx should be always 0, if used for non-batch mode.
     Returns : A BedAnno::Anno entry and current dbidx for nex query in batch.
-	    {
-		var => {
+            {
+                var => {
 
-		    # the first part is from var parsing result.
-		    # please see "BedAnno::Var new()".
-		    # import all the keys from original parsed var entry
-		    # and add the following keys by this method.
+                    # the first part is from var parsing result.
+                    # please see "BedAnno::Var new()".
+                    # import all the keys from original parsed var entry
+                    # and add the following keys by this method.
 
-		    # information
-		    varTypeSO => $varTypeSO,
-		    gHGVS     => $gHGVS,
-		    refbuild  => $referenceBuild,
+                    # information
+                    varTypeSO => $varTypeSO,
+                    gHGVS     => $gHGVS,
+                    refbuild  => $referenceBuild,
 
-		    # Here's some optional parts which may be generated
-		    # when extra resource is available:
+                    # Here's some optional parts which may be generated
+                    # when extra resource is available:
 
-		    cytoBand  => $cytoBand,
+                    cytoBand  => $cytoBand,
 
-		    # For single position for now
-		    phyloPpm    => $PhyloPscorePlacentalMammals,
-		    phyloPpr    => $PhyloPscorePrimates,
-		    phyloPve    => $PhyloPscoreVetebrates,
+                    # For single position for now
+                    phyloPpm    => $PhyloPscorePlacentalMammals,
+                    phyloPpr    => $PhyloPscorePrimates,
+                    phyloPve    => $PhyloPscoreVetebrates,
 
-		    dbsnp => {
-			$rsID => {
-			    AN => $dbsnp_total_allele_count,
-			    AF => $dbsnp_alt_allele_frequency,  # though ref
-			},
-			...
-		    },
+                    dbsnp => {
+                        $rsID => {
+                            AN => $dbsnp_total_allele_count,
+                            AF => $dbsnp_alt_allele_frequency,  # though ref
+                        },
+                        ...
+                    },
 
-		    tgp => {
-			AN => $tgp_total_allele_count,
-			AF => $tgp_alt_allele_frequency,
-		    },
+                    tgp => {
+                        AN => $tgp_total_allele_count,
+                        AF => $tgp_alt_allele_frequency,
+                    },
 
-		    cg54 => {
-			AN => $cg54_total_allele_count,
-			AF => $cg54_alt_allele_frequency,
-		    },
+                    cg54 => {
+                        AN => $cg54_total_allele_count,
+                        AF => $cg54_alt_allele_frequency,
+                    },
 
-		    wellderly => {
-			AN => $wellderly_total_allele_count,
-			AF => $wellderly_alt_allele_frequency,
-		    },
+                    wellderly => {
+                        AN => $wellderly_total_allele_count,
+                        AF => $wellderly_alt_allele_frequency,
+                    },
 
-		    esp6500 => {
-			AN => $esp6500_total_allele_count,
-			AF => $esp6500_alt_allele_frequency,
-		    },
-		},
-		trInfo => {
+                    esp6500 => {
+                        AN => $esp6500_total_allele_count,
+                        AF => $esp6500_alt_allele_frequency,
+                    },
+                },
+                trInfo => {
                     $tid => {
                         geneId        => $Entrez_Gene_ID,
                         geneSym       => $Gene_Symbol,
@@ -1036,9 +1036,9 @@ sub anno {
                         pp2varPred  => $Polyphen2HumVarPred,
                         pp2varScore => $Polyphen2HumVarScore,
                       },
-		    ...
-		}
-	    }
+                    ...
+                }
+            }
 
 =cut
 sub varanno {
@@ -1144,9 +1144,9 @@ sub varanno {
 =head2 finaliseAnno
 
     About   : finalise the BedAnno::Anno entry by check all tag values,
-	      and uniform them for AE output usage, query transcript
-	      oringinated additional resources and add them into the data
-	      frame.
+              and uniform them for AE output usage, query transcript
+              oringinated additional resources and add them into the data
+              frame.
     Usage   : $beda->finaliseAnno($annEnt);
     Args    : BedAnno entry and a BedAnno::Anno entry
     Returns : A finalised BedAnno::Anno entry
@@ -1353,8 +1353,8 @@ sub finaliseAnno {
     About   : Calculate the transcript changes, based on TrPostition
     Usage   : $beda->getTrChange($annoEnt);
     Returns : assign the following tags in annoEnt
-		trRef, prot, c, p, cc, polar, func
-		prRef, prAlt
+                trRef, prot, c, p, cc, polar, func
+                prRef, prAlt
 
 =cut
 sub getTrChange {
@@ -2155,7 +2155,7 @@ sub getTrChange {
 =head2 cmpPos
 
     About   : judge the order or p1 and p2, because the insertion
-	      will have a reverted order of left & right position
+              will have a reverted order of left & right position
     Usage   : my $cmpRst = BedAnno->cmpPos($p1, $p2);
     Args    : hgvs positio p1 and p2, with out 'c.' or 'n.' flag
     Return  : 0 for same, 1 for normal order, -1 for reversed order.
@@ -2241,7 +2241,7 @@ sub cmpPos {
 
     About   : get sequence from fasta db using samtools faidx
     Usage   : my $seq = fetchseq('db.fasta', $region_str);
-	      my $rhash = fetchseq('db.fasta', \@regions);
+              my $rhash = fetchseq('db.fasta', \@regions);
     Args    : a list of region in format: (chr1:123-456, chr1:789-1000, chr2:234-567, or NM_01130.1:345 )
     Returns : a hash ref of { region => seq }
 
@@ -2298,18 +2298,18 @@ sub fetchseq {
 =head2 getCodon_by_cdsPos
 
     About   : get codon position, codon string, aa string, and frame info
-	      for one single cds position
+              for one single cds position
     Usage   : my ($pP, $codon, $aa, $polar, $frame) = getCodon_by_cdsPos($trdbEnt, $trSeq, $p);
     Args    : trdbEnt is a sub hash in trInfodb which contains csta, csto
-	      for cds start/end position
-	      trSeq is transcript sequence
-	      p is cds position
+              for cds start/end position
+              trSeq is transcript sequence
+              p is cds position
     Returns : AA position  - 0 for not in cds region
-	      codon string - codon string, e.g. "ATA"
-	      aa char	   - AA code, 1 bp mode, e.g. "E"
-	      polar	   - Polar properties, e.g. "P+"
-	      frame	   - current position's frame info,
-			     -1 for not available.
+              codon string - codon string, e.g. "ATA"
+              aa char      - AA code, 1 bp mode, e.g. "E"
+              polar        - Polar properties, e.g. "P+"
+              frame        - current position's frame info,
+                             -1 for not available.
 
 =cut
 sub getCodon_by_cdsPos {
@@ -2363,8 +2363,8 @@ sub getCodon_by_cdsPos {
 =head2 getCodonPos
 
     About   : get codon position, codon string, aa string, and frame info
-	      for one single cds position
-	      See getCodon_by_cdsPos()
+              for one single cds position
+              See getCodon_by_cdsPos()
 
 =cut
 sub getCodonPos {
@@ -2435,14 +2435,14 @@ sub cPosMark {
     About   : Translate nucleotides to aa seqs
     Usage   : my ($aa_seq, $next_frame) = translate( $nucl, { mito => 1, polyA => 1 } );
     Args    : first args should be the nucleotide seq to be translated,
-	      the second args is a hash ref of optional args (all boolean):
-	      mito	: indicate it is for mDNA (mitochondrion)
-	      nostop	: indicate there's no stop codon in aa seq,
-			  translate 'UGA' to 'U', and other stop codon to 'X'
-	      polyA	: indicate extra A should be added to 3'end of codon,
-			  to help encode a stop codon (usually used with mito).
+              the second args is a hash ref of optional args (all boolean):
+              mito   : indicate it is for mDNA (mitochondrion)
+              nostop : indicate there's no stop codon in aa seq,
+                       translate 'UGA' to 'U', and other stop codon to 'X'
+              polyA  : indicate extra A should be added to 3'end of codon,
+                       to help encode a stop codon (usually used with mito).
     Returns : $aa_seq is the aa sequence, 
-	      $next_frame gives the next base's frame to the 3'end of sequence.
+              $next_frame gives the next base's frame to the 3'end of sequence.
 
 =cut
 sub translate {
@@ -2600,13 +2600,13 @@ sub getIntrPos {
     About   : generate concatenated transcript originated reference
     Usage   : my $trRef = getTrRef( $trannoEnt, $refgenome, $trSeq, $strd );
     Args    : trannoEnt - BedAnno::Anno -> {trInfo} -> {$tid}
-	      refgenome - Unified reference in BedAnno::Var
-	      trSeq     - whole transcript
-	      strd	- strand of transcript.
+              refgenome - Unified reference in BedAnno::Var
+              trSeq     - whole transcript
+              strd      - strand of transcript.
     Returns : transcript originated reference
     Notes   : Using sequence from transcript as the exon part,
-	      and using the sequence from reference genome
-	      as the intron part. and concatenate them.
+              and using the sequence from reference genome
+              as the intron part. and concatenate them.
 
 =cut
 sub getTrRef {
@@ -2678,10 +2678,10 @@ sub trRefSort {
 =head2 batch_anno
 
     About   : The fastest way to annotate multiple snv and 1bp deletion variations,
-	      indel and other types also can be annotated, but no faster than annotated
-	      one by one.
+              indel and other types also can be annotated, but no faster than annotated
+              one by one.
     Usage   : $beda = BedAnno->new( db => 'in.bed.gz', tr => 'in.trans.fas', batch => 1);
-	      $rAnnoRst = $beda->batch_anno($rVars);
+              $rAnnoRst = $beda->batch_anno($rVars);
     Args    : an array ref of BedAnno::Var entries.
     Returns : an array ref of BedAnno::Anno entries, see varanno().
 
@@ -2741,21 +2741,22 @@ use Carp;
 =head2 new
 
     About   : Create a new object class entry, BedAnno::Var,
-	      parse the variation directly by the ref and alt string.
+              parse the variation directly by the ref and alt string.
     Usage   : my $var = BedAnno::Var->new( $chr, $start, $end, $ref, $alt );
-	   or my $var = BedAnno::Var->new( $chr, $pos, $ref, $alt );
-	   or my $var = BedAnno::Var->new( $varInput );
+           or my $var = BedAnno::Var->new( $chr, $pos, $ref, $alt );
+           or my $var = BedAnno::Var->new( $varInput );
     Args    : Input can be variable format
-	      1. 5 parameters format: CG shell list format: chr,start,end,ref,alt
-	      2. 4 parameters format: VCF format: chr,pos,ref,alt
-	      3. Crawler input object: A hash ref with nessesary keys: 
-		 chr,start,ref,alt,  optional key is "end", if end specified,
-		 coordinates are treat as 0-based, otherwise, use 1-based (VCF)
+              1. 5 parameters format: CG shell list format: chr,start,end,ref,alt
+              2. 4 parameters format: VCF format: chr,pos,ref,alt
+              3. Crawler input object: A hash ref with nessesary keys: 
+                 chr,begin,referenceSequence,variantSequence,  
+                 optional key is "end", if end specified,
+                 coordinates are treat as 0-based, otherwise, use 1-based (VCF)
     Returns : a new BedAnno::Var entry :
             {
                 chr    => $chr,
                 pos    => $start,          # 0-based start
-		end    => $end,
+                end    => $end,
                 ref    => $ref,
                 alt    => $alt,
                 reflen => $ref_len,
@@ -2793,8 +2794,8 @@ use Carp;
                 },
 
                 '-' => { 
-		  # similar to '+', but for reverse strand 
-		},
+                  # similar to '+', but for reverse strand 
+                },
 
                 # this group gives ref/alt string based on the rule
                 # with 'rep' annotation available
@@ -2808,10 +2809,10 @@ use Carp;
                 ref_cn => $copy_number_in_ref,
                 alt_cn => $copy_number_in_alt,
 
-		# for equal length long substitution
-		# record the separated snvs positions
-		# all positions are 1 based.
-		sep_snvs => [ $snv_pos1, $snv_pos2, ... ],
+                # for equal length long substitution
+                # record the separated snvs positions
+                # all positions are 1 based.
+                sep_snvs => [ $snv_pos1, $snv_pos2, ... ],
             }
 
 =cut
@@ -2820,18 +2821,18 @@ sub new {
     my ($chr, $start, $end, $ref, $alt);
     if (ref($_[0])) {
         if (   !exists $_[0]->{chr}
-            or !exists $_[0]->{start}
-            or !exists $_[0]->{alt}
-            or !exists $_[0]->{ref} )
+            or !exists $_[0]->{begin}
+            or !exists $_[0]->{variantSequence}
+            or !exists $_[0]->{referenceSequence} )
         {
             confess "Error: unavailable object. need keys: ",
               "chr, start, alt, ref specified.";
         }
 	
 	$chr = $_[0]->{chr};
-	$start = $_[0]->{start};
-	$alt = $_[0]->{alt};
-	$ref = $_[0]->{ref};
+	$start = $_[0]->{begin};
+	$alt = $_[0]->{variantSequence};
+	$ref = $_[0]->{referenceSequence};
 	$end = $_[0]->{end} if ( exists $_[0]->{end} );
 
     }
@@ -2893,15 +2894,15 @@ sub new {
 =head2 getUnifiedVar
 
     About   : uniform the pos and ref/alt pair selection,
-	      after new(), give info for HGVS naming.
+              after new(), give info for HGVS naming.
     Usage   : my @unified_desc = $var->getUnifiedVar($strd);
     Args    : BedAnno::Var entry and current strand for annotation.
     Returns : an array of ( 
-		$pos,  # 0-based start pos
-		$ref,  # reference bases
-		$alt,  # called bases
-		$reflen, # reference len
-		$altlen )# called len, undef if no-call
+                $pos,  # 0-based start pos
+                $ref,  # reference bases
+                $alt,  # called bases
+                $reflen, # reference len
+                $altlen )# called len, undef if no-call
 
 =cut
 sub getUnifiedVar {
@@ -2982,10 +2983,10 @@ sub normalise_seq {
 =head2 parse_complex
     
     About   : parse complex delins variants to recognize 
-	      repeat and differ strand-pos var.
+              repeat and differ strand-pos var.
     Usage   : my $var = $var->parse_complex();
     Args    : variantion entry, which have been uniform to 
-	      CG's shell list format, with its 'guess':delins.
+              CG's shell list format, with its 'guess':delins.
     Returns : see BedAnno::Var->new()
 
 =cut
@@ -3136,15 +3137,15 @@ sub guess_type_by_length {
     About   : guess the varType directly from the input information.
     Usage   : my ($guess, $implicit_varType, $sm) = guess_type($len_ref, $ref, $alt);
     Args    : 1. length of reference (derived from end - start)
-	      2. reference sequence ('.' or empty for ins )
-	      3. called sequence ( '?' for no-call, '.' or empty for del )
+              2. reference sequence ('.' or empty for ins )
+              3. called sequence ( '?' for no-call, '.' or empty for del )
     Returns : $guess is varType in output (ref,snv,ins,del,delins,no-call)
-	      $implicit_varType (ref,snv,ins,del,delins,rep)
-	      $sm is single/multiple/equal/non-equal-len indicator
-		0 - ins case
-		1 - single base ref case
-		2 - multiple base, different length case
-		3 - multiple base, equal length case 
+              $implicit_varType (ref,snv,ins,del,delins,rep)
+              $sm is single/multiple/equal/non-equal-len indicator
+                0 - ins case
+                1 - single base ref case
+                2 - multiple base, different length case
+                3 - multiple base, equal length case 
 
 =cut
 sub guess_type {
@@ -3224,17 +3225,17 @@ sub check_insrep {
 =head2 get_internal
 
     About   : recalculate ref alt for delins and mutiple sample caused ref-alt pair.
-	      depend on different strand of the to-annotated gene or transcript, 
-	      the offset may be different for the same ref and alt,
-	      because of the 3'end nearest annotation rules.
+              depend on different strand of the to-annotated gene or transcript, 
+              the offset may be different for the same ref and alt,
+              because of the 3'end nearest annotation rules.
     Usage   : my $rephase = get_internal( $ref, $reflen, $alt, $altlen );
     Returns : a hash ref of : 
-		{
-		    '+' => $f_lofs,
-		    '-' => $r_lofs,
-		    'r' => $new_ref_len, 
-		    'a' => $new_alt_len
-		}
+                {
+                    '+' => $f_lofs,
+                    '-' => $r_lofs,
+                    'r' => $new_ref_len, 
+                    'a' => $new_alt_len
+                }
 
 =cut
 sub get_internal {
@@ -3409,36 +3410,36 @@ sub new {
     About   : Assign the BedAnno::Anno obj's trInfo with affected regions
     Usage   : my $AEIndex = $annoEnt->getTrPosition($rannodb, $AEIndex);
     Args    : $rannodb is a BedAnno::Anno object created by varanno(),
-	      $AEIndex is the current index for annodb searching.
+              $AEIndex is the current index for annodb searching.
     Returns : A new AEIndex for next query.
     Notes   : $AEIndex is used for same chr batch mode.
-	      assign the following tag to $annoEnt
-	      {
-		trInfo => {
-		    $tid => {
-			geneId,   geneSym, strd,
-			trAlt => $stranded_alt_string_with_ext_at_mismatches,
+              assign the following tag to $annoEnt
+              {
+                trInfo => {
+                    $tid => {
+                        geneId,   geneSym, strd,
+                        trAlt => $stranded_alt_string_with_ext_at_mismatches,
 
-			preStart => {
-			    nDot, cDot, exin, r
-			},
+                        preStart => {
+                            nDot, cDot, exin, r
+                        },
 
-			postEnd => {
-			    nDot, cDot, exin, r
-			},
+                        postEnd => {
+                            nDot, cDot, exin, r
+                        },
 
-			trRefComp => {
-			    $exon_number   => $transcript_exon_length,
+                        trRefComp => {
+                            $exon_number   => $transcript_exon_length,
                             $intron_number => [
                                 $start_in_non_stranded_reference,
                                 $stop_in_non_stranded_reference
                               ],
-			    ...
-			},
-		    },
-		    ...
-		}
-	      }
+                            ...
+                        },
+                    },
+                    ...
+                }
+              }
 
 =cut
 sub getTrPosition {
@@ -3701,25 +3702,25 @@ sub getTrPosition {
 =head2 cal_hgvs_pos
 
     About   : calculate nDot, cDot HGVS position, depend on given offset,
-	      assign trAlt string and nDot HGVS and cDot HGVS positions.
+              assign trAlt string and nDot HGVS and cDot HGVS positions.
     Usage   : $annoEnt->cal_hgvs_pos(
-		    offset => $offset, 
-		    tid	   => $tid,
-		    LR	   => $lr,
-		    tidDetail => $rh_tidDetail,
-	      );
+                    offset => $offset, 
+                    tid    => $tid,
+                    LR     => $lr,
+                    tidDetail => $rh_tidDetail,
+              );
     Args    : ofst is total offset to the start(left) of currunt annoblk,
-	      tid is the transcript id for the detail entry
+              tid is the transcript id for the detail entry
               tidDetail is the currunt annoblk detail
               LR indicate this offset is left or right pos,
-		1 for left and assign sta group,
-		0 for right and assign end group.
-	      "noassign" to indicate whether to assign those information
-	      to annoEnt, it's used return the useful information only,
-	      without change the annoEnt. 
+                1 for left and assign sta group,
+                0 for right and assign end group.
+              "noassign" to indicate whether to assign those information
+              to annoEnt, it's used return the useful information only,
+              without change the annoEnt. 
     Returns : if noassign is used, then return a hash ref, which contains
-		{ nDot, cDot, exin, r } if successful.
-	      otherwise, 0 for no assigned status, 1 for successful assigned.
+                { nDot, cDot, exin, r } if successful.
+              otherwise, 0 for no assigned status, 1 for successful assigned.
              
     Notes   : For position mirror on transcript, there are 2 other cases 
               than normal case:
@@ -3747,23 +3748,23 @@ sub getTrPosition {
                         +-------+-+--------+    refSeq
 
                  Insertion will have an reversed start/end position on refSeq,
-		 due to the 1-based position description system.
-		 
-		 Any position located in a non-zero length refgenome mismatch
-		 block have to extend to total region of mismatched block,
-		 and alternate "trAlt" value in annotation entry for this tid.
+                 due to the 1-based position description system.
+                 
+                 Any position located in a non-zero length refgenome mismatch
+                 block have to extend to total region of mismatched block,
+                 and alternate "trAlt" value in annotation entry for this tid.
 
-	      This method assign the following tag to $annoEnt
-		{
-		    trInfo => {
+              This method assign the following tag to $annoEnt
+                {
+                    trInfo => {
                         $tid => {
                             rnaBegin, rnaEnd,  cdsBegin, cdsEnd,
                             ei_Begin, ei_End,  r_Begin,  r_End,
                             genepartSO, trAlt,
                           },
-			...
-		    }
-		}
+                        ...
+                    }
+                }
 =cut
 sub cal_hgvs_pos {
     my $annoEnt = shift;
@@ -4124,7 +4125,7 @@ The Format of annotation database is listed as following:
    2. GeneID
    3. Gene Symbol
    4. Strand
-		 5'=====|>>>|[=============]|>>>>>>|[==========]|>>>>>>|[=============]|>>>>|==3'
+                 5'=====|>>>|[=============]|>>>>>>|[==========]|>>>>>>|[=============]|>>>>|==3'
    5. BlockAttr  : PROM 5U2E D5U1 I5U1 A5U1 5U1 C1  DC1 IC1 AC1 C2E 3U1 D3U1 I3U1 A3U1 3U2E
    6. GenePartsSO: 167  204  163  447  164  204 316 163 191 164 316 205 163  448  164  448
    7. ExIn Num   :    . |EX1|      IVS1     |  EX2 |    IVS2    |  EX3 |    IVS3       |EX4E|
@@ -4134,7 +4135,7 @@ The Format of annotation database is listed as following:
    11.cHGVS end for block before departing
    12.Length for block before departing
    13.MismatchBlock :  $type,$gstart,$gstop,$gseq
-		       ($gseq is in the strand of refseq, '.' for deletion)
+                       ($gseq is in the strand of refseq, '.' for deletion)
    14.Primary Tag, the same with it in header line
    15.Offset to leftmost of non departing block.
 
