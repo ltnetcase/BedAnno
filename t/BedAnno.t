@@ -60,10 +60,10 @@ my $beda = BedAnno->new(%opts);
 # ncRNA part
 my $crawler_input = {
     chr   => 1,
-    start => 14409,
+    begin => 14409,
     end   => 14410,
-    ref   => 'c',
-    alt   => 'a',
+    referenceSequence   => 'c',
+    variantSequence   => 'a',
 };
 
 my $snv_parse = bless(
@@ -84,9 +84,9 @@ my $snv_parse = bless(
 
 my $crawler_input2 = {
     chr   => 1,
-    start => 14410,
-    ref   => "C",
-    alt   => "CGAATAGCTA",
+    begin => 14410,
+    referenceSequence   => "C",
+    variantSequence   => "CGAATAGCTA",
 };
 
 my $insert_parse = bless(
