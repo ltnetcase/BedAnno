@@ -1127,7 +1127,8 @@ sub varanno {
 
     my $localdb;
     if (!exists $self->{batch}) { # daemon mode
-	$localdb = $self->load_anno( region => $var_region )->{$var->{chr}};
+	my $locLoad = $self->load_anno( region => $var_region );
+	$localdb = (exists $locLoad->{$var->{chr}}) ? $locLoad->{$var->{chr}} : [];
     }
     else {
 	$localdb = $self->{annodb}->{$var->{chr}};
@@ -1155,193 +1156,195 @@ sub varanno {
 sub finaliseAnno {
     my ($self, $annoEnt) = @_;
     
-    foreach my $tid (sort keys %{$annoEnt->{trInfo}}) {
-	my $trAnnoEnt = $annoEnt->{trInfo}->{$tid};
-	my $trdbEnt = $self->{trInfodb}->{$tid};
-        $trAnnoEnt->{prot} =
-          ( !exists $trdbEnt->{prot} or $trdbEnt->{prot} eq '.' )
-          ? ""
-          : $trdbEnt->{prot};
+    if (exists $annoEnt->{trInfo}) {
+	foreach my $tid (sort keys %{$annoEnt->{trInfo}}) {
+	    my $trAnnoEnt = $annoEnt->{trInfo}->{$tid};
+	    my $trdbEnt = $self->{trInfodb}->{$tid};
+	    $trAnnoEnt->{prot} =
+	      ( !exists $trdbEnt->{prot} or $trdbEnt->{prot} eq '.' )
+	      ? ""
+	      : $trdbEnt->{prot};
 
-	my ($strd) = ($trAnnoEnt->{strd} eq '+') ? 1 : 0;
+	    my ($strd) = ($trAnnoEnt->{strd} eq '+') ? 1 : 0;
 
-	# complete informations depend on already assigned values
-	my $genepartSO;
-	if ($trAnnoEnt->{rnaBegin} =~ /^\+/ or $trAnnoEnt->{rnaEnd} =~ /^\+/) {
-	    $genepartSO = 'span'; # 3'downstream span
-	}
-        elsif ( $trAnnoEnt->{r_Begin} eq $trAnnoEnt->{r_End} ) {
-            $genepartSO =
-              ( $trAnnoEnt->{genepartSO} =~ /^\d+$/ )
-              ? sprintf( "SO:%07d", $trAnnoEnt->{genepartSO} )
-              : $trAnnoEnt->{genepartSO};
-
-	    $trAnnoEnt->{r} = $trAnnoEnt->{r_Begin};
-	    $trAnnoEnt->{exin} = $trAnnoEnt->{ei_Begin};
-
-	    if ($trAnnoEnt->{exin} =~ /^EX(\d+)/) {
-		$trAnnoEnt->{genepartIndex} = $1;
-		$trAnnoEnt->{exonIndex} = $1;
+	    # complete informations depend on already assigned values
+	    my $genepartSO;
+	    if ($trAnnoEnt->{rnaBegin} =~ /^\+/ or $trAnnoEnt->{rnaEnd} =~ /^\+/) {
+		$genepartSO = 'span'; # 3'downstream span
 	    }
-	    elsif ($trAnnoEnt->{exin} =~ /^IVS(\d+)/) {
-		$trAnnoEnt->{genepartIndex} = $1;
-		$trAnnoEnt->{intronIndex} = $1;
-	    }
-	    else {
-		$trAnnoEnt->{genepartIndex} = 0;
-	    }
-        }
-        elsif ( $trAnnoEnt->{ei_Begin} =~ /^IVS/ 
-            and $trAnnoEnt->{ei_Begin} eq $trAnnoEnt->{ei_End} )
-        { # span splice or interior intron
-	    $genepartSO = 'span'; # need to discuss? whether to use interior
-            $trAnnoEnt->{r} =
-              ($strd)
-              ? $trAnnoEnt->{r_Begin} . '-' . $trAnnoEnt->{r_End}
-              : $trAnnoEnt->{r_End} . '-' . $trAnnoEnt->{r_Begin};
-            $trAnnoEnt->{exin}          = $trAnnoEnt->{ei_Begin};
-            $trAnnoEnt->{genepartIndex} = $1 if ($trAnnoEnt->{ei_Begin} =~ /(\d+)/);
-            $trAnnoEnt->{intronIndex}   = $trAnnoEnt->{genepartIndex};
-        }
-	else { # non-equal exon intron number or UTR/CDS span
-	    $genepartSO = 'span';
-            $trAnnoEnt->{r} =
-              ($strd)
-              ? $trAnnoEnt->{r_Begin} . '-' . $trAnnoEnt->{r_End}
-              : $trAnnoEnt->{r_End} . '-' . $trAnnoEnt->{r_Begin};
-	    if ($trAnnoEnt->{ei_Begin} eq $trAnnoEnt->{ei_End}) {
+	    elsif ( $trAnnoEnt->{r_Begin} eq $trAnnoEnt->{r_End} ) {
+		$genepartSO =
+		  ( $trAnnoEnt->{genepartSO} =~ /^\d+$/ )
+		  ? sprintf( "SO:%07d", $trAnnoEnt->{genepartSO} )
+		  : $trAnnoEnt->{genepartSO};
+
+		$trAnnoEnt->{r} = $trAnnoEnt->{r_Begin};
 		$trAnnoEnt->{exin} = $trAnnoEnt->{ei_Begin};
-                $trAnnoEnt->{genepartIndex} = $1
-                  if ( $trAnnoEnt->{ei_Begin} =~ /EX(\d+)/ );
-		$trAnnoEnt->{exonIndex} = $trAnnoEnt->{genepartIndex};
-	    }
-	    else { # for same index exon intron give this index
-                $trAnnoEnt->{exin} =
-                  ($strd)
-                  ? $trAnnoEnt->{ei_Begin} . '-' . $trAnnoEnt->{ei_End}
-                  : $trAnnoEnt->{ei_End} . '-' . $trAnnoEnt->{ei_Begin};
 
-                if ( $trAnnoEnt->{exin} =~ /(\d+)\D+(\d+)/ and $1 eq $2 ) {
-                    $trAnnoEnt->{genepartIndex} = $1;
-                }
-	    }
-	}
-
-        confess "Error: unknown genepartSO [$genepartSO]."
-          if ( !exists $SO2Name{$genepartSO} );
-
-        $trAnnoEnt->{genepart} = $SO2Name{$genepartSO};
-        $trAnnoEnt->{genepartSO} = ( $genepartSO =~ /^SO:/ ) ? $genepartSO : "";
-        $trAnnoEnt->{genepartIndex} = '.'
-          if ( !exists $trAnnoEnt->{genepartIndex} );
-        $trAnnoEnt->{exonIndex} = '.' if ( !exists $trAnnoEnt->{exonIndex} );
-        $trAnnoEnt->{intronIndex} = '.'
-          if ( !exists $trAnnoEnt->{intronIndex} );
-
-        # change annotation-fail 's other value to empty?
-
-        # uniform rnaBegin end and protBegin end
-        $trAnnoEnt->{rnaBegin} =
-          ( $trAnnoEnt->{rnaBegin} =~ /^\+/ ) ? "" : $trAnnoEnt->{rnaBegin};
-        $trAnnoEnt->{rnaEnd} =
-          ( $trAnnoEnt->{rnaEnd} =~ /^\+/ ) ? "" : $trAnnoEnt->{rnaEnd};
-        $trAnnoEnt->{protBegin} =
-          ( !exists $trAnnoEnt->{protBegin} or $trAnnoEnt->{protBegin} eq '0' ) ? "" : $trAnnoEnt->{protBegin};
-        $trAnnoEnt->{protEnd} =
-          ( !exists $trAnnoEnt->{protEnd} or $trAnnoEnt->{protEnd} eq '0' ) ? "" : $trAnnoEnt->{protEnd};
-
-	$trAnnoEnt->{func} = 'unknown' if (!exists $trAnnoEnt->{func});
-        # uniform function group
-        confess "Error: unknown func code [$trAnnoEnt->{func}]."
-          if ( !exists $func2SO{ $trAnnoEnt->{func} } );
-        $trAnnoEnt->{funcSO}     = $func2SO{ $trAnnoEnt->{func} };
-        $trAnnoEnt->{funcSOname} = $SO2Name{ $trAnnoEnt->{funcSO} };
-        $trAnnoEnt->{funcSO} =
-          ( $trAnnoEnt->{funcSO} =~ /^SO:/ ) ? $trAnnoEnt->{funcSO} : "";
-
-	
-	# add additional resource
-	if (exists $trAnnoEnt->{prot} and $trAnnoEnt->{prot} ne "") {
-            $trAnnoEnt->{protBegin} =
-              ( $trAnnoEnt->{protBegin} eq '0' ) ? "" : $trAnnoEnt->{protBegin};
-            $trAnnoEnt->{protEnd} =
-              ( $trAnnoEnt->{protEnd} eq '0' ) ? "" : $trAnnoEnt->{protEnd};
-	    if ($trAnnoEnt->{protBegin} ne "" and $trAnnoEnt->{protEnd} ne "") {
-		if (exists $self->{pfam}) {
-		    my ($pb, $pe) = ($trAnnoEnt->{protBegin}, $trAnnoEnt->{protEnd});
-		    if ($pb > $pe) {
-			my $tmp = $pb;
-			$pb = $pe;
-			$pe = $tmp;
-		    }
-                    ( $trAnnoEnt->{pfamId}, $trAnnoEnt->{pfamName} ) =
-                      $self->{pfam_h}->getPfam( $trAnnoEnt->{prot}, $pb, $pe );
+		if ($trAnnoEnt->{exin} =~ /^EX(\d+)/) {
+		    $trAnnoEnt->{genepartIndex} = $1;
+		    $trAnnoEnt->{exonIndex} = $1;
+		}
+		elsif ($trAnnoEnt->{exin} =~ /^IVS(\d+)/) {
+		    $trAnnoEnt->{genepartIndex} = $1;
+		    $trAnnoEnt->{intronIndex} = $1;
+		}
+		else {
+		    $trAnnoEnt->{genepartIndex} = 0;
 		}
 	    }
-            if ( exists $self->{prediction} ) {
-                if ( exists $trAnnoEnt->{p}
-                    and $trAnnoEnt->{p} =~ /^p\.[A-Z](\d+)([A-Z])$/ )
-                {
-                    my $rpred =
-                      $self->{prediction_h}
-                      ->getPredScore( $trAnnoEnt->{prot}, $1, $2 );
-                    if ( exists $rpred->{sift} ) {
-                        $trAnnoEnt->{siftPred}  = $rpred->{sift}->[0];
-                        $trAnnoEnt->{siftScore} = $rpred->{sift}->[1];
-                    }
-                    if ( exists $rpred->{polyphen2_humdiv} ) {
-                        $trAnnoEnt->{pp2divPred} =
-                          $rpred->{polyphen2_humdiv}->[0];
-                        $trAnnoEnt->{pp2divScore} =
-                          $rpred->{polyphen2_humdiv}->[1];
-                    }
-                    if ( exists $rpred->{polyphen2_humvar} ) {
-                        $trAnnoEnt->{pp2varPred} =
-                          $rpred->{polyphen2_humvar}->[0];
-                        $trAnnoEnt->{pp2varScore} =
-                          $rpred->{polyphen2_humvar}->[1];
-                    }
+	    elsif ( $trAnnoEnt->{ei_Begin} =~ /^IVS/ 
+		and $trAnnoEnt->{ei_Begin} eq $trAnnoEnt->{ei_End} )
+	    { # span splice or interior intron
+		$genepartSO = 'span'; # need to discuss? whether to use interior
+		$trAnnoEnt->{r} =
+		  ($strd)
+		  ? $trAnnoEnt->{r_Begin} . '-' . $trAnnoEnt->{r_End}
+		  : $trAnnoEnt->{r_End} . '-' . $trAnnoEnt->{r_Begin};
+		$trAnnoEnt->{exin}          = $trAnnoEnt->{ei_Begin};
+		$trAnnoEnt->{genepartIndex} = $1 if ($trAnnoEnt->{ei_Begin} =~ /(\d+)/);
+		$trAnnoEnt->{intronIndex}   = $trAnnoEnt->{genepartIndex};
+	    }
+	    else { # non-equal exon intron number or UTR/CDS span
+		$genepartSO = 'span';
+		$trAnnoEnt->{r} =
+		  ($strd)
+		  ? $trAnnoEnt->{r_Begin} . '-' . $trAnnoEnt->{r_End}
+		  : $trAnnoEnt->{r_End} . '-' . $trAnnoEnt->{r_Begin};
+		if ($trAnnoEnt->{ei_Begin} eq $trAnnoEnt->{ei_End}) {
+		    $trAnnoEnt->{exin} = $trAnnoEnt->{ei_Begin};
+		    $trAnnoEnt->{genepartIndex} = $1
+		      if ( $trAnnoEnt->{ei_Begin} =~ /EX(\d+)/ );
+		    $trAnnoEnt->{exonIndex} = $trAnnoEnt->{genepartIndex};
+		}
+		else { # for same index exon intron give this index
+		    $trAnnoEnt->{exin} =
+		      ($strd)
+		      ? $trAnnoEnt->{ei_Begin} . '-' . $trAnnoEnt->{ei_End}
+		      : $trAnnoEnt->{ei_End} . '-' . $trAnnoEnt->{ei_Begin};
 
-                }
-                elsif ( exists $trAnnoEnt->{prRef}
-                    and exists $trAnnoEnt->{prAlt} )
-                {
-                    my $prReflen = length( $trAnnoEnt->{prRef} );
-                    my $prAltlen = length( $trAnnoEnt->{prAlt} );
-                    if (    $prReflen == 1
-                        and $prAltlen == 1
-                        and $trAnnoEnt->{protBegin} eq '1'
-                        and $trAnnoEnt->{protEnd} eq '1' )
-                    {
-                        my $init_pred =
-                          $self->{prediction_h}
-                          ->getPredScore( $trAnnoEnt->{prot}, 1,
-                            $trAnnoEnt->{prAlt} );
+		    if ( $trAnnoEnt->{exin} =~ /(\d+)\D+(\d+)/ and $1 eq $2 ) {
+			$trAnnoEnt->{genepartIndex} = $1;
+		    }
+		}
+	    }
 
-                        if ( exists $init_pred->{sift} ) {
-                            $trAnnoEnt->{siftPred} =
-                              $init_pred->{sift}->[0];
-                            $trAnnoEnt->{siftScore} =
-                              $init_pred->{sift}->[1];
-                        }
+	    confess "Error: unknown genepartSO [$genepartSO]."
+	      if ( !exists $SO2Name{$genepartSO} );
 
-                        if ( exists $init_pred->{polyphen2_humdiv} ) {
-                            $trAnnoEnt->{pp2divPred} =
-                              $init_pred->{polyphen2_humdiv}->[0];
-                            $trAnnoEnt->{pp2divScore} =
-                              $init_pred->{polyphen2_humdiv}->[1];
-                        }
+	    $trAnnoEnt->{genepart} = $SO2Name{$genepartSO};
+	    $trAnnoEnt->{genepartSO} = ( $genepartSO =~ /^SO:/ ) ? $genepartSO : "";
+	    $trAnnoEnt->{genepartIndex} = '.'
+	      if ( !exists $trAnnoEnt->{genepartIndex} );
+	    $trAnnoEnt->{exonIndex} = '.' if ( !exists $trAnnoEnt->{exonIndex} );
+	    $trAnnoEnt->{intronIndex} = '.'
+	      if ( !exists $trAnnoEnt->{intronIndex} );
 
-                        if ( exists $init_pred->{polyphen2_humvar} ) {
-                            $trAnnoEnt->{pp2varPred} =
-                              $init_pred->{polyphen2_humvar}->[0];
-                            $trAnnoEnt->{pp2varScore} =
-                              $init_pred->{polyphen2_humvar}->[1];
-                        }
+	    # change annotation-fail 's other value to empty?
 
-                    }
-                }
-            }
+	    # uniform rnaBegin end and protBegin end
+	    $trAnnoEnt->{rnaBegin} =
+	      ( $trAnnoEnt->{rnaBegin} =~ /^\+/ ) ? "" : $trAnnoEnt->{rnaBegin};
+	    $trAnnoEnt->{rnaEnd} =
+	      ( $trAnnoEnt->{rnaEnd} =~ /^\+/ ) ? "" : $trAnnoEnt->{rnaEnd};
+	    $trAnnoEnt->{protBegin} =
+	      ( !exists $trAnnoEnt->{protBegin} or $trAnnoEnt->{protBegin} eq '0' ) ? "" : $trAnnoEnt->{protBegin};
+	    $trAnnoEnt->{protEnd} =
+	      ( !exists $trAnnoEnt->{protEnd} or $trAnnoEnt->{protEnd} eq '0' ) ? "" : $trAnnoEnt->{protEnd};
+
+	    $trAnnoEnt->{func} = 'unknown' if (!exists $trAnnoEnt->{func});
+	    # uniform function group
+	    confess "Error: unknown func code [$trAnnoEnt->{func}]."
+	      if ( !exists $func2SO{ $trAnnoEnt->{func} } );
+	    $trAnnoEnt->{funcSO}     = $func2SO{ $trAnnoEnt->{func} };
+	    $trAnnoEnt->{funcSOname} = $SO2Name{ $trAnnoEnt->{funcSO} };
+	    $trAnnoEnt->{funcSO} =
+	      ( $trAnnoEnt->{funcSO} =~ /^SO:/ ) ? $trAnnoEnt->{funcSO} : "";
+
+	    
+	    # add additional resource
+	    if (exists $trAnnoEnt->{prot} and $trAnnoEnt->{prot} ne "") {
+		$trAnnoEnt->{protBegin} =
+		  ( $trAnnoEnt->{protBegin} eq '0' ) ? "" : $trAnnoEnt->{protBegin};
+		$trAnnoEnt->{protEnd} =
+		  ( $trAnnoEnt->{protEnd} eq '0' ) ? "" : $trAnnoEnt->{protEnd};
+		if ($trAnnoEnt->{protBegin} ne "" and $trAnnoEnt->{protEnd} ne "") {
+		    if (exists $self->{pfam}) {
+			my ($pb, $pe) = ($trAnnoEnt->{protBegin}, $trAnnoEnt->{protEnd});
+			if ($pb > $pe) {
+			    my $tmp = $pb;
+			    $pb = $pe;
+			    $pe = $tmp;
+			}
+			( $trAnnoEnt->{pfamId}, $trAnnoEnt->{pfamName} ) =
+			  $self->{pfam_h}->getPfam( $trAnnoEnt->{prot}, $pb, $pe );
+		    }
+		}
+		if ( exists $self->{prediction} ) {
+		    if ( exists $trAnnoEnt->{p}
+			and $trAnnoEnt->{p} =~ /^p\.[A-Z](\d+)([A-Z])$/ )
+		    {
+			my $rpred =
+			  $self->{prediction_h}
+			  ->getPredScore( $trAnnoEnt->{prot}, $1, $2 );
+			if ( exists $rpred->{sift} ) {
+			    $trAnnoEnt->{siftPred}  = $rpred->{sift}->[0];
+			    $trAnnoEnt->{siftScore} = $rpred->{sift}->[1];
+			}
+			if ( exists $rpred->{polyphen2_humdiv} ) {
+			    $trAnnoEnt->{pp2divPred} =
+			      $rpred->{polyphen2_humdiv}->[0];
+			    $trAnnoEnt->{pp2divScore} =
+			      $rpred->{polyphen2_humdiv}->[1];
+			}
+			if ( exists $rpred->{polyphen2_humvar} ) {
+			    $trAnnoEnt->{pp2varPred} =
+			      $rpred->{polyphen2_humvar}->[0];
+			    $trAnnoEnt->{pp2varScore} =
+			      $rpred->{polyphen2_humvar}->[1];
+			}
+
+		    }
+		    elsif ( exists $trAnnoEnt->{prRef}
+			and exists $trAnnoEnt->{prAlt} )
+		    {
+			my $prReflen = length( $trAnnoEnt->{prRef} );
+			my $prAltlen = length( $trAnnoEnt->{prAlt} );
+			if (    $prReflen == 1
+			    and $prAltlen == 1
+			    and $trAnnoEnt->{protBegin} eq '1'
+			    and $trAnnoEnt->{protEnd} eq '1' )
+			{
+			    my $init_pred =
+			      $self->{prediction_h}
+			      ->getPredScore( $trAnnoEnt->{prot}, 1,
+				$trAnnoEnt->{prAlt} );
+
+			    if ( exists $init_pred->{sift} ) {
+				$trAnnoEnt->{siftPred} =
+				  $init_pred->{sift}->[0];
+				$trAnnoEnt->{siftScore} =
+				  $init_pred->{sift}->[1];
+			    }
+
+			    if ( exists $init_pred->{polyphen2_humdiv} ) {
+				$trAnnoEnt->{pp2divPred} =
+				  $init_pred->{polyphen2_humdiv}->[0];
+				$trAnnoEnt->{pp2divScore} =
+				  $init_pred->{polyphen2_humdiv}->[1];
+			    }
+
+			    if ( exists $init_pred->{polyphen2_humvar} ) {
+				$trAnnoEnt->{pp2varPred} =
+				  $init_pred->{polyphen2_humvar}->[0];
+				$trAnnoEnt->{pp2varScore} =
+				  $init_pred->{polyphen2_humvar}->[1];
+			    }
+
+			}
+		    }
+		}
+	    }
 	}
     }
 
@@ -1364,7 +1367,7 @@ sub getTrChange {
     if ( !exists $annoEnt->{trInfo}
         or 0 == ( scalar keys %{ $annoEnt->{trInfo} } ) )
     {
-        return;
+        return $annoEnt;
     }
 
     my $trInfodb = $self->{trInfodb};
@@ -2599,7 +2602,7 @@ sub getIntrPos {
 
     About   : generate concatenated transcript originated reference
     Usage   : my $trRef = getTrRef( $trannoEnt, $refgenome, $trSeq, $strd );
-    Args    : trannoEnt - BedAnno::Anno -> {trInfo} -> {$tid}
+    Args    : trannoEnt - BedAnno::Anno->{trInfo}->{$tid}
               refgenome - Unified reference in BedAnno::Var
               trSeq     - whole transcript
               strd      - strand of transcript.
