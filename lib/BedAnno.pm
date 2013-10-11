@@ -2462,6 +2462,9 @@ sub translate {
     for (my $i = 0; $i < length($nucl); $i+=3) {
 	my $codon = substr($nucl,$i,3);
 	my $aa = (exists $C1{$codon}) ? $C1{$codon} : '.';
+	if ( $mito and $codon eq 'ATA' ) {
+	    $aa = 'M';
+	}
 	if ($aa eq '*' and $mito and $codon eq 'TGA') {
 	    $aa = 'W';
 	}
@@ -2472,9 +2475,7 @@ sub translate {
 	    $prot .= $aa;
 	    return ($prot, 0);
 	}
-	else {
-	    $prot .= $aa;
-	}
+	$prot .= $aa;
     }
     $prot =~ s/[UX]$/*/g if ($nostop);
     $prot =~ s/\.$// if ($frame_next != 0);
