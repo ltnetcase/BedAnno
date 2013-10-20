@@ -721,23 +721,27 @@ my $no_call_varanno = bless(
     'BedAnno::Anno'
 );
 
-test_parse_var( $snv_parse,     $crawler_input );
-test_parse_var( $snv_parse,     "chr1", 14410, "C", "A" );
-test_parse_var( $insert_parse,  $crawler_input2 );
-test_parse_var( $insert_parse,  "chr1", 14410, "C", "CGAATAGCTA" );
-test_parse_var( $del_parse,     "chr1", 14410, "CTAGATCG", "C" );
-test_parse_var( $rep_parse,     "chr1", 14410, "CTAGA", "CTAGTAGTAGTAGA" );
-test_parse_var( $delins_parse,  "chr1", 14410, "CTAGA", "GT" );
-test_parse_var( $subs_parse,    "chr1", 14410, "CATGA", "TGTGT" );
-test_parse_var( $no_call_parse, "chr1", 14410, 14410, "", '?' );
 
-test_varanno( $snv_varanno,     $snv_parse );
-test_varanno( $ins_varanno,     $insert_parse );
-test_varanno( $del_varanno,     $del_parse );
-test_varanno( $rep_varanno,     $rep_parse );
-test_varanno( $delins_varanno,  $delins_parse );
-test_varanno( $subs_varanno,    $subs_parse );
-test_varanno( $no_call_varanno, $no_call_parse );
+test_parse_var( "crawler_snv_parse", $snv_parse, $crawler_input );
+test_parse_var( "snv_parse", $snv_parse, "chr1", 14410, "C", "A" );
+test_parse_var( "crawler_insert_parse", $insert_parse, $crawler_input2 );
+test_parse_var( "insert_parse", $insert_parse, "chr1", 14410, "C",
+    "CGAATAGCTA" );
+test_parse_var( "del_parse", $del_parse, "chr1", 14410, "CTAGATCG", "C" );
+test_parse_var( "rep_parse", $rep_parse, "chr1", 14410, "CTAGA",
+    "CTAGTAGTAGTAGA" );
+test_parse_var( "delins_parse", $delins_parse, "chr1", 14410, "CTAGA", "GT" );
+test_parse_var( "subs_parse", $subs_parse, "chr1", 14410, "CATGA", "TGTGT" );
+test_parse_var( "no_call_parse", $no_call_parse, "chr1", 14410, 14410, "",
+    '?' );
+
+test_varanno( "snv_varanno",     $snv_varanno,     $snv_parse );
+test_varanno( "ins_varanno",     $ins_varanno,     $insert_parse );
+test_varanno( "del_varanno",     $del_varanno,     $del_parse );
+test_varanno( "rep_varanno",     $rep_varanno,     $rep_parse );
+test_varanno( "delins_varanno",  $delins_varanno,  $delins_parse );
+test_varanno( "subs_varanno",    $subs_varanno,    $subs_parse );
+test_varanno( "no_call_varanno", $no_call_varanno, $no_call_parse );
 
 # =================== END of ncRNA test ====================
 #
@@ -787,6 +791,7 @@ my $cds_snv = bless(
     },
     'BedAnno::Var'
 );
+
 my $cds_del = bless(
     {
         'alt'    => '',
@@ -802,6 +807,23 @@ my $cds_del = bless(
     },
     'BedAnno::Var'
 );
+
+my $large_del = bless(
+    {
+        'alt'    => '',
+        'altlen' => 0,
+        'chr'    => '1',
+        'end'    => 100327884,
+        'guess'  => 'del',
+        'imp'    => 'del',
+        'pos'    => 100327863,
+        'ref'    => 'TGGTGCTGATAATCATGTGCT',
+        'reflen' => 21,
+        'sm'     => 2
+    },
+    'BedAnno::Var'
+);
+
 my $cds_ins = bless(
     {
         'alt'    => 'GGG',
@@ -855,6 +877,7 @@ my $cds_rep = bless(
     },
     'BedAnno::Var'
 );
+
 my $cds_delins = bless(
     {
         'alt'      => 'TC',
@@ -919,16 +942,23 @@ my $cds_rna_snv2 = bless(
 );
 
 
-test_parse_var( $cds_rna_snv1, 'chr3', 49395708, 49395709, "C", "T" ); # init-codon
-test_parse_var( $cds_rna_snv2, 'chr3', 49395704, 49395705, "C", "A" ); # missense with sift
-test_parse_var( $cds_rna_delins, 'chr8', 24811065, 24811066, "G", "A" );    # del-ins?
-test_parse_var( $cds_no_change, 'chr8', 24811064, 24811065, "G", "" );    # no-change?
-test_parse_var( $cds_snv, 'chr8', 24811066, 24811067, "G", "T" );
-test_parse_var( $cds_del, 'chr8', 24811066, 24811067, "G", "" );
-test_parse_var( $cds_ins, 'chr8', 24811067, 24811067, "",  "GGG" );
-test_parse_var( $cds_rep, "chr3", 49395673, "GGCCGCCGCCGCCGCCGCC", "GGCCGCCGCCGCC" );
-test_parse_var( $cds_delins, "chr1", 865533, "AG", "TC" );
-test_parse_var( $cds_no_call, "chr1", 861319, 861320, "T", "N" );
+test_parse_var( "cds_rna_snv1", $cds_rna_snv1, 'chr3', 49395708, 49395709, "C",
+    "T" );    # init-codon
+test_parse_var( "cds_rna_snv2", $cds_rna_snv2, 'chr3', 49395704, 49395705, "C",
+    "A" );    # missense with sift
+test_parse_var( "cds_rna_delins", $cds_rna_delins, 'chr8', 24811065, 24811066,
+    "G", "A" );    # del-ins?
+test_parse_var( "cds_no_change", $cds_no_change, 'chr8', 24811064, 24811065,
+    "G", "" );     # no-change?
+test_parse_var( "cds_snv", $cds_snv, 'chr8', 24811066, 24811067, "G", "T" );
+test_parse_var( "cds_del", $cds_del, 'chr8', 24811066, 24811067, "G", "" );
+test_parse_var( "large_del", $large_del, "chr1", 100327863,
+    100327884, "TGGTGCTGATAATCATGTGCT", "" );
+test_parse_var( "cds_ins", $cds_ins, 'chr8', 24811067, 24811067, "",  "GGG" );
+test_parse_var( "cds_rep", $cds_rep, "chr3", 49395673, "GGCCGCCGCCGCCGCCGCC",
+    "GGCCGCCGCCGCC" );
+test_parse_var( "cds_delins", $cds_delins, "chr1", 865533, "AG", "TC" );
+test_parse_var( "cds_no_call", $cds_no_call, "chr1", 861319, 861320, "T", "N" );
 
 
 my $cds_rna_snv1_anno = bless(
@@ -1316,6 +1346,7 @@ my $cds_no_change_anno = bless(
     },
     'BedAnno::Anno'
 );
+
 my $cds_snv_anno = bless(
     {
         'trInfo' => {
@@ -1462,6 +1493,315 @@ my $cds_del_anno = bless(
     },
     'BedAnno::Anno'
 );
+
+my $large_del_anno = bless(
+    {
+        'trInfo' => {
+            'NM_000028.2' => {
+                'c'             => 'c.345_365del',
+                'cdsBegin'      => '345',
+                'cdsEnd'        => '365',
+                'ei_Begin'      => 'EX4',
+                'ei_End'        => 'EX4',
+                'exin'          => 'EX4',
+                'exonIndex'     => '4',
+                'func'          => 'cds-del',
+                'funcSO'        => 'SO:0001822',
+                'funcSOname'    => 'inframe_deletion',
+                'geneId'        => '178',
+                'geneSym'       => 'AGL',
+                'genepart'      => 'CDS',
+                'genepartIndex' => '4',
+                'genepartSO'    => 'SO:0000316',
+                'intronIndex'   => '.',
+                'p'             => 'p.G116_L122del',
+                'postEnd'       => {
+                    'cDot' => '366',
+                    'exin' => 'EX4',
+                    'nDot' => 844,
+                    'r'    => 'C3'
+                },
+                'prAlt'    => 'V',
+                'prRef'    => 'VGADNHVL',
+                'preStart' => {
+                    'cDot' => '344',
+                    'exin' => 'EX4',
+                    'nDot' => 822,
+                    'r'    => 'C3'
+                },
+                'prot'      => 'NP_000019.2',
+                'protBegin' => 115,
+                'protEnd'   => 122,
+                'r'         => 'C3',
+                'r_Begin'   => 'C3',
+                'r_End'     => 'C3',
+                'rnaBegin'  => 823,
+                'rnaEnd'    => 843,
+                'strd'      => '+',
+                'trAlt'     => '',
+                'trRef'     => 'TGGTGCTGATAATCATGTGCT',
+                'trRefComp' => {
+                    'EX4' => 21
+                }
+            },
+            'NM_000642.2' => {
+                'c'             => 'c.345_365del',
+                'cdsBegin'      => '345',
+                'cdsEnd'        => '365',
+                'ei_Begin'      => 'EX4',
+                'ei_End'        => 'EX4',
+                'exin'          => 'EX4',
+                'exonIndex'     => '4',
+                'func'          => 'cds-del',
+                'funcSO'        => 'SO:0001822',
+                'funcSOname'    => 'inframe_deletion',
+                'geneId'        => '178',
+                'geneSym'       => 'AGL',
+                'genepart'      => 'CDS',
+                'genepartIndex' => '4',
+                'genepartSO'    => 'SO:0000316',
+                'intronIndex'   => '.',
+                'p'             => 'p.G116_L122del',
+                'postEnd'       => {
+                    'cDot' => '366',
+                    'exin' => 'EX4',
+                    'nDot' => 766,
+                    'r'    => 'C3'
+                },
+                'prAlt'    => 'V',
+                'prRef'    => 'VGADNHVL',
+                'preStart' => {
+                    'cDot' => '344',
+                    'exin' => 'EX4',
+                    'nDot' => 744,
+                    'r'    => 'C3'
+                },
+                'prot'      => 'NP_000633.2',
+                'protBegin' => 115,
+                'protEnd'   => 122,
+                'r'         => 'C3',
+                'r_Begin'   => 'C3',
+                'r_End'     => 'C3',
+                'rnaBegin'  => 745,
+                'rnaEnd'    => 765,
+                'strd'      => '+',
+                'trAlt'     => '',
+                'trRef'     => 'TGGTGCTGATAATCATGTGCT',
+                'trRefComp' => {
+                    'EX4' => 21
+                }
+            },
+            'NM_000643.2' => {
+                'c'             => 'c.345_365del',
+                'cdsBegin'      => '345',
+                'cdsEnd'        => '365',
+                'ei_Begin'      => 'EX4',
+                'ei_End'        => 'EX4',
+                'exin'          => 'EX4',
+                'exonIndex'     => '4',
+                'func'          => 'cds-del',
+                'funcSO'        => 'SO:0001822',
+                'funcSOname'    => 'inframe_deletion',
+                'geneId'        => '178',
+                'geneSym'       => 'AGL',
+                'genepart'      => 'CDS',
+                'genepartIndex' => '4',
+                'genepartSO'    => 'SO:0000316',
+                'intronIndex'   => '.',
+                'p'             => 'p.G116_L122del',
+                'postEnd'       => {
+                    'cDot' => '366',
+                    'exin' => 'EX4',
+                    'nDot' => 564,
+                    'r'    => 'C3'
+                },
+                'prAlt'    => 'V',
+                'prRef'    => 'VGADNHVL',
+                'preStart' => {
+                    'cDot' => '344',
+                    'exin' => 'EX4',
+                    'nDot' => 542,
+                    'r'    => 'C3'
+                },
+                'prot'      => 'NP_000634.2',
+                'protBegin' => 115,
+                'protEnd'   => 122,
+                'r'         => 'C3',
+                'r_Begin'   => 'C3',
+                'r_End'     => 'C3',
+                'rnaBegin'  => 543,
+                'rnaEnd'    => 563,
+                'strd'      => '+',
+                'trAlt'     => '',
+                'trRef'     => 'TGGTGCTGATAATCATGTGCT',
+                'trRefComp' => {
+                    'EX4' => 21
+                }
+            },
+            'NM_000644.2' => {
+                'c'             => 'c.345_365del',
+                'cdsBegin'      => '345',
+                'cdsEnd'        => '365',
+                'ei_Begin'      => 'EX4',
+                'ei_End'        => 'EX4',
+                'exin'          => 'EX4',
+                'exonIndex'     => '4',
+                'func'          => 'cds-del',
+                'funcSO'        => 'SO:0001822',
+                'funcSOname'    => 'inframe_deletion',
+                'geneId'        => '178',
+                'geneSym'       => 'AGL',
+                'genepart'      => 'CDS',
+                'genepartIndex' => '4',
+                'genepartSO'    => 'SO:0000316',
+                'intronIndex'   => '.',
+                'p'             => 'p.G116_L122del',
+                'postEnd'       => {
+                    'cDot' => '366',
+                    'exin' => 'EX4',
+                    'nDot' => 504,
+                    'r'    => 'C3'
+                },
+                'prAlt'    => 'V',
+                'prRef'    => 'VGADNHVL',
+                'preStart' => {
+                    'cDot' => '344',
+                    'exin' => 'EX4',
+                    'nDot' => 482,
+                    'r'    => 'C3'
+                },
+                'prot'      => 'NP_000635.2',
+                'protBegin' => 115,
+                'protEnd'   => 122,
+                'r'         => 'C3',
+                'r_Begin'   => 'C3',
+                'r_End'     => 'C3',
+                'rnaBegin'  => 483,
+                'rnaEnd'    => 503,
+                'strd'      => '+',
+                'trAlt'     => '',
+                'trRef'     => 'TGGTGCTGATAATCATGTGCT',
+                'trRefComp' => {
+                    'EX4' => 21
+                }
+            },
+            'NM_000645.2' => {
+                'c'             => 'c.294_314del',
+                'cdsBegin'      => '294',
+                'cdsEnd'        => '314',
+                'ei_Begin'      => 'EX2',
+                'ei_End'        => 'EX2',
+                'exin'          => 'EX2',
+                'exonIndex'     => '2',
+                'func'          => 'cds-del',
+                'funcSO'        => 'SO:0001822',
+                'funcSOname'    => 'inframe_deletion',
+                'geneId'        => '178',
+                'geneSym'       => 'AGL',
+                'genepart'      => 'CDS',
+                'genepartIndex' => '2',
+                'genepartSO'    => 'SO:0000316',
+                'intronIndex'   => '.',
+                'p'             => 'p.G99_L105del',
+                'postEnd'       => {
+                    'cDot' => '315',
+                    'exin' => 'EX2',
+                    'nDot' => 577,
+                    'r'    => 'C2'
+                },
+                'prAlt'    => 'V',
+                'prRef'    => 'VGADNHVL',
+                'preStart' => {
+                    'cDot' => '293',
+                    'exin' => 'EX2',
+                    'nDot' => 555,
+                    'r'    => 'C2'
+                },
+                'prot'      => 'NP_000636.2',
+                'protBegin' => 98,
+                'protEnd'   => 105,
+                'r'         => 'C2',
+                'r_Begin'   => 'C2',
+                'r_End'     => 'C2',
+                'rnaBegin'  => 556,
+                'rnaEnd'    => 576,
+                'strd'      => '+',
+                'trAlt'     => '',
+                'trRef'     => 'TGGTGCTGATAATCATGTGCT',
+                'trRefComp' => {
+                    'EX2' => 21
+                }
+            },
+            'NM_000646.2' => {
+                'c'             => 'c.297_317del',
+                'cdsBegin'      => '297',
+                'cdsEnd'        => '317',
+                'ei_Begin'      => 'EX4',
+                'ei_End'        => 'EX4',
+                'exin'          => 'EX4',
+                'exonIndex'     => '4',
+                'func'          => 'cds-del',
+                'funcSO'        => 'SO:0001822',
+                'funcSOname'    => 'inframe_deletion',
+                'geneId'        => '178',
+                'geneSym'       => 'AGL',
+                'genepart'      => 'CDS',
+                'genepartIndex' => '4',
+                'genepartSO'    => 'SO:0000316',
+                'intronIndex'   => '.',
+                'p'             => 'p.G100_L106del',
+                'postEnd'       => {
+                    'cDot' => '318',
+                    'exin' => 'EX4',
+                    'nDot' => 577,
+                    'r'    => 'C3'
+                },
+                'prAlt'    => 'V',
+                'prRef'    => 'VGADNHVL',
+                'preStart' => {
+                    'cDot' => '296',
+                    'exin' => 'EX4',
+                    'nDot' => 555,
+                    'r'    => 'C3'
+                },
+                'prot'      => 'NP_000637.2',
+                'protBegin' => 99,
+                'protEnd'   => 106,
+                'r'         => 'C3',
+                'r_Begin'   => 'C3',
+                'r_End'     => 'C3',
+                'rnaBegin'  => 556,
+                'rnaEnd'    => 576,
+                'strd'      => '+',
+                'trAlt'     => '',
+                'trRef'     => 'TGGTGCTGATAATCATGTGCT',
+                'trRefComp' => {
+                    'EX4' => 21
+                }
+            }
+        },
+        'var' => bless(
+            {
+                'alt'       => '',
+                'altlen'    => 0,
+                'chr'       => '1',
+                'end'       => 100327884,
+                'gHGVS'     => 'g.100327864_100327884delTGGTGCTGATAATCATGTGCT',
+                'guess'     => 'del',
+                'imp'       => 'del',
+                'pos'       => 100327863,
+                'ref'       => 'TGGTGCTGATAATCATGTGCT',
+                'refbuild'  => 'GRCh37',
+                'reflen'    => 21,
+                'sm'        => 2,
+                'varTypeSO' => 'SO:0000159'
+            },
+            'BedAnno::Var'
+        )
+    },
+    'BedAnno::Anno'
+);
+
 my $cds_ins_anno = bless(
     {
         'trInfo' => {
@@ -1860,32 +2200,33 @@ my $cds_no_call_anno = bless(
     'BedAnno::Anno'
 );
 
-test_varanno( $cds_rna_snv1_anno,   $cds_rna_snv1 );
-test_varanno( $cds_rna_snv2_anno,   $cds_rna_snv2 );
-test_varanno( $cds_rna_delins_anno, $cds_rna_delins );
-test_varanno( $cds_no_change_anno,  $cds_no_change );
-test_varanno( $cds_snv_anno,        $cds_snv );
-test_varanno( $cds_del_anno,        $cds_del );
-test_varanno( $cds_ins_anno,        $cds_ins );
-test_varanno( $cds_rep_anno,        $cds_rep );
-test_varanno( $cds_delins_anno,     $cds_delins );
-test_varanno( $cds_no_call_anno,    $cds_no_call );
+test_varanno( "cds_rna_snv1_anno",   $cds_rna_snv1_anno,   $cds_rna_snv1 );
+test_varanno( "cds_rna_snv2_anno",   $cds_rna_snv2_anno,   $cds_rna_snv2 );
+test_varanno( "cds_rna_delins_anno", $cds_rna_delins_anno, $cds_rna_delins );
+test_varanno( "cds_no_change_anno",  $cds_no_change_anno,  $cds_no_change );
+test_varanno( "cds_snv_anno",        $cds_snv_anno,        $cds_snv );
+test_varanno( "cds_del_anno",        $cds_del_anno,        $cds_del );
+test_varanno( "large_del_anno",      $large_del_anno,      $large_del );
+test_varanno( "cds_ins_anno",        $cds_ins_anno,        $cds_ins );
+test_varanno( "cds_rep_anno",        $cds_rep_anno,        $cds_rep );
+test_varanno( "cds_delins_anno",     $cds_delins_anno,     $cds_delins );
+test_varanno( "cds_no_call_anno",    $cds_no_call_anno,    $cds_no_call );
 
 done_testing();
 exit 0;
 
 sub test_parse_var {
-    my ( $expect, @args ) = @_;
+    my ( $tag, $expect, @args ) = @_;
     my $ranno = BedAnno::Var->new(@args);
-    if ( !is_deeply( $ranno, $expect, "for [ " . join( ",", @args ) . " ]" ) ) {
+    if ( !is_deeply( $ranno, $expect, "for [ $tag ]" ) ) {
         explain "The anno infomations are: ", $ranno;
     }
 }
 
 sub test_varanno {
-    my ( $expect, $vara )   = @_;
+    my ( $tag, $expect, $vara )   = @_;
     my ( $vAnno,  $noneed ) = $beda->varanno($vara);
-    if ( !is_deeply( $vAnno, $expect, "for [ $vara->{imp} ]" ) ) {
+    if ( !is_deeply( $vAnno, $expect, "for [ $tag ]" ) ) {
         explain "The anno infomations are: ", $vAnno;
     }
 }

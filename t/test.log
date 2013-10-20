@@ -1,15 +1,15 @@
 ok 1 - use BedAnno;
 ok 2 - tabix .. tabix -f -p bed ../data/test_db.bed.gz
-ok 3 - for [ HASH(0x20072350) ]
-ok 4 - for [ chr1,14410,C,A ]
-ok 5 - for [ HASH(0x20071f30) ]
-ok 6 - for [ chr1,14410,C,CGAATAGCTA ]
-ok 7 - for [ chr1,14410,CTAGATCG,C ]
-ok 8 - for [ chr1,14410,CTAGA,CTAGTAGTAGTAGA ]
-ok 9 - for [ chr1,14410,CTAGA,GT ]
-ok 10 - for [ chr1,14410,CATGA,TGTGT ]
-ok 11 - for [ chr1,14410,14410,,? ]
-not ok 12 - for [ snv ]
+ok 3 - for [ crawler_snv_parse ]
+ok 4 - for [ snv_parse ]
+ok 5 - for [ crawler_insert_parse ]
+ok 6 - for [ insert_parse ]
+ok 7 - for [ del_parse ]
+ok 8 - for [ rep_parse ]
+ok 9 - for [ delins_parse ]
+ok 10 - for [ subs_parse ]
+ok 11 - for [ no_call_parse ]
+not ok 12 - for [ snv_varanno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
@@ -75,9 +75,6 @@ not ok 12 - for [ snv ]
 #     'gHGVS' => 'g.14409C>A',
 #     'guess' => 'snv',
 #     'imp' => 'snv',
-#     'phyloPpm' => '0.786',
-#     'phyloPpr' => '0.121',
-#     'phyloPve' => '0.803',
 #     'pos' => 14409,
 #     'ref' => 'C',
 #     'refbuild' => 'GRCh37',
@@ -90,7 +87,7 @@ not ok 12 - for [ snv ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 13 - for [ ins ]
+not ok 13 - for [ ins_varanno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
@@ -168,7 +165,7 @@ not ok 13 - for [ ins ]
 #     'varTypeSO' => 'SO:0000667'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 14 - for [ del ]
+not ok 14 - for [ del_varanno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
@@ -246,7 +243,7 @@ not ok 14 - for [ del ]
 #     'varTypeSO' => 'SO:0000159'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 15 - for [ rep ]
+not ok 15 - for [ rep_varanno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
@@ -347,7 +344,7 @@ not ok 15 - for [ rep ]
 #     'varTypeSO' => 'SO:1000032'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 16 - for [ delins ]
+not ok 16 - for [ delins_varanno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
@@ -425,7 +422,7 @@ not ok 16 - for [ delins ]
 #     'varTypeSO' => 'SO:1000032'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 17 - for [ delins ]
+not ok 17 - for [ subs_varanno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
@@ -508,7 +505,7 @@ not ok 17 - for [ delins ]
 #     'varTypeSO' => 'SO:1000032'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 18 - for [ ins ]
+not ok 18 - for [ no_call_varanno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
@@ -585,17 +582,18 @@ not ok 18 - for [ ins ]
 #     'varTypeSO' => 'no-call'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-ok 19 - for [ chr3,49395708,49395709,C,T ]
-ok 20 - for [ chr3,49395704,49395705,C,A ]
-ok 21 - for [ chr8,24811065,24811066,G,A ]
-ok 22 - for [ chr8,24811064,24811065,G, ]
-ok 23 - for [ chr8,24811066,24811067,G,T ]
-ok 24 - for [ chr8,24811066,24811067,G, ]
-ok 25 - for [ chr8,24811067,24811067,,GGG ]
-ok 26 - for [ chr3,49395673,GGCCGCCGCCGCCGCCGCC,GGCCGCCGCCGCC ]
-ok 27 - for [ chr1,865533,AG,TC ]
-ok 28 - for [ chr1,861319,861320,T,N ]
-not ok 29 - for [ snv ]
+ok 19 - for [ cds_rna_snv1 ]
+ok 20 - for [ cds_rna_snv2 ]
+ok 21 - for [ cds_rna_delins ]
+ok 22 - for [ cds_no_change ]
+ok 23 - for [ cds_snv ]
+ok 24 - for [ cds_del ]
+ok 25 - for [ large_del ]
+ok 26 - for [ cds_ins ]
+ok 27 - for [ cds_rep ]
+ok 28 - for [ cds_delins ]
+ok 29 - for [ cds_no_call ]
+not ok 30 - for [ cds_rna_snv1_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_000581.2' => {
@@ -727,9 +725,6 @@ not ok 29 - for [ snv ]
 #     'gHGVS' => 'g.49395708C>T',
 #     'guess' => 'snv',
 #     'imp' => 'snv',
-#     'phyloPpm' => '2.720',
-#     'phyloPpr' => '0.455',
-#     'phyloPve' => '2.685',
 #     'pos' => 49395708,
 #     'ref' => 'C',
 #     'refbuild' => 'GRCh37',
@@ -742,7 +737,7 @@ not ok 29 - for [ snv ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 30 - for [ snv ]
+not ok 31 - for [ cds_rna_snv2_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_000581.2' => {
@@ -878,9 +873,6 @@ not ok 30 - for [ snv ]
 #     'gHGVS' => 'g.49395704C>A',
 #     'guess' => 'snv',
 #     'imp' => 'snv',
-#     'phyloPpm' => '2.720',
-#     'phyloPpr' => '0.455',
-#     'phyloPve' => '1.271',
 #     'pos' => 49395704,
 #     'ref' => 'C',
 #     'refbuild' => 'GRCh37',
@@ -893,7 +885,7 @@ not ok 30 - for [ snv ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 31 - for [ snv ]
+not ok 32 - for [ cds_rna_delins_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_006158.3' => {
@@ -964,9 +956,6 @@ not ok 31 - for [ snv ]
 #     'gHGVS' => 'g.24811065G>A',
 #     'guess' => 'snv',
 #     'imp' => 'snv',
-#     'phyloPpm' => '0.064',
-#     'phyloPpr' => '-0.181',
-#     'phyloPve' => '1.215',
 #     'pos' => 24811065,
 #     'ref' => 'G',
 #     'refbuild' => 'GRCh37',
@@ -979,7 +968,7 @@ not ok 31 - for [ snv ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 32 - for [ del ]
+not ok 33 - for [ cds_no_change_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_006158.3' => {
@@ -1056,9 +1045,6 @@ not ok 32 - for [ del ]
 #     'gHGVS' => 'g.24811065delG',
 #     'guess' => 'del',
 #     'imp' => 'del',
-#     'phyloPpm' => '0.755',
-#     'phyloPpr' => '-0.165',
-#     'phyloPve' => '0.420',
 #     'pos' => 24811064,
 #     'ref' => 'G',
 #     'refbuild' => 'GRCh37',
@@ -1071,7 +1057,7 @@ not ok 32 - for [ del ]
 #     'varTypeSO' => 'SO:0000159'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 33 - for [ snv ]
+not ok 34 - for [ cds_snv_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_006158.3' => {
@@ -1144,9 +1130,6 @@ not ok 33 - for [ snv ]
 #     'gHGVS' => 'g.24811066G>T',
 #     'guess' => 'snv',
 #     'imp' => 'snv',
-#     'phyloPpm' => '0.393',
-#     'phyloPpr' => '0.655',
-#     'phyloPve' => '1.193',
 #     'pos' => 24811066,
 #     'ref' => 'G',
 #     'refbuild' => 'GRCh37',
@@ -1159,7 +1142,7 @@ not ok 33 - for [ snv ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 34 - for [ del ]
+not ok 35 - for [ cds_del_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_006158.3' => {
@@ -1230,9 +1213,6 @@ not ok 34 - for [ del ]
 #     'gHGVS' => 'g.24811067delG',
 #     'guess' => 'del',
 #     'imp' => 'del',
-#     'phyloPpm' => '0.393',
-#     'phyloPpr' => '0.655',
-#     'phyloPve' => '1.193',
 #     'pos' => 24811066,
 #     'ref' => 'G',
 #     'refbuild' => 'GRCh37',
@@ -1245,7 +1225,335 @@ not ok 34 - for [ del ]
 #     'varTypeSO' => 'SO:0000159'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 35 - for [ ins ]
+not ok 36 - for [ large_del_anno ]
+# The anno infomations are: bless( {
+#   'trInfo' => {
+#     'NM_000028.2' => {
+#       'c' => 'c.345_365del',
+#       'cdsBegin' => '345',
+#       'cdsEnd' => '365',
+#       'ei_Begin' => 'EX4',
+#       'ei_End' => 'EX4',
+#       'exin' => 'EX4',
+#       'exonIndex' => '4',
+#       'func' => 'cds-del',
+#       'funcSO' => 'SO:0001822',
+#       'funcSOname' => 'inframe_deletion',
+#       'geneId' => '178',
+#       'geneSym' => 'AGL',
+#       'genepart' => 'CDS',
+#       'genepartIndex' => '4',
+#       'genepartSO' => 'SO:0000316',
+#       'intronIndex' => '.',
+#       'p' => 'p.G116_L122del',
+#       'pfamId' => 'PF14699.1;PF14701.1',
+#       'pfamName' => 'N-terminal domain from the human glycogen debranching enzyme;glucanotransferase domain of human glycogen debranching enzyme',
+#       'postEnd' => {
+#         'cDot' => '366',
+#         'exin' => 'EX4',
+#         'nDot' => 844,
+#         'r' => 'C3'
+#       },
+#       'prAlt' => 'V',
+#       'prRef' => 'VGADNHVL',
+#       'preStart' => {
+#         'cDot' => '344',
+#         'exin' => 'EX4',
+#         'nDot' => 822,
+#         'r' => 'C3'
+#       },
+#       'prot' => 'NP_000019.2',
+#       'protBegin' => 115,
+#       'protEnd' => 122,
+#       'r' => 'C3',
+#       'r_Begin' => 'C3',
+#       'r_End' => 'C3',
+#       'rnaBegin' => 823,
+#       'rnaEnd' => 843,
+#       'strd' => '+',
+#       'trAlt' => '',
+#       'trRef' => 'TGGTGCTGATAATCATGTGCT',
+#       'trRefComp' => {
+#         'EX4' => 21
+#       }
+#     },
+#     'NM_000642.2' => {
+#       'c' => 'c.345_365del',
+#       'cdsBegin' => '345',
+#       'cdsEnd' => '365',
+#       'ei_Begin' => 'EX4',
+#       'ei_End' => 'EX4',
+#       'exin' => 'EX4',
+#       'exonIndex' => '4',
+#       'func' => 'cds-del',
+#       'funcSO' => 'SO:0001822',
+#       'funcSOname' => 'inframe_deletion',
+#       'geneId' => '178',
+#       'geneSym' => 'AGL',
+#       'genepart' => 'CDS',
+#       'genepartIndex' => '4',
+#       'genepartSO' => 'SO:0000316',
+#       'intronIndex' => '.',
+#       'p' => 'p.G116_L122del',
+#       'pfamId' => '.',
+#       'pfamName' => '.',
+#       'postEnd' => {
+#         'cDot' => '366',
+#         'exin' => 'EX4',
+#         'nDot' => 766,
+#         'r' => 'C3'
+#       },
+#       'prAlt' => 'V',
+#       'prRef' => 'VGADNHVL',
+#       'preStart' => {
+#         'cDot' => '344',
+#         'exin' => 'EX4',
+#         'nDot' => 744,
+#         'r' => 'C3'
+#       },
+#       'prot' => 'NP_000633.2',
+#       'protBegin' => 115,
+#       'protEnd' => 122,
+#       'r' => 'C3',
+#       'r_Begin' => 'C3',
+#       'r_End' => 'C3',
+#       'rnaBegin' => 745,
+#       'rnaEnd' => 765,
+#       'strd' => '+',
+#       'trAlt' => '',
+#       'trRef' => 'TGGTGCTGATAATCATGTGCT',
+#       'trRefComp' => {
+#         'EX4' => 21
+#       }
+#     },
+#     'NM_000643.2' => {
+#       'c' => 'c.345_365del',
+#       'cdsBegin' => '345',
+#       'cdsEnd' => '365',
+#       'ei_Begin' => 'EX4',
+#       'ei_End' => 'EX4',
+#       'exin' => 'EX4',
+#       'exonIndex' => '4',
+#       'func' => 'cds-del',
+#       'funcSO' => 'SO:0001822',
+#       'funcSOname' => 'inframe_deletion',
+#       'geneId' => '178',
+#       'geneSym' => 'AGL',
+#       'genepart' => 'CDS',
+#       'genepartIndex' => '4',
+#       'genepartSO' => 'SO:0000316',
+#       'intronIndex' => '.',
+#       'p' => 'p.G116_L122del',
+#       'pfamId' => '.',
+#       'pfamName' => '.',
+#       'postEnd' => {
+#         'cDot' => '366',
+#         'exin' => 'EX4',
+#         'nDot' => 564,
+#         'r' => 'C3'
+#       },
+#       'prAlt' => 'V',
+#       'prRef' => 'VGADNHVL',
+#       'preStart' => {
+#         'cDot' => '344',
+#         'exin' => 'EX4',
+#         'nDot' => 542,
+#         'r' => 'C3'
+#       },
+#       'prot' => 'NP_000634.2',
+#       'protBegin' => 115,
+#       'protEnd' => 122,
+#       'r' => 'C3',
+#       'r_Begin' => 'C3',
+#       'r_End' => 'C3',
+#       'rnaBegin' => 543,
+#       'rnaEnd' => 563,
+#       'strd' => '+',
+#       'trAlt' => '',
+#       'trRef' => 'TGGTGCTGATAATCATGTGCT',
+#       'trRefComp' => {
+#         'EX4' => 21
+#       }
+#     },
+#     'NM_000644.2' => {
+#       'c' => 'c.345_365del',
+#       'cdsBegin' => '345',
+#       'cdsEnd' => '365',
+#       'ei_Begin' => 'EX4',
+#       'ei_End' => 'EX4',
+#       'exin' => 'EX4',
+#       'exonIndex' => '4',
+#       'func' => 'cds-del',
+#       'funcSO' => 'SO:0001822',
+#       'funcSOname' => 'inframe_deletion',
+#       'geneId' => '178',
+#       'geneSym' => 'AGL',
+#       'genepart' => 'CDS',
+#       'genepartIndex' => '4',
+#       'genepartSO' => 'SO:0000316',
+#       'intronIndex' => '.',
+#       'p' => 'p.G116_L122del',
+#       'pfamId' => '.',
+#       'pfamName' => '.',
+#       'postEnd' => {
+#         'cDot' => '366',
+#         'exin' => 'EX4',
+#         'nDot' => 504,
+#         'r' => 'C3'
+#       },
+#       'prAlt' => 'V',
+#       'prRef' => 'VGADNHVL',
+#       'preStart' => {
+#         'cDot' => '344',
+#         'exin' => 'EX4',
+#         'nDot' => 482,
+#         'r' => 'C3'
+#       },
+#       'prot' => 'NP_000635.2',
+#       'protBegin' => 115,
+#       'protEnd' => 122,
+#       'r' => 'C3',
+#       'r_Begin' => 'C3',
+#       'r_End' => 'C3',
+#       'rnaBegin' => 483,
+#       'rnaEnd' => 503,
+#       'strd' => '+',
+#       'trAlt' => '',
+#       'trRef' => 'TGGTGCTGATAATCATGTGCT',
+#       'trRefComp' => {
+#         'EX4' => 21
+#       }
+#     },
+#     'NM_000645.2' => {
+#       'c' => 'c.294_314del',
+#       'cdsBegin' => '294',
+#       'cdsEnd' => '314',
+#       'ei_Begin' => 'EX2',
+#       'ei_End' => 'EX2',
+#       'exin' => 'EX2',
+#       'exonIndex' => '2',
+#       'func' => 'cds-del',
+#       'funcSO' => 'SO:0001822',
+#       'funcSOname' => 'inframe_deletion',
+#       'geneId' => '178',
+#       'geneSym' => 'AGL',
+#       'genepart' => 'CDS',
+#       'genepartIndex' => '2',
+#       'genepartSO' => 'SO:0000316',
+#       'intronIndex' => '.',
+#       'p' => 'p.G99_L105del',
+#       'pfamId' => 'PF14699.1;PF14701.1',
+#       'pfamName' => 'N-terminal domain from the human glycogen debranching enzyme;glucanotransferase domain of human glycogen debranching enzyme',
+#       'postEnd' => {
+#         'cDot' => '315',
+#         'exin' => 'EX2',
+#         'nDot' => 577,
+#         'r' => 'C2'
+#       },
+#       'prAlt' => 'V',
+#       'prRef' => 'VGADNHVL',
+#       'preStart' => {
+#         'cDot' => '293',
+#         'exin' => 'EX2',
+#         'nDot' => 555,
+#         'r' => 'C2'
+#       },
+#       'prot' => 'NP_000636.2',
+#       'protBegin' => 98,
+#       'protEnd' => 105,
+#       'r' => 'C2',
+#       'r_Begin' => 'C2',
+#       'r_End' => 'C2',
+#       'rnaBegin' => 556,
+#       'rnaEnd' => 576,
+#       'strd' => '+',
+#       'trAlt' => '',
+#       'trRef' => 'TGGTGCTGATAATCATGTGCT',
+#       'trRefComp' => {
+#         'EX2' => 21
+#       }
+#     },
+#     'NM_000646.2' => {
+#       'c' => 'c.297_317del',
+#       'cdsBegin' => '297',
+#       'cdsEnd' => '317',
+#       'ei_Begin' => 'EX4',
+#       'ei_End' => 'EX4',
+#       'exin' => 'EX4',
+#       'exonIndex' => '4',
+#       'func' => 'cds-del',
+#       'funcSO' => 'SO:0001822',
+#       'funcSOname' => 'inframe_deletion',
+#       'geneId' => '178',
+#       'geneSym' => 'AGL',
+#       'genepart' => 'CDS',
+#       'genepartIndex' => '4',
+#       'genepartSO' => 'SO:0000316',
+#       'intronIndex' => '.',
+#       'p' => 'p.G100_L106del',
+#       'pfamId' => 'PF14699.1;PF14701.1',
+#       'pfamName' => 'N-terminal domain from the human glycogen debranching enzyme;glucanotransferase domain of human glycogen debranching enzyme',
+#       'postEnd' => {
+#         'cDot' => '318',
+#         'exin' => 'EX4',
+#         'nDot' => 577,
+#         'r' => 'C3'
+#       },
+#       'prAlt' => 'V',
+#       'prRef' => 'VGADNHVL',
+#       'preStart' => {
+#         'cDot' => '296',
+#         'exin' => 'EX4',
+#         'nDot' => 555,
+#         'r' => 'C3'
+#       },
+#       'prot' => 'NP_000637.2',
+#       'protBegin' => 99,
+#       'protEnd' => 106,
+#       'r' => 'C3',
+#       'r_Begin' => 'C3',
+#       'r_End' => 'C3',
+#       'rnaBegin' => 556,
+#       'rnaEnd' => 576,
+#       'strd' => '+',
+#       'trAlt' => '',
+#       'trRef' => 'TGGTGCTGATAATCATGTGCT',
+#       'trRefComp' => {
+#         'EX4' => 21
+#       }
+#     }
+#   },
+#   'var' => bless( {
+#     'alt' => '',
+#     'altlen' => 0,
+#     'cg54' => {
+#       'AF' => 0,
+#       'AN' => 0
+#     },
+#     'chr' => '1',
+#     'cytoBand' => '1p21.2',
+#     'dbsnp' => {},
+#     'end' => 100327884,
+#     'esp6500' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'gHGVS' => 'g.100327864_100327884delTGGTGCTGATAATCATGTGCT',
+#     'guess' => 'del',
+#     'imp' => 'del',
+#     'pos' => 100327863,
+#     'ref' => 'TGGTGCTGATAATCATGTGCT',
+#     'refbuild' => 'GRCh37',
+#     'reflen' => 21,
+#     'sm' => 2,
+#     'tgp' => {
+#       'AF' => '0.000000',
+#       'AN' => 0
+#     },
+#     'varTypeSO' => 'SO:0000159'
+#   }, 'BedAnno::Var' )
+# }, 'BedAnno::Anno' )
+not ok 37 - for [ cds_ins_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_006158.3' => {
@@ -1328,7 +1636,7 @@ not ok 35 - for [ ins ]
 #     'varTypeSO' => 'SO:0000667'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 36 - for [ rep ]
+not ok 38 - for [ cds_rep_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_000581.2' => {
@@ -1483,7 +1791,7 @@ not ok 36 - for [ rep ]
 #     'varTypeSO' => 'SO:1000032'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 37 - for [ delins ]
+not ok 39 - for [ cds_delins_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_152486.2' => {
@@ -1568,7 +1876,7 @@ not ok 37 - for [ delins ]
 #     'varTypeSO' => 'SO:1000032'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 38 - for [ snv ]
+not ok 40 - for [ cds_no_call_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_152486.2' => {
@@ -1681,9 +1989,6 @@ not ok 38 - for [ snv ]
 #     'gHGVS' => 'g.861319T>N',
 #     'guess' => 'no-call',
 #     'imp' => 'snv',
-#     'phyloPpm' => '0.689',
-#     'phyloPpr' => '0.402',
-#     'phyloPve' => '2.606',
 #     'pos' => 861319,
 #     'ref' => 'T',
 #     'refbuild' => 'GRCh37',
@@ -1696,4 +2001,4 @@ not ok 38 - for [ snv ]
 #     'varTypeSO' => 'no-call'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-1..38
+1..40
