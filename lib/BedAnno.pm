@@ -1417,6 +1417,9 @@ sub getTrChange {
 	# debug
 #	print STDERR Data::Dumper->Dump( [$tid, $trannoEnt, $unify_r, $trSeqs{$tid}, $strd], ["tid", "trannoEnt", "unify_r", "trSeq", "strd"] );
 
+	if (!exists $trSeqs{$tid} or $trSeqs{$tid} eq "") {
+	    $self->throw("Error: your fasta database file may not complete. [$tid]");
+	}
 	my $trRef = getTrRef($trannoEnt, $unify_r, $trSeqs{$tid}, $strd);
 	$trannoEnt->{trRef} = $trRef;
 	my $trAlt = $trannoEnt->{trAlt};
