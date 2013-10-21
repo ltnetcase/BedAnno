@@ -3431,7 +3431,7 @@ sub TO_JSON {
 	      var group:
 	      refbuild -> referenceBuild
 	      chr -> chr
-	      start -> begin
+	      pos -> begin
 	      end -> end
 	      ref -> referenceSequence
 	      alt -> variantSequence
@@ -3489,7 +3489,7 @@ sub reformatAnno {
         var => {
             referenceBuild    => $var->{refbuild},
             chr               => $var->{chr},
-            begin             => $var->{start},
+            begin             => $var->{pos},
             end               => $var->{end},
             referenceSequence => $var->{ref},
             variantSequence   => $var->{alt},
