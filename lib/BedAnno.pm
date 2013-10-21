@@ -586,6 +586,10 @@ sub set_refbuild {
     return $self;
 }
 
+sub TO_JSON {
+    return { %{ shift() } };
+}
+
 =head2 readtr
 
     About   : Read transcript information, and even sequences if in batch mode.
@@ -2897,6 +2901,10 @@ sub new {
     return $var->parse_complex();
 }
 
+sub TO_JSON {
+    return { %{ shift() } };
+}
+
 =head2 getUnifiedVar
 
     About   : uniform the pos and ref/alt pair selection,
@@ -3409,6 +3417,196 @@ sub new {
     $self->{var} = $var;
     bless $self, ref($class) || $class;
     return $self;
+}
+
+sub TO_JSON {
+    return { %{ shift() } };
+}
+
+=head2 reformatAnno
+
+    About   : reformat the BedAnno::Anno entry to fit the need of crawler
+    Usage   : my $crawler_need = $anno->reformatAnno();
+    Note    : ID mapping changes are list the following:
+	      var group:
+	      refbuild -> referenceBuild
+	      chr -> chr
+	      start -> begin
+	      end -> end
+	      ref -> referenceSequence
+	      alt -> variantSequence
+	      guess -> varType
+	      varTypeSO -> varTypeSO
+	      cytoBand -> cytoband
+	      dbsnp => {rsID1,rsID2 ... } -> dbsnpIds
+	      cg54 => AF -> CG54_AF
+	      cg54 => AN -> CG54_AN
+	      tgp => AF -> 1000G_AF
+	      tgp => AN -> 1000G_AN
+	      wellderly => AF -> Wellderly_AF
+	      wellderly => AN -> Wellderly_AN
+	      esp6500 => AF -> ESP6500_AF
+	      esp6500 => AN -> ESP6500_AN
+	      phyloPpm -> PhyloPscorePlacentalMammals
+	      phyloPpr -> PhyloPscorePrimates
+	      phyloPve -> PhyloPscoreVetebrates
+	      gHGVS -> gHGVS
+
+	      trInfo group:
+	      geneId -> GeneID
+	      geneSym -> GeneSym
+	      prot -> ProteinAccession
+	      strd -> TranscriptOrientation
+	      rnaBegin -> TranscriptBegin
+	      rnaEnd -> TranscriptEnd
+	      protBegin -> ProteinBegin
+	      protEnd -> ProteinEnd
+	      pfamId -> PFAM_ID
+	      pfamName -> PFAM_NAME
+	      genepart -> GenePart
+	      genepartSO -> GenePartSO
+	      genepartIndex -> GenePartIndex
+	      exonIndex -> ExonNumber
+	      intronIndex -> IntronNumer
+	      funcSOname -> FunctionImpact
+	      funcSO -> FunctionImpactSO
+	      c -> cHGVS
+	      p -> pHGVS
+	      cc -> CodonChange
+	      polar -> AAPolarityRef + AAPolarityVar
+	      siftPred -> SIFTpred
+	      siftScore -> SIFTscore
+	      pp2divPred -> Polyphen2HumDivPred
+	      pp2divScore -> Polyphen2HumDivScore
+	      pp2varPred -> Polyphen2VarPred
+	      pp2varScore -> Polyphen2VarScore
+
+=cut
+sub reformatAnno {
+    my $anno = shift;
+    my $var = $anno->{var};
+    my $crawler_need = {
+        var => {
+            referenceBuild    => $var->{refbuild},
+            chr               => $var->{chr},
+            begin             => $var->{start},
+            end               => $var->{end},
+            referenceSequence => $var->{ref},
+            variantSequence   => $var->{alt},
+            varType           => $var->{guess},
+            varTypeSO         => $var->{varTypeSO},
+            gHGVS             => $var->{gHGVS},
+            cytoband => ( ( exists $var->{cytoBand} ) ? $var->{cytoBand} : "" ),
+            dbsnpIds => (
+                ( exists $var->{dbsnp} )
+                ? join( ";", sort keys %{ $var->{dbsnp} } )
+                : ""
+            ),
+            CG54_AF    => ( ( exists $var->{cg54} ) ? $var->{cg54}->{AF} : "" ),
+            CG54_AN    => ( ( exists $var->{cg54} ) ? $var->{cg54}->{AN} : "" ),
+            "1000G_AF" => ( ( exists $var->{tgp} )  ? $var->{tgp}->{AF}  : "" ),
+            "1000G_AN" => ( ( exists $var->{tgp} )  ? $var->{tgp}->{AN}  : "" ),
+            Wellderly_AF =>
+              ( ( exists $var->{wellderly} ) ? $var->{wellderly}->{AF} : "" ),
+            Wellderly_AN =>
+              ( ( exists $var->{wellderly} ) ? $var->{wellderly}->{AN} : "" ),
+            ESP6500_AF =>
+              ( ( exists $var->{esp6500} ) ? $var->{esp6500}->{AF} : "" ),
+            ESP6500_AN =>
+              ( ( exists $var->{esp6500} ) ? $var->{esp6500}->{AN} : "" ),
+            PhyloPscorePlacentalMammals =>
+              ( ( exists $var->{phyloPpm} ) ? $var->{phyloPpm} : "" ),
+            PhyloPscorePrimates =>
+              ( ( exists $var->{phyloPpr} ) ? $var->{phyloPpr} : "" ),
+            PhyloPscoreVetebrates =>
+              ( ( exists $var->{phyloPve} ) ? $var->{phyloPve} : "" ),
+        },
+    };
+
+    my @trTags = qw(GeneID GeneSym ProteinAccession 
+      TranscriptOrientation TranscriptBegin TranscriptEnd 
+      ProteinBegin ProteinEnd 
+      PFAM_ID PFAM_NAME 
+      GenePart GenePartSO 
+      GenePartIndex ExonNumber IntronNumer 
+      FunctionImpact FunctionImpactSO 
+      cHGVS pHGVS CodonChange 
+      AAPolarityRef AAPolarityVar 
+      SIFTpred SIFTscore 
+      Polyphen2HumDivPred Polyphen2HumDivScore 
+      Polyphen2VarPred Polyphen2VarScore);
+
+    if ( !exists $anno->{trInfo} ) {
+	my %empty_tr;
+	@empty_tr{@trTags} = ("") x (scalar @trTags);
+	$crawler_need->{trInfo}->{""} = {%empty_tr};
+    }
+    else {
+	foreach my $trAcc (sort keys %{$anno->{trInfo}}) {
+	    my $rTr = $anno->{trInfo}->{$trAcc};
+	    my %trInfo = ();
+            @trInfo{qw(GeneID GeneSym TranscriptOrientation)} =
+              @$rTr{qw(geneId geneSym strd)};
+            $trInfo{ProteinAccession} =
+              ( exists $rTr->{prot} ) ? $rTr->{prot} : "";
+	    $trInfo{TranscriptBegin} = 
+	      ( exists $rTr->{rnaBegin} ) ? $rTr->{rnaBegin} : "";
+	    $trInfo{TranscriptEnd} = 
+	      ( exists $rTr->{rnaEnd} ) ? $rTr->{rnaEnd} : "";
+	    $trInfo{ProteinBegin} = 
+	      ( exists $rTr->{protBegin} ) ? $rTr->{protBegin} : "";
+	    $trInfo{ProteinEnd} = 
+	      ( exists $rTr->{protEnd} ) ? $rTr->{protEnd} : "";
+	    $trInfo{PFAM_ID} = 
+	      ( exists $rTr->{pfamId} ) ? $rTr->{pfamId} : "";
+	    $trInfo{PFAM_NAME} = 
+	      ( exists $rTr->{pfamName} ) ? $rTr->{pfamName} : "";
+	    $trInfo{GenePart} = 
+	      ( exists $rTr->{genepart} ) ? $rTr->{genepart} : "";
+	    $trInfo{GenePartSO} = 
+	      ( exists $rTr->{genepartSO} ) ? $rTr->{genepartSO} : "";
+	    $trInfo{GenePartIndex} = 
+	      ( exists $rTr->{genepartIndex} ) ? $rTr->{genepartIndex} : "";
+	    $trInfo{ExonNumber} = 
+	      ( exists $rTr->{exonIndex} ) ? $rTr->{exonIndex} : "";
+	    $trInfo{IntronNumber} = 
+	      ( exists $rTr->{intronIndex} ) ? $rTr->{intronIndex} : "";
+	    $trInfo{FunctionImpact} = 
+	      ( exists $rTr->{funcSOname} ) ? $rTr->{funcSOname} : "";
+	    $trInfo{FunctionImpactSO} = 
+	      ( exists $rTr->{funcSO} ) ? $rTr->{funcSO} : "";
+	    $trInfo{cHGVS} = 
+	      ( exists $rTr->{c} ) ? $rTr->{c} : "";
+	    $trInfo{pHGVS} = 
+	      ( exists $rTr->{p} ) ? $rTr->{p} : "";
+	    $trInfo{CodonChange} = 
+	      ( exists $rTr->{cc} ) ? $rTr->{cc} : "";
+	    $trInfo{SIFTpred} = 
+	      ( exists $rTr->{siftPred} ) ? $rTr->{siftPred} : "";
+	    $trInfo{SIFTscore} = 
+	      ( exists $rTr->{siftScore} ) ? $rTr->{siftScore} : "";
+	    $trInfo{Polyphen2HumDivPred} = 
+	      ( exists $rTr->{pp2divPred} ) ? $rTr->{pp2divPred} : "";
+	    $trInfo{Polyphen2HumDivScore} = 
+	      ( exists $rTr->{pp2divScore} ) ? $rTr->{pp2divScore} : "";
+	    $trInfo{Polyphen2VarPred} = 
+	      ( exists $rTr->{pp2varPred} ) ? $rTr->{pp2varPred} : "";
+	    $trInfo{Polyphen2VarScore} = 
+	      ( exists $rTr->{pp2varScore} ) ? $rTr->{pp2varScore} : "";
+	    $trInfo{AAPolarityRef} = "";
+	    $trInfo{AAPolarityVar} = "";
+	    if (exists $rTr->{polar} ) {
+		my @pol = split(/=>/, $rTr->{polar});
+		if (2 == @pol) {
+		    $trInfo{AAPolarityRef} = $pol[0];
+		    $trInfo{AAPolarityVar} = $pol[1];
+		}
+	    }
+
+	    $crawler_need->{trInfo}->{$trAcc} = {%trInfo};
+	}
+    }
+    return $crawler_need;
 }
 
 =head2 getTrPosition
