@@ -3494,7 +3494,7 @@ sub reformatAnno {
             referenceSequence => $var->{ref},
             variantSequence   => $var->{alt},
             varType           => $var->{guess},
-            varTypeSO         => $var->{varTypeSO},
+            varTypeSO         => ($var->{varTypeSO} =~ /SO:/) ? $var->{varTypeSO} : "",
             gHGVS             => $var->{gHGVS},
             cytoband => ( ( exists $var->{cytoBand} ) ? $var->{cytoBand} : "" ),
             dbsnpIds => (
@@ -3564,7 +3564,7 @@ sub reformatAnno {
 	    $trInfo{GenePart} = 
 	      ( exists $rTr->{genepart} ) ? $rTr->{genepart} : "";
 	    $trInfo{GenePartSO} = 
-	      ( exists $rTr->{genepartSO} ) ? $rTr->{genepartSO} : "";
+	      ( exists $rTr->{genepartSO} and $rTr->{genepartSO} =~ /SO:/ ) ? $rTr->{genepartSO} : "";
 	    $trInfo{GenePartIndex} = 
 	      ( exists $rTr->{genepartIndex} ) ? $rTr->{genepartIndex} : "";
 	    $trInfo{ExonNumber} = 
@@ -3574,7 +3574,7 @@ sub reformatAnno {
 	    $trInfo{FunctionImpact} = 
 	      ( exists $rTr->{funcSOname} ) ? $rTr->{funcSOname} : "";
 	    $trInfo{FunctionImpactSO} = 
-	      ( exists $rTr->{funcSO} ) ? $rTr->{funcSO} : "";
+	      ( exists $rTr->{funcSO} and $rTr->{funcSO} =~ /SO:/ ) ? $rTr->{funcSO} : "";
 	    $trInfo{cHGVS} = 
 	      ( exists $rTr->{c} ) ? $rTr->{c} : "";
 	    $trInfo{pHGVS} = 
