@@ -89,4 +89,4 @@ Then assign the primary tag 'Y' to the first refseq Acc.Ver (mapping)
 for a gene, and add postfix "-N" (1..n-1) to the other following mapping records
 in the order of sort result, with tag 'N' for the primary tag column.
 
-[1]: https://github.com/ltnetcase/BedAnno#sort-strategy
+[1]: #sort-strategy
