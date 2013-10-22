@@ -57,3 +57,6 @@
 	  will change to annotate on real refSeq sequence, not the cut from refgenome
 	  pseudo ones.
 	  my $beda = BedAnno->new(  db => "in.bed.gz", regbed => 'in.region.bed', codon => 'in.coding.fa', trans => \%trans, short => 1 );
+
+0.33  Tue Oct 22 17:26:30 2013
+	- fix some bugs and release a new revision version for future test-cases.

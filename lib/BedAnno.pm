@@ -5,13 +5,13 @@ use warnings;
 use threads::shared; # if threads used before BedAnno, then this will be threaded
 use Carp;
 
-our $VERSION = '0.32';
+our $VERSION = '0.33';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.32
+=head2 VERSION v0.33
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
