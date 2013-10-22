@@ -124,15 +124,15 @@
 .\" ========================================================================
 .\"
 .IX Title "BedAnno 3"
-.TH BedAnno 3 "2013-10-09" "perl v5.14.2" "User Contributed Perl Documentation"
+.TH BedAnno 3 "2013-10-22" "perl v5.14.2" "User Contributed Perl Documentation"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
 .nh
 .SH "NAME"
 BedAnno \- Perl module for annotating variation depend on the BED +1 format database.
-.SS "\s-1VERSION\s0 v0.32"
-.IX Subsection "VERSION v0.32"
+.SS "\s-1VERSION\s0 v0.33"
+.IX Subsection "VERSION v0.33"
 From version 0.32 BedAnno will change to support \s-1CG\s0's variant shell list
 and use ncbi annotation release 104 as the annotation database
 with reformatted database format, and won't give any individual
@@ -650,18 +650,14 @@ to deal with large amount of variants.
 .Ve
 .SS "getCodon_by_cdsPos"
 .IX Subsection "getCodon_by_cdsPos"
-.Vb 2
-\&    About   : similar to getCodonPos, but accept cds Position as input position
-\&              see "getCodonPos()"
-.Ve
-.SS "getCodonPos"
-.IX Subsection "getCodonPos"
-.Vb 11
+.Vb 10
 \&    About   : get codon position, codon string, aa string, and frame info
-\&              for one single transcript position
-\&    Usage   : my ($pP, $codon, $aa, $polar, $frame) = getCodonPos($trdbEnt, $trSeq, $p);
+\&              for one single cds position
+\&    Usage   : my ($pP, $codon, $aa, $polar, $frame) = getCodon_by_cdsPos($trdbEnt, $trSeq, $p);
 \&    Args    : trdbEnt is a sub hash in trInfodb which contains csta, csto
 \&              for cds start/end position
+\&              trSeq is transcript sequence
+\&              p is cds position
 \&    Returns : AA position  \- 0 for not in cds region
 \&              codon string \- codon string, e.g. "ATA"
 \&              aa char      \- AA code, 1 bp mode, e.g. "E"
@@ -669,12 +665,34 @@ to deal with large amount of variants.
 \&              frame        \- current position\*(Aqs frame info,
 \&                             \-1 for not available.
 .Ve
+.SS "getCodonPos"
+.IX Subsection "getCodonPos"
+.Vb 3
+\&    About   : get codon position, codon string, aa string, and frame info
+\&              for one single cds position
+\&              See getCodon_by_cdsPos()
+.Ve
+.SS "translate"
+.IX Subsection "translate"
+.Vb 11
+\&    About   : Translate nucleotides to aa seqs
+\&    Usage   : my ($aa_seq, $next_frame) = translate( $nucl, { mito => 1, polyA => 1 } );
+\&    Args    : first args should be the nucleotide seq to be translated,
+\&              the second args is a hash ref of optional args (all boolean):
+\&              mito   : indicate it is for mDNA (mitochondrion)
+\&              nostop : indicate there\*(Aqs no stop codon in aa seq,
+\&                       translate \*(AqUGA\*(Aq to \*(AqU\*(Aq, and other stop codon to \*(AqX\*(Aq
+\&              polyA  : indicate extra A should be added to 3\*(Aqend of codon,
+\&                       to help encode a stop codon (usually used with mito).
+\&    Returns : $aa_seq is the aa sequence, 
+\&              $next_frame gives the next base\*(Aqs frame to the 3\*(Aqend of sequence.
+.Ve
 .SS "getTrRef"
 .IX Subsection "getTrRef"
 .Vb 10
 \&    About   : generate concatenated transcript originated reference
 \&    Usage   : my $trRef = getTrRef( $trannoEnt, $refgenome, $trSeq, $strd );
-\&    Args    : trannoEnt \- BedAnno::Anno \-> {trInfo} \-> {$tid}
+\&    Args    : trannoEnt \- BedAnno::Anno\->{trInfo}\->{$tid}
 \&              refgenome \- Unified reference in BedAnno::Var
 \&              trSeq     \- whole transcript
 \&              strd      \- strand of transcript.
@@ -713,7 +731,8 @@ to deal with large amount of variants.
 \&              1. 5 parameters format: CG shell list format: chr,start,end,ref,alt
 \&              2. 4 parameters format: VCF format: chr,pos,ref,alt
 \&              3. Crawler input object: A hash ref with nessesary keys: 
-\&                 chr,start,ref,alt,  optional key is "end", if end specified,
+\&                 chr,begin,referenceSequence,variantSequence,  
+\&                 optional key is "end", if end specified,
 \&                 coordinates are treat as 0\-based, otherwise, use 1\-based (VCF)
 \&    Returns : a new BedAnno::Var entry :
 \&            {
@@ -856,6 +875,65 @@ to deal with large amount of variants.
 \&    Usage   : my $annoEnt = BedAnno::Anno\->new($var);
 \&    Args    : BedAnno::Var entry
 \&    Returns : BedAnno::Anno entry
+.Ve
+.SS "reformatAnno"
+.IX Subsection "reformatAnno"
+.Vb 10
+\&    About   : reformat the BedAnno::Anno entry to fit the need of crawler
+\&    Usage   : my $crawler_need = $anno\->reformatAnno();
+\&    Note    : ID mapping changes are list the following:
+\&              var group:
+\&              refbuild \-> referenceBuild
+\&              chr \-> chr
+\&              pos \-> begin
+\&              end \-> end
+\&              ref \-> referenceSequence
+\&              alt \-> variantSequence
+\&              guess \-> varType
+\&              varTypeSO \-> varTypeSO
+\&              cytoBand \-> cytoband
+\&              dbsnp => {rsID1,rsID2 ... } \-> dbsnpIds
+\&              cg54 => AF \-> CG54_AF
+\&              cg54 => AN \-> CG54_AN
+\&              tgp => AF \-> 1000G_AF
+\&              tgp => AN \-> 1000G_AN
+\&              wellderly => AF \-> Wellderly_AF
+\&              wellderly => AN \-> Wellderly_AN
+\&              esp6500 => AF \-> ESP6500_AF
+\&              esp6500 => AN \-> ESP6500_AN
+\&              phyloPpm \-> PhyloPscorePlacentalMammals
+\&              phyloPpr \-> PhyloPscorePrimates
+\&              phyloPve \-> PhyloPscoreVetebrates
+\&              gHGVS \-> gHGVS
+\&
+\&              trInfo group:
+\&              geneId \-> GeneID
+\&              geneSym \-> GeneSym
+\&              prot \-> ProteinAccession
+\&              strd \-> TranscriptOrientation
+\&              rnaBegin \-> TranscriptBegin
+\&              rnaEnd \-> TranscriptEnd
+\&              protBegin \-> ProteinBegin
+\&              protEnd \-> ProteinEnd
+\&              pfamId \-> PFAM_ID
+\&              pfamName \-> PFAM_NAME
+\&              genepart \-> GenePart
+\&              genepartSO \-> GenePartSO
+\&              genepartIndex \-> GenePartIndex
+\&              exonIndex \-> ExonNumber
+\&              intronIndex \-> IntronNumer
+\&              funcSOname \-> FunctionImpact
+\&              funcSO \-> FunctionImpactSO
+\&              c \-> cHGVS
+\&              p \-> pHGVS
+\&              cc \-> CodonChange
+\&              polar \-> AAPolarityRef + AAPolarityVar
+\&              siftPred \-> SIFTpred
+\&              siftScore \-> SIFTscore
+\&              pp2divPred \-> Polyphen2HumDivPred
+\&              pp2divScore \-> Polyphen2HumDivScore
+\&              pp2varPred \-> Polyphen2VarPred
+\&              pp2varScore \-> Polyphen2VarScore
 .Ve
 .SS "getTrPosition"
 .IX Subsection "getTrPosition"
