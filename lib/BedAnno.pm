@@ -156,6 +156,7 @@ $AAcount = scalar keys %C1toC3;
     "SO:0000163"      => 'five_prime_cis_splice_site',
     "SO:0000164"      => 'three_prime_cis_splice_site',
     "SO:0000167"      => 'promoter',
+    "SO:0000605"      => 'intergenic_region',
     "span"            => 'span',
 
     # Function Parts
@@ -3523,23 +3524,24 @@ sub reformatAnno {
         },
     };
 
-    my @trTags = qw(GeneID GeneSym ProteinAccession 
-      TranscriptOrientation TranscriptBegin TranscriptEnd 
-      ProteinBegin ProteinEnd 
-      PFAM_ID PFAM_NAME 
-      GenePart GenePartSO 
-      GenePartIndex ExonNumber IntronNumer 
-      FunctionImpact FunctionImpactSO 
-      cHGVS pHGVS CodonChange 
-      AAPolarityRef AAPolarityVar 
-      SIFTpred SIFTscore 
-      Polyphen2HumDivPred Polyphen2HumDivScore 
-      Polyphen2VarPred Polyphen2VarScore);
-
     if ( !exists $anno->{trInfo} ) {
+	my @trTags = qw(GeneID GeneSym ProteinAccession 
+	  TranscriptOrientation TranscriptBegin TranscriptEnd 
+	  ProteinBegin ProteinEnd 
+	  PFAM_ID PFAM_NAME 
+	  GenePartIndex ExonNumber IntronNumer 
+	  FunctionImpact FunctionImpactSO 
+	  cHGVS pHGVS CodonChange 
+	  AAPolarityRef AAPolarityVar 
+	  SIFTpred SIFTscore 
+	  Polyphen2HumDivPred Polyphen2HumDivScore 
+	  Polyphen2VarPred Polyphen2VarScore);
+
 	my %empty_tr;
 	@empty_tr{@trTags} = ("") x (scalar @trTags);
 	$crawler_need->{trInfo}->{""} = {%empty_tr};
+	$crawler_need->{trInfo}->{""}->{GenePart} = "intergenic_region";
+	$crawler_need->{trInfo}->{""}->{GenePartSO} = "SO:0000605";
     }
     else {
 	foreach my $trAcc (sort keys %{$anno->{trInfo}}) {
