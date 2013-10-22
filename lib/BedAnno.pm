@@ -146,18 +146,18 @@ $AAcount = scalar keys %C1toC3;
     "no-call"    => 'no-call',
 
     # Gene Parts
-    "SO:0000316"      => 'CDS',
-    "SO:0000204"      => 'five_prime_UTR',
-    "SO:0000205"      => 'three_prime_UTR',
-    "SO:0000655"      => 'ncRNA',
-    "SO:0000191"      => 'interior_intron',
-    "SO:0000448"      => 'three_prime_UTR_intron',
-    "SO:0000447"      => 'five_prime_UTR_intron',
-    "SO:0000163"      => 'five_prime_cis_splice_site',
-    "SO:0000164"      => 'three_prime_cis_splice_site',
-    "SO:0000167"      => 'promoter',
-    "SO:0000605"      => 'intergenic_region',
-    "span"            => 'span',
+    "SO:0000316" => 'CDS',
+    "SO:0000204" => 'five_prime_UTR',
+    "SO:0000205" => 'three_prime_UTR',
+    "SO:0000655" => 'ncRNA',
+    "SO:0000191" => 'interior_intron',
+    "SO:0000448" => 'three_prime_UTR_intron',
+    "SO:0000447" => 'five_prime_UTR_intron',
+    "SO:0000163" => 'five_prime_cis_splice_site',
+    "SO:0000164" => 'three_prime_cis_splice_site',
+    "SO:0000167" => 'promoter',
+    "SO:0000605" => 'intergenic_region',
+    "span"       => 'span',
 
     # Function Parts
     "SO:0001819" => 'synonymous_variant',
@@ -196,8 +196,8 @@ $AAcount = scalar keys %C1toC3;
     "SO:0001619" => 'nc_transcript_variant',
     "SO:0001627" => 'intron_variant',
 
-    "annotation-fail" => 'annotation-fail',
-    "abnormal-intron" => 'abnormal-intron',
+    "annotation-fail"     => 'annotation-fail',
+    "abnormal-intron"     => 'abnormal-intron',
     "abnormal-inseq-stop" => "abnormal-inseq-stop",
 );
 
