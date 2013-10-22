@@ -31,7 +31,7 @@ Tag parsing rules: Entries are separated by "; ", and for tags in entry are sepa
 12. Length for block before departing
 13. MismatchBlock :  $type,$gstart,$gstop,$gseq 
                      ($gseq is in the strand of refseq, '.' for deletion)
-14. Primary Tag   :  see [Sort strategy] at the bottom.
+14. Primary Tag   :  see [Sort strategy][1] at the bottom.
 15. Offset to leftmost of non departing block.
 
 *The BlockAttr, GenePartsSO, and ExIn Num are defined as following:*
@@ -85,6 +85,8 @@ Sort strategy
 - Chromosome ID number is smaller
 - Position number on forward strand-chromosome is smaller.
 
-Then assign the primary tag 'Y' to the first refseq Acc.Ver, 
-and add postfix "-N" (1..n-1) to the other following records
-in the order of sort result.
+Then assign the primary tag 'Y' to the first refseq Acc.Ver (mapping)
+for a gene, and add postfix "-N" (1..n-1) to the other following mapping records
+in the order of sort result, with tag 'N' for the primary tag column.
+
+[1]: #sort-strategy
