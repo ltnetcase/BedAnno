@@ -2349,9 +2349,9 @@ sub getCodon_by_cdsPos {
     if ($pP <= $trdbEnt->{plen}) { # plen not involve terminal codon
 	$rtrans_opts->{nostop} = 1;
     }
-    elsif ($pP == $trdbEnt->{plen} + 1 and exists $trdbEnt->{A})
+    elsif ($pP == $trdbEnt->{plen} + 1)
     { # terminal with polyA complement
-	$codon .= 'A' x (3 - length($codon));
+	$codon .= 'A' x (3 - length($codon)) if (exists $trdbEnt->{A});
     }
     else {
 	confess "Error: may be not correct protein length in transcript database.";
