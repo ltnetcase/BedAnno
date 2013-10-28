@@ -95,4 +95,4 @@ transcripts, which is the same with no LRG\_RefSeqGene file case.
 For multiple-mapping of a same transcript, add postfix "-N"
 (1..n-1) to the other records in the order of sort.
 
-[1]: #PRIMARY-TAG-ASSIGNMENT
+[1]: #primary-tag-assignment
