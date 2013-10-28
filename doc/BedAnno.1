@@ -124,15 +124,15 @@
 .\" ========================================================================
 .\"
 .IX Title "BedAnno 3"
-.TH BedAnno 3 "2013-10-22" "perl v5.14.2" "User Contributed Perl Documentation"
+.TH BedAnno 3 "2013-10-28" "perl v5.14.2" "User Contributed Perl Documentation"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
 .nh
 .SH "NAME"
 BedAnno \- Perl module for annotating variation depend on the BED +1 format database.
-.SS "\s-1VERSION\s0 v0.33"
-.IX Subsection "VERSION v0.33"
+.SS "\s-1VERSION\s0 v0.34"
+.IX Subsection "VERSION v0.34"
 From version 0.32 BedAnno will change to support \s-1CG\s0's variant shell list
 and use ncbi annotation release 104 as the annotation database
 with reformatted database format, and won't give any individual
@@ -470,7 +470,7 @@ to deal with large amount of variants.
 .Ve
 .SS "anno"
 .IX Subsection "anno"
-.Vb 12
+.Vb 10
 \&    About   : Annotate single short variation by annotation db.
 \&    Usage   : my $anno_ent = $beda\->anno( \*(Aqchr20\*(Aq, 1234567, 1234569, \*(AqAG\*(Aq, \*(AqTGGG\*(Aq );
 \&              or $anno_ent = $beda\->anno( \*(Aqchr20\*(Aq, 1234568, \*(AqAG\*(Aq, \*(AqAGGG\*(Aq );
@@ -479,7 +479,8 @@ to deal with large amount of variants.
 \&                chr id, chr start, chr end, reference, alternative.
 \&              for variants in VCF, need 4 args, which is lack of 
 \&                chr end, and "chr start" is in 1\-based coordinates.
-\&              for crawler: a input object with keys: chr,start,ref,alt,[end].
+\&              for crawler: a input object with keys: 
+\&                chr,begin,referenceSequence,variantSequence,[end].
 \&                if end is specified, then use 0\-based coordinates,
 \&                otherwise 1\-based (VCF) coordinates will be used.
 \&    Returns : a hash ref of annotation informations, see varanno().
@@ -578,6 +579,7 @@ to deal with large amount of variants.
 \&                        trRef         => $ref_string_on_transcript,
 \&                        prAlt         => $protein_alt_sequence,
 \&                        prRef         => $protein_ref_sequence,
+\&                        primaryTag    => $refstandard_primary_or_not,   # Y/N
 \&                        preStart => {    # the position before the start of var
 \&                            nDot => $rna_hgvs_pos,
 \&                            cDot => $cds_hgvs_pos,
@@ -605,7 +607,7 @@ to deal with large amount of variants.
 \&                        pp2divScore => $Polyphen2HumDivScore,
 \&                        pp2varPred  => $Polyphen2HumVarPred,
 \&                        pp2varScore => $Polyphen2HumVarScore,
-\&                      },
+\&                    },
 \&                    ...
 \&                }
 \&            }
@@ -876,6 +878,41 @@ to deal with large amount of variants.
 \&    Args    : BedAnno::Var entry
 \&    Returns : BedAnno::Anno entry
 .Ve
+.SS "decide_major"
+.IX Subsection "decide_major"
+.Vb 10
+\&    About   : In finalise step, decide a major transcript to report for a var.
+\&    Usage   : my $majorTranscriptVarName = $annoEnt\->decide_major();
+\&    Returns : A string in the following format:
+\&              If the transcript has a pName: 
+\&                    mrnaAcc(geneSymbol): cName (pName), 
+\&                    e.g. NM_145651.2(SCGB1C1): c.13C>T (p.R5C)
+\&              If the transcript does not have a pName: 
+\&                    mrnaAcc(geneSymbol): cName
+\&              If only intergenic
+\&                    chr: gName (intergenic)
+\&                    e.g. chrX: g.220025A>T (intergenic)
+\&    Note    : use the primaryTag to find reference standard or primary transcript,
+\&              if only one have the primaryTag "Y", then use it,
+\&              otherwise, sort by GenePart: 
+\&                  1.  CDS
+\&                  2.  span
+\&                  3.  five_prime_cis_splice_site
+\&                  4.  three_prime_cis_splice_site
+\&                  5.  ncRNA
+\&                  6.  five_prime_UTR
+\&                  7.  three_prime_UTR
+\&                  8.  interior_intron
+\&                  9.  five_prime_UTR_intron
+\&                  10. three_prime_UTR_intron
+\&                  11. abnormal\-intron
+\&                  12. promoter
+\&                  13. annotation\-fail
+\&                  14. intergenic_region
+\&              and choose the first one, if more than one transcript have the 
+\&              same reference standard and same GenePart, then choose the first
+\&              one which prior in name sorting.
+.Ve
 .SS "reformatAnno"
 .IX Subsection "reformatAnno"
 .Vb 10
@@ -905,6 +942,7 @@ to deal with large amount of variants.
 \&              phyloPpr \-> PhyloPscorePrimates
 \&              phyloPve \-> PhyloPscoreVetebrates
 \&              gHGVS \-> gHGVS
+\&              TranscriptVarName => $anno\->decide_major();
 \&
 \&              trInfo group:
 \&              geneId \-> GeneID
@@ -948,7 +986,7 @@ to deal with large amount of variants.
 \&              {
 \&                trInfo => {
 \&                    $tid => {
-\&                        geneId,   geneSym, strd,
+\&                        geneId,   geneSym, strd, primaryTag,
 \&                        trAlt => $stranded_alt_string_with_ext_at_mismatches,
 \&
 \&                        preStart => {

@@ -5,13 +5,13 @@ use warnings;
 use threads::shared; # if threads used before BedAnno, then this will be threaded
 use Carp;
 
-our $VERSION = '0.33';
+our $VERSION = '0.34';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.33
+=head2 VERSION v0.34
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -906,7 +906,8 @@ sub parse_annoent {
                 chr id, chr start, chr end, reference, alternative.
               for variants in VCF, need 4 args, which is lack of 
                 chr end, and "chr start" is in 1-based coordinates.
-              for crawler: a input object with keys: chr,start,ref,alt,[end].
+              for crawler: a input object with keys: 
+		chr,begin,referenceSequence,variantSequence,[end].
                 if end is specified, then use 0-based coordinates,
                 otherwise 1-based (VCF) coordinates will be used.
     Returns : a hash ref of annotation informations, see varanno().
@@ -1013,6 +1014,7 @@ sub anno {
                         trRef         => $ref_string_on_transcript,
                         prAlt         => $protein_alt_sequence,
                         prRef         => $protein_ref_sequence,
+			primaryTag    => $refstandard_primary_or_not,	# Y/N
                         preStart => {    # the position before the start of var
                             nDot => $rna_hgvs_pos,
                             cDot => $cds_hgvs_pos,
@@ -1040,7 +1042,7 @@ sub anno {
                         pp2divScore => $Polyphen2HumDivScore,
                         pp2varPred  => $Polyphen2HumVarPred,
                         pp2varScore => $Polyphen2HumVarScore,
-                      },
+                    },
                     ...
                 }
             }
@@ -3424,6 +3426,110 @@ sub TO_JSON {
     return { %{ shift() } };
 }
 
+=head2 decide_major
+
+    About   : In finalise step, decide a major transcript to report for a var.
+    Usage   : my $majorTranscriptVarName = $annoEnt->decide_major();
+    Returns : A string in the following format:
+	      If the transcript has a pName: 
+		    mrnaAcc(geneSymbol): cName (pName), 
+		    e.g. NM_145651.2(SCGB1C1): c.13C>T (p.R5C)
+	      If the transcript does not have a pName: 
+		    mrnaAcc(geneSymbol): cName
+	      If only intergenic
+		    chr: gName (intergenic)
+		    e.g. chrX: g.220025A>T (intergenic)
+    Note    : use the primaryTag to find reference standard or primary transcript,
+	      if only one have the primaryTag "Y", then use it,
+	      otherwise, sort by GenePart: 
+		  1.  CDS
+		  2.  span
+		  3.  five_prime_cis_splice_site
+		  4.  three_prime_cis_splice_site
+		  5.  ncRNA
+		  6.  five_prime_UTR
+		  7.  three_prime_UTR
+		  8.  interior_intron
+		  9.  five_prime_UTR_intron
+		  10. three_prime_UTR_intron
+		  11. abnormal-intron
+		  12. promoter
+		  13. annotation-fail
+		  14. intergenic_region
+	      and choose the first one, if more than one transcript have the 
+	      same reference standard and same GenePart, then choose the first
+	      one which prior in name sorting.
+
+=cut
+sub decide_major {
+    my $annoEnt = shift;
+    if (   !exists $annoEnt->{trInfo}
+        or 0 == scalar keys %{ $annoEnt->{trInfo} }
+        or exists $annoEnt->{trInfo}->{""} )
+    {
+        my $intergenic =
+          $annoEnt->{var}->{chr} . ": " . $annoEnt->{var}->{gHGVS};
+        $intergenic = "chr" . $intergenic if ( $intergenic =~ /^[\dXYM]/ );
+        $intergenic .= " (intergenic)";    # for only intergenic
+        return $intergenic;
+    }
+    else {
+	my %prTrs = ();
+	my %nonPrTrs = ();
+	foreach my $tid (keys %{$annoEnt->{trInfo}}) {
+	    if ( !exists $annoEnt->{trInfo}->{$tid}->{genepart} ) {
+		confess "Error: cannot decide major transcript before finaliseAnno";
+	    }
+	    if ( $annoEnt->{trInfo}->{$tid}->{primaryTag} eq "Y" ) {
+		$prTrs{$tid} = $annoEnt->{trInfo}->{$tid}->{genepart};
+	    }
+	    else {
+		$nonPrTrs{$tid} = $annoEnt->{trInfo}->{$tid}->{genepart};
+	    }
+	}
+
+	my $majorTr;
+	if ( 0 < keys %prTrs ) { # hit primary transcripts
+	    if ( 1 == keys %prTrs ) {
+		my ($majorTid) = keys %prTrs;
+		$majorTr = $majorTid;
+	    }
+	    else {
+		$majorTr = get_first_tr(\%prTrs);
+	    }
+	}
+	else { # hit only non-primary transcripts
+	    $majorTr = get_first_tr(\%nonPrTrs);
+	}
+
+        my $rTrEnt = $annoEnt->{trInfo}->{$majorTr};
+        my $trhit  = $majorTr . "(" . $rTrEnt->{geneSym} . "): " . $rTrEnt->{c};
+        $trhit .= " (" . $rTrEnt->{p} . ")"
+          if ( exists $rTrEnt->{p} and $rTrEnt->{p} ne "" );
+	return $trhit;
+    }
+}
+
+sub get_first_tr {
+    my $rGeneParts_hash = shift;
+    my %GenePartsOrder = ();
+    @GenePartsOrder{
+        (qw(CDS span five_prime_cis_splice_site
+          three_prime_cis_splice_site ncRNA five_prime_UTR
+          three_prime_UTR interior_intron five_prime_UTR_intron
+          three_prime_UTR_intron abnormal-intron promoter
+          annotation-fail intergenic_region), "")
+    } = ( 1 .. 15 );
+
+    my @ordered_Trs = sort {
+        $GenePartsOrder{ $rGeneParts_hash->{$a} }
+          <=> $GenePartsOrder{ $rGeneParts_hash->{$b} }
+          or $a cmp $b
+    } keys %$rGeneParts_hash;
+
+    return $ordered_Trs[0];
+}
+
 =head2 reformatAnno
 
     About   : reformat the BedAnno::Anno entry to fit the need of crawler
@@ -3452,6 +3558,7 @@ sub TO_JSON {
 	      phyloPpr -> PhyloPscorePrimates
 	      phyloPve -> PhyloPscoreVetebrates
 	      gHGVS -> gHGVS
+	      TranscriptVarName => $anno->decide_major();
 
 	      trInfo group:
 	      geneId -> GeneID
@@ -3497,6 +3604,7 @@ sub reformatAnno {
             varType           => $var->{guess},
             varTypeSO         => ($var->{varTypeSO} =~ /SO:/) ? $var->{varTypeSO} : "",
             gHGVS             => $var->{gHGVS},
+	    TranscriptVarName => $anno->decide_major(),
             cytoband => ( ( exists $var->{cytoBand} ) ? $var->{cytoBand} : "" ),
             dbsnpIds => (
                 ( exists $var->{dbsnp} )
@@ -3623,7 +3731,7 @@ sub reformatAnno {
               {
                 trInfo => {
                     $tid => {
-                        geneId,   geneSym, strd,
+                        geneId,   geneSym, strd, primaryTag,
                         trAlt => $stranded_alt_string_with_ext_at_mismatches,
 
                         preStart => {
@@ -3705,9 +3813,10 @@ sub getTrPosition {
 
 		    my $tmp_trInfo = $annoEnt->{trInfo}->{$tid};
 
-		    $tmp_trInfo->{geneId}  = $rtidDetail->{gid};
-		    $tmp_trInfo->{geneSym} = $rtidDetail->{gsym}; 
-		    $tmp_trInfo->{strd}    = $rtidDetail->{strd};
+                    $tmp_trInfo->{geneId}     = $rtidDetail->{gid};
+                    $tmp_trInfo->{geneSym}    = $rtidDetail->{gsym};
+                    $tmp_trInfo->{strd}       = $rtidDetail->{strd};
+                    $tmp_trInfo->{primaryTag} = $rtidDetail->{pr};
                     # assign left rna positions
 		    # if no assignment then skip the right position assignment
                     if (
