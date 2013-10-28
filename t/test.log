@@ -41,6 +41,7 @@ not ok 12 - for [ snv_varanno ]
 #         'nDot' => 1720,
 #         'r' => 'R11E'
 #       },
+#       'primaryTag' => 'Y',
 #       'prot' => '',
 #       'protBegin' => '',
 #       'protEnd' => '',
@@ -75,6 +76,9 @@ not ok 12 - for [ snv_varanno ]
 #     'gHGVS' => 'g.14409C>A',
 #     'guess' => 'snv',
 #     'imp' => 'snv',
+#     'phyloPpm' => '0.786',
+#     'phyloPpr' => '0.121',
+#     'phyloPve' => '0.803',
 #     'pos' => 14409,
 #     'ref' => 'C',
 #     'refbuild' => 'GRCh37',
@@ -119,6 +123,7 @@ not ok 13 - for [ ins_varanno ]
 #         'nDot' => 1720,
 #         'r' => 'R11E'
 #       },
+#       'primaryTag' => 'Y',
 #       'prot' => '',
 #       'protBegin' => '',
 #       'protEnd' => '',
@@ -197,6 +202,7 @@ not ok 14 - for [ del_varanno ]
 #         'nDot' => 1713,
 #         'r' => 'R11E'
 #       },
+#       'primaryTag' => 'Y',
 #       'prot' => '',
 #       'protBegin' => '',
 #       'protEnd' => '',
@@ -275,6 +281,7 @@ not ok 15 - for [ rep_varanno ]
 #         'nDot' => 1717,
 #         'r' => 'R11E'
 #       },
+#       'primaryTag' => 'Y',
 #       'prot' => '',
 #       'protBegin' => '',
 #       'protEnd' => '',
@@ -376,6 +383,7 @@ not ok 16 - for [ delins_varanno ]
 #         'nDot' => 1716,
 #         'r' => 'R11E'
 #       },
+#       'primaryTag' => 'Y',
 #       'prot' => '',
 #       'protBegin' => '',
 #       'protEnd' => '',
@@ -454,6 +462,7 @@ not ok 17 - for [ subs_varanno ]
 #         'nDot' => 1716,
 #         'r' => 'R11E'
 #       },
+#       'primaryTag' => 'Y',
 #       'prot' => '',
 #       'protBegin' => '',
 #       'protEnd' => '',
@@ -537,6 +546,7 @@ not ok 18 - for [ no_call_varanno ]
 #         'nDot' => 1720,
 #         'r' => 'R11E'
 #       },
+#       'primaryTag' => 'Y',
 #       'prot' => '',
 #       'protBegin' => '',
 #       'protEnd' => '',
@@ -634,6 +644,7 @@ not ok 30 - for [ cds_rna_snv1_anno ]
 #         'nDot' => 82,
 #         'r' => 'C1'
 #       },
+#       'primaryTag' => 'Y',
 #       'prot' => 'NP_000572.2',
 #       'protBegin' => 1,
 #       'protEnd' => 1,
@@ -689,6 +700,7 @@ not ok 30 - for [ cds_rna_snv1_anno ]
 #         'nDot' => 82,
 #         'r' => 'C1E'
 #       },
+#       'primaryTag' => 'N',
 #       'prot' => 'NP_958799.1',
 #       'protBegin' => 1,
 #       'protEnd' => 1,
@@ -725,6 +737,9 @@ not ok 30 - for [ cds_rna_snv1_anno ]
 #     'gHGVS' => 'g.49395708C>T',
 #     'guess' => 'snv',
 #     'imp' => 'snv',
+#     'phyloPpm' => '2.720',
+#     'phyloPpr' => '0.455',
+#     'phyloPve' => '2.685',
 #     'pos' => 49395708,
 #     'ref' => 'C',
 #     'refbuild' => 'GRCh37',
@@ -780,6 +795,7 @@ not ok 31 - for [ cds_rna_snv2_anno ]
 #         'nDot' => 86,
 #         'r' => 'C1'
 #       },
+#       'primaryTag' => 'Y',
 #       'prot' => 'NP_000572.2',
 #       'protBegin' => 3,
 #       'protEnd' => 3,
@@ -837,6 +853,7 @@ not ok 31 - for [ cds_rna_snv2_anno ]
 #         'nDot' => 86,
 #         'r' => 'C1E'
 #       },
+#       'primaryTag' => 'N',
 #       'prot' => 'NP_958799.1',
 #       'protBegin' => 3,
 #       'protEnd' => 3,
@@ -873,6 +890,9 @@ not ok 31 - for [ cds_rna_snv2_anno ]
 #     'gHGVS' => 'g.49395704C>A',
 #     'guess' => 'snv',
 #     'imp' => 'snv',
+#     'phyloPpm' => '2.720',
+#     'phyloPpr' => '0.455',
+#     'phyloPve' => '1.271',
 #     'pos' => 49395704,
 #     'ref' => 'C',
 #     'refbuild' => 'GRCh37',
@@ -922,6 +942,7 @@ not ok 32 - for [ cds_rna_delins_anno ]
 #         'nDot' => 1514,
 #         'r' => 'C3'
 #       },
+#       'primaryTag' => 'Y',
 #       'prot' => 'NP_006149.2',
 #       'protBegin' => 471,
 #       'protEnd' => 544,
@@ -956,6 +977,9 @@ not ok 32 - for [ cds_rna_delins_anno ]
 #     'gHGVS' => 'g.24811065G>A',
 #     'guess' => 'snv',
 #     'imp' => 'snv',
+#     'phyloPpm' => '0.064',
+#     'phyloPpr' => '-0.181',
+#     'phyloPve' => '1.215',
 #     'pos' => 24811065,
 #     'ref' => 'G',
 #     'refbuild' => 'GRCh37',
@@ -1000,6 +1024,7 @@ not ok 33 - for [ cds_no_change_anno ]
 #         'nDot' => 1515,
 #         'r' => 'C3'
 #       },
+#       'primaryTag' => 'Y',
 #       'prot' => 'NP_006149.2',
 #       'protBegin' => '',
 #       'protEnd' => '',
@@ -1045,6 +1070,9 @@ not ok 33 - for [ cds_no_change_anno ]
 #     'gHGVS' => 'g.24811065delG',
 #     'guess' => 'del',
 #     'imp' => 'del',
+#     'phyloPpm' => '0.755',
+#     'phyloPpr' => '-0.165',
+#     'phyloPve' => '0.420',
 #     'pos' => 24811064,
 #     'ref' => 'G',
 #     'refbuild' => 'GRCh37',
@@ -1096,6 +1124,7 @@ not ok 34 - for [ cds_snv_anno ]
 #         'nDot' => 1513,
 #         'r' => 'C3'
 #       },
+#       'primaryTag' => 'Y',
 #       'prot' => 'NP_006149.2',
 #       'protBegin' => 471,
 #       'protEnd' => 471,
@@ -1130,6 +1159,9 @@ not ok 34 - for [ cds_snv_anno ]
 #     'gHGVS' => 'g.24811066G>T',
 #     'guess' => 'snv',
 #     'imp' => 'snv',
+#     'phyloPpm' => '0.393',
+#     'phyloPpr' => '0.655',
+#     'phyloPve' => '1.193',
 #     'pos' => 24811066,
 #     'ref' => 'G',
 #     'refbuild' => 'GRCh37',
@@ -1179,6 +1211,7 @@ not ok 35 - for [ cds_del_anno ]
 #         'nDot' => 1513,
 #         'r' => 'C3'
 #       },
+#       'primaryTag' => 'Y',
 #       'prot' => 'NP_006149.2',
 #       'protBegin' => 471,
 #       'protEnd' => 544,
@@ -1213,6 +1246,9 @@ not ok 35 - for [ cds_del_anno ]
 #     'gHGVS' => 'g.24811067delG',
 #     'guess' => 'del',
 #     'imp' => 'del',
+#     'phyloPpm' => '0.393',
+#     'phyloPpr' => '0.655',
+#     'phyloPve' => '1.193',
 #     'pos' => 24811066,
 #     'ref' => 'G',
 #     'refbuild' => 'GRCh37',
@@ -1262,6 +1298,7 @@ not ok 36 - for [ large_del_anno ]
 #         'nDot' => 822,
 #         'r' => 'C3'
 #       },
+#       'primaryTag' => 'Y',
 #       'prot' => 'NP_000019.2',
 #       'protBegin' => 115,
 #       'protEnd' => 122,
@@ -1311,6 +1348,7 @@ not ok 36 - for [ large_del_anno ]
 #         'nDot' => 744,
 #         'r' => 'C3'
 #       },
+#       'primaryTag' => 'N',
 #       'prot' => 'NP_000633.2',
 #       'protBegin' => 115,
 #       'protEnd' => 122,
@@ -1360,6 +1398,7 @@ not ok 36 - for [ large_del_anno ]
 #         'nDot' => 542,
 #         'r' => 'C3'
 #       },
+#       'primaryTag' => 'N',
 #       'prot' => 'NP_000634.2',
 #       'protBegin' => 115,
 #       'protEnd' => 122,
@@ -1409,6 +1448,7 @@ not ok 36 - for [ large_del_anno ]
 #         'nDot' => 482,
 #         'r' => 'C3'
 #       },
+#       'primaryTag' => 'N',
 #       'prot' => 'NP_000635.2',
 #       'protBegin' => 115,
 #       'protEnd' => 122,
@@ -1458,6 +1498,7 @@ not ok 36 - for [ large_del_anno ]
 #         'nDot' => 555,
 #         'r' => 'C2'
 #       },
+#       'primaryTag' => 'N',
 #       'prot' => 'NP_000636.2',
 #       'protBegin' => 98,
 #       'protEnd' => 105,
@@ -1507,6 +1548,7 @@ not ok 36 - for [ large_del_anno ]
 #         'nDot' => 555,
 #         'r' => 'C3'
 #       },
+#       'primaryTag' => 'N',
 #       'prot' => 'NP_000637.2',
 #       'protBegin' => 99,
 #       'protEnd' => 106,
@@ -1590,6 +1632,7 @@ not ok 37 - for [ cds_ins_anno ]
 #         'nDot' => 1513,
 #         'r' => 'C3'
 #       },
+#       'primaryTag' => 'Y',
 #       'prot' => 'NP_006149.2',
 #       'protBegin' => 471,
 #       'protEnd' => 471,
@@ -1673,6 +1716,7 @@ not ok 38 - for [ cds_rep_anno ]
 #         'nDot' => 100,
 #         'r' => 'C1'
 #       },
+#       'primaryTag' => 'Y',
 #       'prot' => 'NP_000572.2',
 #       'protBegin' => 7,
 #       'protEnd' => 13,
@@ -1722,6 +1766,7 @@ not ok 38 - for [ cds_rep_anno ]
 #         'nDot' => 100,
 #         'r' => 'C1E'
 #       },
+#       'primaryTag' => 'N',
 #       'prot' => 'NP_958799.1',
 #       'protBegin' => 7,
 #       'protEnd' => 13,
@@ -1823,6 +1868,7 @@ not ok 39 - for [ cds_delins_anno ]
 #         'nDot' => '153-3',
 #         'r' => 'IC1'
 #       },
+#       'primaryTag' => 'Y',
 #       'prot' => 'NP_689699.2',
 #       'protBegin' => '',
 #       'protEnd' => '',
@@ -1908,6 +1954,7 @@ not ok 40 - for [ cds_no_call_anno ]
 #         'nDot' => 78,
 #         'r' => '5U1'
 #       },
+#       'primaryTag' => 'Y',
 #       'prot' => 'NP_689699.2',
 #       'protBegin' => '',
 #       'protEnd' => '',
@@ -1952,6 +1999,7 @@ not ok 40 - for [ cds_no_call_anno ]
 #         'nDot' => -6504,
 #         'r' => 'PROM'
 #       },
+#       'primaryTag' => 'Y',
 #       'prot' => '',
 #       'protBegin' => '',
 #       'protEnd' => '',
@@ -1989,6 +2037,9 @@ not ok 40 - for [ cds_no_call_anno ]
 #     'gHGVS' => 'g.861319T>N',
 #     'guess' => 'no-call',
 #     'imp' => 'snv',
+#     'phyloPpm' => '0.689',
+#     'phyloPpr' => '0.402',
+#     'phyloPve' => '2.606',
 #     'pos' => 861319,
 #     'ref' => 'T',
 #     'refbuild' => 'GRCh37',
