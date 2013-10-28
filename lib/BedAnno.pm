@@ -4451,7 +4451,7 @@ The Format of annotation database is listed as following:
    12.Length for block before departing
    13.MismatchBlock :  $type,$gstart,$gstop,$gseq
                        ($gseq is in the strand of refseq, '.' for deletion)
-   14.Primary Tag, the same with it in header line
+   14.Primary Tag : Please see "PRIMARY TAG ASSIGNMENT"
    15.Offset to leftmost of non departing block.
 
 =head2 TRANSCRIPT FASTA DATABASE
@@ -4462,6 +4462,27 @@ The Format of annotation database is listed as following:
 
        >rnaAcc.ver rnaLen gene protAcc.ver protLen cdsSta,cdsEnd tags
 
+=head2 PRIMARY TAG ASSIGNMENT
+
+    Our database need to sort the refSeq record with same Acc, 
+    or with same gene by the following rules:
+
+    1. whether the transcript is on the primary assembly.
+    2. whether the CDS is 3-codons (badcds will be put to the tail)
+    3. concatenated CDS is longer
+    4. concatenated Exon is longer
+    5. union Exon with flank region is longer
+    6. Chromosome ID number is smaller
+    7. Position number on forward strand-chromosome is smaller
+
+    if LRG_RefSeqGene file is used, then the primary tag "Y" will
+    only assign to the reference standard transcripts's first 
+    mapping entry. But for non-RefSeqGene gene/transcript,
+    assign primary tag "Y" to the first record for same genes' all
+    transcripts, which is the same with no LRG_RefSeqGene file case.
+
+    For multiple-mapping of a same transcript, add postfix "-N" 
+    (1..n-1) to the other records in the order of sort.
 
 =head1 SEE ALSO
 
