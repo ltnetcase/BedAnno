@@ -31,7 +31,7 @@ Tag parsing rules: Entries are separated by "; ", and for tags in entry are sepa
 12. Length for block before departing
 13. MismatchBlock :  $type,$gstart,$gstop,$gseq 
                      ($gseq is in the strand of refseq, '.' for deletion)
-14. Primary Tag   :  see [Sort strategy][1] at the bottom.
+14. Primary Tag   :  see [PRIMARY TAG ASSIGNMENT][1] at the bottom.
 15. Offset to leftmost of non departing block.
 
 *The BlockAttr, GenePartsSO, and ExIn Num are defined as following:*
@@ -72,21 +72,27 @@ TRANSCRIPT FASTA DATABASE FORMAT
     when "tags" contain "altstart", alternative start codons will be list in "altStartCodons",
     separated by ";"
 
+PRIMARY TAG ASSIGNMENT
+----------------------
 
-Sort strategy
--------------
+Our database need to sort the refSeq record with same Acc,
+or with same gene by the following rules:
 
- *For the primary tag definition, Rules are list from prior to minor.*
+1. whether the transcript is on the primary assembly.
+2. whether the CDS is 3-codons (badcds will be put to the tail)
+3. concatenated CDS is longer
+4. concatenated Exon is longer
+5. union Exon with flank region is longer
+6. Chromosome ID number is smaller
+7. Position number on forward strand-chromosome is smaller
 
-- whether the transcript is on the primary assembly. "On" is prior.
-- concatenated CDS is longer
-- concatenated Exon is longer
-- union Exon with flank region is longer
-- Chromosome ID number is smaller
-- Position number on forward strand-chromosome is smaller.
+if LRG\_RefSeqGene file is used, then the primary tag "Y" will
+only assign to the reference standard transcripts's first
+mapping entry. But for non-RefSeqGene gene/transcript,
+assign primary tag "Y" to the first record for same genes' all
+transcripts, which is the same with no LRG\_RefSeqGene file case.
 
-Then assign the primary tag 'Y' to the first refseq Acc.Ver (mapping)
-for a gene, and add postfix "-N" (1..n-1) to the other following mapping records
-in the order of sort result, with tag 'N' for the primary tag column.
+For multiple-mapping of a same transcript, add postfix "-N"
+(1..n-1) to the other records in the order of sort.
 
-[1]: #sort-strategy
+[1]: #PRIMARY-TAG-ASSIANMENT

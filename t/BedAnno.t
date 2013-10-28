@@ -240,6 +240,7 @@ my $snv_varanno = bless(
                     'nDot' => 1720,
                     'r'    => 'R11E'
                 },
+		'primaryTag'=> 'Y',
                 'prot'      => '',
                 'protBegin' => '',
                 'protEnd'   => '',
@@ -310,6 +311,7 @@ my $ins_varanno = bless(
                     'nDot' => 1720,
                     'r'    => 'R11E'
                 },
+		'primaryTag'=> 'Y',
                 'prot'      => '',
                 'protBegin' => '',
                 'protEnd'   => '',
@@ -380,6 +382,7 @@ my $del_varanno = bless(
                     'nDot' => 1713,
                     'r'    => 'R11E'
                 },
+		'primaryTag'=> 'Y',
                 'prot'      => '',
                 'protBegin' => '',
                 'protEnd'   => '',
@@ -450,6 +453,7 @@ my $rep_varanno = bless(
                     'nDot' => 1717,
                     'r'    => 'R11E'
                 },
+		'primaryTag'=> 'Y',
                 'prot'      => '',
                 'protBegin' => '',
                 'protEnd'   => '',
@@ -543,6 +547,7 @@ my $delins_varanno = bless(
                     'nDot' => 1716,
                     'r'    => 'R11E'
                 },
+		'primaryTag'=> 'Y',
                 'prot'      => '',
                 'protBegin' => '',
                 'protEnd'   => '',
@@ -613,6 +618,7 @@ my $subs_varanno = bless(
                     'nDot' => 1716,
                     'r'    => 'R11E'
                 },
+		'primaryTag'=> 'Y',
                 'prot'      => '',
                 'protBegin' => '',
                 'protEnd'   => '',
@@ -684,6 +690,7 @@ my $no_call_varanno = bless(
                     'nDot' => 1720,
                     'r'    => 'R11E'
                 },
+		'primaryTag'=> 'Y',
                 'prot'      => '',
                 'protBegin' => '',
                 'protEnd'   => '',
@@ -996,6 +1003,7 @@ my $cds_rna_snv1_anno = bless(
                     'nDot' => 82,
                     'r'    => 'C1'
                 },
+		'primaryTag'=> 'Y',
                 'prot'      => 'NP_000572.2',
                 'protBegin' => 1,
                 'protEnd'   => 1,
@@ -1035,6 +1043,7 @@ my $cds_rna_snv1_anno = bless(
                     'nDot' => 84,
                     'r'    => 'C1E'
                 },
+		'primaryTag'=> 'N',
                 'prAlt'    => 'I',
                 'prRef'    => 'M',
                 'preStart' => {
@@ -1118,6 +1127,7 @@ my $cds_rna_snv2_anno = bless(
                     'nDot' => 86,
                     'r'    => 'C1'
                 },
+		'primaryTag'=> 'Y',
                 'prot'      => 'NP_000572.2',
                 'protBegin' => 3,
                 'protEnd'   => 3,
@@ -1167,6 +1177,7 @@ my $cds_rna_snv2_anno = bless(
                     'nDot' => 86,
                     'r'    => 'C1E'
                 },
+		'primaryTag'=> 'N',
                 'prot'      => 'NP_958799.1',
                 'protBegin' => 3,
                 'protEnd'   => 3,
@@ -1240,6 +1251,7 @@ my $cds_rna_delins_anno = bless(
                     'nDot' => 1514,
                     'r'    => 'C3'
                 },
+		'primaryTag'=> 'Y',
                 'prot'      => 'NP_006149.2',
                 'protBegin' => 471,
                 'protEnd'   => 544,
@@ -1309,6 +1321,7 @@ my $cds_no_change_anno = bless(
                     'nDot' => 1515,
                     'r'    => 'C3'
                 },
+		'primaryTag'=> 'Y',
                 'prot'      => 'NP_006149.2',
                 'protBegin' => '',
                 'protEnd'   => '',
@@ -1382,6 +1395,7 @@ my $cds_snv_anno = bless(
                     'nDot' => 1513,
                     'r'    => 'C3'
                 },
+		'primaryTag'=> 'Y',
 		'prAlt'	    => 'H',
 		'prRef'	    => 'P',
                 'prot'      => 'NP_006149.2',
@@ -1456,6 +1470,7 @@ my $cds_del_anno = bless(
                 },
 		'prAlt' => 'PLKEKPRRRRRTRKRPRKRRQLKRKKLPRKSLKKQKKKKKEVKVKKERKPKKLKRRRRKLKVLGRNKQLRRKIEPPFP*',
 		'prRef' => 'PSEGEAEEEEKDKEEAEEEEAAEEEEAAKEESEEAKEEEEGGEGEEGEETKEAEEEEKKVEGAGEEQAAKKKD*',
+		'primaryTag'=> 'Y',
                 'prot'      => 'NP_006149.2',
                 'protBegin' => 471,
                 'protEnd'   => 544,
@@ -1529,6 +1544,7 @@ my $large_del_anno = bless(
                     'nDot' => 822,
                     'r'    => 'C3'
                 },
+		'primaryTag'=> 'Y',
                 'prot'      => 'NP_000019.2',
                 'protBegin' => 115,
                 'protEnd'   => 122,
@@ -1576,6 +1592,7 @@ my $large_del_anno = bless(
                     'nDot' => 744,
                     'r'    => 'C3'
                 },
+		'primaryTag'=> 'N',
                 'prot'      => 'NP_000633.2',
                 'protBegin' => 115,
                 'protEnd'   => 122,
@@ -1623,6 +1640,7 @@ my $large_del_anno = bless(
                     'nDot' => 542,
                     'r'    => 'C3'
                 },
+		'primaryTag'=> 'N',
                 'prot'      => 'NP_000634.2',
                 'protBegin' => 115,
                 'protEnd'   => 122,
@@ -1662,6 +1680,7 @@ my $large_del_anno = bless(
                     'nDot' => 504,
                     'r'    => 'C3'
                 },
+		'primaryTag'=> 'N',
                 'prAlt'    => 'V',
                 'prRef'    => 'VGADNHVL',
                 'preStart' => {
@@ -1717,6 +1736,7 @@ my $large_del_anno = bless(
                     'nDot' => 555,
                     'r'    => 'C2'
                 },
+		'primaryTag'=> 'N',
                 'prot'      => 'NP_000636.2',
                 'protBegin' => 98,
                 'protEnd'   => 105,
@@ -1764,6 +1784,7 @@ my $large_del_anno = bless(
                     'nDot' => 555,
                     'r'    => 'C3'
                 },
+		'primaryTag'=> 'N',
                 'prot'      => 'NP_000637.2',
                 'protBegin' => 99,
                 'protEnd'   => 106,
@@ -1835,6 +1856,7 @@ my $cds_ins_anno = bless(
                     'nDot' => 1513,
                     'r'    => 'C3'
                 },
+		'primaryTag'=> 'Y',
 		'prAlt'	    => 'PP',
 		'prRef'	    => 'P',
                 'prot'      => 'NP_006149.2',
@@ -1907,6 +1929,7 @@ my $cds_rep_anno = bless(
                     'nDot' => 100,
                     'r'    => 'C1'
                 },
+		'primaryTag'=> 'Y',
 		'prAlt'	    => 'AAAAA',
 		'prRef'	    => 'AAAAAAA',
                 'prot'      => 'NP_000572.2',
@@ -1954,6 +1977,7 @@ my $cds_rep_anno = bless(
                     'nDot' => 100,
                     'r'    => 'C1E'
                 },
+		'primaryTag'=> 'N',
 		'prAlt'	    => 'AAAAA',
 		'prRef'	    => 'AAAAAAA',
                 'prot'      => 'NP_958799.1',
@@ -2048,6 +2072,7 @@ my $cds_delins_anno = bless(
                     'nDot' => '153-3',
                     'r'    => 'IC1'
                 },
+		'primaryTag'=> 'Y',
                 'prot'      => 'NP_689699.2',
                 'protBegin' => '',
                 'protEnd'   => '',
@@ -2118,6 +2143,7 @@ my $cds_no_call_anno = bless(
                     'nDot' => 78,
                     'r'    => '5U1'
                 },
+		'primaryTag'=> 'Y',
                 'prot'      => 'NP_689699.2',
                 'protBegin' => '',
                 'protEnd'   => '',
@@ -2162,6 +2188,7 @@ my $cds_no_call_anno = bless(
                     'nDot' => -6504,
                     'r'    => 'PROM'
                 },
+		'primaryTag'=> 'Y',
                 'prot'      => '',
                 'protBegin' => '',
                 'protEnd'   => '',
