@@ -1251,7 +1251,7 @@ my $cds_rna_delins_anno = bless(
                     'nDot' => 1514,
                     'r'    => 'C3'
                 },
-		'primaryTag'=> 'Y',
+		'primaryTag'=> 'N',
                 'prot'      => 'NP_006149.2',
                 'protBegin' => 471,
                 'protEnd'   => 544,
@@ -1321,7 +1321,7 @@ my $cds_no_change_anno = bless(
                     'nDot' => 1515,
                     'r'    => 'C3'
                 },
-		'primaryTag'=> 'Y',
+		'primaryTag'=> 'N',
                 'prot'      => 'NP_006149.2',
                 'protBegin' => '',
                 'protEnd'   => '',
@@ -1395,7 +1395,7 @@ my $cds_snv_anno = bless(
                     'nDot' => 1513,
                     'r'    => 'C3'
                 },
-		'primaryTag'=> 'Y',
+		'primaryTag'=> 'N',
 		'prAlt'	    => 'H',
 		'prRef'	    => 'P',
                 'prot'      => 'NP_006149.2',
@@ -1470,7 +1470,7 @@ my $cds_del_anno = bless(
                 },
 		'prAlt' => 'PLKEKPRRRRRTRKRPRKRRQLKRKKLPRKSLKKQKKKKKEVKVKKERKPKKLKRRRRKLKVLGRNKQLRRKIEPPFP*',
 		'prRef' => 'PSEGEAEEEEKDKEEAEEEEAAEEEEAAKEESEEAKEEEEGGEGEEGEETKEAEEEEKKVEGAGEEQAAKKKD*',
-		'primaryTag'=> 'Y',
+		'primaryTag'=> 'N',
                 'prot'      => 'NP_006149.2',
                 'protBegin' => 471,
                 'protEnd'   => 544,
@@ -1544,7 +1544,7 @@ my $large_del_anno = bless(
                     'nDot' => 822,
                     'r'    => 'C3'
                 },
-		'primaryTag'=> 'Y',
+		'primaryTag'=> 'N',
                 'prot'      => 'NP_000019.2',
                 'protBegin' => 115,
                 'protEnd'   => 122,
@@ -1592,7 +1592,7 @@ my $large_del_anno = bless(
                     'nDot' => 744,
                     'r'    => 'C3'
                 },
-		'primaryTag'=> 'N',
+		'primaryTag'=> 'Y',
                 'prot'      => 'NP_000633.2',
                 'protBegin' => 115,
                 'protEnd'   => 122,
@@ -1856,7 +1856,7 @@ my $cds_ins_anno = bless(
                     'nDot' => 1513,
                     'r'    => 'C3'
                 },
-		'primaryTag'=> 'Y',
+		'primaryTag'=> 'N',
 		'prAlt'	    => 'PP',
 		'prRef'	    => 'P',
                 'prot'      => 'NP_006149.2',
