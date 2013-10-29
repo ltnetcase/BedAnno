@@ -235,6 +235,15 @@ $AAcount = scalar keys %C1toC3;
     unknown               => "unknown",
 );
 
+our %GenePartsOrder : shared;
+@GenePartsOrder{
+    (qw(CDS span five_prime_cis_splice_site
+      three_prime_cis_splice_site ncRNA five_prime_UTR
+      three_prime_UTR interior_intron five_prime_UTR_intron
+      three_prime_UTR_intron abnormal-intron promoter
+      annotation-fail intergenic_region), "")
+} = ( 1 .. 15 );
+
 our $REF_BUILD = 'GRCh37';
 
 =head2 new
@@ -3512,15 +3521,6 @@ sub decide_major {
 
 sub get_first_tr {
     my $rGeneParts_hash = shift;
-    my %GenePartsOrder = ();
-    @GenePartsOrder{
-        (qw(CDS span five_prime_cis_splice_site
-          three_prime_cis_splice_site ncRNA five_prime_UTR
-          three_prime_UTR interior_intron five_prime_UTR_intron
-          three_prime_UTR_intron abnormal-intron promoter
-          annotation-fail intergenic_region), "")
-    } = ( 1 .. 15 );
-
     my @ordered_Trs = sort {
         $GenePartsOrder{ $rGeneParts_hash->{$a} }
           <=> $GenePartsOrder{ $rGeneParts_hash->{$b} }
