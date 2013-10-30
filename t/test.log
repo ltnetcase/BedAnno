@@ -1031,7 +1031,7 @@ not ok 33 - for [ cds_no_change_anno ]
 #       'r' => 'C3',
 #       'r_Begin' => 'C3',
 #       'r_End' => 'C3',
-#       'rnaBegin' => 1516,
+#       'rnaBegin' => '1516',
 #       'rnaEnd' => '1515',
 #       'strd' => '-',
 #       'trAlt' => '',
