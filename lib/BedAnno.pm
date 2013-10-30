@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use threads::shared; # if threads used before BedAnno, then this will be threaded
 use Carp;
+use Data::Dumper;
 
 our $VERSION = '0.34';
 
@@ -1542,9 +1543,6 @@ sub getTrChange {
 	my ($real_p, $real_r, $real_a, $real_rl, $real_al) = 
 	    $real_var->getUnifiedVar('+');
 
-	# debug	
-#	print STDERR Data::Dumper->Dump([$trannoEnt, $real_var], ["trannoEnt", "real_var"]);
-	
 	my ($trBegin, $trEnd);
 	$trBegin = reCalTrPos_by_ofst( $trannoEnt, $real_p );
         $trEnd = reCalTrPos_by_ofst( $trannoEnt, ( $real_p + $real_rl - 1 ) );
@@ -2198,7 +2196,6 @@ sub cmpPos {
 	'+d' => 6,
     );
 
-
     if ($p1 =~ /^([\-\+\*]?)(\d+)([\+\-]?[ud]?)(\d*)$/) {
 	$s1 = $1; $anc1 = $2; $int_s1 = $3; $ofst1 = $4;
     }
@@ -2527,7 +2524,7 @@ sub reCalTrPos_by_ofst {
     if ($intOfst eq '') {
 	$intOfst = 0;
     }
-    
+
     foreach my $exin (@tag_sort) {
 	my $cur_blk_len;
 	if ( $exin !~ /^EX/ ) {
@@ -2541,7 +2538,7 @@ sub reCalTrPos_by_ofst {
 
 	my $cur_blk_ofst = ($trRef_ofst - $cumulate_len);
 
-	if ( $cur_blk_ofst > $cur_blk_len ) {
+	if ( $cur_blk_ofst >= $cur_blk_len ) {
 	    $cumulate_len += $cur_blk_len;
 	    if ($exin =~ /^EX/) { # only cumulate ex pos
 		$cur_ex_start += $cur_blk_len;
@@ -4094,11 +4091,12 @@ sub cal_hgvs_pos {
     my ( $lr_pair_nDot, $lr_pair_cDot ) = ( '', '' );
     my $strd = ($$rtidDetail{strd} eq '+') ? 1 : 0;
     my $trAlt = $annoEnt->{trInfo}->{$tid}->{trAlt} if (!exists $cal_args{noassign});
+
     my $lofst = $ofst;
     if ($lr) { # only one time assignment for one var, offset for left 
 	my $rofst = $$rtidDetail{wlen} - $ofst - 1;
         if ($lofst < 0) {
-	    if ($strd) { # outside 5'promoter region
+	    if ($strd) {
 
 		# 5'promoter is always available
 		$nDot = $$rtidDetail{nsta} + $lofst;
@@ -4113,7 +4111,7 @@ sub cal_hgvs_pos {
 		}
 	    }
         }
-	elsif ($lofst > $$rtidDetail{wlen}) { # not proper called
+	elsif ($lofst > $$rtidDetail{wlen}) {
 	    if (!exists $cal_args{noassign}) {
 		confess "Error: exceed the whole length [$lofst>$$rtidDetail{wlen}]";
 	    }
@@ -4258,17 +4256,20 @@ sub cal_hgvs_pos {
 	my $rofst = $$rtidDetail{wlen} - $ofst;
 	if ($lofst > $$rtidDetail{wlen}) {
 	    my $ex_ofst = ($lofst - $$rtidDetail{wlen});
-	    if ($strd) { # outside transcript region into 3'downstream
+	    if ($strd) {
 		$nDot = '+'.$ex_ofst;
                 if ( $$rtidDetail{csto} =~ /^\*?\d+$/ ) {
                     $cDot = $$rtidDetail{csto} . '+d' . $ex_ofst;
                 }
 	    }
-	    else { # outside 5'promoter region
-		$nDot = $$rtidDetail{nsto} - $ex_ofst;
-		if ( $$rtidDetail{csto} =~ /^(\S+)\-u(\d+)/) {
-		    $cDot = $1 . '-u' . ($2 - $ex_ofst);
-		}
+	    else { # outside 5'promoter region ?
+                $nDot =
+                    ( $$rtidDetail{nsto} =~ /^\-\d+$/ )
+                  ? ( $$rtidDetail{nsto} - $ex_ofst )
+                  : ( -$ex_ofst );
+                if ( $$rtidDetail{csto} =~ /^(\S+)\-u(\d+)/ ) {
+                    $cDot = $1 . '-u' . ( $2 - $ex_ofst );
+                }
 	    }
 	}
 	elsif ($lofst < 0) { # not proper called
