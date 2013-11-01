@@ -1546,6 +1546,7 @@ sub getTrChange {
 	my ($trBegin, $trEnd);
 	$trBegin = reCalTrPos_by_ofst( $trannoEnt, $real_p );
         $trEnd = reCalTrPos_by_ofst( $trannoEnt, ( $real_p + $real_rl - 1 ) );
+
         $chgvs_5 =
           ($cdsOpt)
           ? cPosMark( $trBegin, $trdbEnt->{csta}, $trdbEnt->{csto},
@@ -1559,7 +1560,10 @@ sub getTrChange {
         $cmpPos = $self->cmpPos( $chgvs_5, $chgvs_3 );
 
 	# debug
-#	print STDERR Data::Dumper->Dump([$trBegin, $trEnd, $chgvs_5, $chgvs_3, $cmpPos], ["trBegin", "trEnd", "chgvs_5", "chgvs_3", "cmpPos"]);
+#        print STDERR Data::Dumper->Dump(
+#            [ $real_var, $trBegin,  $trEnd,  $chgvs_5,  $chgvs_3,  $cmpPos ],
+#            [ "real_var", "trBegin", "trEnd", "chgvs_5", "chgvs_3", "cmpPos" ]
+#        );
 
 	# * check if a repeat case, and use cerntain chgvs string
 	# * assign cHGVS string
@@ -1758,6 +1762,7 @@ sub getTrChange {
                 }
 		# here protein sequence var should be reparsed
 		else {
+
 		    $chgvs_5 = $1+1 if ($chgvs_5 =~ /^(\d+)\+1/);
 		    $chgvs_3 = $1-1 if ($chgvs_3 =~ /^(\d+)\-1/);
 
@@ -1915,6 +1920,7 @@ sub getTrChange {
                                 last;
                             }
                         }
+
 			if ($init_synon == 0) {
 			    $trannoEnt->{func} = 'init-loss';
 			    $trannoEnt->{p}    = 'p.0?';
@@ -1955,6 +1961,7 @@ sub getTrChange {
                     ( $prAlt, $next_alt_frame ) =
                       translate( $codon_alt, \%altcodon_opts );
 
+
 		    if ($hit_init_flag) {
 			$prRef =~ s/^[A-Z]/M/; # change init pep to M
 			# change alt-init to M
@@ -1970,20 +1977,11 @@ sub getTrChange {
                     my $non_stop_flag = ( $prAlt !~ /\*$/
                           and ( $next_alt_frame or $frameshift_flag ) ) ? 1 : 0;
 
-		    # parse the protein variants
-		    # to recognize the repeat and adjust to correct position
-                    my $prVar =
-                      BedAnno::Var->new( $trdbEnt->{prot}, ( $prBegin - 1 ),
-                        $prEnd, $prRef, $prAlt );
-		    #    0-based
-                    my ( $p_P, $p_r, $p_a, $prl, $pal ) =
-                      $prVar->getUnifiedVar('+');
-
-
-		    my $prStart = substr($trdbEnt->{pseq}, $p_P, 1);
-                    my $prStop = substr( $trdbEnt->{pseq}, $p_P + $prl - 1, 1 )
-                      if ( $p_P > 0 or $prl > 0 );
-
+		    # To avoid large range perlre, before parse protein 
+		    # var we should first deal with frameshift issues
+		    # need to deal with non_stop_flag and frameshift and 
+		    # imp ref case.
+		    
 		    # assign cc and polar to the same length, 
 		    # single aa substitution, no matter which position.
 		    if ($diff_ra == 0 and $cInfo5[0] == $cInfo3[0]) {
@@ -1993,19 +1991,40 @@ sub getTrChange {
 			$trannoEnt->{polar} = $cInfo5[3].'=>'.$polar_to_be;
 		    }
 
+		    my $prSimpleSame = 0;
+                    for (
+                        my $pp = 0 ;
+                        $pp < length($prRef) and $pp < length($prAlt) ;
+                        $pp++
+                      )
+                    {
+                        if (
+                            substr( $prRef, $pp, 1 ) eq
+                            substr( $prAlt, $pp, 1 ) )
+                        {
+                            $prSimpleSame++;
+                        }
+                        else {
+                            last;
+                        }
+                    }
+		    my $no_parsed_pP = $prBegin - 1 + $prSimpleSame;
+                    my $no_parsed_prStart =
+                      substr( $trdbEnt->{pseq}, $no_parsed_pP, 1 );
 
 		    # non stop frameshift with extra non-coded base
 		    if ($non_stop_flag) {
                         $trannoEnt->{func} =
-                          ( $p_P >= $trdbEnt->{plen} )
+                          ( $no_parsed_pP >= $trdbEnt->{plen} )
                           ? 'stop-loss'
                           : 'frameshift';
-			$trannoEnt->{p}    = 'p.'.$prStart.($p_P+1).'fs*?';
+                        $trannoEnt->{p} = 'p.' . $no_parsed_prStart
+                          . ( $no_parsed_pP + 1 ) . 'fs*?';
 			next;
 		    }
 
 		    # identical to reference (can be from any kind of vars)
-		    if ($prVar->{imp} eq 'ref') {
+		    if ($prRef eq $prAlt) {
                         if ($init_synon)
                         { # altstart
                             # do nothing
@@ -2024,20 +2043,32 @@ sub getTrChange {
 
 		    # frameshift
 		    if (!$end_in_cds_flag or $frameshift_flag) {
-			# debug
-#			print STDERR Data::Dumper->Dump( [ $prVar, $codon_alt, $next_alt_frame ], [ "prVar", "codon_alt", "next_alt_frame" ] );
 
 			$trannoEnt->{func} = 'frameshift';
-			$trannoEnt->{p}    = 'p.'.$prStart.($p_P+1).'fs*';
+			$trannoEnt->{p}    = 'p.'. $no_parsed_prStart 
+			    . ( $no_parsed_pP + 1 ) . 'fs*';
 			if ($prAlt =~ /\*$/) { # ext length estimated
                             $trannoEnt->{p} .=
-                              $prVar->{altlen} - ( $p_P - $prVar->{pos} );
+                              ( length($prAlt) - $prSimpleSame );
 			}
 			else { # don't meet a stop codon
 			    $trannoEnt->{p} .= '?';
 			}
 			next;
 		    }
+
+		    # parse the protein variants
+		    # to recognize the repeat and adjust to correct position
+                    my $prVar =
+                      BedAnno::Var->new( $trdbEnt->{prot}, ( $prBegin - 1 ),
+                        $prEnd, $prRef, $prAlt );
+		    # 0-based
+                    my ( $p_P, $p_r, $p_a, $prl, $pal ) =
+                      $prVar->getUnifiedVar('+');
+
+		    my $prStart = substr( $trdbEnt->{pseq}, $p_P, 1 );
+                    my $prStop = substr( $trdbEnt->{pseq}, ($p_P + $prl - 1), 1 )
+                      if ( $p_P > 0 or $prl > 0 );
 
 		    # single substitution
                     if ( $prVar->{imp} eq 'snv' ) {
@@ -2539,10 +2570,15 @@ sub reCalTrPos_by_ofst {
 	my $cur_blk_ofst = ($trRef_ofst - $cumulate_len);
 
 	if ( $cur_blk_ofst >= $cur_blk_len ) {
-	    $cumulate_len += $cur_blk_len;
-	    if ($exin =~ /^EX/) { # only cumulate ex pos
-		$cur_ex_start += $cur_blk_len;
-		$intOfst = 0;
+	    if ( $cur_blk_ofst == $cur_blk_len and $exin eq $tag_sort[-1] ) {
+		return $trannoEnt->{postEnd}->{nDot};
+	    }
+	    else {
+		$cumulate_len += $cur_blk_len;
+		if ($exin =~ /^EX/) { # only cumulate ex pos
+		    $cur_ex_start += $cur_blk_len;
+		    $intOfst = 0;
+		}
 	    }
 	}
 	else { # hit current block
@@ -3856,7 +3892,7 @@ sub getTrPosition {
 				$tmp_trInfo->{preStart} = $rpreLeft{$tid};
 			    }
 			    else {
-				$tmp_trInfo->{postEnt} = $rpreLeft{$tid};
+				$tmp_trInfo->{postEnd} = $rpreLeft{$tid};
 			    }
 			}
                     }
