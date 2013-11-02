@@ -8,13 +8,13 @@ use Data::Dumper;
 
 use Tabix;
 
-our $VERSION = '0.34';
+our $VERSION = '0.35';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.34
+=head2 VERSION v0.35
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -476,6 +476,9 @@ sub new {
         );
     }
 
+    if (! -e $self->{db}.".tbi" or ! -r $self->{db}.".tbi") {
+	confess "Error: [$self->{db}] Can not find tabix index file, please build it";
+    }
     $self->{tidb} = Tabix->new( -data => $self->{db} );
 
     $self->{refbuild} = $REF_BUILD;
