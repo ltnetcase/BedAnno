@@ -65,3 +65,6 @@
 	- add a method decide_major for crawler to generate TranscriptVarName from major transcript
 	- The reformatAnno() will have a new key "TranscriptVarName" in "var" to give the value
 	  please use "man doc/BedAnno.1" to check the detail in "decide_major" method description
+
+0.35  Sat Nov 2  18:43:05 2013
+	- change to use Tabix Perl API instead of system call cmd: tabix
