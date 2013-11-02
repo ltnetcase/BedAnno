@@ -6,6 +6,8 @@ use threads::shared; # if threads used before BedAnno, then this will be threade
 use Carp;
 use Data::Dumper;
 
+use Tabix;
+
 our $VERSION = '0.34';
 
 =head1 NAME
@@ -474,6 +476,8 @@ sub new {
         );
     }
 
+    $self->{tidb} = Tabix->new( -data => $self->{db} );
+
     $self->{refbuild} = $REF_BUILD;
     my $anno_all_opt = 1;
 
@@ -745,25 +749,65 @@ sub readtr {
 =cut
 sub load_anno {
     my ( $self, %args ) = @_;
-    my $cmd        = "$self->{db}";
-    my $tabix_args = qq['$self->{db}'];
-    if ( -e $self->{db} && $self->{db} =~ /\.gz/i ) {
-        if ( exists $args{region} and defined $args{region} ) {
-            $tabix_args .= qq[ '$args{region}'];
-            $cmd = "tabix $tabix_args |";
-        }
-        elsif ( exists $args{regbed}
-            and defined $args{regbed}
-            and -e $args{regbed} )
-        {
-            $tabix_args = '-B ' . $tabix_args . qq[ '$args{regbed}'];
-            $cmd        = "tabix $tabix_args |";
-        }
-        else {
-            $cmd = "zcat -f '$self->{db}' |";
-        }
+
+    my @query_region = ();
+    if ( exists $args{region} ) {
+	my @regions = split(/\s+/, $args{region});
+	foreach my $reg (@regions) {
+	    next if ($reg eq "");
+	    if ($reg =~ /^(\S+):(\d+)\-(\d+)$/) {
+		my ($name, $beg, $end) = ($1, $2, $3);
+		if ($beg == 0) {
+		    $self->warn("Warning: region string should be 1 based [$reg], has been changed to 1 based");
+		    $beg = 1;
+		}
+                push( @query_region, [ $name, ( $beg - 1 ), $end ] );
+	    }
+	    else {
+		$self->throw("Error: unavailable region string [$reg].");
+	    }
+	}
     }
-    open( ANNO, $cmd ) or $self->throw("$cmd: $!");
+    elsif ( exists $args{regbed}
+	and defined $args{regbed}
+	and -e $args{regbed} )
+    {
+	open (BED, $args{regbed}) or $self->throw("Error: [$args{regbed}] $!");
+	while (<BED>) {
+	    chomp;
+	    my @beditm = split(/\t/);
+	    $self->throw("Error: bed format error.") if (3 > @beditm);
+	    push (@query_region, [ @beditm[0, 1, 2] ]);
+	}
+	close BED;
+    }
+
+    my $read_all_opt = 0;
+    my @all_querys   = ();
+    if ( 0 == @query_region ) {
+	$read_all_opt = 1;
+        open( ANNO, "zcat -f $self->{db} |" )
+          or $self->throw("Error: [$self->{db}] $!");
+    }
+    else {
+        my @sorted_regions = sort {
+            $a->[0] cmp $b->[0] or $a->[1] <=> $b->[1] or $a->[2] <=> $b->[2]
+        } @query_region;
+
+	my ($cname, $cbeg, $cend) = @{$sorted_regions[0]};
+	for (my $k = 1; $k < @sorted_regions; $k++) {
+	    my ($dname, $dbeg, $dend) = @{$sorted_regions[$k]};
+	    if ($dname ne $cname or $dbeg > $cend) {
+                push( @all_querys,
+                    $self->{tidb}->query( $cname, $cbeg, $cend ) );
+		($cname, $cbeg, $cend) = @{$sorted_regions[$k]};
+	    }
+	    else {
+		$cend = $dend;
+	    }
+	}
+	push( @all_querys, $self->{tidb}->query( $cname, $cbeg, $cend ) );
+    }
 
     # trans filter is always be ahead of genes
     my $prTag   = ( exists $args{onlyPr} ) ? 1 : 0;
@@ -775,9 +819,33 @@ sub load_anno {
     my %pureTran = map { s/\-\d+$//; $_ => 1 } keys %$tranList if ($tranTag);
 
     my $rannodb = {};
-    while (<ANNO>) {
-        s/\s+$//;
-        my ( $chr, $start, $stop, $annostr ) = split(/\t/);
+    while (1)
+    {
+	my $tb_ent;
+	if ($read_all_opt) {
+	    $tb_ent = <ANNO>;
+	    last if (!defined $tb_ent or $tb_ent eq "");
+	}
+	else {
+	    while (0 < @all_querys) {
+		my $region_read = $self->{tidb}->read($all_querys[0]);
+		if (!defined $region_read or $region_read eq "") {
+		    shift (@all_querys);
+		}
+		else {
+		    $tb_ent = $region_read;
+		    last;
+		}
+	    }
+	    last if (0 == @all_querys);
+	}
+
+        $tb_ent =~ s/\s+$//;
+        my ( $chr, $start, $stop, $annostr ) = split(/\t/, $tb_ent);
+	if ( !defined $annostr or $annostr eq "" ) {
+	    $self->throw("Error: db format unmatched");
+	}
+
         my @annos = split( /; /, $annostr );
 
         #		 0-based	1-based
@@ -820,7 +888,7 @@ sub load_anno {
         next if ( !exists $ent{annos} );
         push( @{ $$rannodb{$chr} }, {%ent} );
     }
-    close ANNO;
+    close ANNO if ($read_all_opt);
 
     $rannodb = region_merge($rannodb)
       if ( $prTag or $mmapTag or $geneTag or $tranTag );
@@ -1148,7 +1216,13 @@ sub varanno {
 	$localdb = (exists $locLoad->{$var->{chr}}) ? $locLoad->{$var->{chr}} : [];
     }
     else {
-	$localdb = $self->{annodb}->{$var->{chr}};
+	if ( !exists $self->{annodb}->{$var->{chr}} ) {
+	    $self->warn("Warning: incomplete annotation database in batch mode, [$var->{chr}]");
+	    $localdb = [];
+	}
+	else {
+	    $localdb = $self->{annodb}->{$var->{chr}};
+	}
     }
 
     my $annoEnt = BedAnno::Anno->new($var);

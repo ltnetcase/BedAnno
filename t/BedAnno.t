@@ -53,7 +53,6 @@ if ( -e $extradb and -r $extradb ) {
 use Test::Most;
 BEGIN { use_ok('BedAnno') }
 
-test_tabix("$data/test_db.bed.gz");
 my $beda = BedAnno->new(%opts);
 
 #explain "The database are:", $beda;
