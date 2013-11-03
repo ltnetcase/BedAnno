@@ -466,35 +466,118 @@ sub new {
     $self = shared_clone( {@args} );
     bless $self, ref($class) || $class;
 
-    if (   ( !exists $self->{db} )
-        or ( !-e $self->{db} )
-        or ( !exists $self->{tr} )
-        or ( !-e $self->{tr} ) )
-    {
-        $self->throw(
-"Error filename or too few args, need db, tr file to be available at least."
-        );
+    $self->throw("Error: please at least give 'db' and 'tr' path.")
+	if (!exists $self->{db} or !exists $self->{tr});
+
+    $self->set_db($self->{db});
+    $self->set_tr($self->{tr});
+    $self->set_refbuild($REF_BUILD);
+
+    if ( exists $self->{cytoBand} ) {
+	$self->set_cytoBand($self->{cytoBand});
     }
 
-    if (! -e $self->{db}.".tbi" or ! -r $self->{db}.".tbi") {
-	confess "Error: [$self->{db}] Can not find tabix index file, please build it";
+    if ( exists $self->{pfam} ) {
+	$self->set_pfam($self->{pfam});
     }
-    $self->{tidb} = Tabix->new( -data => $self->{db} );
 
-    $self->{refbuild} = $REF_BUILD;
-    my $anno_all_opt = 1;
+    if ( exists $self->{prediction} ) {
+	$self->set_prediction($self->{prediction});
+    }
 
+    if ( exists $self->{phyloP} ) {
+	$self->set_phyloP($self->{phyloP});
+    }
+
+    if ( exists $self->{dbSNP} ) {
+	$self->set_dbSNP($self->{dbSNP});
+    }
+
+    if (exists $self->{tgp}) {
+	$self->set_tgp($self->{tgp});
+    }
+
+    if (exists $self->{esp6500}) {
+	$self->set_esp6500($self->{esp6500});
+    }
+
+    if (exists $self->{cg54}) {
+	$self->set_cg54($self->{cg54});
+    }
+
+    if (exists $self->{wellderly}) {
+	$self->set_wellderly($self->{wellderly});
+    }
+
+    return $self;
+}
+
+=head2 set/get methods for properties
+
+    List of Properties:
+			get	    set
+    db			o	    o
+    tr			o	    o
+    refbuild		o	    o
+    tidb		o	    x
+    annodb		o	    x
+    trInfodb		o	    x
+    cytoBand		o	    o
+    cytoBand_h		o	    x
+    pfam		o	    o
+    pfam_h		o	    x
+    prediction		o	    o
+    prediction_h	o	    x
+    phyloP		o	    o
+    phyloP_h		o	    x
+    dbSNP		o	    o
+    dbSNP_h		o	    x
+    tgp			o	    o
+    tgp_h		o	    x
+    esp6500		o	    o
+    esp6500_h		o	    x
+    cg54		o	    o
+    cg54_h		o	    x
+    wellderly		o	    o
+    wellderly_h		o	    x
+
+
+    e.g.    : $self->set_refbuild($refbuild);
+	      my $refbuild = $self->get_refbuild();
+
+=cut
+sub set_refbuild {
+    my $self = shift;
+    my $custom_build_info = shift;
+    $self->{refbuild} = $custom_build_info;
+    return $self;
+}
+
+sub get_refbuild {
+    my $self = shift;
+    return $self->{refbuild};
+}
+
+sub set_db {
+    my $self = shift;
+    my $db = shift;
+    if ( ! -e $db or ! -r $db ) {
+	$self->throw("Error: cannot read $db.");
+    }
+
+    $self->{db} = $db;
+    if ( ! -e $db.".tbi" or ! -r $db.".tbi" ) {
+	$self->throw("Error: [$db] index (.tbi) file not found, please build it first.");
+    }
+    $self->{tidb} = Tabix->new( -data => $db );
     my %open_args;
     if ( exists $self->{region} ) {
-        $anno_all_opt = 0;
         $open_args{region} = $self->{region};
     }
     if ( !exists $self->{region} and exists $self->{regbed} ) {
-        $anno_all_opt = 0;
         $open_args{regbed} = $self->{regbed};
     }
     if ( exists $self->{genes} ) {
-        $anno_all_opt = 0;
         if ( ref( $self->{genes} ) eq 'HASH' ) {
             $open_args{genes} = $self->{genes};
         }
@@ -506,7 +589,6 @@ sub new {
         }
     }
     if ( exists $self->{trans} ) {
-        $anno_all_opt = 0;
         if ( ref( $self->{trans} ) eq 'HASH' ) {
             $open_args{trans} = $self->{trans};
         }
@@ -520,89 +602,256 @@ sub new {
           { map { s/\-\d+$//; $_ => 1 } keys %{ $self->{trans} } };
     }
     if ( exists $self->{onlyPr} ) {
-        $anno_all_opt = 0;
         $open_args{onlyPr} = $self->{onlyPr};
     }
     if ( exists $self->{mmap} ) {
         $open_args{mmap} = $self->{mmap};
     }
 
-    if ( exists $self->{cytoBand} ) {
-        require GetCytoBand;
-        my $cytoBand_h = GetCytoBand->new( db => $self->{cytoBand} );
-        $self->{cytoBand_h} = shared_clone($cytoBand_h);
-    }
-
-    if ( exists $self->{pfam} ) {
-        require GetPfam;
-        my $pfam_h = GetPfam->new( db => $self->{pfam} );
-        $self->{pfam_h} = shared_clone($pfam_h);
-    }
-
-    if ( exists $self->{prediction} ) {
-        require GetPrediction;
-        my $prediction_h = GetPrediction->new( db => $self->{prediction} );
-        $self->{prediction_h} = shared_clone($prediction_h);
-    }
-
-    if ( exists $self->{phyloP} ) {
-        require GetPhyloP46wayScore;
-        my $phyloP_h = GetPhyloP46wayScore->new( db => $self->{phyloP} );
-        $self->{phyloP_h} = shared_clone($phyloP_h);
-    }
-
-    if ( exists $self->{dbSNP} ) {
-        require GetDBSNP;
-        my $dbSNP_h = GetDBSNP->new( db => $self->{dbSNP} );
-        $self->{dbSNP_h} = shared_clone($dbSNP_h);
-    }
-
-    if ( exists $self->{tgp} or exists $self->{esp6500} ) {
-        require GetVcfAF;
-
-	if (exists $self->{tgp}) {
-	    my $tgp_h = GetVcfAF->new( db => $self->{tgp} );
-	    $self->{tgp_h} = shared_clone($tgp_h);
-	}
-
-	if (exists $self->{esp6500}) {
-	    my $esp6500_h = GetVcfAF->new( db => $self->{esp6500} );
-	    $self->{esp6500_h} = shared_clone($esp6500_h);
-	}
-    }
-
-    if ( exists $self->{cg54} or exists $self->{wellderly} ) {
-        require GetCGpub;
-
-	if (exists $self->{cg54}) {
-	    my $cg54_h = GetCGpub->new( db => $self->{cg54} );
-	    $self->{cg54_h} = shared_clone($cg54_h);
-	}
-
-	if (exists $self->{wellderly}) {
-	    my $wellderly_h = GetCGpub->new( db => $self->{wellderly} );
-	    $self->{wellderly_h} = shared_clone($wellderly_h);
-	}
-    }
-
-    $self->{trInfodb} = shared_clone( $self->readtr() );
     $self->{annodb} = shared_clone( $self->load_anno(%open_args) )
       if ( exists $self->{batch} );
     return $self;
 }
 
-=head2 set_refbuild
-
-    About   : set the reference build parameter
-    Usage   : $self->set_refbuild($refbuild);
-
-=cut
-sub set_refbuild {
+sub get_db {
     my $self = shift;
-    my $custom_build_info = shift;
-    $self->{refbuild} = $custom_build_info;
+    return $self->{db};
+}
+
+sub get_tidb {
+    my $self = shift;
+    return $self->{tidb};
+}
+
+sub get_annodb {
+    my $self = shift;
+    if (exists $self->{annodb}) {
+	return $self->{annodb};
+    }
+    else {
+	return undef;
+    }
+}
+
+sub set_tr {
+    my $self = shift;
+    my $tr = shift;
+    if ( ! -e $tr or ! -r $tr ) {
+	$self->throw("Error: cannot read $tr.");
+    }
+    $self->{tr} = $tr;
+    $self->{trInfodb} = shared_clone( $self->readtr() );
     return $self;
 }
+
+sub get_tr {
+    my $self = shift;
+    return $self->{tr};
+}
+
+sub get_trInfodb {
+    my $self = shift;
+    return $self->{trInfodb};
+}
+
+sub set_cytoBand {
+    my $self = shift;
+    my $cytodb = shift;
+    $self->{cytoBand} = $cytodb;
+    require GetCytoBand if (!exists $self->{cytoBand_h});
+    my $cytoBand_h = GetCytoBand->new( db => $cytodb );
+    $self->{cytoBand_h} = shared_clone($cytoBand_h);
+    return $self;
+}
+
+sub get_cytoBand {
+    my $self = shift;
+    return $self->{cytoBand} if (exists $self->{cytoBand});
+    return undef;
+}
+
+sub get_cytoBand_h {
+    my $self = shift;
+    return $self->{cytoBand_h} if (exists $self->{cytoBand_h});
+    return undef;
+}
+
+sub set_pfam {
+    my $self = shift;
+    my $pfamdb = shift;
+    $self->{pfam} = $pfamdb;
+    require GetPfam if (!exists $self->{pfam_h});
+    my $pfam_h = GetPfam->new( db => $pfamdb );
+    $self->{pfam_h} = shared_clone($pfam_h);
+    return $self;
+}
+
+sub get_pfam {
+    my $self = shift;
+    return $self->{pfam} if (exists $self->{pfam});
+    return undef;
+}
+
+sub get_pfam_h {
+    my $self = shift;
+    return $self->{pfam_h} if (exists $self->{pfam_h});
+    return undef;
+}
+
+sub set_prediction {
+    my $self = shift;
+    my $predictiondb = shift;
+    $self->{prediction} = $predictiondb;
+    require GetPrediction if (!exists $self->{prediction_h});
+    my $prediction_h = GetPrediction->new( db => $predictiondb );
+    $self->{prediction_h} = shared_clone($prediction_h);
+    return $self;
+}
+
+sub get_prediction {
+    my $self = shift;
+    return $self->{prediction} if (exists $self->{prediction});
+    return undef;
+}
+
+sub get_prediction_h {
+    my $self = shift;
+    return $self->{prediction_h} if (exists $self->{prediction_h});
+    return undef;
+}
+
+sub set_phyloP {
+    my $self = shift;
+    my $phyloPdb = shift;
+    $self->{phyloP} = $phyloPdb;
+    require GetPhyloP46wayScore if (!exists $self->{phyloP_h});
+    my $phyloP_h = GetPhyloP46wayScore->new( db => $phyloPdb );
+    $self->{phyloP_h} = shared_clone($phyloP_h);
+    return $self;
+}
+
+sub get_phyloP {
+    my $self = shift;
+    return $self->{phyloP} if (exists $self->{phyloP});
+    return undef;
+}
+
+sub get_phyloP_h {
+    my $self = shift;
+    return $self->{phyloP_h} if (exists $self->{phyloP_h});
+    return undef;
+}
+
+sub set_dbSNP {
+    my $self = shift;
+    my $dbSNPdb = shift;
+    $self->{dbSNP} = $dbSNPdb;
+    require GetDBSNP if (!exists $self->{dbSNP_h});
+    my $dbSNP_h = GetDBSNP->new( db => $dbSNPdb );
+    $self->{dbSNP_h} = shared_clone($dbSNP_h);
+    return $self;
+}
+
+sub get_dbSNP {
+    my $self = shift;
+    return $self->{dbSNP} if (exists $self->{dbSNP});
+    return undef;
+}
+
+sub get_dbSNP_h {
+    my $self = shift;
+    return $self->{dbSNP_h} if (exists $self->{dbSNP_h});
+    return undef;
+}
+
+sub set_tgp {
+    my $self = shift;
+    my $tgpdb = shift;
+    $self->{tgp} = $tgpdb;
+    require GetVcfAF if (!exists $self->{tgp_h} and !exists $self->{esp6500_h});
+    my $tgp_h = GetVcfAF->new( db => $tgpdb );
+    $self->{tgp_h} = shared_clone($tgp_h);
+    return $self;
+}
+
+sub get_tgp {
+    my $self = shift;
+    return $self->{tgp} if (exists $self->{tgp});
+    return undef;
+}
+
+sub get_tgp_h {
+    my $self = shift;
+    return $self->{tgp_h} if (exists $self->{tgp_h});
+    return undef;
+}
+
+sub set_esp6500 {
+    my $self = shift;
+    my $esp6500db = shift;
+    $self->{esp6500} = $esp6500db;
+    require GetVcfAF if (!exists $self->{tgp_h} and !exists $self->{esp6500_h});
+    my $esp6500_h = GetVcfAF->new( db => $esp6500db );
+    $self->{esp6500_h} = shared_clone($esp6500_h);
+    return $self;
+}
+
+sub get_esp6500 {
+    my $self = shift;
+    return $self->{esp6500} if (exists $self->{esp6500});
+    return undef;
+}
+
+sub get_esp6500_h {
+    my $self = shift;
+    return $self->{esp6500_h} if (exists $self->{esp6500_h});
+    return undef;
+}
+
+sub set_cg54 {
+    my $self = shift;
+    my $cg54db = shift;
+    $self->{cg54} = $cg54db;
+    require GetCGpub if (!exists $self->{cg54} and !exists $self->{wellderly_h});
+    my $cg54_h = GetCGpub->new( db => $cg54db );
+    $self->{cg54_h} = shared_clone($cg54_h);
+    return $self;
+}
+
+sub get_cg54 {
+    my $self = shift;
+    return $self->{cg54} if (exists $self->{cg54});
+    return undef;
+}
+
+sub get_cg54_h {
+    my $self = shift;
+    return $self->{cg54_h} if (exists $self->{cg54_h});
+    return undef;
+}
+
+sub set_wellderly {
+    my $self = shift;
+    my $wellderlydb = shift;
+    $self->{wellderly} = $wellderlydb;
+    require GetCGpub if (!exists $self->{cg54} and !exists $self->{wellderly_h});
+    my $wellderly_h = GetCGpub->new( db => $wellderlydb );
+    $self->{wellderly_h} = shared_clone($wellderly_h);
+    return $self;
+}
+
+sub get_wellderly {
+    my $self = shift;
+    return $self->{wellderly} if (exists $self->{wellderly});
+    return undef;
+}
+
+sub get_wellderly_h {
+    my $self = shift;
+    return $self->{wellderly_h} if (exists $self->{wellderly_h});
+    return undef;
+}
+
 
 sub TO_JSON {
     return { %{ shift() } };
