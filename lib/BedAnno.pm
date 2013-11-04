@@ -812,7 +812,7 @@ sub set_cg54 {
     my $self = shift;
     my $cg54db = shift;
     $self->{cg54} = $cg54db;
-    require GetCGpub if (!exists $self->{cg54} and !exists $self->{wellderly_h});
+    require GetCGpub if (!exists $self->{cg54_h} and !exists $self->{wellderly_h});
     my $cg54_h = GetCGpub->new( db => $cg54db );
     $self->{cg54_h} = shared_clone($cg54_h);
     return $self;
@@ -834,7 +834,7 @@ sub set_wellderly {
     my $self = shift;
     my $wellderlydb = shift;
     $self->{wellderly} = $wellderlydb;
-    require GetCGpub if (!exists $self->{cg54} and !exists $self->{wellderly_h});
+    require GetCGpub if (!exists $self->{cg54_h} and !exists $self->{wellderly_h});
     my $wellderly_h = GetCGpub->new( db => $wellderlydb );
     $self->{wellderly_h} = shared_clone($wellderly_h);
     return $self;
