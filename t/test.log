@@ -65,7 +65,7 @@ not ok 11 - for [ snv_varanno ]
 #       'AN' => 0
 #     },
 #     'chr' => '1',
-#     'cytoBand' => '1p36.33	gneg',
+#     'cytoBand' => '1p36.33',
 #     'dbsnp' => {},
 #     'end' => 14410,
 #     'esp6500' => {
@@ -147,7 +147,7 @@ not ok 12 - for [ ins_varanno ]
 #       'AN' => 0
 #     },
 #     'chr' => '1',
-#     'cytoBand' => '1p36.33	gneg',
+#     'cytoBand' => '1p36.33',
 #     'dbsnp' => {},
 #     'end' => 14410,
 #     'esp6500' => {
@@ -226,7 +226,7 @@ not ok 13 - for [ del_varanno ]
 #       'AN' => 0
 #     },
 #     'chr' => '1',
-#     'cytoBand' => '1p36.33	gneg',
+#     'cytoBand' => '1p36.33',
 #     'dbsnp' => {},
 #     'end' => 14417,
 #     'esp6500' => {
@@ -322,7 +322,7 @@ not ok 14 - for [ rep_varanno ]
 #       'AN' => 0
 #     },
 #     'chr' => '1',
-#     'cytoBand' => '1p36.33	gneg',
+#     'cytoBand' => '1p36.33',
 #     'dbsnp' => {},
 #     'end' => 14414,
 #     'esp6500' => {
@@ -407,7 +407,7 @@ not ok 15 - for [ delins_varanno ]
 #       'AN' => 0
 #     },
 #     'chr' => '1',
-#     'cytoBand' => '1p36.33	gneg',
+#     'cytoBand' => '1p36.33',
 #     'dbsnp' => {},
 #     'end' => 14414,
 #     'esp6500' => {
@@ -486,7 +486,7 @@ not ok 16 - for [ subs_varanno ]
 #       'AN' => 0
 #     },
 #     'chr' => '1',
-#     'cytoBand' => '1p36.33	gneg',
+#     'cytoBand' => '1p36.33',
 #     'dbsnp' => {},
 #     'end' => 14414,
 #     'esp6500' => {
@@ -569,7 +569,7 @@ not ok 17 - for [ no_call_varanno ]
 #       'AN' => 0
 #     },
 #     'chr' => '1',
-#     'cytoBand' => '1p36.33	gneg',
+#     'cytoBand' => '1p36.33',
 #     'dbsnp' => {},
 #     'end' => 14410,
 #     'esp6500' => {
@@ -726,7 +726,7 @@ not ok 29 - for [ cds_rna_snv1_anno ]
 #       'AN' => 0
 #     },
 #     'chr' => '3',
-#     'cytoBand' => '3p21.31	gneg',
+#     'cytoBand' => '3p21.31',
 #     'dbsnp' => {},
 #     'end' => 49395709,
 #     'esp6500' => {
@@ -879,7 +879,7 @@ not ok 30 - for [ cds_rna_snv2_anno ]
 #       'AN' => 0
 #     },
 #     'chr' => '3',
-#     'cytoBand' => '3p21.31	gneg',
+#     'cytoBand' => '3p21.31',
 #     'dbsnp' => {},
 #     'end' => 49395705,
 #     'esp6500' => {
@@ -966,7 +966,7 @@ not ok 31 - for [ cds_rna_delins_anno ]
 #       'AN' => 0
 #     },
 #     'chr' => '8',
-#     'cytoBand' => '8p21.2	gpos50',
+#     'cytoBand' => '8p21.2',
 #     'dbsnp' => {},
 #     'end' => 24811066,
 #     'esp6500' => {
@@ -1048,7 +1048,7 @@ not ok 32 - for [ cds_no_change_anno ]
 #       'AN' => 108
 #     },
 #     'chr' => '8',
-#     'cytoBand' => '8p21.2	gpos50',
+#     'cytoBand' => '8p21.2',
 #     'dbsnp' => {
 #       'rs11300136' => {
 #         'AC' => '2175',
@@ -1148,7 +1148,7 @@ not ok 33 - for [ cds_snv_anno ]
 #       'AN' => 0
 #     },
 #     'chr' => '8',
-#     'cytoBand' => '8p21.2	gpos50',
+#     'cytoBand' => '8p21.2',
 #     'dbsnp' => {},
 #     'end' => 24811067,
 #     'esp6500' => {
@@ -1235,7 +1235,7 @@ not ok 34 - for [ cds_del_anno ]
 #       'AN' => 0
 #     },
 #     'chr' => '8',
-#     'cytoBand' => '8p21.2	gpos50',
+#     'cytoBand' => '8p21.2',
 #     'dbsnp' => {},
 #     'end' => 24811067,
 #     'esp6500' => {
@@ -1282,7 +1282,7 @@ not ok 35 - for [ large_del_anno ]
 #       'intronIndex' => '.',
 #       'p' => 'p.G116_L122del',
 #       'pfamId' => 'PF14699.1;PF14701.1',
-#       'pfamName' => 'N-terminal domain from the human glycogen debranching enzyme	;glucanotransferase domain of human glycogen debranching enzyme	',
+#       'pfamName' => 'N-terminal domain from the human glycogen debranching enzyme;glucanotransferase domain of human glycogen debranching enzyme',
 #       'postEnd' => {
 #         'cDot' => '366',
 #         'exin' => 'EX4',
@@ -1482,7 +1482,7 @@ not ok 35 - for [ large_del_anno ]
 #       'intronIndex' => '.',
 #       'p' => 'p.G99_L105del',
 #       'pfamId' => 'PF14699.1;PF14701.1',
-#       'pfamName' => 'N-terminal domain from the human glycogen debranching enzyme	;glucanotransferase domain of human glycogen debranching enzyme	',
+#       'pfamName' => 'N-terminal domain from the human glycogen debranching enzyme;glucanotransferase domain of human glycogen debranching enzyme',
 #       'postEnd' => {
 #         'cDot' => '315',
 #         'exin' => 'EX2',
@@ -1532,7 +1532,7 @@ not ok 35 - for [ large_del_anno ]
 #       'intronIndex' => '.',
 #       'p' => 'p.G100_L106del',
 #       'pfamId' => 'PF14699.1;PF14701.1',
-#       'pfamName' => 'N-terminal domain from the human glycogen debranching enzyme	;glucanotransferase domain of human glycogen debranching enzyme	',
+#       'pfamName' => 'N-terminal domain from the human glycogen debranching enzyme;glucanotransferase domain of human glycogen debranching enzyme',
 #       'postEnd' => {
 #         'cDot' => '318',
 #         'exin' => 'EX4',
@@ -1572,7 +1572,7 @@ not ok 35 - for [ large_del_anno ]
 #       'AN' => 0
 #     },
 #     'chr' => '1',
-#     'cytoBand' => '1p21.2	gneg',
+#     'cytoBand' => '1p21.2',
 #     'dbsnp' => {},
 #     'end' => 100327884,
 #     'esp6500' => {
@@ -1656,7 +1656,7 @@ not ok 36 - for [ cds_ins_anno ]
 #       'AN' => 0
 #     },
 #     'chr' => '8',
-#     'cytoBand' => '8p21.2	gpos50',
+#     'cytoBand' => '8p21.2',
 #     'dbsnp' => {},
 #     'end' => 24811067,
 #     'esp6500' => {
@@ -1807,7 +1807,7 @@ not ok 37 - for [ cds_rep_anno ]
 #       'AN' => 0
 #     },
 #     'chr' => '3',
-#     'cytoBand' => '3p21.31	gneg',
+#     'cytoBand' => '3p21.31',
 #     'dbsnp' => {},
 #     'end' => 49395691,
 #     'esp6500' => {
@@ -1895,7 +1895,7 @@ not ok 38 - for [ cds_delins_anno ]
 #       'AN' => 0
 #     },
 #     'chr' => '1',
-#     'cytoBand' => '1p36.33	gneg',
+#     'cytoBand' => '1p36.33',
 #     'dbsnp' => {},
 #     'end' => 865534,
 #     'esp6500' => {
@@ -2026,7 +2026,7 @@ not ok 39 - for [ cds_no_call_anno ]
 #       'AN' => 0
 #     },
 #     'chr' => '1',
-#     'cytoBand' => '1p36.33	gneg',
+#     'cytoBand' => '1p36.33',
 #     'dbsnp' => {},
 #     'end' => 861320,
 #     'esp6500' => {
