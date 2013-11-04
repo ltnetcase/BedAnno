@@ -569,7 +569,8 @@ sub set_db {
     if ( ! -e $db.".tbi" or ! -r $db.".tbi" ) {
 	$self->throw("Error: [$db] index (.tbi) file not found, please build it first.");
     }
-    $self->{tidb} = Tabix->new( -data => $db );
+
+    $self->{tidb} = shared_clone( Tabix->new( -data => $db ) );
     my %open_args;
     if ( exists $self->{region} ) {
         $open_args{region} = $self->{region};
