@@ -1,15 +1,14 @@
 ok 1 - use BedAnno;
-ok 2 - tabix .. tabix -f -p bed ../data/test_db.bed.gz
-ok 3 - for [ crawler_snv_parse ]
-ok 4 - for [ snv_parse ]
-ok 5 - for [ crawler_insert_parse ]
-ok 6 - for [ insert_parse ]
-ok 7 - for [ del_parse ]
-ok 8 - for [ rep_parse ]
-ok 9 - for [ delins_parse ]
-ok 10 - for [ subs_parse ]
-ok 11 - for [ no_call_parse ]
-not ok 12 - for [ snv_varanno ]
+ok 2 - for [ crawler_snv_parse ]
+ok 3 - for [ snv_parse ]
+ok 4 - for [ crawler_insert_parse ]
+ok 5 - for [ insert_parse ]
+ok 6 - for [ del_parse ]
+ok 7 - for [ rep_parse ]
+ok 8 - for [ delins_parse ]
+ok 9 - for [ subs_parse ]
+ok 10 - for [ no_call_parse ]
+not ok 11 - for [ snv_varanno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
@@ -29,7 +28,7 @@ not ok 12 - for [ snv_varanno ]
 #       'genepartIndex' => '11',
 #       'genepartSO' => 'SO:0000655',
 #       'intronIndex' => '.',
-#       'postEnt' => {
+#       'postEnd' => {
 #         'cDot' => '',
 #         'exin' => 'EX11E',
 #         'nDot' => 1722,
@@ -66,11 +65,11 @@ not ok 12 - for [ snv_varanno ]
 #       'AN' => 0
 #     },
 #     'chr' => '1',
-#     'cytoBand' => '1p36.33',
+#     'cytoBand' => '1p36.33	gneg',
 #     'dbsnp' => {},
 #     'end' => 14410,
 #     'esp6500' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'gHGVS' => 'g.14409C>A',
@@ -85,13 +84,13 @@ not ok 12 - for [ snv_varanno ]
 #     'reflen' => 1,
 #     'sm' => 1,
 #     'tgp' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 13 - for [ ins_varanno ]
+not ok 12 - for [ ins_varanno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
@@ -111,7 +110,7 @@ not ok 13 - for [ ins_varanno ]
 #       'genepartIndex' => '11',
 #       'genepartSO' => 'SO:0000655',
 #       'intronIndex' => '.',
-#       'postEnt' => {
+#       'postEnd' => {
 #         'cDot' => '',
 #         'exin' => 'EX11E',
 #         'nDot' => 1721,
@@ -148,11 +147,11 @@ not ok 13 - for [ ins_varanno ]
 #       'AN' => 0
 #     },
 #     'chr' => '1',
-#     'cytoBand' => '1p36.33',
+#     'cytoBand' => '1p36.33	gneg',
 #     'dbsnp' => {},
 #     'end' => 14410,
 #     'esp6500' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'gHGVS' => 'g.14410_14411insGAATAGCTA',
@@ -164,13 +163,13 @@ not ok 13 - for [ ins_varanno ]
 #     'reflen' => 0,
 #     'sm' => 0,
 #     'tgp' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'varTypeSO' => 'SO:0000667'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 14 - for [ del_varanno ]
+not ok 13 - for [ del_varanno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
@@ -190,7 +189,7 @@ not ok 14 - for [ del_varanno ]
 #       'genepartIndex' => '11',
 #       'genepartSO' => 'SO:0000655',
 #       'intronIndex' => '.',
-#       'postEnt' => {
+#       'postEnd' => {
 #         'cDot' => '',
 #         'exin' => 'EX11E',
 #         'nDot' => 1721,
@@ -227,11 +226,11 @@ not ok 14 - for [ del_varanno ]
 #       'AN' => 0
 #     },
 #     'chr' => '1',
-#     'cytoBand' => '1p36.33',
+#     'cytoBand' => '1p36.33	gneg',
 #     'dbsnp' => {},
 #     'end' => 14417,
 #     'esp6500' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'gHGVS' => 'g.14411_14417delTAGATCG',
@@ -243,13 +242,13 @@ not ok 14 - for [ del_varanno ]
 #     'reflen' => 7,
 #     'sm' => 2,
 #     'tgp' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'varTypeSO' => 'SO:0000159'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 15 - for [ rep_varanno ]
+not ok 14 - for [ rep_varanno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
@@ -269,7 +268,7 @@ not ok 15 - for [ rep_varanno ]
 #       'genepartIndex' => '11',
 #       'genepartSO' => 'SO:0000655',
 #       'intronIndex' => '.',
-#       'postEnt' => {
+#       'postEnd' => {
 #         'cDot' => '',
 #         'exin' => 'EX11E',
 #         'nDot' => 1721,
@@ -323,11 +322,11 @@ not ok 15 - for [ rep_varanno ]
 #       'AN' => 0
 #     },
 #     'chr' => '1',
-#     'cytoBand' => '1p36.33',
+#     'cytoBand' => '1p36.33	gneg',
 #     'dbsnp' => {},
 #     'end' => 14414,
 #     'esp6500' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'gHGVS' => 'g.14411TAG[1>4]',
@@ -345,13 +344,13 @@ not ok 15 - for [ rep_varanno ]
 #     'rl' => 3,
 #     'sm' => 2,
 #     'tgp' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'varTypeSO' => 'SO:1000032'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 16 - for [ delins_varanno ]
+not ok 15 - for [ delins_varanno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
@@ -371,7 +370,7 @@ not ok 16 - for [ delins_varanno ]
 #       'genepartIndex' => '11',
 #       'genepartSO' => 'SO:0000655',
 #       'intronIndex' => '.',
-#       'postEnt' => {
+#       'postEnd' => {
 #         'cDot' => '',
 #         'exin' => 'EX11E',
 #         'nDot' => 1722,
@@ -408,11 +407,11 @@ not ok 16 - for [ delins_varanno ]
 #       'AN' => 0
 #     },
 #     'chr' => '1',
-#     'cytoBand' => '1p36.33',
+#     'cytoBand' => '1p36.33	gneg',
 #     'dbsnp' => {},
 #     'end' => 14414,
 #     'esp6500' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'gHGVS' => 'g.14410_14414delCTAGAinsGT',
@@ -424,13 +423,13 @@ not ok 16 - for [ delins_varanno ]
 #     'reflen' => 5,
 #     'sm' => 2,
 #     'tgp' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'varTypeSO' => 'SO:1000032'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 17 - for [ subs_varanno ]
+not ok 16 - for [ subs_varanno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
@@ -450,7 +449,7 @@ not ok 17 - for [ subs_varanno ]
 #       'genepartIndex' => '11',
 #       'genepartSO' => 'SO:0000655',
 #       'intronIndex' => '.',
-#       'postEnt' => {
+#       'postEnd' => {
 #         'cDot' => '',
 #         'exin' => 'EX11E',
 #         'nDot' => 1722,
@@ -487,11 +486,11 @@ not ok 17 - for [ subs_varanno ]
 #       'AN' => 0
 #     },
 #     'chr' => '1',
-#     'cytoBand' => '1p36.33',
+#     'cytoBand' => '1p36.33	gneg',
 #     'dbsnp' => {},
 #     'end' => 14414,
 #     'esp6500' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'gHGVS' => 'g.14410_14414delCATGAinsTGTGT',
@@ -508,13 +507,13 @@ not ok 17 - for [ subs_varanno ]
 #     ],
 #     'sm' => 3,
 #     'tgp' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'varTypeSO' => 'SO:1000032'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 18 - for [ no_call_varanno ]
+not ok 17 - for [ no_call_varanno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
@@ -534,7 +533,7 @@ not ok 18 - for [ no_call_varanno ]
 #       'genepartIndex' => '11',
 #       'genepartSO' => 'SO:0000655',
 #       'intronIndex' => '.',
-#       'postEnt' => {
+#       'postEnd' => {
 #         'cDot' => '',
 #         'exin' => 'EX11E',
 #         'nDot' => 1721,
@@ -570,11 +569,11 @@ not ok 18 - for [ no_call_varanno ]
 #       'AN' => 0
 #     },
 #     'chr' => '1',
-#     'cytoBand' => '1p36.33',
+#     'cytoBand' => '1p36.33	gneg',
 #     'dbsnp' => {},
 #     'end' => 14410,
 #     'esp6500' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'gHGVS' => 'g.14410_14411ins?',
@@ -586,24 +585,24 @@ not ok 18 - for [ no_call_varanno ]
 #     'reflen' => 0,
 #     'sm' => 0,
 #     'tgp' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'varTypeSO' => 'no-call'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-ok 19 - for [ cds_rna_snv1 ]
-ok 20 - for [ cds_rna_snv2 ]
-ok 21 - for [ cds_rna_delins ]
-ok 22 - for [ cds_no_change ]
-ok 23 - for [ cds_snv ]
-ok 24 - for [ cds_del ]
-ok 25 - for [ large_del ]
-ok 26 - for [ cds_ins ]
-ok 27 - for [ cds_rep ]
-ok 28 - for [ cds_delins ]
-ok 29 - for [ cds_no_call ]
-not ok 30 - for [ cds_rna_snv1_anno ]
+ok 18 - for [ cds_rna_snv1 ]
+ok 19 - for [ cds_rna_snv2 ]
+ok 20 - for [ cds_rna_delins ]
+ok 21 - for [ cds_no_change ]
+ok 22 - for [ cds_snv ]
+ok 23 - for [ cds_del ]
+ok 24 - for [ large_del ]
+ok 25 - for [ cds_ins ]
+ok 26 - for [ cds_rep ]
+ok 27 - for [ cds_delins ]
+ok 28 - for [ cds_no_call ]
+not ok 29 - for [ cds_rna_snv1_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_000581.2' => {
@@ -626,7 +625,7 @@ not ok 30 - for [ cds_rna_snv1_anno ]
 #       'p' => 'p.0?',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
-#       'postEnt' => {
+#       'postEnd' => {
 #         'cDot' => '4',
 #         'exin' => 'EX1',
 #         'nDot' => 84,
@@ -682,7 +681,7 @@ not ok 30 - for [ cds_rna_snv1_anno ]
 #       'p' => 'p.0?',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
-#       'postEnt' => {
+#       'postEnd' => {
 #         'cDot' => '4',
 #         'exin' => 'EX1E',
 #         'nDot' => 84,
@@ -727,11 +726,11 @@ not ok 30 - for [ cds_rna_snv1_anno ]
 #       'AN' => 0
 #     },
 #     'chr' => '3',
-#     'cytoBand' => '3p21.31',
+#     'cytoBand' => '3p21.31	gneg',
 #     'dbsnp' => {},
 #     'end' => 49395709,
 #     'esp6500' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'gHGVS' => 'g.49395708C>T',
@@ -746,13 +745,13 @@ not ok 30 - for [ cds_rna_snv1_anno ]
 #     'reflen' => 1,
 #     'sm' => 1,
 #     'tgp' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 31 - for [ cds_rna_snv2_anno ]
+not ok 30 - for [ cds_rna_snv2_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_000581.2' => {
@@ -777,7 +776,7 @@ not ok 31 - for [ cds_rna_snv2_anno ]
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'polar' => 'NP=>P0',
-#       'postEnt' => {
+#       'postEnd' => {
 #         'cDot' => '8',
 #         'exin' => 'EX1',
 #         'nDot' => 88,
@@ -835,7 +834,7 @@ not ok 31 - for [ cds_rna_snv2_anno ]
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'polar' => 'NP=>P0',
-#       'postEnt' => {
+#       'postEnd' => {
 #         'cDot' => '8',
 #         'exin' => 'EX1E',
 #         'nDot' => 88,
@@ -880,11 +879,11 @@ not ok 31 - for [ cds_rna_snv2_anno ]
 #       'AN' => 0
 #     },
 #     'chr' => '3',
-#     'cytoBand' => '3p21.31',
+#     'cytoBand' => '3p21.31	gneg',
 #     'dbsnp' => {},
 #     'end' => 49395705,
 #     'esp6500' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'gHGVS' => 'g.49395704C>A',
@@ -899,13 +898,13 @@ not ok 31 - for [ cds_rna_snv2_anno ]
 #     'reflen' => 1,
 #     'sm' => 1,
 #     'tgp' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 32 - for [ cds_rna_delins_anno ]
+not ok 31 - for [ cds_rna_delins_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_006158.3' => {
@@ -928,7 +927,7 @@ not ok 32 - for [ cds_rna_delins_anno ]
 #       'p' => 'p.S472fs*2',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
-#       'postEnt' => {
+#       'postEnd' => {
 #         'cDot' => '1414',
 #         'exin' => 'EX3',
 #         'nDot' => '1516',
@@ -967,11 +966,11 @@ not ok 32 - for [ cds_rna_delins_anno ]
 #       'AN' => 0
 #     },
 #     'chr' => '8',
-#     'cytoBand' => '8p21.2',
+#     'cytoBand' => '8p21.2	gpos50',
 #     'dbsnp' => {},
 #     'end' => 24811066,
 #     'esp6500' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'gHGVS' => 'g.24811065G>A',
@@ -986,13 +985,13 @@ not ok 32 - for [ cds_rna_delins_anno ]
 #     'reflen' => 1,
 #     'sm' => 1,
 #     'tgp' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 33 - for [ cds_no_change_anno ]
+not ok 32 - for [ cds_no_change_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_006158.3' => {
@@ -1012,7 +1011,7 @@ not ok 33 - for [ cds_no_change_anno ]
 #       'genepartIndex' => '3',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
-#       'postEnt' => {
+#       'postEnd' => {
 #         'cDot' => '1414',
 #         'exin' => 'EX3',
 #         'nDot' => 1516,
@@ -1049,7 +1048,7 @@ not ok 33 - for [ cds_no_change_anno ]
 #       'AN' => 108
 #     },
 #     'chr' => '8',
-#     'cytoBand' => '8p21.2',
+#     'cytoBand' => '8p21.2	gpos50',
 #     'dbsnp' => {
 #       'rs11300136' => {
 #         'AC' => '2175',
@@ -1085,7 +1084,7 @@ not ok 33 - for [ cds_no_change_anno ]
 #     'varTypeSO' => 'SO:0000159'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 34 - for [ cds_snv_anno ]
+not ok 33 - for [ cds_snv_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_006158.3' => {
@@ -1110,7 +1109,7 @@ not ok 34 - for [ cds_snv_anno ]
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'polar' => 'NP=>P+',
-#       'postEnt' => {
+#       'postEnd' => {
 #         'cDot' => '1413',
 #         'exin' => 'EX3',
 #         'nDot' => 1515,
@@ -1149,11 +1148,11 @@ not ok 34 - for [ cds_snv_anno ]
 #       'AN' => 0
 #     },
 #     'chr' => '8',
-#     'cytoBand' => '8p21.2',
+#     'cytoBand' => '8p21.2	gpos50',
 #     'dbsnp' => {},
 #     'end' => 24811067,
 #     'esp6500' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'gHGVS' => 'g.24811066G>T',
@@ -1168,13 +1167,13 @@ not ok 34 - for [ cds_snv_anno ]
 #     'reflen' => 1,
 #     'sm' => 1,
 #     'tgp' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 35 - for [ cds_del_anno ]
+not ok 34 - for [ cds_del_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_006158.3' => {
@@ -1197,7 +1196,7 @@ not ok 35 - for [ cds_del_anno ]
 #       'p' => 'p.S472fs*78',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
-#       'postEnt' => {
+#       'postEnd' => {
 #         'cDot' => '1413',
 #         'exin' => 'EX3',
 #         'nDot' => 1515,
@@ -1236,11 +1235,11 @@ not ok 35 - for [ cds_del_anno ]
 #       'AN' => 0
 #     },
 #     'chr' => '8',
-#     'cytoBand' => '8p21.2',
+#     'cytoBand' => '8p21.2	gpos50',
 #     'dbsnp' => {},
 #     'end' => 24811067,
 #     'esp6500' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'gHGVS' => 'g.24811067delG',
@@ -1255,13 +1254,13 @@ not ok 35 - for [ cds_del_anno ]
 #     'reflen' => 1,
 #     'sm' => 1,
 #     'tgp' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'varTypeSO' => 'SO:0000159'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 36 - for [ large_del_anno ]
+not ok 35 - for [ large_del_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_000028.2' => {
@@ -1283,7 +1282,7 @@ not ok 36 - for [ large_del_anno ]
 #       'intronIndex' => '.',
 #       'p' => 'p.G116_L122del',
 #       'pfamId' => 'PF14699.1;PF14701.1',
-#       'pfamName' => 'N-terminal domain from the human glycogen debranching enzyme;glucanotransferase domain of human glycogen debranching enzyme',
+#       'pfamName' => 'N-terminal domain from the human glycogen debranching enzyme	;glucanotransferase domain of human glycogen debranching enzyme	',
 #       'postEnd' => {
 #         'cDot' => '366',
 #         'exin' => 'EX4',
@@ -1483,7 +1482,7 @@ not ok 36 - for [ large_del_anno ]
 #       'intronIndex' => '.',
 #       'p' => 'p.G99_L105del',
 #       'pfamId' => 'PF14699.1;PF14701.1',
-#       'pfamName' => 'N-terminal domain from the human glycogen debranching enzyme;glucanotransferase domain of human glycogen debranching enzyme',
+#       'pfamName' => 'N-terminal domain from the human glycogen debranching enzyme	;glucanotransferase domain of human glycogen debranching enzyme	',
 #       'postEnd' => {
 #         'cDot' => '315',
 #         'exin' => 'EX2',
@@ -1533,7 +1532,7 @@ not ok 36 - for [ large_del_anno ]
 #       'intronIndex' => '.',
 #       'p' => 'p.G100_L106del',
 #       'pfamId' => 'PF14699.1;PF14701.1',
-#       'pfamName' => 'N-terminal domain from the human glycogen debranching enzyme;glucanotransferase domain of human glycogen debranching enzyme',
+#       'pfamName' => 'N-terminal domain from the human glycogen debranching enzyme	;glucanotransferase domain of human glycogen debranching enzyme	',
 #       'postEnd' => {
 #         'cDot' => '318',
 #         'exin' => 'EX4',
@@ -1573,11 +1572,11 @@ not ok 36 - for [ large_del_anno ]
 #       'AN' => 0
 #     },
 #     'chr' => '1',
-#     'cytoBand' => '1p21.2',
+#     'cytoBand' => '1p21.2	gneg',
 #     'dbsnp' => {},
 #     'end' => 100327884,
 #     'esp6500' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'gHGVS' => 'g.100327864_100327884delTGGTGCTGATAATCATGTGCT',
@@ -1589,13 +1588,13 @@ not ok 36 - for [ large_del_anno ]
 #     'reflen' => 21,
 #     'sm' => 2,
 #     'tgp' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'varTypeSO' => 'SO:0000159'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 37 - for [ cds_ins_anno ]
+not ok 36 - for [ cds_ins_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_006158.3' => {
@@ -1618,7 +1617,7 @@ not ok 37 - for [ cds_ins_anno ]
 #       'p' => 'p.P471dup',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
-#       'postEnt' => {
+#       'postEnd' => {
 #         'cDot' => '1412',
 #         'exin' => 'EX3',
 #         'nDot' => 1514,
@@ -1657,11 +1656,11 @@ not ok 37 - for [ cds_ins_anno ]
 #       'AN' => 0
 #     },
 #     'chr' => '8',
-#     'cytoBand' => '8p21.2',
+#     'cytoBand' => '8p21.2	gpos50',
 #     'dbsnp' => {},
 #     'end' => 24811067,
 #     'esp6500' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'gHGVS' => 'g.24811067_24811068insGGG',
@@ -1673,13 +1672,13 @@ not ok 37 - for [ cds_ins_anno ]
 #     'reflen' => 0,
 #     'sm' => 0,
 #     'tgp' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'varTypeSO' => 'SO:0000667'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 38 - for [ cds_rep_anno ]
+not ok 37 - for [ cds_rep_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_000581.2' => {
@@ -1702,7 +1701,7 @@ not ok 38 - for [ cds_rep_anno ]
 #       'p' => 'p.A7[7>5]',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
-#       'postEnt' => {
+#       'postEnd' => {
 #         'cDot' => '39',
 #         'exin' => 'EX1',
 #         'nDot' => 119,
@@ -1752,7 +1751,7 @@ not ok 38 - for [ cds_rep_anno ]
 #       'p' => 'p.A7[7>5]',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
-#       'postEnt' => {
+#       'postEnd' => {
 #         'cDot' => '39',
 #         'exin' => 'EX1E',
 #         'nDot' => 119,
@@ -1808,11 +1807,11 @@ not ok 38 - for [ cds_rep_anno ]
 #       'AN' => 0
 #     },
 #     'chr' => '3',
-#     'cytoBand' => '3p21.31',
+#     'cytoBand' => '3p21.31	gneg',
 #     'dbsnp' => {},
 #     'end' => 49395691,
 #     'esp6500' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'gHGVS' => 'g.49395674GCC[6>4]',
@@ -1830,13 +1829,13 @@ not ok 38 - for [ cds_rep_anno ]
 #     'rl' => 18,
 #     'sm' => 2,
 #     'tgp' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'varTypeSO' => 'SO:1000032'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 39 - for [ cds_delins_anno ]
+not ok 38 - for [ cds_delins_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_152486.2' => {
@@ -1896,11 +1895,11 @@ not ok 39 - for [ cds_delins_anno ]
 #       'AN' => 0
 #     },
 #     'chr' => '1',
-#     'cytoBand' => '1p36.33',
+#     'cytoBand' => '1p36.33	gneg',
 #     'dbsnp' => {},
 #     'end' => 865534,
 #     'esp6500' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'gHGVS' => 'g.865533_865534delAGinsTC',
@@ -1916,13 +1915,13 @@ not ok 39 - for [ cds_delins_anno ]
 #     ],
 #     'sm' => 3,
 #     'tgp' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'varTypeSO' => 'SO:1000032'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 40 - for [ cds_no_call_anno ]
+not ok 39 - for [ cds_no_call_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_152486.2' => {
@@ -1987,7 +1986,7 @@ not ok 40 - for [ cds_no_call_anno ]
 #       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
-#       'postEnt' => {
+#       'postEnd' => {
 #         'cDot' => '',
 #         'exin' => '.',
 #         'nDot' => -6502,
@@ -2027,11 +2026,11 @@ not ok 40 - for [ cds_no_call_anno ]
 #       'AN' => 0
 #     },
 #     'chr' => '1',
-#     'cytoBand' => '1p36.33',
+#     'cytoBand' => '1p36.33	gneg',
 #     'dbsnp' => {},
 #     'end' => 861320,
 #     'esp6500' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'gHGVS' => 'g.861319T>N',
@@ -2046,10 +2045,10 @@ not ok 40 - for [ cds_no_call_anno ]
 #     'reflen' => 1,
 #     'sm' => 1,
 #     'tgp' => {
-#       'AF' => '0.000000',
+#       'AF' => 0,
 #       'AN' => 0
 #     },
 #     'varTypeSO' => 'no-call'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-1..40
+1..39
