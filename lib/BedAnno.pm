@@ -909,7 +909,7 @@ sub readtr {
         next if (/^\s*$/);
         my $hd = $1 if (s/^(\S+[^\n]*)\n//);
         confess "Error: trSeq parse error!" if ( !defined $hd );
-        my @headers = split( /\s+/, $hd );
+        my @headers = split( /\s+/, $hd, 9 );
         confess "Error: trSeq header parse error!" if ( 7 > @headers );
         s/\s+//g;
         next if ( $headers[6] =~ /FAIL/ );    # skip failed transcript
