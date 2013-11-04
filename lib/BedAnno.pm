@@ -1058,7 +1058,8 @@ sub load_anno {
 		$cend = $dend;
 	    }
 	}
-	push( @all_querys, $self->{tidb}->query( $cname, $cbeg, $cend ) );
+	my $q = $self->{tidb}->query( $cname, $cbeg, $cend );
+	push( @all_querys, $q ) if (defined $q->{_});
     }
 
     # trans filter is always be ahead of genes
