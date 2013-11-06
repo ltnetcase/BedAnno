@@ -124,15 +124,15 @@
 .\" ========================================================================
 .\"
 .IX Title "BedAnno 3"
-.TH BedAnno 3 "2013-11-02" "perl v5.14.2" "User Contributed Perl Documentation"
+.TH BedAnno 3 "2013-11-06" "perl v5.14.2" "User Contributed Perl Documentation"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
 .nh
 .SH "NAME"
 BedAnno \- Perl module for annotating variation depend on the BED +1 format database.
-.SS "\s-1VERSION\s0 v0.35"
-.IX Subsection "VERSION v0.35"
+.SS "\s-1VERSION\s0 v0.36"
+.IX Subsection "VERSION v0.36"
 From version 0.32 BedAnno will change to support \s-1CG\s0's variant shell list
 and use ncbi annotation release 104 as the annotation database
 with reformatted database format, and won't give any individual
@@ -380,11 +380,39 @@ to deal with large amount of variants.
 .RS 4
 .RE
 .PD
-.SS "set_refbuild"
-.IX Subsection "set_refbuild"
-.Vb 2
-\&    About   : set the reference build parameter
-\&    Usage   : $self\->set_refbuild($refbuild);
+.SS "set/get methods for properties"
+.IX Subsection "set/get methods for properties"
+.Vb 10
+\&    List of Properties:
+\&                        get         set
+\&    db                  o           o
+\&    tr                  o           o
+\&    refbuild            o           o
+\&    tidb                o           x
+\&    annodb              o           x
+\&    trInfodb            o           x
+\&    cytoBand            o           o
+\&    cytoBand_h          o           x
+\&    pfam                o           o
+\&    pfam_h              o           x
+\&    prediction          o           o
+\&    prediction_h        o           x
+\&    phyloP              o           o
+\&    phyloP_h            o           x
+\&    dbSNP               o           o
+\&    dbSNP_h             o           x
+\&    tgp                 o           o
+\&    tgp_h               o           x
+\&    esp6500             o           o
+\&    esp6500_h           o           x
+\&    cg54                o           o
+\&    cg54_h              o           x
+\&    wellderly           o           o
+\&    wellderly_h         o           x
+\&
+\&
+\&    e.g.    : $self\->set_refbuild($refbuild);
+\&              my $refbuild = $self\->get_refbuild();
 .Ve
 .SS "readtr"
 .IX Subsection "readtr"
@@ -640,15 +668,6 @@ to deal with large amount of variants.
 \&    Usage   : my $cmpRst = BedAnno\->cmpPos($p1, $p2);
 \&    Args    : hgvs positio p1 and p2, with out \*(Aqc.\*(Aq or \*(Aqn.\*(Aq flag
 \&    Return  : 0 for same, 1 for normal order, \-1 for reversed order.
-.Ve
-.SS "fetchseq"
-.IX Subsection "fetchseq"
-.Vb 5
-\&    About   : get sequence from fasta db using samtools faidx
-\&    Usage   : my $seq = fetchseq(\*(Aqdb.fasta\*(Aq, $region_str);
-\&              my $rhash = fetchseq(\*(Aqdb.fasta\*(Aq, \e@regions);
-\&    Args    : a list of region in format: (chr1:123\-456, chr1:789\-1000, chr2:234\-567, or NM_01130.1:345 )
-\&    Returns : a hash ref of { region => seq }
 .Ve
 .SS "getCodon_by_cdsPos"
 .IX Subsection "getCodon_by_cdsPos"
