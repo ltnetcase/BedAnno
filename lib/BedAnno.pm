@@ -932,8 +932,7 @@ sub readtr {
                 ( exists $opts{genes} and exists $opts{genes}{ $headers[2] } )
               );
         }
-        $seqs{ $headers[0] }{seq} = $_
-          if ( exists $self->{batch} );    # hash sequence when batch
+        $seqs{ $headers[0] }{seq}  = $_;
         $seqs{ $headers[0] }{len}  = $headers[1];    # tx length
         $seqs{ $headers[0] }{gene} = $headers[2];    # gene symbol
         $seqs{ $headers[0] }{prot} = $headers[3]
@@ -1715,32 +1714,16 @@ sub getTrChange {
         return $annoEnt;
     }
 
-    my $trInfodb = $self->{trInfodb};
-    my @tids = sort keys %{$annoEnt->{trInfo}};
-
-    my %trSeqs = ();
-    if (exists $self->{batch}) {
-	@trSeqs{@tids} = map {$_->{seq}} @$trInfodb{@tids};
-    }
-    else {
-	# due to a bug in samtools faidx, when meet "|" 
-	# in a fasta's header, and the id is the last id of input
-	# then it will fail to generate correct result.
-	# here we can only try to use single transcript,
-	# It may become a little slow for annotation
-	#my $rtrs = fetchseq($self->{tr}, \@tids);
-	#%trSeqs = %$rtrs;
-	
-	foreach my $t (@tids) {
-	    $trSeqs{$t} = fetchseq($self->{tr}, $t);
-	}
-    }
-
-#    print STDERR Data::Dumper->Dump( [\@tids, \%trSeqs], ["tids", "trSeqs"] );
-
-    foreach my $tid (@tids) {
-	my $trdbEnt = $self->{trInfodb}->{$tid};
-	my $trannoEnt = $annoEnt->{trInfo}->{$tid};
+    foreach my $tid (sort keys %{$annoEnt->{trInfo}}) {
+        my $trannoEnt = $annoEnt->{trInfo}->{$tid};
+        my $qtid = $tid;
+        $qtid =~ s/\-\d+$//; # trim the multiple mapping indicator in trAcc
+        if (!exists $self->{trInfodb}->{$qtid}
+                or $self->{trInfodb}->{$qtid}->{seq} eq "") {
+            $self->throw("Error: your fasta database file may not complete. [$qtid]");
+        }
+        my $trdbEnt = $self->{trInfodb}->{$qtid};
+        my $trSeq = $trdbEnt->{seq};
 
 	my ( $unify_p, $unify_r, $unify_a, $unify_rl, $unify_al ) =
 	  $annoEnt->{var}->getUnifiedVar( $trannoEnt->{strd} );
@@ -1760,12 +1743,9 @@ sub getTrChange {
 	# fix the trRefComp when ended in 3'downstream
 
 	# debug
-#	print STDERR Data::Dumper->Dump( [$tid, $trannoEnt, $unify_r, $trSeqs{$tid}, $strd], ["tid", "trannoEnt", "unify_r", "trSeq", "strd"] );
+#	print STDERR Data::Dumper->Dump( [$tid, $trannoEnt, $unify_r, $trSeq, $strd], ["tid", "trannoEnt", "unify_r", "trSeq", "strd"] );
 
-	if (!exists $trSeqs{$tid} or $trSeqs{$tid} eq "") {
-	    $self->throw("Error: your fasta database file may not complete. [$tid]");
-	}
-	my $trRef = getTrRef($trannoEnt, $unify_r, $trSeqs{$tid}, $strd);
+	my $trRef = getTrRef($trannoEnt, $unify_r, $trSeq, $strd);
 	$trannoEnt->{trRef} = $trRef;
 	my $trAlt = $trannoEnt->{trAlt};
 
@@ -1776,9 +1756,9 @@ sub getTrChange {
 
 	# [ aaPos, codon, aa, polar, frame ]
         my @cInfo5 =
-          getCodonPos( $trdbEnt, $trSeqs{$tid}, $trannoEnt->{rnaBegin} );
+          getCodonPos( $trdbEnt, $trSeq, $trannoEnt->{rnaBegin} );
         my @cInfo3 =
-          getCodonPos( $trdbEnt, $trSeqs{$tid}, $trannoEnt->{rnaEnd} );
+          getCodonPos( $trdbEnt, $trSeq, $trannoEnt->{rnaEnd} );
 
 	# we just use position comparison to show transcript ref
 	# stat, instead of sm in var, because there may exists
@@ -2104,9 +2084,9 @@ sub getTrChange {
                         or $chgvs_3 == 0 );
 
 		    @cInfo5 =
-		      getCodon_by_cdsPos( $trdbEnt, $trSeqs{$tid}, $chgvs_5 );
+		      getCodon_by_cdsPos( $trdbEnt, $trSeq, $chgvs_5 );
 		    @cInfo3 =
-		      getCodon_by_cdsPos( $trdbEnt, $trSeqs{$tid}, $chgvs_3 );
+		      getCodon_by_cdsPos( $trdbEnt, $trSeq, $chgvs_3 );
 
 		    my %translate_opts = ();
 		    $translate_opts{mito} = 1 if ($tid =~ /^NM_MT-/);
@@ -2117,7 +2097,7 @@ sub getTrChange {
                       if ( exists $altcodon_opts{nostop} );
 
                     if ( !exists $trdbEnt->{pseq} ) {
-                        my $whole_cds = substr( $trSeqs{$tid}, $trdbEnt->{csta},
+                        my $whole_cds = substr( $trSeq, $trdbEnt->{csta},
                             ( $trdbEnt->{csto} - $trdbEnt->{csta} ) );
                         my ( $pseq, $frame_next ) = translate(
                             $whole_cds, \%translate_opts
@@ -2144,7 +2124,7 @@ sub getTrChange {
 
                     my $ready_to_add_3;
                     if ( !$end_in_cds_flag or $frameshift_flag ) {
-                        $ready_to_add_3 = substr( $trSeqs{$tid}, $trEnd );
+                        $ready_to_add_3 = substr( $trSeq, $trEnd );
 			# this variants's effect will be end at the terminal
 			$prEnd = $trdbEnt->{plen} + 1; # terminal
                     }
@@ -2207,7 +2187,7 @@ sub getTrChange {
 
 		    my $init_synon = 0; # indicate start codon search result
 		    my $init_frame_shift = 0; # indicate if init frameshift
-		    my $current_startCodon = substr($trSeqs{$tid},$trdbEnt->{csta},3);
+		    my $current_startCodon = substr($trSeq,$trdbEnt->{csta},3);
                     if ($hit_init_flag) {
 			# check if altered sequence have new start codon
                         foreach my $startCodon ( sort keys %start_codons ) {
@@ -2234,7 +2214,7 @@ sub getTrChange {
                                     elsif ( $original_var_frame == 0 ) {
 					# change to a frameshift case
                                         $codon_alt .= substr(
-                                            $trSeqs{$tid},
+                                            $trSeq,
                                             (
                                                 $trdbEnt->{csta} +
                                                   ( 3 * $cInfo3[0] )
@@ -2614,64 +2594,6 @@ sub cmpPos {
     }
     return 0;
 }
-
-=head2 fetchseq
-
-    About   : get sequence from fasta db using samtools faidx
-    Usage   : my $seq = fetchseq('db.fasta', $region_str);
-              my $rhash = fetchseq('db.fasta', \@regions);
-    Args    : a list of region in format: (chr1:123-456, chr1:789-1000, chr2:234-567, or NM_01130.1:345 )
-    Returns : a hash ref of { region => seq }
-
-=cut
-sub fetchseq {
-    my ($fasta, $rRegs) = @_;
-    local $/ = ">";
-    if (!ref($rRegs)) { # a scalar string
-	if ($rRegs =~ /[\S]\s+[\S]/) { # multiple regions
-	    $rRegs = [split(/\s+/, $rRegs)];
-	}
-	else { # single region
-	    open (FASTA,"samtools faidx $fasta $rRegs |") or confess "samtools faidx: $!";
-	    <FASTA>; # shift first ">";
-	    my $seq = <FASTA>;
-	    close FASTA;
-	    $seq =~ s/^[^\n]+//;
-	    $seq =~ s/[\s>]+//g;
-	    return uc($seq);
-	}
-    }
-    my @localRegs = @$rRegs;
-    my %seqs = ();
-    while (0 < @localRegs) {
-	my @set = ();
-	if (1000 < @localRegs) { 
-	    @set = splice (@localRegs, 0, 1000);
-	}
-	else {
-	    @set = @localRegs;
-	    @localRegs = ();
-	}
-	my $regions = join(" ", @set);
-        open( FASTA, "samtools faidx $fasta $regions |" )
-          or confess "samtools faidx: $!";
-	my @all_seq = <FASTA>;
-	close FASTA;
-	shift @all_seq;
-	foreach my $rec (@all_seq) {
-	    chomp $rec;
-	    my $hd = $1 if ($rec =~ s/^(\S+)[^\n]*//);
-	    $rec =~ s/[\s>]+//g;
-	    next if ($rec =~ /^$/);
-	    if (!defined $hd) {
-		confess "Error: exists empty header in fasta [$rec]";
-	    }
-	    $seqs{$hd} = uc($rec);
-	}
-    }
-    return \%seqs;
-}
-
 
 =head2 getCodon_by_cdsPos
 
