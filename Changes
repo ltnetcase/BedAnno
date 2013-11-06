@@ -68,3 +68,6 @@
 
 0.35  Sat Nov 2  18:43:05 2013
 	- change to use Tabix Perl API instead of system call cmd: tabix
+
+0.36  Wed Nov 6  14:44:04 2013
+	- get rid of fetchseq by samtools faidx, hash all transcript sequences at the very beginning.
