@@ -5,16 +5,17 @@ use warnings;
 use threads::shared; # if threads used before BedAnno, then this will be threaded
 use Carp;
 use Data::Dumper;
+use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.36';
+our $VERSION = '0.37';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.36
+=head2 VERSION v0.37
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -469,8 +470,28 @@ sub new {
     $self->throw("Error: please at least give 'db' and 'tr' path.")
 	if (!exists $self->{db} or !exists $self->{tr});
 
+    my $debugOpt = (exists $self->{debug}) ? 1 : 0;
+    my $t0;
+    if ($debugOpt) {
+	$t0 = [ gettimeofday ];
+    }
+
     $self->set_db($self->{db});
+
+    my $t1;
+    if ($debugOpt) {
+	$t1 = [ gettimeofday ];
+	print STDERR "BedAnno->new [db load] ... ".tv_interval( $t0, $t1 )."\n";
+	$t0 = $t1;
+    }
+
     $self->set_tr($self->{tr});
+    if ($debugOpt) {
+	$t1 = [ gettimeofday ];
+	print STDERR "BedAnno->new [tr load] ... ".tv_interval( $t0, $t1 )."\n";
+	$t0 = $t1;
+    }
+
     $self->set_refbuild($REF_BUILD);
 
     if ( exists $self->{cytoBand} ) {
@@ -507,6 +528,12 @@ sub new {
 
     if (exists $self->{wellderly}) {
 	$self->set_wellderly($self->{wellderly});
+    }
+    
+    if ($debugOpt) {
+	$t1 = [ gettimeofday ];
+	print STDERR "BedAnno->new [others load] ... ".tv_interval( $t0, $t1 )."\n";
+	$t0 = $t1;
     }
 
     return $self;
@@ -912,7 +939,6 @@ sub readtr {
         my @headers = split( /\s+/, $hd, 9 );
         confess "Error: trSeq header parse error!" if ( 7 > @headers );
         s/\s+//g;
-        next if ( $headers[6] =~ /FAIL/ );    # skip failed transcript
 
         if ( !exists $opts{trans} and !exists $opts{genes} ) {
             next
@@ -1007,10 +1033,10 @@ sub load_anno {
 	my @regions = split(/\s+/, $args{region});
 	foreach my $reg (@regions) {
 	    next if ($reg eq "");
-	    if ($reg =~ /^(\S+):(\d+)\-(\d+)$/) {
+	    if ($reg =~ /^(\S+):(\-?\d+)\-(\d+)$/) {
 		my ($name, $beg, $end) = ($1, $2, $3);
-		if ($beg == 0) {
-		    $self->warn("Warning: region string should be 1 based [$reg], has been changed to 1 based");
+		if ($beg <= 0) {
+		    $self->warn("Warning: region string should be 1 based [$reg], has been changed to 1 based") if (exists $self->{debug});
 		    $beg = 1;
 		}
                 push( @query_region, [ $name, ( $beg - 1 ), $end ] );
@@ -1050,8 +1076,11 @@ sub load_anno {
 	for (my $k = 1; $k < @sorted_regions; $k++) {
 	    my ($dname, $dbeg, $dend) = @{$sorted_regions[$k]};
 	    if ($dname ne $cname or $dbeg > $cend) {
-                push( @all_querys,
-                    $self->{tidb}->query( $cname, $cbeg, $cend ) );
+
+		my $query_ent = $self->{tidb}->query( $cname, $cbeg, $cend );
+		if ( defined $query_ent->{_} ) {
+		    push( @all_querys, $query_ent );
+		}
 		($cname, $cbeg, $cend) = @{$sorted_regions[$k]};
 	    }
 	    else {
@@ -1059,7 +1088,9 @@ sub load_anno {
 	    }
 	}
 	my $q = $self->{tidb}->query( $cname, $cbeg, $cend );
-	push( @all_querys, $q ) if (defined $q->{_});
+	if (defined $q->{_}) {
+	    push( @all_querys, $q );
+	}
     }
 
     # trans filter is always be ahead of genes
@@ -1246,8 +1277,27 @@ sub parse_annoent {
 =cut
 sub anno {
     my $self = shift;
+    
+    my $debugOpt = (exists $self->{debug}) ? 1 : 0;
+    my $t0;
+    if ($debugOpt) {
+	$t0 = [ gettimeofday ];
+    }
     my $var = BedAnno::Var->new(@_);
+
+    my $t1;
+    if ($debugOpt) {
+	$t1 = [ gettimeofday ];
+	print STDERR "BedAnno->anno [new BedAnno::Var] ... ".tv_interval( $t0, $t1 )."\n";
+	$t0 = $t1;
+    }
     my ($annoEnt, $idx) = $self->varanno($var);
+
+    if ($debugOpt) {
+	$t1 = [ gettimeofday ];
+	print STDERR "BedAnno->anno [varanno] ... ".tv_interval( $t0, $t1 )."\n";
+	$t0 = $t1;
+    }
     return $annoEnt;
 }
 
@@ -1383,6 +1433,12 @@ sub varanno {
     my ($self, $var, $AEIndex) = @_;
     $AEIndex ||= 0;
 
+    my $debugOpt = (exists $self->{debug}) ? 1 : 0;
+    my $t0;
+    if ($debugOpt) {
+	$t0 = [ gettimeofday ];
+    }
+    
     if (exists $self->{cytoBand}) {
 	$var->{cytoBand} = $self->{cytoBand_h}->getCB(@$var{qw(chr pos end)});
     }
@@ -1451,6 +1507,13 @@ sub varanno {
 	$var->{wellderly} = $self->{wellderly_h}->getAF(@$var{qw(chr pos end ref alt)});
     }
 
+    my $t1;
+    if ($debugOpt) {
+	$t1 = [ gettimeofday ];
+	print STDERR "BedAnno->varanno [var extradb sql] ... ".tv_interval( $t0, $t1 )."\n";
+	$t0 = $t1;
+    }
+
     $var->{varTypeSO} = $Name2SO{$var->{guess}};
     $var->{refbuild}  = $self->{refbuild};
     $var->get_gHGVS();
@@ -1458,9 +1521,10 @@ sub varanno {
     # Due to the bed format database, 
     # add flank left and right 1bp to query the database
     # to involve all the mismatches
+
     my $var_region =
       (     $var->{chr} . ':'
-          . ( $var->{pos} - 1 ) . '-'
+          . ( ( $var->{pos} > 0 ) ? ( $var->{pos} - 1 ) : 0 ) . '-'
           . ( $var->{pos} + $var->{reflen} + 1 ) );
 
     my $localdb;
@@ -1470,7 +1534,7 @@ sub varanno {
     }
     else {
 	if ( !exists $self->{annodb}->{$var->{chr}} ) {
-	    $self->warn("Warning: incomplete annotation database in batch mode, [$var->{chr}]");
+	    $self->warn("Warning: incomplete annotation database in batch mode, [$var->{chr}]") if ($debugOpt);
 	    $localdb = [];
 	}
 	else {
@@ -1478,10 +1542,40 @@ sub varanno {
 	}
     }
 
+    if ($debugOpt) {
+	$t1 = [ gettimeofday ];
+	print STDERR "BedAnno->varanno [localdb load] ... ".tv_interval( $t0, $t1 )."\n";
+	$t0 = $t1;
+    }
+
     my $annoEnt = BedAnno::Anno->new($var);
+
+    if ($debugOpt) {
+	$t1 = [ gettimeofday ];
+	print STDERR "BedAnno->varanno [new BedAnno::Anno] ... ".tv_interval( $t0, $t1 )."\n";
+	$t0 = $t1;
+    }
+
     $AEIndex = $annoEnt->getTrPosition($localdb, $AEIndex);
+    if ($debugOpt) {
+	$t1 = [ gettimeofday ];
+	print STDERR "BedAnno->varanno [getTrPosition] ... ".tv_interval( $t0, $t1 )."\n";
+	$t0 = $t1;
+    }
+
     $annoEnt = $self->getTrChange($annoEnt);
+    if ($debugOpt) {
+	$t1 = [ gettimeofday ];
+	print STDERR "BedAnno->varanno [getTrChange] ... ".tv_interval( $t0, $t1 )."\n";
+	$t0 = $t1;
+    }
+
     $annoEnt = $self->finaliseAnno($annoEnt);
+    if ($debugOpt) {
+	$t1 = [ gettimeofday ];
+	print STDERR "BedAnno->varanno [finaliseAnno] ... ".tv_interval( $t0, $t1 )."\n";
+	$t0 = $t1;
+    }
 
     return ($annoEnt, $AEIndex);
 }
@@ -1716,15 +1810,6 @@ sub getTrChange {
 
     foreach my $tid (sort keys %{$annoEnt->{trInfo}}) {
         my $trannoEnt = $annoEnt->{trInfo}->{$tid};
-        my $qtid = $tid;
-        $qtid =~ s/\-\d+$//; # trim the multiple mapping indicator in trAcc
-        if (!exists $self->{trInfodb}->{$qtid}
-                or $self->{trInfodb}->{$qtid}->{seq} eq "") {
-            $self->throw("Error: your fasta database file may not complete. [$qtid]");
-        }
-        my $trdbEnt = $self->{trInfodb}->{$qtid};
-        my $trSeq = $trdbEnt->{seq};
-
 	my ( $unify_p, $unify_r, $unify_a, $unify_rl, $unify_al ) =
 	  $annoEnt->{var}->getUnifiedVar( $trannoEnt->{strd} );
 
@@ -1736,6 +1821,17 @@ sub getTrChange {
             $trannoEnt->{func} = 'annotation-fail';
             next;
         }
+
+	# the database hash of tr don't hash the annotation failed transcript
+        my $qtid = $tid;
+        $qtid =~ s/\-\d+$//; # trim the multiple mapping indicator in trAcc
+        if (!exists $self->{trInfodb}->{$qtid}
+                or $self->{trInfodb}->{$qtid}->{seq} eq "") {
+            $self->throw("Error: your fasta database file may not complete. [$qtid]");
+        }
+        my $trdbEnt = $self->{trInfodb}->{$qtid};
+        my $trSeq = $trdbEnt->{seq};
+
 
 	my $cdsOpt = (exists $trdbEnt->{prot} and $trdbEnt->{prot} ne ".") ? 1 : 0;
 	my $strd   = ($trannoEnt->{strd} eq '+') ? 1 : 0;
@@ -1783,7 +1879,7 @@ sub getTrChange {
 	    }
 	    elsif ($cmpPos == 1) { # multiple bp
 		$trannoEnt->{c} = $f . $chgvs_5 . '_' . $chgvs_3 . 'del'
-		    . $trRef . 'ins?';
+		    . ( ($trRef =~ /^[ACGTN]+$/ ) ? $trRef : "" ) . 'ins?';
 		if ($cInfo5[0] > 0 and $cInfo3[0] > 0) {
 		    if ($cInfo5[0] == $cInfo3[0]) {
 			my $aaOut = $cInfo5[2];
@@ -1906,7 +2002,7 @@ sub getTrChange {
 		    $trannoEnt->{c} .= $real_r . '>' . $real_a; # 1bp alt
 		}
 		elsif ($real_al == 0) {
-		    $trannoEnt->{c} .= 'del' . $real_r;
+		    $trannoEnt->{c} .= 'del' . (($real_r =~ /^[ACGTN]+$/) ? $real_r : "");
 		}
 		else {
 		    $trannoEnt->{c} .= 'delins' . $real_a;
@@ -3039,6 +3135,7 @@ package BedAnno::Var;
 use base qw(BedAnno);
 use strict;
 use warnings;
+use Data::Dumper;
 use Carp;
  
 =head1 METHOD
@@ -3124,21 +3221,32 @@ use Carp;
 sub new {
     my $class = shift;
     my ($chr, $start, $end, $ref, $alt);
-    if (ref($_[0])) {
+    if ( ref( $_[0] ) ) {
         if (   !exists $_[0]->{chr}
             or !exists $_[0]->{begin}
             or !exists $_[0]->{variantSequence}
-            or !exists $_[0]->{referenceSequence} )
+            or ( !exists $_[0]->{end} and !exists $_[0]->{referenceSequence} ) )
         {
             confess "Error: unavailable object. need keys: ",
               "chr, start, alt, ref specified.";
         }
-	
-	$chr = $_[0]->{chr};
-	$start = $_[0]->{begin};
-	$alt = $_[0]->{variantSequence};
-	$ref = $_[0]->{referenceSequence};
-	$end = $_[0]->{end} if ( exists $_[0]->{end} );
+
+        $chr   = $_[0]->{chr};
+        $start = $_[0]->{begin};
+        $end   = $_[0]->{end} if ( exists $_[0]->{end} );
+	if ( defined $_[0]->{variantSequence} ) {
+	    $alt   = $_[0]->{variantSequence};
+	}
+	else {
+	    $alt   = "";
+	}
+	$alt = "" if ($alt =~ /^null$/i);
+        $ref =
+          ( exists $_[0]->{end} and $start eq $end ) ? ""
+          : (
+            ( exists $_[0]->{referenceSequence} ) ? $_[0]->{referenceSequence}
+            : "="
+          );
 
     }
     else {
@@ -3654,7 +3762,7 @@ sub get_gHGVS {
 	if ($sm > 1) {
 	    $gHGVS .= '_'.($pos + $reflen);
 	}
-	$gHGVS .= 'del'.$ref;
+	$gHGVS .= 'del'.(($ref =~ /^[ACGTN]+$/) ? $ref : "");
 	$gHGVS .= 'ins'.$alt if ( $imp =~ /delins/);
     }
     elsif ($imp eq 'rep') {

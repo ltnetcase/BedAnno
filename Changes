@@ -71,3 +71,6 @@
 
 0.36  Wed Nov 6  14:44:04 2013
 	- get rid of fetchseq by samtools faidx, hash all transcript sequences at the very beginning.
+
+0.37  Fri Nov 15 20:13:43 2013
+	- fix bugs for many different special variants position or sequence states
