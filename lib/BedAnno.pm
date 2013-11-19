@@ -9,13 +9,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.37';
+our $VERSION = '0.38';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.37
+=head2 VERSION v0.38
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -1607,65 +1607,73 @@ sub finaliseAnno {
 
 	    # complete informations depend on already assigned values
 	    my $genepartSO;
-	    if ($trAnnoEnt->{rnaBegin} =~ /^\+/ or $trAnnoEnt->{rnaEnd} =~ /^\+/) {
-		$genepartSO = 'span'; # 3'downstream span
-	    }
-	    elsif ( $trAnnoEnt->{r_Begin} eq $trAnnoEnt->{r_End} ) {
-		$genepartSO =
-		  ( $trAnnoEnt->{genepartSO} =~ /^\d+$/ )
-		  ? sprintf( "SO:%07d", $trAnnoEnt->{genepartSO} )
-		  : $trAnnoEnt->{genepartSO};
+            if ( $trAnnoEnt->{r_Begin} eq $trAnnoEnt->{r_End}
+                or 0 >
+                $self->cmpPos( $trAnnoEnt->{rnaBegin}, $trAnnoEnt->{rnaEnd} ) )
+            {
+                $genepartSO =
+                  ( $trAnnoEnt->{genepartSO} =~ /^\d+$/ )
+                  ? sprintf( "SO:%07d", $trAnnoEnt->{genepartSO} )
+                  : $trAnnoEnt->{genepartSO};
 
-		$trAnnoEnt->{r} = $trAnnoEnt->{r_Begin};
-		$trAnnoEnt->{exin} = $trAnnoEnt->{ei_Begin};
+                $trAnnoEnt->{r} = $trAnnoEnt->{r_Begin}
+                  if ( !exists $trAnnoEnt->{r} );
+                $trAnnoEnt->{exin} = $trAnnoEnt->{ei_Begin}
+                  if ( !exists $trAnnoEnt->{exin} );
 
-		if ($trAnnoEnt->{exin} =~ /^EX(\d+)/) {
-		    $trAnnoEnt->{genepartIndex} = $1;
-		    $trAnnoEnt->{exonIndex} = $1;
-		}
-		elsif ($trAnnoEnt->{exin} =~ /^IVS(\d+)/) {
-		    $trAnnoEnt->{genepartIndex} = $1;
-		    $trAnnoEnt->{intronIndex} = $1;
-		}
-		else {
-		    $trAnnoEnt->{genepartIndex} = 0;
-		}
-	    }
-	    elsif ( $trAnnoEnt->{ei_Begin} =~ /^IVS/ 
-		and $trAnnoEnt->{ei_Begin} eq $trAnnoEnt->{ei_End} )
-	    { # span splice or interior intron
-		$genepartSO = 'span'; # need to discuss? whether to use interior
-		$trAnnoEnt->{r} =
-		  ($strd)
-		  ? $trAnnoEnt->{r_Begin} . '-' . $trAnnoEnt->{r_End}
-		  : $trAnnoEnt->{r_End} . '-' . $trAnnoEnt->{r_Begin};
-		$trAnnoEnt->{exin}          = $trAnnoEnt->{ei_Begin};
-		$trAnnoEnt->{genepartIndex} = $1 if ($trAnnoEnt->{ei_Begin} =~ /(\d+)/);
-		$trAnnoEnt->{intronIndex}   = $trAnnoEnt->{genepartIndex};
-	    }
-	    else { # non-equal exon intron number or UTR/CDS span
-		$genepartSO = 'span';
-		$trAnnoEnt->{r} =
-		  ($strd)
-		  ? $trAnnoEnt->{r_Begin} . '-' . $trAnnoEnt->{r_End}
-		  : $trAnnoEnt->{r_End} . '-' . $trAnnoEnt->{r_Begin};
-		if ($trAnnoEnt->{ei_Begin} eq $trAnnoEnt->{ei_End}) {
-		    $trAnnoEnt->{exin} = $trAnnoEnt->{ei_Begin};
-		    $trAnnoEnt->{genepartIndex} = $1
-		      if ( $trAnnoEnt->{ei_Begin} =~ /EX(\d+)/ );
-		    $trAnnoEnt->{exonIndex} = $trAnnoEnt->{genepartIndex};
-		}
-		else { # for same index exon intron give this index
-		    $trAnnoEnt->{exin} =
-		      ($strd)
-		      ? $trAnnoEnt->{ei_Begin} . '-' . $trAnnoEnt->{ei_End}
-		      : $trAnnoEnt->{ei_End} . '-' . $trAnnoEnt->{ei_Begin};
+                if ( $trAnnoEnt->{exin} =~ /^EX(\d+)/ ) {
+                    $trAnnoEnt->{genepartIndex} = $1;
+                    $trAnnoEnt->{exonIndex}     = $1;
+                }
+                elsif ( $trAnnoEnt->{exin} =~ /^IVS(\d+)/ ) {
+                    $trAnnoEnt->{genepartIndex} = $1;
+                    $trAnnoEnt->{intronIndex}   = $1;
+                }
+                else {
+                    $trAnnoEnt->{genepartIndex} = 0;
+                }
+            }
+            elsif ($trAnnoEnt->{rnaBegin} =~ /^\+/
+                or $trAnnoEnt->{rnaEnd} =~ /^\+/ )
+            {
+                $genepartSO = 'span';    # 3'downstream span
+            }
+            elsif ( $trAnnoEnt->{ei_Begin} =~ /^IVS/
+                and $trAnnoEnt->{ei_Begin} eq $trAnnoEnt->{ei_End} )
+            {                            # span splice or interior intron
+                $genepartSO = 'span'; # need to discuss? whether to use interior
+                $trAnnoEnt->{r} =
+                  ($strd)
+                  ? $trAnnoEnt->{r_Begin} . '-' . $trAnnoEnt->{r_End}
+                  : $trAnnoEnt->{r_End} . '-' . $trAnnoEnt->{r_Begin};
+                $trAnnoEnt->{exin}          = $trAnnoEnt->{ei_Begin};
+                $trAnnoEnt->{genepartIndex} = $1
+                  if ( $trAnnoEnt->{ei_Begin} =~ /(\d+)/ );
+                $trAnnoEnt->{intronIndex} = $trAnnoEnt->{genepartIndex};
+            }
+            else {    # non-equal exon intron number or UTR/CDS span
+                $genepartSO = 'span';
+                $trAnnoEnt->{r} =
+                  ($strd)
+                  ? $trAnnoEnt->{r_Begin} . '-' . $trAnnoEnt->{r_End}
+                  : $trAnnoEnt->{r_End} . '-' . $trAnnoEnt->{r_Begin};
+                if ( $trAnnoEnt->{ei_Begin} eq $trAnnoEnt->{ei_End} ) {
+                    $trAnnoEnt->{exin}          = $trAnnoEnt->{ei_Begin};
+                    $trAnnoEnt->{genepartIndex} = $1
+                      if ( $trAnnoEnt->{ei_Begin} =~ /EX(\d+)/ );
+                    $trAnnoEnt->{exonIndex} = $trAnnoEnt->{genepartIndex};
+                }
+                else {    # for same index exon intron give this index
+                    $trAnnoEnt->{exin} =
+                      ($strd)
+                      ? $trAnnoEnt->{ei_Begin} . '-' . $trAnnoEnt->{ei_End}
+                      : $trAnnoEnt->{ei_End} . '-' . $trAnnoEnt->{ei_Begin};
 
-		    if ( $trAnnoEnt->{exin} =~ /(\d+)\D+(\d+)/ and $1 eq $2 ) {
-			$trAnnoEnt->{genepartIndex} = $1;
-		    }
-		}
-	    }
+                    if ( $trAnnoEnt->{exin} =~ /(\d+)\D+(\d+)/ and $1 eq $2 ) {
+                        $trAnnoEnt->{genepartIndex} = $1;
+                    }
+                }
+            }
 
 	    confess "Error: unknown genepartSO [$genepartSO]."
 	      if ( !exists $SO2Name{$genepartSO} );
@@ -1839,7 +1847,7 @@ sub getTrChange {
 	# fix the trRefComp when ended in 3'downstream
 
 	# debug
-#	print STDERR Data::Dumper->Dump( [$tid, $trannoEnt, $unify_r, $trSeq, $strd], ["tid", "trannoEnt", "unify_r", "trSeq", "strd"] );
+	#print STDERR Data::Dumper->Dump( [$tid, $trannoEnt, $unify_r, $trSeq, $strd], ["tid", "trannoEnt", "unify_r", "trSeq", "strd"] );
 
 	my $trRef = getTrRef($trannoEnt, $unify_r, $trSeq, $strd);
 	$trannoEnt->{trRef} = $trRef;
@@ -4151,6 +4159,7 @@ sub getTrPosition {
     my ($annoEnt, $rannodb, $aeIndex) = @_;
 
     my $var = $annoEnt->{var};
+    
     # gather the covered entries
     my $new_aeIndex;
 
@@ -4189,7 +4198,6 @@ sub getTrPosition {
                 my $total_left_ofst =
                   $$rtidDetail{offset} + ( $unify_p - $$rannodb[$k]{sta} );
                 my $total_right_ofst = $total_left_ofst + $unify_rl;
-
 
                 if (   !exists $annoEnt->{trInfo}
                     or !exists $annoEnt->{trInfo}->{$tid}
@@ -4244,15 +4252,63 @@ sub getTrPosition {
                                 noassign  => 1,
                             );
 			}
+			elsif ( !exists $rpreLeft{$tid} ) {
+			    # no left block of annotation for this tid
+			    # then 5'promoter left or 3'downstream
+			    $rpreLeft{$tid} = 0;
+			}
 
-			if (ref($rpreLeft{$tid})) {
-			    if ($strd) {
-				$tmp_trInfo->{preStart} = $rpreLeft{$tid};
+			unless (ref($rpreLeft{$tid})) {
+			    # no left block of annotation for this tid
+			    # then 5'promoter left or 3'downstream
+			    if ($total_left_ofst == 0) {
+				my $preLeft_cDot = "";
+				my $preLeft_nDot = "";
+				my $preLeft_exin = "";
+				my $preLeft_r    = "";
+				if ($strd) {
+				    $preLeft_exin = ".";
+				    $preLeft_r    = "PROM";
+				    if ( $tmp_trInfo->{cdsBegin} ne "" ) {
+					if ( $tmp_trInfo->{cdsBegin} =~ /^(.*)-u(\d+)$/ ) {
+					    $preLeft_cDot = $1.'-u'.($2+1);
+					}
+					else {
+					    confess "Error: bad cdsBegin for promoter region [$tid:$tmp_trInfo->{cdsBegin}]";
+					}
+				    }
+				    if ( $tmp_trInfo->{rnaBegin} eq "1" ) {
+					$preLeft_nDot = -1;
+				    }
+				    else {
+					$preLeft_nDot = $tmp_trInfo->{rnaBegin} - 1;
+				    }
+				}
+				else {
+				    $preLeft_exin = ".";
+				    $preLeft_r    = "3D";
+				    $preLeft_nDot = '+1';
+				    $preLeft_cDot = '+d1';
+				}
+				$rpreLeft{$tid} = {
+				    nDot => $preLeft_nDot,
+				    cDot => $preLeft_cDot,
+				    exin => $preLeft_exin,
+				    r    => $preLeft_r,
+				};
 			    }
 			    else {
-				$tmp_trInfo->{postEnd} = $rpreLeft{$tid};
+				confess "Error: rpreLeft not found.[$tid]\n";
 			    }
 			}
+
+			if ($strd) {
+			    $tmp_trInfo->{preStart} = $rpreLeft{$tid};
+			}
+			else {
+			    $tmp_trInfo->{postEnd} = $rpreLeft{$tid};
+			}
+
                     }
                     else {
 			$rpreLeft{$tid} = $annoEnt->cal_hgvs_pos(
@@ -4262,14 +4318,97 @@ sub getTrPosition {
 			    LR        => 0,                  # preLeft mode
 			    noassign  => 1,
 			);
-                        next;
+			
+			next;
                     }
                 }
 
 		# $tid have been added into trInfo in the left end assignment
 		my $trinfoEnt = $annoEnt->{trInfo}->{$tid};
 		# assign right rna positions
-                if (
+                if (    $total_left_ofst == 0
+                    and $total_left_ofst == $total_right_ofst
+		    and $rtidDetail->{wlen} > 0 )
+                { # here is the part of insertion in edge,
+		  # we don't need to recall cal_hgvs_pos,
+		  # just use the already generated infomation
+		  # About genepart judgement for this edge insertion case
+		  # 1. promoter-any     => promoter
+		  # 2. any-3'downstream => 3'downstream
+		  # 3. utr-cds          => utr
+		  # 4. exon-intron      => exon
+		    if ($strd) {
+			$trinfoEnt->{rnaEnd} = $rpreLeft{$tid}->{nDot};
+			$trinfoEnt->{cdsEnd} = $rpreLeft{$tid}->{cDot};
+			$trinfoEnt->{ei_End} = $rpreLeft{$tid}->{exin};
+			$trinfoEnt->{r_End}  = $rpreLeft{$tid}->{r};
+		    }
+		    else {
+			$trinfoEnt->{rnaBegin} = $rpreLeft{$tid}->{nDot};
+			$trinfoEnt->{cdsBegin} = $rpreLeft{$tid}->{cDot};
+			$trinfoEnt->{ei_Begin} = $rpreLeft{$tid}->{exin};
+			$trinfoEnt->{r_Begin}  = $rpreLeft{$tid}->{r};
+		    }
+
+		    # correct genepartSO for different type of edge insertion
+                    if (   $trinfoEnt->{r_Begin} eq 'PROM'
+                        or $trinfoEnt->{r_End} eq 'PROM' )
+                    {
+                        $trinfoEnt->{genepartSO} = '167';
+			$trinfoEnt->{trRefComp}->{P0} = [ 0, 0 ];
+			$trinfoEnt->{exin} = '.';
+			$trinfoEnt->{r} = 'PROM';
+                    }
+                    elsif (   $trinfoEnt->{r_Begin} eq '3D'
+                        or $trinfoEnt->{r_End} eq '3D' )
+                    { # 3'downstream insertion will be ignored as intergenic variantion
+                        delete $annoEnt->{trInfo}->{$tid};
+                        next;
+                    }
+                    elsif (
+                        (
+                                $trinfoEnt->{ei_End} =~ /EX/
+                            and $trinfoEnt->{ei_Begin} =~ /IVS/
+                        )
+                        or (    $trinfoEnt->{r_End} =~ /^[53]U/
+                            and $trinfoEnt->{r_Begin} =~ /^C/ )
+                      )
+                    {
+                        $trinfoEnt->{genepartSO} =
+                          getSOfromR( $trinfoEnt->{r_End} );
+			$trinfoEnt->{trRefComp}->{$trinfoEnt->{ei_End}} = 0;
+			$trinfoEnt->{exin} = $trinfoEnt->{ei_End};
+			$trinfoEnt->{r} = $trinfoEnt->{r_End};
+                    }
+                    elsif (
+                        (
+                                $trinfoEnt->{ei_Begin} =~ /EX/
+                            and $trinfoEnt->{ei_End} =~ /IVS/
+                        )
+                        or (    $trinfoEnt->{r_Begin} =~ /^[53]U/
+                            and $trinfoEnt->{r_End} =~ /^C/ )
+                      )
+                    {
+                        $trinfoEnt->{genepartSO} =
+                          getSOfromR( $trinfoEnt->{r_Begin} );
+			$trinfoEnt->{trRefComp}->{$trinfoEnt->{ei_Begin}} = 0;
+			$trinfoEnt->{exin} = $trinfoEnt->{ei_Begin};
+			$trinfoEnt->{r} = $trinfoEnt->{r_Begin};
+                    }
+		    else { # no genepart change needed
+			if ($trinfoEnt->{ei_Begin} eq $trinfoEnt->{ei_End}) {
+			    if ($trinfoEnt->{ei_Begin} =~ /^EX/) {
+				$trinfoEnt->{trRefComp}->{$trinfoEnt->{ei_Begin}} = 0;
+			    }
+			    else {
+				$trinfoEnt->{trRefComp}->{$trinfoEnt->{ei_Begin}} = [ 0, 0 ];
+			    }
+			}
+			$trinfoEnt->{exin} = $trinfoEnt->{ei_Begin};
+			$trinfoEnt->{r} = $trinfoEnt->{r_Begin};
+		    }
+		}
+                elsif (
                     $annoEnt->cal_hgvs_pos(
                         tid       => $tid,
                         tidDetail => $rtidDetail,
@@ -4380,6 +4519,7 @@ sub getTrPosition {
 			}
 		    }
                 }
+		
 		my $rpostRight = $annoEnt->cal_hgvs_pos(
 		    tid       => $tid,
 		    tidDetail => $rtidDetail,
@@ -4402,7 +4542,42 @@ sub getTrPosition {
     return $new_aeIndex;
 }
 
-
+sub getSOfromR {
+    my $r = shift;
+    if ($r eq 'PROM') {
+	return '167';
+    }
+    elsif ($r =~ /^5U/) {
+	return '204';
+    }
+    elsif ($r =~ /^3U/) {
+	return '205';
+    }
+    elsif ($r =~ /^C/) {
+	return '316';
+    }
+    elsif ($r =~ /^R/) {
+	return '655';
+    }
+    elsif ($r =~ /^D/) {
+	return '163';
+    }
+    elsif ($r =~ /^A/) {
+	return '164';
+    }
+    elsif ($r =~ /^I5U/) {
+	return '447';
+    }
+    elsif ($r =~ /^I3U/) {
+	return '448';
+    }
+    elsif ($r =~ /^IC/ or $r =~ /^IR/) {
+	return '191';
+    }
+    else { # default to intergenic_region
+	return '605';
+    }
+}
 
 
 =head2 cal_hgvs_pos
@@ -4486,6 +4661,10 @@ sub cal_hgvs_pos {
     my $strd = ($$rtidDetail{strd} eq '+') ? 1 : 0;
     my $trAlt = $annoEnt->{trInfo}->{$tid}->{trAlt} if (!exists $cal_args{noassign});
 
+    my $exin = $rtidDetail->{exin};
+    my $blka = $rtidDetail->{blka};
+    my $gpSO = $rtidDetail->{gpSO};
+
     my $lofst = $ofst;
     if ($lr) { # only one time assignment for one var, offset for left 
 	my $rofst = $$rtidDetail{wlen} - $ofst - 1;
@@ -4503,6 +4682,9 @@ sub cal_hgvs_pos {
 		if ($$rtidDetail{csta} =~ /^\*?\d+$/) {
                     $cDot = $$rtidDetail{csta} . '+d' . ( 0 - $lofst );
 		}
+		$exin = '.';
+		$blka = '3D';
+		$gpSO = '605';
 	    }
         }
 	elsif ($lofst > $$rtidDetail{wlen}) {
@@ -4549,11 +4731,11 @@ sub cal_hgvs_pos {
 		return 0;
 	    }
 	    # 3. check if annotation-fail
-	    elsif ($rtidDetail->{gpSO} eq 'annotation-fail') {
+	    elsif ($gpSO eq 'annotation-fail') {
 		( $nDot, $cDot ) = ( '?', '?' );
 	    }
 	    # 4. check if a promoter
-	    elsif ($rtidDetail->{blka} eq 'PROM') {
+	    elsif ($blka eq 'PROM') {
                 $nDot =
                     ($strd)
                   ? ( $rtidDetail->{nsta} + $lofst )
@@ -4566,7 +4748,7 @@ sub cal_hgvs_pos {
 		}
 	    }
 	    # 5. check if an exon
-	    elsif ($rtidDetail->{exin} =~ /EX/) {
+	    elsif ($exin =~ /EX/) {
                 $nDot =
                     ($strd)
                   ? ( $rtidDetail->{nsta} + $lofst )
@@ -4576,7 +4758,7 @@ sub cal_hgvs_pos {
 		}
 	    }
 	    # 6. intron
-	    elsif ($rtidDetail->{exin} =~ /IVS/) {
+	    elsif ($exin =~ /IVS/) {
 		my $half_length = $rtidDetail->{wlen} / 2;
 		if ($lofst > $half_length) { # drop into latter part
                     if (   $rtidDetail->{nsto} =~ /^\d+\d+$/
@@ -4632,16 +4814,16 @@ sub cal_hgvs_pos {
 	    if ($strd) {
 		$annoEnt->{trInfo}->{$tid}->{rnaBegin} = $nDot;
 		$annoEnt->{trInfo}->{$tid}->{cdsBegin} = $cDot;
-		$annoEnt->{trInfo}->{$tid}->{ei_Begin} = $rtidDetail->{exin}; 
-		$annoEnt->{trInfo}->{$tid}->{r_Begin}  = $rtidDetail->{blka};
+		$annoEnt->{trInfo}->{$tid}->{ei_Begin} = $exin; 
+		$annoEnt->{trInfo}->{$tid}->{r_Begin}  = $blka;
 	    }
 	    else {
 		$annoEnt->{trInfo}->{$tid}->{rnaEnd} = $nDot;
 		$annoEnt->{trInfo}->{$tid}->{cdsEnd} = $cDot;
-		$annoEnt->{trInfo}->{$tid}->{ei_End} = $rtidDetail->{exin};
-		$annoEnt->{trInfo}->{$tid}->{r_End}  = $rtidDetail->{blka};
+		$annoEnt->{trInfo}->{$tid}->{ei_End} = $exin;
+		$annoEnt->{trInfo}->{$tid}->{r_End}  = $blka;
 	    }
-	    $annoEnt->{trInfo}->{$tid}->{genepartSO} = $rtidDetail->{gpSO};
+	    $annoEnt->{trInfo}->{$tid}->{genepartSO} = $gpSO;
 	    $annoEnt->{trInfo}->{$tid}->{trAlt} = $trAlt;
 	}
     }
@@ -4655,6 +4837,9 @@ sub cal_hgvs_pos {
                 if ( $$rtidDetail{csto} =~ /^\*?\d+$/ ) {
                     $cDot = $$rtidDetail{csto} . '+d' . $ex_ofst;
                 }
+		$exin = '.';
+		$blka = '3D';
+		$gpSO = '605';
 	    }
 	    else { # outside 5'promoter region ?
                 $nDot =
@@ -4698,11 +4883,11 @@ sub cal_hgvs_pos {
 		return 0;
 	    }
 	    # 3. check if annotation-fail
-	    elsif ($rtidDetail->{gpSO} eq 'annotation-fail') {
+	    elsif ($gpSO eq 'annotation-fail') {
 		( $nDot, $cDot ) = ( '?', '?' );
 	    }
 	    # 4. check if a promoter
-	    elsif ($rtidDetail->{blka} =~ /^PROM/) {
+	    elsif ($blka =~ /^PROM/) {
                 $nDot =
                     ($strd)
                   ? ( $rtidDetail->{nsta} + $real_ofst )
@@ -4715,7 +4900,7 @@ sub cal_hgvs_pos {
 		}
 	    }
 	    # 5. check if an exon
-	    elsif ($rtidDetail->{exin} =~ /EX/) {
+	    elsif ($exin =~ /EX/) {
                 $nDot =
                     ($strd)
                   ? ( $rtidDetail->{nsta} + $real_ofst )
@@ -4725,7 +4910,7 @@ sub cal_hgvs_pos {
 		}
 	    }
 	    # 6. intron
-	    elsif ($rtidDetail->{exin} =~ /IVS/) {
+	    elsif ($exin =~ /IVS/) {
 		my $half_length = $rtidDetail->{wlen} / 2;
 		if ($real_ofst > $half_length) { # drop into latter part
                     if (   $rtidDetail->{nsto} =~ /^\d+\d+$/
@@ -4780,14 +4965,14 @@ sub cal_hgvs_pos {
 	    if ($strd) {
 		$annoEnt->{trInfo}->{$tid}->{rnaEnd} = $nDot;
 		$annoEnt->{trInfo}->{$tid}->{cdsEnd} = $cDot;
-		$annoEnt->{trInfo}->{$tid}->{ei_End} = $rtidDetail->{exin};
-		$annoEnt->{trInfo}->{$tid}->{r_End}  = $rtidDetail->{blka};
+		$annoEnt->{trInfo}->{$tid}->{ei_End} = $exin;
+		$annoEnt->{trInfo}->{$tid}->{r_End}  = $blka;
 	    }
 	    else {
 		$annoEnt->{trInfo}->{$tid}->{rnaBegin} = $nDot;
 		$annoEnt->{trInfo}->{$tid}->{cdsBegin} = $cDot;
-		$annoEnt->{trInfo}->{$tid}->{ei_Begin} = $rtidDetail->{exin}; 
-		$annoEnt->{trInfo}->{$tid}->{r_Begin}  = $rtidDetail->{blka};
+		$annoEnt->{trInfo}->{$tid}->{ei_Begin} = $exin; 
+		$annoEnt->{trInfo}->{$tid}->{r_Begin}  = $blka;
 	    }
 	    $annoEnt->{trInfo}->{$tid}->{trAlt} = $trAlt;
 	    
@@ -4800,7 +4985,7 @@ sub cal_hgvs_pos {
 	    }
 	    elsif (!exists $annoEnt->{trInfo}->{$tid}->{genepartSO}) {
 		carp "Warning: no genepartSO specified in left?";
-		$annoEnt->{trInfo}->{$tid}->{genepartSO} = $rtidDetail->{gpSO};
+		$annoEnt->{trInfo}->{$tid}->{genepartSO} = $gpSO;
 	    }
 	}
     }
@@ -4809,8 +4994,8 @@ sub cal_hgvs_pos {
 	return {
 	    nDot => $nDot,
 	    cDot => $cDot,
-	    exin => $rtidDetail->{exin},
-	    r    => $rtidDetail->{blka},
+	    exin => $exin,
+	    r    => $blka,
 	};
     }
     return 1;
