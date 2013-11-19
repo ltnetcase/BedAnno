@@ -74,3 +74,6 @@
 
 0.37  Fri Nov 15 20:13:43 2013
 	- fix bugs for many different special variants position or sequence states
+
+0.38  Tue Nov 20 00:18:01 2013
+	- fix a bug for edge insertion case
