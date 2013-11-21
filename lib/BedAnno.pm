@@ -1849,7 +1849,10 @@ sub getTrChange {
 	# debug
 	#print STDERR Data::Dumper->Dump( [$tid, $trannoEnt, $unify_r, $trSeq, $strd], ["tid", "trannoEnt", "unify_r", "trSeq", "strd"] );
 
-	my $trRef = getTrRef($trannoEnt, $unify_r, $trSeq, $strd);
+        my $trRef =
+          ( $unify_r =~ /=/ )
+          ? '='
+          : ( getTrRef( $trannoEnt, $unify_r, $trSeq, $strd ) );
 	$trannoEnt->{trRef} = $trRef;
 	my $trAlt = $trannoEnt->{trAlt};
 
@@ -1944,6 +1947,9 @@ sub getTrChange {
 	    next;
 	}
 
+	if ($trRef =~ /=/) {
+	    confess "Error: called variant with '=' reference seq is not allowed.\n";
+	}
 	# reparse the transcript originated var
 	my $real_var = BedAnno::Var->new( $tid, 0, length($trRef), $trRef, $trAlt );
 	if ($real_var->{guess} eq 'ref') {
@@ -4297,18 +4303,16 @@ sub getTrPosition {
 				    r    => $preLeft_r,
 				};
 			    }
+			}
+
+			if (ref($rpreLeft{$tid})) {
+			    if ($strd) {
+				$tmp_trInfo->{preStart} = $rpreLeft{$tid};
+			    }
 			    else {
-				confess "Error: rpreLeft not found.[$tid]\n";
+				$tmp_trInfo->{postEnd} = $rpreLeft{$tid};
 			    }
 			}
-
-			if ($strd) {
-			    $tmp_trInfo->{preStart} = $rpreLeft{$tid};
-			}
-			else {
-			    $tmp_trInfo->{postEnd} = $rpreLeft{$tid};
-			}
-
                     }
                     else {
 			$rpreLeft{$tid} = $annoEnt->cal_hgvs_pos(
