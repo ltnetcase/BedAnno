@@ -542,31 +542,31 @@ sub new {
 =head2 set/get methods for properties
 
     List of Properties:
-			get	    set
-    db			o	    o
-    tr			o	    o
-    refbuild		o	    o
-    tidb		o	    x
-    annodb		o	    x
-    trInfodb		o	    x
-    cytoBand		o	    o
-    cytoBand_h		o	    x
-    pfam		o	    o
-    pfam_h		o	    x
-    prediction		o	    o
-    prediction_h	o	    x
-    phyloP		o	    o
-    phyloP_h		o	    x
-    dbSNP		o	    o
-    dbSNP_h		o	    x
-    tgp			o	    o
-    tgp_h		o	    x
-    esp6500		o	    o
-    esp6500_h		o	    x
-    cg54		o	    o
-    cg54_h		o	    x
-    wellderly		o	    o
-    wellderly_h		o	    x
+                        get          set
+    db                  o            o
+    tr                  o            o
+    refbuild            o            o
+    tidb                o            x
+    annodb              o            x
+    trInfodb            o            x
+    cytoBand            o            o
+    cytoBand_h          o            x
+    pfam                o            o
+    pfam_h              o            x
+    prediction          o            o
+    prediction_h        o            x
+    phyloP              o            o
+    phyloP_h            o            x
+    dbSNP               o            o
+    dbSNP_h             o            x
+    tgp                 o            o
+    tgp_h               o            x
+    esp6500             o            o
+    esp6500_h           o            x
+    cg54                o            o
+    cg54_h              o            x
+    wellderly           o            o
+    wellderly_h         o            x
 
 
     e.g.    : $self->set_refbuild($refbuild);
@@ -2621,9 +2621,23 @@ sub getTrChange {
     return $annoEnt;
 }
 
+=head2 trWalker
+
+    About   : walk around the variant position to find possible
+	      repeat start/end, and renew the rnaBegin, rnaEnd,
+	      cdsBegin, cdsEnd, preStart, postEnd items for 
+	      trannoEnt
+    Usage   : $beda->trWalker($trAnnoEnt)
+
+=cut
+sub trWalker {
+    my ($self, $trAnnoEnt) = @_;
+    
+}
+
 =head2 cmpPos
 
-    About   : judge the order or p1 and p2, because the insertion
+    About   : judge the order for p1 and p2, because the insertion
               will have a reverted order of left & right position
     Usage   : my $cmpRst = BedAnno->cmpPos($p1, $p2);
     Args    : hgvs positio p1 and p2, with out 'c.' or 'n.' flag
@@ -2773,7 +2787,7 @@ sub getCodon_by_cdsPos {
 =head2 getCodonPos
 
     About   : get codon position, codon string, aa string, and frame info
-              for one single cds position
+              for one single transcript position
               See getCodon_by_cdsPos()
 
 =cut
@@ -3917,7 +3931,14 @@ sub decide_major {
 	}
 
         my $rTrEnt = $annoEnt->{trInfo}->{$majorTr};
-        my $trhit  = $majorTr . "(" . $rTrEnt->{geneSym} . "): " . $rTrEnt->{c};
+	my $trhit;
+	if ( $rTrEnt->{func} eq 'annotation-fail' ) {
+	    $trhit = $majorTr . "(" . $rTrEnt->{geneSym} . "): annotation-fail";
+	}
+	else {
+	    $trhit  = $majorTr . "(" . $rTrEnt->{geneSym} . "): " . $rTrEnt->{c};
+	}
+
         $trhit .= " (" . $rTrEnt->{p} . ")"
           if ( exists $rTrEnt->{p} and $rTrEnt->{p} ne "" );
 	return $trhit;
@@ -4404,6 +4425,9 @@ sub getTrPosition {
 			    if ($trinfoEnt->{ei_Begin} =~ /^EX/) {
 				$trinfoEnt->{trRefComp}->{$trinfoEnt->{ei_Begin}} = 0;
 			    }
+			    elsif ($trinfoEnt->{ei_Begin} eq '?') {
+				$trinfoEnt->{trRefComp}->{'Q1'} = 0;
+			    }
 			    else {
 				$trinfoEnt->{trRefComp}->{$trinfoEnt->{ei_Begin}} = [ 0, 0 ];
 			    }
@@ -4500,6 +4524,18 @@ sub getTrPosition {
                         }
 
                     }
+		    elsif ($rtidDetail->{blka} eq '?') {
+			my ($af_sta, $af_sto);
+                        $af_sta =
+                          ( $$rannodb[$k]{sta} < $unify_p )
+                          ? $unify_p
+                          : $$rannodb[$k]{sta};
+                        $af_sto =
+                          ( $$rannodb[$k]{sto} < $unify_p + $unify_rl )
+                          ? $$rannodb[$k]{sto}
+                          : ( $unify_p + $unify_rl );
+			$trinfoEnt->{trRefComp}->{'Q1'} += $af_sto - $af_sta;
+		    }
 		    else { # for intron region and PROM
 			if ( $rtidDetail->{blka} =~ /^PROM/ ) {
 			    $tmp_exin = 'P0'; # for sort
@@ -4542,6 +4578,32 @@ sub getTrPosition {
 	    }
         }
     }
+
+    # final check and uniform trinfo
+    if ( exists $annoEnt->{trInfo} ) {
+	foreach my $t ( keys %{ $annoEnt->{trInfo} } ) {
+	     my $tinfo = $annoEnt->{trInfo}->{$t};
+	     if (
+		 (
+		     $tinfo->{strd} =~ /\+/
+		     and
+		     ( !exists $tinfo->{rnaEnd} or !defined $tinfo->{rnaEnd} )
+		 )
+		 or (
+		     $tinfo->{strd} =~ /\-/
+		     and (  !exists $tinfo->{rnaBegin}
+			 or !defined $tinfo->{rnaBegin} )
+		 )
+	       )
+	     {
+		 delete $annoEnt->{trInfo}->{$t};
+	     }
+	}
+	if ( 0 == scalar keys %{ $annoEnt->{trInfo} } ) {
+	     delete $annoEnt->{trInfo};
+	}
+    }
+
     $new_aeIndex ||= $aeIndex;
     return $new_aeIndex;
 }
@@ -4702,7 +4764,7 @@ sub cal_hgvs_pos {
 	else { # 0 <= $lofst <= $$rtidDetail{wlen}
         
 	    # 1. check if a mismatch block (only exon have this)
-	    if ( $rtidDetail->{mismatch} ne "" ) {
+	    if ( $rtidDetail->{mismatch} ne "" and $rtidDetail->{mismatch} ne "?" ) {
 		# for each kind of mismatch block,
 		# hit the left edge of var, the refSeq ref will
 		# contain start from the start of the mismatch
@@ -4866,7 +4928,7 @@ sub cal_hgvs_pos {
 	else { # 0 <= $lofst <= $$rtidDetail{wlen}
 
 	    # 1. check if a mismatch block (exon)
-	    if ($rtidDetail->{mismatch} ne "") {
+	    if ($rtidDetail->{mismatch} ne "" and $rtidDetail->{mismatch} ne "?") {
 		$nDot = $rtidDetail->{nsto};
 		$cDot = $rtidDetail->{csto};
 		if (!exists $cal_args{noassign} and $lofst < $rtidDetail->{wlen}) {

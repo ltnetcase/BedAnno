@@ -1925,6 +1925,293 @@ my $no_call_edge_ins_trinfo = {
     'primaryTag' => 'Y'
 };
 
+my $promoter_anno = {
+    'r'         => 'PROM',
+    'protBegin' => '',
+    'cdsBegin'  => '-111-u48',
+    'preStart'  => {
+        'r'    => 'PROM',
+        'cDot' => '-111-u49',
+        'nDot' => -49,
+        'exin' => '.'
+    },
+    'genepartIndex' => 0,
+    'ei_End'        => '.',
+    'trRef'         => 'C',
+    'protEnd'       => '',
+    'cdsEnd'        => '-111-u48',
+    'exonIndex'     => '.',
+    'trAlt'         => 'T',
+    'r_Begin'       => 'PROM',
+    'intronIndex'   => '.',
+    'exin'          => '.',
+    'prot'          => 'NP_277027.1',
+    'strd'          => '-',
+    'trRefComp'     => {
+        'P0' => [ 0, 1 ]
+    },
+    'r_End'   => 'PROM',
+    'geneSym' => 'CDK11B',
+    'postEnd' => {
+        'r'    => 'PROM',
+        'cDot' => '-111-u47',
+        'nDot' => -47,
+        'exin' => '.'
+    },
+    'c'          => 'c.-111-u48C>T',
+    'geneId'     => '984',
+    'rnaEnd'     => -48,
+    'genepart'   => 'promoter',
+    'func'       => 'promoter',
+    'rnaBegin'   => -48,
+    'funcSO'     => '',
+    'genepartSO' => 'SO:0000167',
+    'ei_Begin'   => '.',
+    'funcSOname' => 'unknown',
+    'primaryTag' => 'Y',
+};
+
+my $left_edge_mismatch_anno = {
+    'protBegin' => 472,
+    'ei_End'    => 'EX3',
+    'exin'      => 'EX3',
+    'prot'      => 'NP_006149.2',
+    'trRefComp' => {
+        'EX3' => 0
+    },
+    'r_End'    => 'C3',
+    'c'        => 'c.1413_1414insTC',
+    'rnaBegin' => '1516',
+    'ei_Begin' => 'EX3',
+    'r'        => 'C3',
+    'cdsBegin' => '1414',
+    'preStart' => {
+        'r'    => 'C3',
+        'cDot' => '1413',
+        'nDot' => 1515,
+        'exin' => 'EX3'
+    },
+    'genepartIndex' => '3',
+    'trRef'         => '',
+    'protEnd'       => 544,
+    'cdsEnd'        => '1413',
+    'exonIndex'     => '3',
+    'r_Begin'       => 'C3',
+    'trAlt'         => 'TC',
+    'intronIndex'   => '.',
+    'strd'          => '-',
+    'postEnd'       => {
+        'r'    => 'C3',
+        'cDot' => '1414',
+        'nDot' => '1516',
+        'exin' => 'EX3'
+    },
+    'geneSym' => 'NEFL',
+    'geneId'  => '4747',
+    'p'       => 'p.E473fs*78',
+    'rnaEnd'  => '1515',
+    'prAlt' =>
+'SLKEKPRRRRRTRKRPRKRRQLKRKKLPRKSLKKQKKKKKEVKVKKERKPKKLKRRRRKLKVLGRNKQLRRKIEPPFP*',
+    'genepart' => 'CDS',
+    'prRef' =>
+'SEGEAEEEEKDKEEAEEEEAAEEEEAAKEESEEAKEEEEGGEGEEGEETKEAEEEEKKVEGAGEEQAAKKKD*',
+    'func'       => 'frameshift',
+    'funcSO'     => 'SO:0001589',
+    'genepartSO' => 'SO:0000316',
+    'funcSOname' => 'frameshift_variant',
+    'primaryTag' => 'N'
+};
+
+my $mt_no_call_ncRNA = {
+    'r'         => 'R1E',
+    'protBegin' => '',
+    'cdsBegin'  => '',
+    'preStart'  => {
+        'r'    => 'PROM',
+        'cDot' => '',
+        'nDot' => -1,
+        'exin' => '.'
+    },
+    'genepartIndex' => '1',
+    'ei_End'        => 'EX1E',
+    'trRef'         => 'G',
+    'protEnd'       => '',
+    'cdsEnd'        => '',
+    'exonIndex'     => '1',
+    'trAlt'         => 'N',
+    'r_Begin'       => 'R1E',
+    'intronIndex'   => '.',
+    'exin'          => 'EX1E',
+    'prot'          => '',
+    'strd'          => '+',
+    'trRefComp'     => {
+        'EX1E' => 1
+    },
+    'postEnd' => {
+        'r'    => 'R1E',
+        'cDot' => '',
+        'nDot' => 2,
+        'exin' => 'EX1E'
+    },
+    'geneSym'    => 'MT-TRNF',
+    'r_End'      => 'R1E',
+    'c'          => 'n.1G>N',
+    'geneId'     => '4558',
+    'rnaEnd'     => 1,
+    'genepart'   => 'ncRNA',
+    'func'       => 'ncRNA',
+    'rnaBegin'   => 1,
+    'funcSO'     => '',
+    'ei_Begin'   => 'EX1E',
+    'genepartSO' => 'SO:0000655',
+    'funcSOname' => 'unknown',
+    'primaryTag' => 'Y'
+};
+
+my $mt_span_no_call = {
+    'r'         => 'PROM-R1E',
+    'protBegin' => '',
+    'cdsBegin'  => '',
+    'preStart'  => {
+        'r'    => 'PROM',
+        'cDot' => '',
+        'nDot' => -8,
+        'exin' => '.'
+    },
+    'genepartIndex' => '.',
+    'ei_End'        => 'EX1E',
+    'trRef'         => 'CCCCACAGTTTATGTA',
+    'protEnd'       => '',
+    'cdsEnd'        => '',
+    'exonIndex'     => '.',
+    'trAlt'         => '?',
+    'r_Begin'       => 'PROM',
+    'intronIndex'   => '.',
+    'exin'          => '.-EX1E',
+    'prot'          => '',
+    'strd'          => '+',
+    'trRefComp'     => {
+        'P0'   => [ 0, 7 ],
+        'EX1E' => 9
+    },
+    'postEnd' => {
+        'r'    => 'R1E',
+        'cDot' => '',
+        'nDot' => 10,
+        'exin' => 'EX1E'
+    },
+    'geneSym'    => 'MT-TRNF',
+    'r_End'      => 'R1E',
+    'c'          => 'n.-7_9delCCCCACAGTTTATGTAins?',
+    'geneId'     => '4558',
+    'rnaEnd'     => 9,
+    'genepart'   => 'span',
+    'func'       => 'unknown-no-call',
+    'rnaBegin'   => -7,
+    'funcSO'     => '',
+    'ei_Begin'   => '.',
+    'genepartSO' => '',
+    'funcSOname' => 'unknown-no-call',
+    'primaryTag' => 'Y'
+};
+
+my $mt_altstart = {
+    'protBegin' => 1,
+    'cc'        => 'ATA=>ATT',
+    'ei_End'    => 'EX1E',
+    'exin'      => 'EX1E',
+    'prot'      => 'YP_003024026.1',
+    'trRefComp' => {
+        'EX1E' => 1
+    },
+    'r_End'    => 'C1E',
+    'c'        => 'c.3A>T',
+    'rnaBegin' => 3,
+    'ei_Begin' => 'EX1E',
+    'r'        => 'C1E',
+    'cdsBegin' => '3',
+    'preStart' => {
+        'r'    => 'C1E',
+        'cDot' => '2',
+        'nDot' => 2,
+        'exin' => 'EX1E'
+    },
+    'genepartIndex' => '1',
+    'trRef'         => 'A',
+    'protEnd'       => 1,
+    'cdsEnd'        => '3',
+    'exonIndex'     => '1',
+    'r_Begin'       => 'C1E',
+    'trAlt'         => 'T',
+    'intronIndex'   => '.',
+    'strd'          => '+',
+    'geneSym'       => 'MT-ND1',
+    'postEnd'       => {
+        'r'    => 'C1E',
+        'cDot' => '4',
+        'nDot' => 4,
+        'exin' => 'EX1E'
+    },
+    'geneId'     => '4535',
+    'p'          => 'p.=',
+    'rnaEnd'     => 3,
+    'genepart'   => 'CDS',
+    'prAlt'      => 'M',
+    'prRef'      => 'M',
+    'func'       => 'altstart',
+    'funcSO'     => 'SO:0001582',
+    'genepartSO' => 'SO:0000316',
+    'polar'      => 'NP=>NP',
+    'funcSOname' => 'initiator_codon_variant',
+    'primaryTag' => 'Y'
+};
+
+my $downstream_no_call = undef;
+my $span_annotation_fail = {
+    'r'         => '?',
+    'protBegin' => '',
+    'cdsBegin'  => '?',
+    'preStart'  => {
+        'r'    => '?',
+        'cDot' => '?',
+        'nDot' => '?',
+        'exin' => '?'
+    },
+    'genepartIndex' => 0,
+    'ei_End'        => '?',
+    'protEnd'       => '',
+    'cdsEnd'        => '?',
+    'exonIndex'     => '.',
+    'trAlt'         => '?',
+    'r_Begin'       => '?',
+    'intronIndex'   => '.',
+    'exin'          => '?',
+    'prot'          => 'NP_001036223.1',
+    'strd'          => '+',
+    'trRefComp'     => {
+        'Q1' => 20
+    },
+    'postEnd' => {
+        'r'    => '?',
+        'cDot' => '?',
+        'nDot' => '?',
+        'exin' => '?'
+    },
+    'geneSym'    => 'SRGAP2',
+    'r_End'      => '?',
+    'geneId'     => '23380',
+    'rnaEnd'     => '?',
+    'genepart'   => 'annotation-fail',
+    'func'       => 'annotation-fail',
+    'rnaBegin'   => '?',
+    'funcSO'     => '',
+    'ei_Begin'   => '?',
+    'genepartSO' => '',
+    'funcSOname' => 'annotation-fail',
+    'primaryTag' => 'N'
+};
+
+
 test_parse_var( "crawler_snv_parse",           $snv_parse,    $crawler_input );
 test_parse_var( "crawler_vcf_insert_parse",    $insert_parse, $crawler_input2 );
 test_parse_var( "crawler_var_undef_del_parse", $del_parse,    $crawler_input3 );
@@ -1971,6 +2258,23 @@ test_ok ( "cds_rna_snv2_anno", $cds_rna_snv2_anno, 'NM_000581.2',
    "chr3", 49395704, 49395705, "C", "A" );
 test_ok ( "large_del_anno", $large_del_anno, 'NM_000642.2',
    "chr1", 100327863, 100327884, "TGGTGCTGATAATCATGTGCT", "" );
+
+test_ok ( "promoter_anno", $promoter_anno, 'NM_033492.1',
+   "chr1", 1590520, 1590521, "G", "A" );
+test_ok ( "left_edge_mismatch_anno", $left_edge_mismatch_anno, 'NM_006158.3',
+   "chr8", 24811065, 24811065, "", "A" );
+
+test_ok ( "MT_no_call_ncRNA", $mt_no_call_ncRNA, 'NR_MT-TRNF', 
+   "chrMT", 576, 577, "G", "N" );
+test_ok ( "MT_span_no_call", $mt_span_no_call, 'NR_MT-TRNF',
+   "chrMT", 569, 585, "CCCCACAGTTTATGTA", "?" );
+test_ok ( "MT_altstart", $mt_altstart, 'NM_MT-ND1',
+   "chrMT", 3308, 3309, "A", "T" );
+test_ok ( "downstream_no_call", $downstream_no_call, "NR_037481.1",
+   "chr1", 26232848, 26232852, "=", "?" );
+test_ok ( "span_annotation_fail", $span_annotation_fail, "NM_001042758.1",
+   "chr1", 206538994, 206539014, "=", "?" );
+
 
 done_testing();
 exit 0;
