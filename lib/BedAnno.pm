@@ -539,6 +539,7 @@ sub new {
     return $self;
 }
 
+
 =head2 set/get methods for properties
 
     List of Properties:
@@ -567,7 +568,6 @@ sub new {
     cg54_h              o            x
     wellderly           o            o
     wellderly_h         o            x
-
 
     e.g.    : $self->set_refbuild($refbuild);
 	      my $refbuild = $self->get_refbuild();
@@ -1597,7 +1597,9 @@ sub finaliseAnno {
     if (exists $annoEnt->{trInfo}) {
 	foreach my $tid (sort keys %{$annoEnt->{trInfo}}) {
 	    my $trAnnoEnt = $annoEnt->{trInfo}->{$tid};
-	    my $trdbEnt = $self->{trInfodb}->{$tid};
+	    my $qtid = $tid;
+	    $qtid =~ s/\-\d+$//;
+	    my $trdbEnt = $self->{trInfodb}->{$qtid};
 	    $trAnnoEnt->{prot} =
 	      ( !exists $trdbEnt->{prot} or $trdbEnt->{prot} eq '.' )
 	      ? ""
@@ -1854,6 +1856,9 @@ sub getTrChange {
           ? '='
           : ( getTrRef( $trannoEnt, $unify_r, $trSeq, $strd ) );
 	$trannoEnt->{trRef} = $trRef;
+
+
+
 	my $trAlt = $trannoEnt->{trAlt};
 
 	$trannoEnt->{prot} = $trdbEnt->{prot} if ($cdsOpt);
@@ -1950,20 +1955,15 @@ sub getTrChange {
 	if ($trRef =~ /=/) {
 	    confess "Error: called variant with '=' reference seq is not allowed.\n";
 	}
-	# reparse the transcript originated var
-	my $real_var = BedAnno::Var->new( $tid, 0, length($trRef), $trRef, $trAlt );
-	if ($real_var->{guess} eq 'ref') {
+	if ($trRef eq $trAlt) {
 	    $trannoEnt->{func} = 'no-change';
 	    $trannoEnt->{c}    = $f . '=';
 	    next;
 	}
 	
-	my ($real_p, $real_r, $real_a, $real_rl, $real_al) = 
-	    $real_var->getUnifiedVar('+');
-
-	my ($trBegin, $trEnd);
-	$trBegin = reCalTrPos_by_ofst( $trannoEnt, $real_p );
-        $trEnd = reCalTrPos_by_ofst( $trannoEnt, ( $real_p + $real_rl - 1 ) );
+        my ( $trBegin, $trEnd, $real_var, $rUnified ) =
+          $self->trWalker( $tid, $trannoEnt );
+        my ( $real_p, $real_r, $real_a, $real_rl, $real_al ) = @$rUnified;
 
         $chgvs_5 =
           ($cdsOpt)
@@ -2624,15 +2624,138 @@ sub getTrChange {
 =head2 trWalker
 
     About   : walk around the variant position to find possible
-	      repeat start/end, and renew the rnaBegin, rnaEnd,
-	      cdsBegin, cdsEnd, preStart, postEnd items for 
-	      trannoEnt
-    Usage   : $beda->trWalker($trAnnoEnt)
+	      repeat start/end, and return the recalculated
+	      trBegin and trEnd, together with the real
+	      transcript originated variants and unified property
+	      Current implementation won't walk around in the following
+	      cases:
+	      1. no-call
+	      2. annotation-fail
+	      3. snv or mnp
+	      4. non-exon region
+	      5. span case or any edge case
+	      6. delins without repeat.
+    Usage   : ($trBegin, $trEnd, $real_var) = 
+		$beda->trWalker($tid, $rtrinfo);
+    Args    : trAcc and hash ref of trInfo annotation for trAcc,
+	      
 
 =cut
 sub trWalker {
-    my ($self, $trAnnoEnt) = @_;
+    my ($self, $tid, $rtrinfo) = @_;
+
+    # reparse the transcript originated var
+    my $real_var = BedAnno::Var->new( $tid, 0, length($rtrinfo->{trRef}), 
+	$rtrinfo->{trRef}, $rtrinfo->{trAlt} );
+    my @Unified = $real_var->getUnifiedVar('+');
+    my ($real_p, $real_r, $real_a, $real_rl, $real_al) = @Unified;
+
+    my $trBegin = reCalTrPos_by_ofst( $rtrinfo, $real_p );
+    my $trEnd = reCalTrPos_by_ofst( $rtrinfo, ( $real_p + $real_rl - 1 ) );
+
+    if (
+        # skip snv and mnp
+        ( $real_rl == $real_al )
+
+        # skip span case or any edge case
+        or ( $rtrinfo->{ei_Begin} ne $rtrinfo->{ei_End} )
+
+	# skip non exon begin/end position
+	or ( $trBegin !~ /^\d+$/ or $trEnd !~ /^\d+$/ )
+
+        # skip delins without repeat
+        or (    0 != index( $real_r, $real_a )
+            and 0 != index( $real_a, $real_r ) )
+      )
+    {
+        # no correction
+        return ( $trBegin, $trEnd, $real_var, \@Unified );
+    }
+
+    my $qtid = $tid;
+    $qtid =~ s/\-\d+$//;
+    my $trdb = $self->{trInfodb}->{$qtid};
+    my $trSeq = $trdb->{seq};
+    my $trLen = $trdb->{len};
     
+    my $ref_sta = $trBegin;
+    my $ref_sto = $trEnd;
+    my $ori_walker;
+    my $track_opt;
+    if ($real_rl < $real_al) {
+	$ref_sta = $ref_sto + 1;
+	$ori_walker = substr($real_a, $real_rl);
+	$track_opt = 0; # walk on the alt
+    }
+    else {
+	$ref_sta += $real_al;
+	$ori_walker = substr($real_r, $real_al);
+	$track_opt = 1; # walk on the ref
+    }
+
+    # walk to 3' most
+    my @cur_walker = split(//, $ori_walker);
+    my $walk_forward_step = 0;
+    for (my $p = $ref_sto; $p < $trLen; $p++) {
+	if (substr($trSeq, $p, 1) eq $cur_walker[0]) {
+	    push (@cur_walker, shift(@cur_walker));
+	}
+	else {
+	    $walk_forward_step = $p - $ref_sto;
+	    last;
+	}
+    }
+
+    $ref_sto += $walk_forward_step; # the final end on reference track
+
+    # use the 3' most element as the final matched difference
+    my $match_target = join( "", @cur_walker );
+
+    my $forward_footprint = substr($trSeq, $ref_sta-1, $walk_forward_step);
+
+    # walk to 5' most
+    @cur_walker = split(//, $ori_walker);
+    my $walk_back_step = 0;
+    for ( my $q = $ref_sta - 1; $q > 0; $q -- ) {
+	if (substr($trSeq, $q-1, 1) eq $cur_walker[-1]) {
+	    unshift( @cur_walker, pop(@cur_walker) );
+	}
+	else {
+	    $walk_back_step = $ref_sta - $q - 1;
+	    last;
+	}
+    }
+
+    my $back_most = $ref_sta - $walk_back_step;
+    my $backward_footprint =
+      substr( $trSeq, $ref_sta - $walk_back_step - 1, $walk_back_step );
+    
+    my $cur_short_track = $backward_footprint . $forward_footprint;
+    my $cur_long_track = $cur_short_track . $match_target;
+    my $target_sta = index($cur_long_track, $match_target);
+    $ref_sta = $back_most + $target_sta;
+
+    if (   $ref_sta ne $trBegin
+	or $ref_sto ne $trEnd )
+    {
+	$trBegin = $ref_sta;
+	$trEnd   = $ref_sto;
+	my ($trRef, $trAlt);
+
+	if ($track_opt) {
+	    $trRef = substr( $cur_long_track,  $target_sta );
+	    $trAlt = substr( $cur_short_track, $target_sta );
+	}
+	else {
+	    $trRef = substr( $cur_short_track, $target_sta );
+	    $trAlt = substr( $cur_long_track,  $target_sta );
+	}
+
+	$real_var = BedAnno::Var->new( $tid, 0, length($trRef), $trRef, $trAlt);
+	@Unified  = $real_var->getUnifiedVar('+');
+    }
+
+    return ($trBegin, $trEnd, $real_var, \@Unified);
 }
 
 =head2 cmpPos
@@ -3403,7 +3526,7 @@ sub normalise_chr {
     elsif ($chr eq '25') {
 	$chr = 'MT';
     }
-    elsif ($chr =~ /^[xym]$/) {
+    elsif ($chr =~ /^[xym]$/i) {
 	$chr = uc($chr);
 	$chr .= 'T' if ($chr eq 'M');
     }

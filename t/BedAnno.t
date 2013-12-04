@@ -578,7 +578,7 @@ my $del_varanno = bless(
     {
         'trInfo' => {
             'NR_024540.1' => {
-                'c'             => 'n.1714_1720del',
+                'c'             => 'n.1715_1721del',
                 'cdsBegin'      => '',
                 'cdsEnd'        => '',
                 'ei_Begin'      => 'EX11E',
@@ -1340,7 +1340,7 @@ my $cds_del_anno = bless(
     {
         'trInfo' => {
             'NM_006158.3' => {
-                'c'             => 'c.1412delC',
+                'c'             => 'c.1408C[6>5]',
                 'cdsBegin'      => '1412',
                 'cdsEnd'        => '1412',
                 'ei_Begin'      => 'EX3',
@@ -1369,11 +1369,11 @@ my $cds_del_anno = bless(
                     'nDot' => 1513,
                     'r'    => 'C3'
                 },
-		'prAlt' => 'PLKEKPRRRRRTRKRPRKRRQLKRKKLPRKSLKKQKKKKKEVKVKKERKPKKLKRRRRKLKVLGRNKQLRRKIEPPFP*',
-		'prRef' => 'PSEGEAEEEEKDKEEAEEEEAAEEEEAAKEESEEAKEEEEGGEGEEGEETKEAEEEEKKVEGAGEEQAAKKKD*',
+		'prAlt' => 'PPLKEKPRRRRRTRKRPRKRRQLKRKKLPRKSLKKQKKKKKEVKVKKERKPKKLKRRRRKLKVLGRNKQLRRKIEPPFP*',
+		'prRef' => 'PPSEGEAEEEEKDKEEAEEEEAAEEEEAAKEESEEAKEEEEGGEGEEGEETKEAEEEEKKVEGAGEEQAAKKKD*',
 		'primaryTag'=> 'N',
                 'prot'      => 'NP_006149.2',
-                'protBegin' => 471,
+                'protBegin' => 470,
                 'protEnd'   => 544,
                 'r'         => 'C3',
                 'r_Begin'   => 'C3',
@@ -1463,7 +1463,7 @@ my $cds_ins_anno = bless(
     {
         'trInfo' => {
             'NM_006158.3' => {
-                'c'             => 'c.1411_1412insCCC',
+                'c'             => 'c.1408C[6>9]',
                 'cdsBegin'      => '1412',
                 'cdsEnd'        => '1411',
                 'ei_Begin'      => 'EX3',
@@ -1479,7 +1479,7 @@ my $cds_ins_anno = bless(
                 'genepartIndex' => '3',
                 'genepartSO'    => 'SO:0000316',
                 'intronIndex'   => '.',
-                'p'             => 'p.P471dup',
+                'p'             => 'p.P470[2>3]',
                 'postEnd'       => {
                     'cDot' => '1412',
                     'exin' => 'EX3',
@@ -1493,10 +1493,10 @@ my $cds_ins_anno = bless(
                     'r'    => 'C3'
                 },
 		'primaryTag'=> 'N',
-		'prAlt'	    => 'PP',
-		'prRef'	    => 'P',
+		'prAlt'	    => 'PPP',
+		'prRef'	    => 'PP',
                 'prot'      => 'NP_006149.2',
-                'protBegin' => 471,
+                'protBegin' => 470,
                 'protEnd'   => 471,
                 'r'         => 'C3',
                 'r_Begin'   => 'C3',
@@ -1972,7 +1972,7 @@ my $promoter_anno = {
 };
 
 my $left_edge_mismatch_anno = {
-    'protBegin' => 472,
+    'protBegin' => 471,
     'ei_End'    => 'EX3',
     'exin'      => 'EX3',
     'prot'      => 'NP_006149.2',
@@ -1980,7 +1980,7 @@ my $left_edge_mismatch_anno = {
         'EX3' => 0
     },
     'r_End'    => 'C3',
-    'c'        => 'c.1413_1414insTC',
+    'c'        => 'c.1413CT[2>3]',
     'rnaBegin' => '1516',
     'ei_Begin' => 'EX3',
     'r'        => 'C3',
@@ -2011,10 +2011,10 @@ my $left_edge_mismatch_anno = {
     'p'       => 'p.E473fs*78',
     'rnaEnd'  => '1515',
     'prAlt' =>
-'SLKEKPRRRRRTRKRPRKRRQLKRKKLPRKSLKKQKKKKKEVKVKKERKPKKLKRRRRKLKVLGRNKQLRRKIEPPFP*',
+'PSLKEKPRRRRRTRKRPRKRRQLKRKKLPRKSLKKQKKKKKEVKVKKERKPKKLKRRRRKLKVLGRNKQLRRKIEPPFP*',
     'genepart' => 'CDS',
     'prRef' =>
-'SEGEAEEEEKDKEEAEEEEAAEEEEAAKEESEEAKEEEEGGEGEEGEETKEAEEEEKKVEGAGEEQAAKKKD*',
+'PSEGEAEEEEKDKEEAEEEEAAEEEEAAKEESEEAKEEEEGGEGEEGEETKEAEEEEKKVEGAGEEQAAKKKD*',
     'func'       => 'frameshift',
     'funcSO'     => 'SO:0001589',
     'genepartSO' => 'SO:0000316',
