@@ -174,7 +174,7 @@ not ok 17 - for [ del_varanno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
-#       'c' => 'n.1714_1720del',
+#       'c' => 'n.1715_1721del',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
 #       'ei_Begin' => 'EX11E',
@@ -736,8 +736,8 @@ not ok 23 - for [ cds_no_change_anno ]
 #     'cytoBand' => '8p21.2',
 #     'dbsnp' => {
 #       'rs11300136' => {
-#         'AC' => '2175',
 #         'AF' => '0.994058',
+#         'AN' => '2175',
 #         'Alleles' => '-,G,',
 #         'bitfields' => '',
 #         'class' => 'deletion',
@@ -856,7 +856,7 @@ not ok 25 - for [ cds_del_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_006158.3' => {
-#       'c' => 'c.1412delC',
+#       'c' => 'c.1408C[6>5]',
 #       'cdsBegin' => '1412',
 #       'cdsEnd' => '1412',
 #       'ei_Begin' => 'EX3',
@@ -881,8 +881,8 @@ not ok 25 - for [ cds_del_anno ]
 #         'nDot' => 1515,
 #         'r' => 'C3'
 #       },
-#       'prAlt' => 'PLKEKPRRRRRTRKRPRKRRQLKRKKLPRKSLKKQKKKKKEVKVKKERKPKKLKRRRRKLKVLGRNKQLRRKIEPPFP*',
-#       'prRef' => 'PSEGEAEEEEKDKEEAEEEEAAEEEEAAKEESEEAKEEEEGGEGEEGEETKEAEEEEKKVEGAGEEQAAKKKD*',
+#       'prAlt' => 'PPLKEKPRRRRRTRKRPRKRRQLKRKKLPRKSLKKQKKKKKEVKVKKERKPKKLKRRRRKLKVLGRNKQLRRKIEPPFP*',
+#       'prRef' => 'PPSEGEAEEEEKDKEEAEEEEAAEEEEAAKEESEEAKEEEEGGEGEEGEETKEAEEEEKKVEGAGEEQAAKKKD*',
 #       'preStart' => {
 #         'cDot' => '1411',
 #         'exin' => 'EX3',
@@ -891,7 +891,7 @@ not ok 25 - for [ cds_del_anno ]
 #       },
 #       'primaryTag' => 'N',
 #       'prot' => 'NP_006149.2',
-#       'protBegin' => 471,
+#       'protBegin' => 470,
 #       'protEnd' => 544,
 #       'r' => 'C3',
 #       'r_Begin' => 'C3',
@@ -940,7 +940,7 @@ not ok 26 - for [ cds_ins_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_006158.3' => {
-#       'c' => 'c.1411_1412insCCC',
+#       'c' => 'c.1408C[6>9]',
 #       'cdsBegin' => '1412',
 #       'cdsEnd' => '1411',
 #       'ei_Begin' => 'EX3',
@@ -956,7 +956,7 @@ not ok 26 - for [ cds_ins_anno ]
 #       'genepartIndex' => '3',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
-#       'p' => 'p.P471dup',
+#       'p' => 'p.P470[2>3]',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'postEnd' => {
@@ -965,8 +965,8 @@ not ok 26 - for [ cds_ins_anno ]
 #         'nDot' => 1514,
 #         'r' => 'C3'
 #       },
-#       'prAlt' => 'PP',
-#       'prRef' => 'P',
+#       'prAlt' => 'PPP',
+#       'prRef' => 'PP',
 #       'preStart' => {
 #         'cDot' => '1411',
 #         'exin' => 'EX3',
@@ -975,7 +975,7 @@ not ok 26 - for [ cds_ins_anno ]
 #       },
 #       'primaryTag' => 'N',
 #       'prot' => 'NP_006149.2',
-#       'protBegin' => 471,
+#       'protBegin' => 470,
 #       'protEnd' => 471,
 #       'r' => 'C3',
 #       'r_Begin' => 'C3',
@@ -2101,7 +2101,7 @@ not ok 36 - for [ left_edge_mismatch_anno ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_006158.3' => {
-#       'c' => 'c.1413_1414insTC',
+#       'c' => 'c.1413CT[2>3]',
 #       'cdsBegin' => '1414',
 #       'cdsEnd' => '1413',
 #       'ei_Begin' => 'EX3',
@@ -2126,8 +2126,8 @@ not ok 36 - for [ left_edge_mismatch_anno ]
 #         'nDot' => '1516',
 #         'r' => 'C3'
 #       },
-#       'prAlt' => 'SLKEKPRRRRRTRKRPRKRRQLKRKKLPRKSLKKQKKKKKEVKVKKERKPKKLKRRRRKLKVLGRNKQLRRKIEPPFP*',
-#       'prRef' => 'SEGEAEEEEKDKEEAEEEEAAEEEEAAKEESEEAKEEEEGGEGEEGEETKEAEEEEKKVEGAGEEQAAKKKD*',
+#       'prAlt' => 'PSLKEKPRRRRRTRKRPRKRRQLKRKKLPRKSLKKQKKKKKEVKVKKERKPKKLKRRRRKLKVLGRNKQLRRKIEPPFP*',
+#       'prRef' => 'PSEGEAEEEEKDKEEAEEEEAAEEEEAAKEESEEAKEEEEGGEGEEGEETKEAEEEEKKVEGAGEEQAAKKKD*',
 #       'preStart' => {
 #         'cDot' => '1413',
 #         'exin' => 'EX3',
@@ -2136,7 +2136,7 @@ not ok 36 - for [ left_edge_mismatch_anno ]
 #       },
 #       'primaryTag' => 'N',
 #       'prot' => 'NP_006149.2',
-#       'protBegin' => 472,
+#       'protBegin' => 471,
 #       'protEnd' => 544,
 #       'r' => 'C3',
 #       'r_Begin' => 'C3',
@@ -3019,8 +3019,8 @@ not ok 39 - for [ MT_altstart ]
 #     'dbsnp' => {},
 #     'end' => 3309,
 #     'esp6500' => {
-#       'AC' => 0,
-#       'AF' => 0
+#       'AF' => 0,
+#       'AN' => 0
 #     },
 #     'gHGVS' => 'm.3308A>T',
 #     'guess' => 'snv',
@@ -3031,8 +3031,8 @@ not ok 39 - for [ MT_altstart ]
 #     'reflen' => 1,
 #     'sm' => 1,
 #     'tgp' => {
-#       'AC' => 0,
-#       'AF' => 0
+#       'AF' => 0,
+#       'AN' => 0
 #     },
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
