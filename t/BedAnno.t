@@ -2309,6 +2309,157 @@ my $no_call_altstart = {
     'primaryTag' => 'Y'
 };
 
+my $mt_no_call_initloss = {
+    'protBegin' => 1,
+    'cc'        => 'ATA=>?',
+    'ei_End'    => 'EX1E',
+    'exin'      => 'EX1E',
+    'prot'      => 'YP_003024026.1',
+    'trRefComp' => {
+        'EX1E' => 1
+    },
+    'r_End'    => 'C1E',
+    'c'        => 'c.1A>?',
+    'rnaBegin' => 1,
+    'ei_Begin' => 'EX1E',
+    'r'        => 'C1E',
+    'cdsBegin' => '1',
+    'preStart' => {
+        'r'    => 'PROM',
+        'cDot' => '1-u1',
+        'nDot' => -1,
+        'exin' => '.'
+    },
+    'genepartIndex' => '1',
+    'trRef'         => 'A',
+    'protEnd'       => 1,
+    'cdsEnd'        => '1',
+    'exonIndex'     => '1',
+    'r_Begin'       => 'C1E',
+    'trAlt'         => '?',
+    'intronIndex'   => '.',
+    'strd'          => '+',
+    'geneSym'       => 'MT-ND1',
+    'postEnd'       => {
+        'r'    => 'C1E',
+        'cDot' => '2',
+        'nDot' => 2,
+        'exin' => 'EX1E'
+    },
+    'geneId'     => '4535',
+    'p'          => 'p.M1?',
+    'rnaEnd'     => 1,
+    'genepart'   => 'CDS',
+    'func'       => 'unknown-no-call',
+    'funcSO'     => '',
+    'genepartSO' => 'SO:0000316',
+    'polar'      => 'NP=>?',
+    'funcSOname' => 'unknown-no-call',
+    'primaryTag' => 'Y'
+};
+
+my $mt_nonsense = {
+    'protBegin' => 43,
+    'cc'        => 'TAC=>TAA',
+    'ei_End'    => 'EX1E',
+    'exin'      => 'EX1E',
+    'prot'      => 'YP_003024026.1',
+    'trRefComp' => {
+        'EX1E' => 1
+    },
+    'r_End'    => 'C1E',
+    'c'        => 'c.129C>A',
+    'rnaBegin' => 129,
+    'ei_Begin' => 'EX1E',
+    'r'        => 'C1E',
+    'cdsBegin' => '129',
+    'preStart' => {
+        'r'    => 'C1E',
+        'cDot' => '128',
+        'nDot' => 128,
+        'exin' => 'EX1E'
+    },
+    'genepartIndex' => '1',
+    'trRef'         => 'C',
+    'protEnd'       => 43,
+    'cdsEnd'        => '129',
+    'exonIndex'     => '1',
+    'r_Begin'       => 'C1E',
+    'trAlt'         => 'A',
+    'intronIndex'   => '.',
+    'strd'          => '+',
+    'geneSym'       => 'MT-ND1',
+    'postEnd'       => {
+        'r'    => 'C1E',
+        'cDot' => '130',
+        'nDot' => 130,
+        'exin' => 'EX1E'
+    },
+    'geneId'     => '4535',
+    'p'          => 'p.Y43*',
+    'rnaEnd'     => 129,
+    'genepart'   => 'CDS',
+    'prAlt'      => '*',
+    'prRef'      => 'Y',
+    'func'       => 'nonsense',
+    'funcSO'     => 'SO:0001587',
+    'genepartSO' => 'SO:0000316',
+    'polar'      => 'P0=>.',
+    'funcSOname' => 'stop_gained',
+    'primaryTag' => 'Y'
+};
+
+my $mt_missense = {
+    'protBegin'   => 43,
+    'cc'          => 'TAC=>TGC',
+    'ei_End'      => 'EX1E',
+    'exin'        => 'EX1E',
+    'prot'        => 'YP_003024026.1',
+    'trRefComp'   => {
+        'EX1E' => 1
+    },
+    'r_End'    => 'C1E',
+    'c'        => 'c.128A>G',
+    'rnaBegin' => 128,
+    'ei_Begin' => 'EX1E',
+    'r'        => 'C1E',
+    'cdsBegin' => '128',
+    'preStart' => {
+        'r'    => 'C1E',
+        'cDot' => '127',
+        'nDot' => 127,
+        'exin' => 'EX1E'
+    },
+    'genepartIndex' => '1',
+    'trRef'         => 'A',
+    'protEnd'       => 43,
+    'cdsEnd'        => '128',
+    'exonIndex'     => '1',
+    'r_Begin'       => 'C1E',
+    'trAlt'         => 'G',
+    'intronIndex'   => '.',
+    'strd'          => '+',
+    'geneSym'       => 'MT-ND1',
+    'postEnd'       => {
+        'r'    => 'C1E',
+        'cDot' => '129',
+        'nDot' => 129,
+        'exin' => 'EX1E'
+    },
+    'geneId'     => '4535',
+    'p'          => 'p.Y43C',
+    'rnaEnd'     => 128,
+    'genepart'   => 'CDS',
+    'prAlt'      => 'C',
+    'prRef'      => 'Y',
+    'func'       => 'missense',
+    'funcSO'     => 'SO:0001583',
+    'genepartSO' => 'SO:0000316',
+    'polar'      => 'P0=>P0',
+    'funcSOname' => 'missense_variant',
+    'primaryTag' => 'Y'
+};
+
 test_parse_var( "crawler_snv_parse",           $snv_parse,    $crawler_input );
 test_parse_var( "crawler_vcf_insert_parse",    $insert_parse, $crawler_input2 );
 test_parse_var( "crawler_var_undef_del_parse", $del_parse,    $crawler_input3 );
@@ -2375,12 +2526,12 @@ test_ok ("Mt_init_loss", $mt_init_loss, "NM_MT-ND1",
    "chrMT", 3306, 3307, "A", "C" );
 test_ok ("No_call_altstart", $no_call_altstart, "NM_MT-ND1", 
    "chrMT", 3308, 3309, "A", "N" );
-#test_ok ("Mt_no_call_initloss", $mt_no_call_initloss, "NM_MT-ND1", 
-#   "chrMT", 3306, 3307, "A", "?" );
-#test_ok ("Mt_nonsense", $mt_nonsense, "NM_MT-ND1", 
-#   "chrMT", 3434, 3435, "C", "A" );
-#test_ok ("Mt_missense", $mt_missense, "NM_MT-ND1", 
-#   "chrMT", 3433, 3434, "A", "G" );
+test_ok ("Mt_no_call_initloss", $mt_no_call_initloss, "NM_MT-ND1", 
+   "chrMT", 3306, 3307, "A", "?" );
+test_ok ("Mt_nonsense", $mt_nonsense, "NM_MT-ND1", 
+   "chrMT", 3434, 3435, "C", "A" );
+test_ok ("Mt_missense", $mt_missense, "NM_MT-ND1", 
+   "chrMT", 3433, 3434, "A", "G" );
 #test_ok ("Mt_coding_synon", $mt_coding_synon, "NM_MT-ND1", 
 #   "chrMT", 3434, 3435, "C", "T" );
 #test_ok ("Mt_stop_loss", $mt_stop_loss, "NM_MT-ND1", 
