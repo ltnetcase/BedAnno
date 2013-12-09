@@ -2022,6 +2022,51 @@ my $left_edge_mismatch_anno = {
     'primaryTag' => 'N'
 };
 
+my $downstream_no_call = undef;
+my $span_annotation_fail = {
+    'r'         => '?',
+    'protBegin' => '',
+    'cdsBegin'  => '?',
+    'preStart'  => {
+        'r'    => '?',
+        'cDot' => '?',
+        'nDot' => '?',
+        'exin' => '?'
+    },
+    'genepartIndex' => 0,
+    'ei_End'        => '?',
+    'protEnd'       => '',
+    'cdsEnd'        => '?',
+    'exonIndex'     => '.',
+    'trAlt'         => '?',
+    'r_Begin'       => '?',
+    'intronIndex'   => '.',
+    'exin'          => '?',
+    'prot'          => 'NP_001036223.1',
+    'strd'          => '+',
+    'trRefComp'     => {
+        'Q1' => 20
+    },
+    'postEnd' => {
+        'r'    => '?',
+        'cDot' => '?',
+        'nDot' => '?',
+        'exin' => '?'
+    },
+    'geneSym'    => 'SRGAP2',
+    'r_End'      => '?',
+    'geneId'     => '23380',
+    'rnaEnd'     => '?',
+    'genepart'   => 'annotation-fail',
+    'func'       => 'annotation-fail',
+    'rnaBegin'   => '?',
+    'funcSO'     => '',
+    'ei_Begin'   => '?',
+    'genepartSO' => '',
+    'funcSOname' => 'annotation-fail',
+    'primaryTag' => 'N'
+};
+
 my $mt_no_call_ncRNA = {
     'r'         => 'R1E',
     'protBegin' => '',
@@ -2161,56 +2206,108 @@ my $mt_altstart = {
     'func'       => 'altstart',
     'funcSO'     => 'SO:0001582',
     'genepartSO' => 'SO:0000316',
-    'polar'      => 'NP=>NP',
     'funcSOname' => 'initiator_codon_variant',
     'primaryTag' => 'Y'
 };
 
-my $downstream_no_call = undef;
-my $span_annotation_fail = {
-    'r'         => '?',
-    'protBegin' => '',
-    'cdsBegin'  => '?',
-    'preStart'  => {
-        'r'    => '?',
-        'cDot' => '?',
-        'nDot' => '?',
-        'exin' => '?'
+my $mt_init_loss = {
+    'protBegin'   => 1,
+    'ei_End'      => 'EX1E',
+    'exin'        => 'EX1E',
+    'prot'        => 'YP_003024026.1',
+    'trRefComp'   => {
+        'EX1E' => 1
     },
-    'genepartIndex' => 0,
-    'ei_End'        => '?',
-    'protEnd'       => '',
-    'cdsEnd'        => '?',
-    'exonIndex'     => '.',
-    'trAlt'         => '?',
-    'r_Begin'       => '?',
+    'r_End'    => 'C1E',
+    'c'        => 'c.1A>C',
+    'rnaBegin' => 1,
+    'ei_Begin' => 'EX1E',
+    'r'        => 'C1E',
+    'cdsBegin' => '1',
+    'preStart' => {
+        'r'    => 'PROM',
+        'cDot' => '1-u1',
+        'nDot' => -1,
+        'exin' => '.'
+    },
+    'genepartIndex' => '1',
+    'trRef'         => 'A',
+    'protEnd'       => 1,
+    'cdsEnd'        => '1',
+    'exonIndex'     => '1',
+    'r_Begin'       => 'C1E',
+    'trAlt'         => 'C',
     'intronIndex'   => '.',
-    'exin'          => '?',
-    'prot'          => 'NP_001036223.1',
     'strd'          => '+',
-    'trRefComp'     => {
-        'Q1' => 20
+    'geneSym'       => 'MT-ND1',
+    'postEnd'       => {
+        'r'    => 'C1E',
+        'cDot' => '2',
+        'nDot' => 2,
+        'exin' => 'EX1E'
     },
-    'postEnd' => {
-        'r'    => '?',
-        'cDot' => '?',
-        'nDot' => '?',
-        'exin' => '?'
-    },
-    'geneSym'    => 'SRGAP2',
-    'r_End'      => '?',
-    'geneId'     => '23380',
-    'rnaEnd'     => '?',
-    'genepart'   => 'annotation-fail',
-    'func'       => 'annotation-fail',
-    'rnaBegin'   => '?',
-    'funcSO'     => '',
-    'ei_Begin'   => '?',
-    'genepartSO' => '',
-    'funcSOname' => 'annotation-fail',
-    'primaryTag' => 'N'
+    'geneId'     => '4535',
+    'p'          => 'p.0?',
+    'rnaEnd'     => 1,
+    'prAlt'      => 'L',
+    'genepart'   => 'CDS',
+    'prRef'      => 'M',
+    'func'       => 'init-loss',
+    'funcSO'     => 'SO:0001582',
+    'genepartSO' => 'SO:0000316',
+    'funcSOname' => 'initiator_codon_variant',
+    'primaryTag' => 'Y'
 };
 
+my $no_call_altstart = {
+    'protBegin' => 1,
+    'cc'        => 'ATA=>ATN',
+    'ei_End'    => 'EX1E',
+    'exin'      => 'EX1E',
+    'prot'      => 'YP_003024026.1',
+    'trRefComp' => {
+        'EX1E' => 1
+    },
+    'r_End'    => 'C1E',
+    'c'        => 'c.3A>N',
+    'rnaBegin' => 3,
+    'ei_Begin' => 'EX1E',
+    'r'        => 'C1E',
+    'cdsBegin' => '3',
+    'preStart' => {
+        'r'    => 'C1E',
+        'cDot' => '2',
+        'nDot' => 2,
+        'exin' => 'EX1E'
+    },
+    'genepartIndex' => '1',
+    'trRef'         => 'A',
+    'protEnd'       => 1,
+    'cdsEnd'        => '3',
+    'exonIndex'     => '1',
+    'r_Begin'       => 'C1E',
+    'trAlt'         => 'N',
+    'intronIndex'   => '.',
+    'strd'          => '+',
+    'geneSym'       => 'MT-ND1',
+    'postEnd'       => {
+        'r'    => 'C1E',
+        'cDot' => '4',
+        'nDot' => 4,
+        'exin' => 'EX1E'
+    },
+    'geneId'     => '4535',
+    'p'          => 'p.=',
+    'rnaEnd'     => 3,
+    'prAlt'      => 'M',
+    'genepart'   => 'CDS',
+    'prRef'      => 'M',
+    'func'       => 'altstart',
+    'funcSO'     => 'SO:0001582',
+    'genepartSO' => 'SO:0000316',
+    'funcSOname' => 'initiator_codon_variant',
+    'primaryTag' => 'Y'
+};
 
 test_parse_var( "crawler_snv_parse",           $snv_parse,    $crawler_input );
 test_parse_var( "crawler_vcf_insert_parse",    $insert_parse, $crawler_input2 );
@@ -2247,9 +2344,9 @@ test_varanno( "cds_ins_anno",        $cds_ins_anno,        $cds_ins );
 test_varanno( "cds_rep_anno",        $cds_rep_anno,        $cds_rep );
 test_varanno( "cds_delins_anno",     $cds_delins_anno,     $cds_delins );
 test_varanno( "cds_no_call_anno",    $cds_no_call_anno,    $cds_no_call );
-
 test_varanno( "no_call_edge_varanno", $no_call_edge_varanno,
     $no_call_edge_parse );
+
 test_ok ( "no_call_edge_ins_trinfo", $no_call_edge_ins_trinfo, 'NM_148965.1',
    "chr1", 6526167, 6526167, "=", "?" ); 
 test_ok ( "cds_rna_snv1_anno", $cds_rna_snv1_anno, 'NM_000581.2',
@@ -2258,11 +2355,15 @@ test_ok ( "cds_rna_snv2_anno", $cds_rna_snv2_anno, 'NM_000581.2',
    "chr3", 49395704, 49395705, "C", "A" );
 test_ok ( "large_del_anno", $large_del_anno, 'NM_000642.2',
    "chr1", 100327863, 100327884, "TGGTGCTGATAATCATGTGCT", "" );
-
 test_ok ( "promoter_anno", $promoter_anno, 'NM_033492.1',
    "chr1", 1590520, 1590521, "G", "A" );
 test_ok ( "left_edge_mismatch_anno", $left_edge_mismatch_anno, 'NM_006158.3',
    "chr8", 24811065, 24811065, "", "A" );
+test_ok ( "downstream_no_call", $downstream_no_call, "NR_037481.1",
+   "chr1", 26232848, 26232852, "=", "?" );
+test_ok ( "span_annotation_fail", $span_annotation_fail, "NM_001042758.1",
+   "chr1", 206538994, 206539014, "=", "?" );
+
 
 test_ok ( "MT_no_call_ncRNA", $mt_no_call_ncRNA, 'NR_MT-TRNF', 
    "chrMT", 576, 577, "G", "N" );
@@ -2270,10 +2371,72 @@ test_ok ( "MT_span_no_call", $mt_span_no_call, 'NR_MT-TRNF',
    "chrMT", 569, 585, "CCCCACAGTTTATGTA", "?" );
 test_ok ( "MT_altstart", $mt_altstart, 'NM_MT-ND1',
    "chrMT", 3308, 3309, "A", "T" );
-test_ok ( "downstream_no_call", $downstream_no_call, "NR_037481.1",
-   "chr1", 26232848, 26232852, "=", "?" );
-test_ok ( "span_annotation_fail", $span_annotation_fail, "NM_001042758.1",
-   "chr1", 206538994, 206539014, "=", "?" );
+test_ok ("Mt_init_loss", $mt_init_loss, "NM_MT-ND1", 
+   "chrMT", 3306, 3307, "A", "C" );
+test_ok ("No_call_altstart", $no_call_altstart, "NM_MT-ND1", 
+   "chrMT", 3308, 3309, "A", "N" );
+#test_ok ("Mt_no_call_initloss", $mt_no_call_initloss, "NM_MT-ND1", 
+#   "chrMT", 3306, 3307, "A", "?" );
+#test_ok ("Mt_nonsense", $mt_nonsense, "NM_MT-ND1", 
+#   "chrMT", 3434, 3435, "C", "A" );
+#test_ok ("Mt_missense", $mt_missense, "NM_MT-ND1", 
+#   "chrMT", 3433, 3434, "A", "G" );
+#test_ok ("Mt_coding_synon", $mt_coding_synon, "NM_MT-ND1", 
+#   "chrMT", 3434, 3435, "C", "T" );
+#test_ok ("Mt_stop_loss", $mt_stop_loss, "NM_MT-ND1", 
+#   "chrMT", 4261, 4262, "A", "G" );
+#test_ok ("Mt_stop_retained", $mt_stop_retained, "NM_MT-COX2", 
+#   "chrMT", 8268, 8269, "G", "A" );
+#test_ok ("Mt_altstart_frameshift", $mt_altstart_frameshift, "NM_MT-ND1", 
+#   "chrMT", 3307, 3307, "", "T" );
+#test_ok ("Mt_ins_initloss", $mt_ins_initloss, "NM_MT-ND1", 
+#   "chrMT", 3307, 3307, "", "A" );
+#test_ok ("Mt_altstart_cdsins", $mt_altstart_cdsins, "NM_MT-ND1", 
+#   "chrMT", 3308, 3308, "", "TAC" );
+#test_ok ("Mt_unknown_multiple", $mt_unknown_multiple, "NM_MT-ND1", 
+#   "chrMT", 3308, 3308, "", "NNN" );
+#test_ok ("Mt_ins_frameshift", $mt_ins_frameshift, "NM_MT-ND1", 
+#   "chrMT", 3310, 3310, "", "A" );
+#test_ok ("Mt_ins_cds", $mt_ins_cds, "NM_MT-ND1", 
+#   "chrMT", 3310, 3310, "", "TCT" );
+#test_ok ("Mt_ins_stopgain", $mt_ins_stopgain, "NM_MT-ND1", 
+#   "chrMT", 3434, 3434, "", "A" );
+#test_ok ("Mt_ins_stoploss", $mt_ins_stoploss, "NM_MT-ND1", 
+#   "chrMT", 4262, 4262, "", "C" );
+#test_ok ("Mt_ins_stopretained", $mt_ins_stopretained, "NM_MT-ND1", 
+#   "chrMT", 4262, 4262, "", "A" );
+#test_ok ("Mt_edge_promoter", $mt_edge_promoter, "NM_MT-ND1", 
+#   "chrMT", 3306, 3306, "", "TAATAA" );
+#test_ok ("Mt_del_initloss", $mt_del_initloss, "NM_MT-ND1", 
+#   "chrMT", 3307, 3308, "T", "" );
+#test_ok ("Mt_cds_del", $mt_cds_del, "NM_MT-ND2", 
+#   "chrMT", 4471, 4474, "TAA", "" );
+#test_ok ("Mt_del_frameshift", $mt_del_frameshift, "NM_MT-ND1", 
+#   "chrMT", 3310, 3314, "CCAT", "" );
+#test_ok ("Mt_del_stopgain", $mt_del_stopgain, "NM_MT-ND1", 
+#   "chrMT", 3361, 3365, "TCCT", "" );
+#test_ok ("Mt_del_stoploss", $mt_del_stoploss, "NM_MT-ND1", 
+#   "chrMT", 4260, 4261, "T", "" );
+#test_ok ("Mt_del_stopretained", $mt_del_stopretained, "NM_MT-ND1", 
+#   "chrMT", 4261, 4262, "A", "" );
+#test_ok ("Mt_cds_loss", $mt_cds_loss, "NM_MT-ATP8", 
+#   "chrMT", 8360, 8575, "GTGAAATGCCCCAACTAAATACTACCGTATGGCCCACCATAATTACCCCCATACTCCTTACACTATTCCTCATCACCCAACTAAAAATATTAAACACAAACTACCACCTACCTCCCTCACCAAAGCCCATAAAAATAAAAAATTATAACAAACCCTGAGAACCAAAATGAACGAAAATCTGTTCGCTTCATTCATTGCCCCCACAATCCTAGGCC", "" );
+#test_ok ("Mt_span_promter", $mt_span_promter, "NM_MT-ND1", 
+#   "chrMT", 3300, 3310, "AACAACATAC", "" );
+#test_ok ("Mt_sub_initloss", $mt_sub_initloss, "NM_MT-ND1", 
+#   "chrMT", 3306, 3309, "ATA", "TCT" );
+#test_ok ("Mt_delins_cdsins", $mt_delins_cdsins, "NM_MT-ND1", 
+#   "chrMT", 3308, 3309, "A", "GCAA" );
+#test_ok ("Mt_delins_frameshift", $mt_delins_frameshift, "NM_MT-ND1", 
+#   "chrMT", 3308, 3309, "A", "GC" );
+#test_ok ("Mt_delins_cdsdelins", $mt_delins_cdsdelins, "NM_MT-ND1", 
+#   "chrMT", 3309, 3312, "CCC", "ATAAAT" );
+#test_ok ("Mt_delins_stopgain", $mt_delins_stopgain, "NM_MT-ND1", 
+#   "chrMT", 3309, 3312, "CCC", "ATATAA" );
+#test_ok ("Mt_delins_stoploss", $mt_delins_stoploss, "NM_MT-ND1", 
+#   "chrMT", 4260, 4261, "T", "GTA" );
+#test_ok ("Mt_delins_stopretained", $mt_delins_stopretained, "NM_MT-ND1", 
+#   "chrMT", 4260, 4261, "T", "AGA" );
 
 
 done_testing();

@@ -2340,16 +2340,39 @@ sub getTrChange {
                         }
 
 			if ($init_synon == 0) {
-			    $trannoEnt->{func} = 'init-loss';
-			    $trannoEnt->{p}    = 'p.0?';
-			    if ($prBegin eq '1' and $prEnd eq '1') {
-                                my $zero;
-                                $trannoEnt->{prRef} = 'M';
-                                my $altCodon = substr( $codon_alt, 0, 3 );
-                                ( $trannoEnt->{prAlt}, $zero ) =
-                                  translate( $altCodon, \%altcodon_opts );
+			    if ($trAlt =~ /N/) {
+				my $all_hit = 1;
+				foreach my $base ( 'A', 'C', 'G', 'T' ) {
+				    my $subalt_codon = $codon_alt;
+				    $subalt_codon =~ s/N/$base/;
+				    if (!exists $start_codons{$subalt_codon}) {
+					$all_hit = 0;
+					last;
+				    }
+				}
+
+				$trannoEnt->{cc} =  $cInfo5[1]."=>".$codon_alt;
+				if ($all_hit == 1) {
+				    $trannoEnt->{func} = "altstart";
+				    $trannoEnt->{prAlt} = "M";
+				    $init_synon = 1;
+				}
+				else {
+				    $trannoEnt->{func} = 'unknown-no-call';
+				}
 			    }
-			    next;
+			    else {
+				$trannoEnt->{func} = 'init-loss';
+				$trannoEnt->{p}    = 'p.0?';
+				if ($prBegin eq '1' and $prEnd eq '1') {
+				    my $zero;
+				    $trannoEnt->{prRef} = 'M';
+				    my $altCodon = substr( $codon_alt, 0, 3 );
+				    ( $trannoEnt->{prAlt}, $zero ) =
+				      translate( $altCodon, \%altcodon_opts );
+				}
+				next;
+			    }
 			}
 			else {
 			    $trannoEnt->{func} = 'altstart';
@@ -2387,7 +2410,9 @@ sub getTrChange {
 		    }
 
 		    $trannoEnt->{prRef} = $prRef;
-		    $trannoEnt->{prAlt} = $prAlt;
+		    $trannoEnt->{prAlt} ||= $prAlt;
+
+		    $prAlt = $trannoEnt->{prAlt}; # uniform prAlt
 
 		    # to indicate whether the alternate sequence 
 		    # encode a stop codon or non-frameshift, or otherwise
@@ -2406,7 +2431,9 @@ sub getTrChange {
 			# using trim due to terminal codon
 			my ($aa_to_be, $polar_to_be) = getAAandPolar($codon_to_be);
 			$trannoEnt->{cc} = $cInfo5[1].'=>'.$codon_to_be;
-			$trannoEnt->{polar} = $cInfo5[3].'=>'.$polar_to_be;
+			if ($prRef ne $prAlt) {
+			    $trannoEnt->{polar} = $cInfo5[3].'=>'.$polar_to_be;
+			}
 		    }
 
 		    my $prSimpleSame = 0;
@@ -2933,7 +2960,8 @@ sub getAAandPolar {
     my $codon = shift;
     my $rtrans_opts = shift;
     my ($aa, $zero) = translate($codon, $rtrans_opts);
-    my $polar = (exists $Polar{$aa}) ? $Polar{$aa} : '.';
+    my $polar =
+      ( exists $Polar{$aa} ) ? $Polar{$aa} : ( ( $codon =~ /N/ ) ? '?' : '.' );
     return ($aa, $polar);
 }
 
@@ -3008,7 +3036,10 @@ sub translate {
     my $prot = "";
     for (my $i = 0; $i < length($nucl); $i+=3) {
 	my $codon = substr($nucl,$i,3);
-	my $aa = (exists $C1{$codon}) ? $C1{$codon} : '.';
+        my $aa =
+          ( exists $C1{$codon} )
+          ? $C1{$codon}
+          : ( ( $codon =~ /N/ ) ? '?' : '.' );
 	if ( $mito and $codon eq 'ATA' ) {
 	    $aa = 'M';
 	}
