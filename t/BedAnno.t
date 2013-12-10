@@ -2460,6 +2460,101 @@ my $mt_missense = {
     'primaryTag' => 'Y'
 };
 
+my $mt_coding_synon = {
+    'protBegin' => 43,
+    'cc'        => 'TAC=>TAT',
+    'ei_End'    => 'EX1E',
+    'exin'      => 'EX1E',
+    'prot'      => 'YP_003024026.1',
+    'trRefComp' => {
+        'EX1E' => 1
+    },
+    'r_End'    => 'C1E',
+    'c'        => 'c.129C>T',
+    'rnaBegin' => 129,
+    'ei_Begin' => 'EX1E',
+    'r'        => 'C1E',
+    'cdsBegin' => '129',
+    'preStart' => {
+        'r'    => 'C1E',
+        'cDot' => '128',
+        'nDot' => 128,
+        'exin' => 'EX1E'
+    },
+    'genepartIndex' => '1',
+    'trRef'         => 'C',
+    'protEnd'       => 43,
+    'cdsEnd'        => '129',
+    'exonIndex'     => '1',
+    'r_Begin'       => 'C1E',
+    'trAlt'         => 'T',
+    'intronIndex'   => '.',
+    'strd'          => '+',
+    'geneSym'       => 'MT-ND1',
+    'postEnd'       => {
+        'r'    => 'C1E',
+        'cDot' => '130',
+        'nDot' => 130,
+        'exin' => 'EX1E'
+    },
+    'geneId'     => '4535',
+    'p'          => 'p.=',
+    'rnaEnd'     => 129,
+    'prAlt'      => 'Y',
+    'genepart'   => 'CDS',
+    'prRef'      => 'Y',
+    'func'       => 'coding-synon',
+    'funcSO'     => 'SO:0001819',
+    'genepartSO' => 'SO:0000316',
+    'funcSOname' => 'synonymous_variant',
+    'primaryTag' => 'Y'
+};
+
+my $mt_stop_loss = {
+    'protBegin' => 319,
+    'cc'        => 'TAA=>TGA',
+    'ei_End'    => 'EX1E',
+    'exin'      => 'EX1E',
+    'prot'      => 'YP_003024026.1',
+    'trRefComp' => {
+        'EX1E' => 1
+    },
+    'r_End'    => 'C1E',
+    'c'        => 'c.956A>G',
+    'rnaBegin' => 956,
+    'ei_Begin' => 'EX1E',
+    'r'        => 'C1E',
+    'cdsBegin' => '956',
+    'preStart' => {
+        'r'    => 'C1E',
+        'cDot' => '955',
+        'nDot' => 955,
+        'exin' => 'EX1E'
+    },
+    'genepartIndex' => '1',
+    'trRef'         => 'A',
+    'protEnd'       => 319,
+    'cdsEnd'        => '956',
+    'exonIndex'     => '1',
+    'r_Begin'       => 'C1E',
+    'trAlt'         => 'G',
+    'intronIndex'   => '.',
+    'strd'          => '+',
+    'geneSym'       => 'MT-ND1',
+    'geneId'        => '4535',
+    'p'             => 'p.*319fs*?',
+    'rnaEnd'        => 956,
+    'prAlt'         => 'W',
+    'genepart'      => 'CDS',
+    'prRef'         => '*',
+    'func'          => 'stop-loss',
+    'funcSO'        => 'SO:0001578',
+    'genepartSO'    => 'SO:0000316',
+    'polar'         => '.=>NP',
+    'funcSOname'    => 'stop_lost',
+    'primaryTag'    => 'Y'
+};
+
 test_parse_var( "crawler_snv_parse",           $snv_parse,    $crawler_input );
 test_parse_var( "crawler_vcf_insert_parse",    $insert_parse, $crawler_input2 );
 test_parse_var( "crawler_var_undef_del_parse", $del_parse,    $crawler_input3 );
@@ -2532,10 +2627,10 @@ test_ok ("Mt_nonsense", $mt_nonsense, "NM_MT-ND1",
    "chrMT", 3434, 3435, "C", "A" );
 test_ok ("Mt_missense", $mt_missense, "NM_MT-ND1", 
    "chrMT", 3433, 3434, "A", "G" );
-#test_ok ("Mt_coding_synon", $mt_coding_synon, "NM_MT-ND1", 
-#   "chrMT", 3434, 3435, "C", "T" );
-#test_ok ("Mt_stop_loss", $mt_stop_loss, "NM_MT-ND1", 
-#   "chrMT", 4261, 4262, "A", "G" );
+test_ok ("Mt_coding_synon", $mt_coding_synon, "NM_MT-ND1", 
+   "chrMT", 3434, 3435, "C", "T" );
+test_ok ("Mt_stop_loss", $mt_stop_loss, "NM_MT-ND1", 
+   "chrMT", 4261, 4262, "A", "G" );
 #test_ok ("Mt_stop_retained", $mt_stop_retained, "NM_MT-COX2", 
 #   "chrMT", 8268, 8269, "G", "A" );
 #test_ok ("Mt_altstart_frameshift", $mt_altstart_frameshift, "NM_MT-ND1", 

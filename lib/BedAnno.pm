@@ -2237,6 +2237,8 @@ sub getTrChange {
                         $ready_to_add_3 = substr( $trSeq, $trEnd );
 			# this variants's effect will be end at the terminal
 			$prEnd = $trdbEnt->{plen} + 1; # terminal
+                        $ready_to_add_3 .= "A" x ( 3 - ( length($trSeq) % 3 ) )
+                          if ( exists $trdbEnt->{A} );
                     }
                     else {    # chgvs_3 in cds region with no frameshift
                         $ready_to_add_3 = substr(
@@ -2387,9 +2389,6 @@ sub getTrChange {
 		    # give out the first of single codon to be
 		    my $codon_to_be = substr($codon_alt, 0, 3);
 
-		    # debug
-#		    print STDERR Data::Dumper->Dump( [$trdbEnt, $prBegin, $prEnd, $codon_alt], ["trdbEnt", "prBegin", "prEnd", "codon_alt"] );
-
                     $prRef = substr(
                         $trdbEnt->{pseq},
                         ( $prBegin - 1 ),
@@ -2398,10 +2397,10 @@ sub getTrChange {
 
 		    # we can not allow inseq stop codon in altered sequence
 		    # due to frameshift and ambiguity.
+
 		    my $next_alt_frame;
                     ( $prAlt, $next_alt_frame ) =
                       translate( $codon_alt, \%altcodon_opts );
-
 
 		    if ($hit_init_flag) {
 			$prRef =~ s/^[A-Z]/M/; # change init pep to M
@@ -2417,8 +2416,12 @@ sub getTrChange {
 		    # to indicate whether the alternate sequence 
 		    # encode a stop codon or non-frameshift, or otherwise
 		    # with a non stopped frameshift.
-                    my $non_stop_flag = ( $prAlt !~ /\*$/
-                          and ( $next_alt_frame or $frameshift_flag ) ) ? 1 : 0;
+                    my $non_stop_flag = (
+                        $prAlt !~ /\*$/
+                          and ($prRef eq "*"
+                            or $next_alt_frame
+                            or $frameshift_flag )
+                    ) ? 1 : 0;
 
 		    # To avoid large range perlre, before parse protein 
 		    # var we should first deal with frameshift issues
@@ -2429,7 +2432,9 @@ sub getTrChange {
 		    # single aa substitution, no matter which position.
 		    if ($diff_ra == 0 and $cInfo5[0] == $cInfo3[0]) {
 			# using trim due to terminal codon
-			my ($aa_to_be, $polar_to_be) = getAAandPolar($codon_to_be);
+                        my ( $aa_to_be, $polar_to_be ) =
+                          getAAandPolar($codon_to_be, \%altcodon_opts);
+			
 			$trannoEnt->{cc} = $cInfo5[1].'=>'.$codon_to_be;
 			if ($prRef ne $prAlt) {
 			    $trannoEnt->{polar} = $cInfo5[3].'=>'.$polar_to_be;
@@ -2459,12 +2464,14 @@ sub getTrChange {
 
 		    # non stop frameshift with extra non-coded base
 		    if ($non_stop_flag) {
-                        $trannoEnt->{func} =
-                          ( $no_parsed_pP >= $trdbEnt->{plen} )
-                          ? 'stop-loss'
-                          : 'frameshift';
-                        $trannoEnt->{p} = 'p.' . $no_parsed_prStart
-                          . ( $no_parsed_pP + 1 ) . 'fs*?';
+			if ($no_parsed_pP >= $trdbEnt->{plen} ) {
+			    $trannoEnt->{func} = 'stop-loss';
+			}
+			else {
+			    $trannoEnt->{func} = 'frameshift';
+			}
+			$trannoEnt->{p} = 'p.' . $no_parsed_prStart
+			  . ( $no_parsed_pP + 1 ) . 'fs*?';
 			next;
 		    }
 
