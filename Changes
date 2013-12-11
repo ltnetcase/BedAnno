@@ -82,3 +82,8 @@
 	- fix some minor bugs
 	- add trWalker method to uniform the cHGVS string to give 3-END most variation
 	  and recognize whole repeat region case in transcripts.
+
+0.40  Wed Dec 11 22:30:06 2013
+	- add condel score and prediction, based on the VEP_plugins/Condel.pm version 2.4
+	  The scores seem a little different from the VEP version 2.6's result, though 
+          the prediction are the same. from checking one of example var.

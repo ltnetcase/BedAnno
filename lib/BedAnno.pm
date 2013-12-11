@@ -9,13 +9,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.39';
+our $VERSION = '0.40';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.38
+=head2 VERSION v0.40
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -320,6 +320,14 @@ our $REF_BUILD = 'GRCh37';
 
 =back
 
+=item I<condel> [condel config path]
+
+=over
+
+=item compute condel scores and prediction based on sift and polyphen2 HumVar prediction
+
+=back
+
 =item I<phyloP> [phyloP_scores.tsv.gz]
 
 =over
@@ -504,6 +512,10 @@ sub new {
 
     if ( exists $self->{prediction} ) {
 	$self->set_prediction($self->{prediction});
+    }
+
+    if ( exists $self->{condel} ) {
+	$self->set_condel($self->{condel});
     }
 
     if ( exists $self->{phyloP} ) {
@@ -745,6 +757,29 @@ sub get_prediction {
 sub get_prediction_h {
     my $self = shift;
     return $self->{prediction_h} if (exists $self->{prediction_h});
+    return undef;
+}
+
+sub set_condel {
+    my $self = shift;
+    my $condelConfig = shift;
+    $self->{condel} = $condelConfig;
+    require CondelPred if (!exists $self->{condel_h});
+    my $condel_h = CondelPred->new( $condelConfig );
+    $self->{condel_h} = $condel_h;
+    return $self;
+}
+
+sub get_condel {
+    my $self = shift;
+    return $self->{condel} if (exists $self->{condel});
+    return undef;
+}
+
+
+sub get_condel_h {
+    my $self = shift;
+    return $self->{condel_h} if (exists $self->{condel_h});
     return undef;
 }
 
@@ -1789,6 +1824,14 @@ sub finaliseAnno {
 				  $init_pred->{polyphen2_humvar}->[1];
 			    }
 
+			}
+		    }
+
+		    if ( exists $self->{condel_h} and defined $self->{condel_h} ) {
+			my $rcondel_info = $self->{condel_h}->pred($trAnnoEnt);
+			if ( exists $rcondel_info->{condelPred} and $rcondel_info->{condelPred} ne "not_computable_was") {
+			    $trAnnoEnt->{condelPred} = $rcondel_info->{condelPred};
+			    $trAnnoEnt->{condelScore} = $rcondel_info->{condelScore};
 			}
 		    }
 		}

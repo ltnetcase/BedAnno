@@ -3,6 +3,7 @@
 
 our $data;
 our $extradb;
+our $config;
 
 BEGIN {
     unless ( grep /blib/, @INC ) {
@@ -11,10 +12,12 @@ BEGIN {
         unshift @INC, '../lib'     if -d '../lib';
         $data    = '../data';
         $extradb = '../db';
+	$config  = '../config';
     }
 }
 $data    ||= "data";
 $extradb ||= "db";
+$config  ||= "config";
 my %opts = (
     db    => "$data/test_db.bed.gz",
     tr    => "$data/test.fas.gz",
@@ -47,6 +50,9 @@ if ( -e $extradb and -r $extradb ) {
     if ( -e "$extradb/phyloP/phyloP_all3class_combin_2013-09-25.bed.gz" ) {
         $opts{phyloP} =
           "$extradb/phyloP/phyloP_all3class_combin_2013-09-25.bed.gz";
+    }
+    if ( -e "$config/Condel" and -d "$config/Condel" ) {
+	$opts{condel} = "$config/Condel";
     }
 }
 
