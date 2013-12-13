@@ -9,13 +9,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.40';
+our $VERSION = '0.39';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.40
+=head2 VERSION v0.38
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -936,7 +936,7 @@ sub TO_JSON {
                     # optional tags:
                     prot     => $prot_acc,
                     plen     => $prot_len,
-                    csta     => $cds_start_on_trSeq, # 1 based
+                    csta     => $cds_start_on_trSeq, # 0 based
                     csto     => $cds_end_on_trSeq,   # 1 based
                     seq      => $tr_sequence,
                     
@@ -2206,11 +2206,6 @@ sub getTrChange {
                     $trannoEnt->{p} = 'p.0?';
                     next;
 		}
-		elsif ($chgvs_5 =~ /^\-/) {
-		    $trannoEnt->{func} = 'init-loss';
-		    $trannoEnt->{p}    = 'p.0?';
-		    next;
-		}
 		elsif ($chgvs_3 eq '1-1') { # cds-begin - last 5'utr intron edge
 		    $trannoEnt->{func} = 'utr-5';
 		    next;
@@ -2222,24 +2217,50 @@ sub getTrChange {
                     next;
                 }
 		# here protein sequence var should be reparsed
+		elsif ($chgvs_5 =~ /^\-(\d+)/) {
+		    my $u5_len = $1;
+		    if ($real_var->{imp} eq 'rep') {
+			if ( $u5_len > ($real_rl - $real_al ) )
+			{
+			    $trannoEnt->{func} = 'utr-5';
+			}
+			else {
+			    $trannoEnt->{func} = 'unknown';
+			}
+		    }
+		    else {
+			$trannoEnt->{func} = 'init-loss';
+			$trannoEnt->{p}    = 'p.0?';
+		    }
+		    next;
+		}
 		else {
+		    if ($chgvs_3 =~ /^\*(\d+)/) {
+			# variant get across the 3' end of cds
+			my $u3_len = $1;
+			if ( $real_var->{imp} eq 'rep'
+			    and ( $u3_len > ( $real_rl - $real_al ) ) )
+			{
+			    $trannoEnt->{func} = 'utr-3';
+			    $trannoEnt->{p} = 'p.=';
+			    next;
+			}
+		    }
 
-		    $chgvs_5 = $1+1 if ($chgvs_5 =~ /^(\d+)\+1/);
-		    $chgvs_3 = $1-1 if ($chgvs_3 =~ /^(\d+)\-1/);
+		    $chgvs_5 = $1+1 if ($chgvs_5 =~ /^(\d+)\+1$/);
+		    $chgvs_3 = $1-1 if ($chgvs_3 =~ /^(\d+)\-1$/);
 
 		    # 5' end should be in coding region.
 		    # leave this as debug information
                     $self->throw(
-                        "Error: unavailable cDot HGVS. [$chgvs_5, $chgvs_3]")
-                      if ( $chgvs_5 !~ /^\d+$/
-                        or $chgvs_3 !~ /^\d+$/
-                        or $chgvs_5 == 0
-                        or $chgvs_3 == 0 );
+                        "Error: unavailable 5' cHGVS. $chgvs_5")
+                      if ( $chgvs_5 !~ /^\d+$/ or $chgvs_5 == 0 );
+
 
 		    @cInfo5 =
 		      getCodon_by_cdsPos( $trdbEnt, $trSeq, $chgvs_5 );
 		    @cInfo3 =
-		      getCodon_by_cdsPos( $trdbEnt, $trSeq, $chgvs_3 );
+		      getCodonPos( $trdbEnt, $trSeq, $trEnd );
 
 		    my %translate_opts = ();
 		    $translate_opts{mito} = 1 if ($tid =~ /^NM_MT-/);
@@ -2337,49 +2358,16 @@ sub getTrChange {
 		    my %start_codons = ('ATG' => -1);
                     if ( exists $trdbEnt->{altstart} ) {
                         %start_codons =
-                          map { $_ => -1 } keys %{ $trdbEnt->{altstart} };
+                          map { $_ => 1 } keys %{ $trdbEnt->{altstart} };
                     }
 
 		    my $init_synon = 0; # indicate start codon search result
 		    my $init_frame_shift = 0; # indicate if init frameshift
-		    my $current_startCodon = substr($trSeq,$trdbEnt->{csta},3);
                     if ($hit_init_flag) {
 			# check if altered sequence have new start codon
                         foreach my $startCodon ( sort keys %start_codons ) {
-                            $start_codons{$startCodon} =
-                              index( $codon_alt, $startCodon );
-                            if ( $start_codons{$startCodon} > -1 ) {
+                            if ( substr( $codon_alt, 0, 3 ) eq $startCodon ) {
                                 $init_synon = 1;
-                                $current_startCodon = $startCodon;
-
-				# trim the leading non-coding region
-                                $codon_alt  = substr( $codon_alt,
-                                    $start_codons{$startCodon} );
-
-				# init frameshift
-                                if ( $start_codons{$startCodon} % 3 > 0 ) {
-                                    $init_frame_shift = 1;
-                                    my $original_var_frame = $diff_ra % 3;
-                                    my $reparsed_frame =
-                                      $start_codons{$startCodon} % 3;
-                                    if ($original_var_frame == $reparsed_frame )
-                                    { # correct to non-frameshift
-                                        $frameshift_flag = 0;
-                                    }
-                                    elsif ( $original_var_frame == 0 ) {
-					# change to a frameshift case
-                                        $codon_alt .= substr(
-                                            $trSeq,
-                                            (
-                                                $trdbEnt->{csta} +
-                                                  ( 3 * $cInfo3[0] )
-                                            )
-                                        );
-                                        $frameshift_flag = 1;
-					$prEnd = $trdbEnt->{plen} + 1;
-					$trannoEnt->{protEnd} = $prEnd;
-                                    }
-                                }
                                 last;
                             }
                         }
@@ -2396,7 +2384,7 @@ sub getTrChange {
 				    }
 				}
 
-				$trannoEnt->{cc} =  $cInfo5[1]."=>".$codon_alt;
+				$trannoEnt->{cc} =  $cInfo5[1]."=>".$codon_alt if (3 == length($codon_alt));
 				if ($all_hit == 1) {
 				    $trannoEnt->{func} = "altstart";
 				    $trannoEnt->{prAlt} = "M";

@@ -2073,6 +2073,54 @@ my $span_annotation_fail = {
     'primaryTag' => 'N'
 };
 
+my $rep_span_cds_utr3 = {
+    'protBegin' => '',
+    'ei_End'    => 'EX6E',
+    'exin'      => 'EX6E',
+    'prot'      => 'NP_009046.2',
+    'trRefComp' => {
+        'EX6E' => 1
+    },
+    'r_End'    => 'C6E',
+    'c'        => 'c.833A[14>13]',
+    'rnaBegin' => 908,
+    'ei_Begin' => 'EX6E',
+    'r'        => 'C6E',
+    'cdsBegin' => '833',
+    'preStart' => {
+        'r'    => 'C6E',
+        'cDot' => '832',
+        'nDot' => 907,
+        'exin' => 'EX6E'
+    },
+    'genepartIndex' => '6',
+    'trRef'         => 'A',
+    'protEnd'       => '',
+    'cdsEnd'        => '833',
+    'exonIndex'     => '6',
+    'r_Begin'       => 'C6E',
+    'trAlt'         => '',
+    'intronIndex'   => '.',
+    'strd'          => '+',
+    'geneSym'       => 'TNFAIP6',
+    'postEnd'       => {
+        'r'    => 'C6E',
+        'cDot' => '834',
+        'nDot' => 909,
+        'exin' => 'EX6E'
+    },
+    'geneId'     => '7130',
+    'p'          => 'p.=',
+    'rnaEnd'     => 908,
+    'genepart'   => 'CDS',
+    'func'       => 'utr-3',
+    'genepartSO' => 'SO:0000316',
+    'funcSO'     => '',
+    'primaryTag' => 'Y',
+    'funcSOname' => 'unknown'
+};
+
+
 my $mt_no_call_ncRNA = {
     'r'         => 'R1E',
     'protBegin' => '',
@@ -2615,6 +2663,8 @@ test_ok ( "downstream_no_call", $downstream_no_call, "NR_037481.1",
    "chr1", 26232848, 26232852, "=", "?" );
 test_ok ( "span_annotation_fail", $span_annotation_fail, "NM_001042758.1",
    "chr1", 206538994, 206539014, "=", "?" );
+test_ok ( "rep_span_cds_utr3", $rep_span_cds_utr3, "NM_007115.3",
+   "chr2", 152236045, 152236046, "A", "" );
 
 
 test_ok ( "MT_no_call_ncRNA", $mt_no_call_ncRNA, 'NR_MT-TRNF', 
