@@ -2183,9 +2183,10 @@ not ok 36 - for [ left_edge_mismatch_anno ]
 # }, 'BedAnno::Anno' )
 ok 37 - for [ downstream_no_call ]
 ok 38 - for [ span_annotation_fail ]
-ok 39 - for [ MT_no_call_ncRNA ]
-ok 40 - for [ MT_span_no_call ]
-not ok 41 - for [ MT_altstart ]
+ok 39 - for [ rep_span_cds_utr3 ]
+ok 40 - for [ MT_no_call_ncRNA ]
+ok 41 - for [ MT_span_no_call ]
+not ok 42 - for [ MT_altstart ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -3038,7 +3039,7 @@ not ok 41 - for [ MT_altstart ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 42 - for [ Mt_init_loss ]
+not ok 43 - for [ Mt_init_loss ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -3898,7 +3899,7 @@ not ok 42 - for [ Mt_init_loss ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 43 - for [ No_call_altstart ]
+not ok 44 - for [ No_call_altstart ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -4751,7 +4752,7 @@ not ok 43 - for [ No_call_altstart ]
 #     'varTypeSO' => 'no-call'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 44 - for [ Mt_no_call_initloss ]
+not ok 45 - for [ Mt_no_call_initloss ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -5602,7 +5603,7 @@ not ok 44 - for [ Mt_no_call_initloss ]
 #     'varTypeSO' => 'no-call'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 45 - for [ Mt_nonsense ]
+not ok 46 - for [ Mt_nonsense ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -6456,7 +6457,7 @@ not ok 45 - for [ Mt_nonsense ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 46 - for [ Mt_missense ]
+not ok 47 - for [ Mt_missense ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -7318,7 +7319,7 @@ not ok 46 - for [ Mt_missense ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 47 - for [ Mt_coding_synon ]
+not ok 48 - for [ Mt_coding_synon ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -8171,7 +8172,7 @@ not ok 47 - for [ Mt_coding_synon ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 48 - for [ Mt_stop_loss ]
+not ok 49 - for [ Mt_stop_loss ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -9019,4 +9020,4 @@ not ok 48 - for [ Mt_stop_loss ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-1..48
+1..49
