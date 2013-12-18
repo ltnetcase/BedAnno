@@ -2265,7 +2265,7 @@ sub getTrChange {
 		    my %translate_opts = ();
 		    $translate_opts{mito} = 1 if ($tid =~ /^NM_MT-/);
 		    $translate_opts{polyA} = 1 if (exists $trdbEnt->{A});
-		    $translate_opts{nostop} = 1 if (exists $trdbEnt->{X});
+		    $translate_opts{nostop} = 1 if (exists $trdbEnt->{X} or exists $trdbEnt->{U});
 		    my %altcodon_opts = %translate_opts;
                     delete $altcodon_opts{nostop}
                       if ( exists $altcodon_opts{nostop} );
