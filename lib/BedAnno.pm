@@ -3444,7 +3444,6 @@ sub new {
     if ( ref( $_[0] ) ) {
         if (   !exists $_[0]->{chr}
             or !exists $_[0]->{begin}
-            or !exists $_[0]->{variantSequence}
             or ( !exists $_[0]->{end} and !exists $_[0]->{referenceSequence} ) )
         {
             confess "Error: unavailable object. need keys: ",
@@ -3454,20 +3453,28 @@ sub new {
         $chr   = $_[0]->{chr};
         $start = $_[0]->{begin};
         $end   = $_[0]->{end} if ( exists $_[0]->{end} );
-	if ( defined $_[0]->{variantSequence} ) {
-	    $alt   = $_[0]->{variantSequence};
-	}
-	else {
-	    $alt   = "";
-	}
+        if ( exists $_[0]->{variantSequence}
+            and defined $_[0]->{variantSequence} )
+        {
+            $alt = $_[0]->{variantSequence};
+        }
+        else {
+            $alt = "";
+        }
 	$alt = "" if ($alt =~ /^null$/i);
+
+        if ( exists $_[0]->{referenceSequence}
+            and !defined $_[0]->{referenceSequence} )
+        {
+            $_[0]->{referenceSequence} = "";
+        }
         $ref =
           ( exists $_[0]->{end} and $start eq $end ) ? ""
           : (
             ( exists $_[0]->{referenceSequence} ) ? $_[0]->{referenceSequence}
             : "="
           );
-
+	$ref = "" if ($ref =~ /^null$/i);
     }
     else {
 	confess "Error: not enough args, need at least 4 args." if (4 > @_);
