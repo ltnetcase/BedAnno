@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "BedAnno 3"
-.TH BedAnno 3 "2013-11-20" "perl v5.14.4" "User Contributed Perl Documentation"
+.TH BedAnno 3 "2013-12-04" "perl v5.14.4" "User Contributed Perl Documentation"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -393,32 +393,31 @@ to deal with large amount of variants.
 .IX Subsection "set/get methods for properties"
 .Vb 10
 \&    List of Properties:
-\&                        get         set
-\&    db                  o           o
-\&    tr                  o           o
-\&    refbuild            o           o
-\&    tidb                o           x
-\&    annodb              o           x
-\&    trInfodb            o           x
-\&    cytoBand            o           o
-\&    cytoBand_h          o           x
-\&    pfam                o           o
-\&    pfam_h              o           x
-\&    prediction          o           o
-\&    prediction_h        o           x
-\&    phyloP              o           o
-\&    phyloP_h            o           x
-\&    dbSNP               o           o
-\&    dbSNP_h             o           x
-\&    tgp                 o           o
-\&    tgp_h               o           x
-\&    esp6500             o           o
-\&    esp6500_h           o           x
-\&    cg54                o           o
-\&    cg54_h              o           x
-\&    wellderly           o           o
-\&    wellderly_h         o           x
-\&
+\&                        get          set
+\&    db                  o            o
+\&    tr                  o            o
+\&    refbuild            o            o
+\&    tidb                o            x
+\&    annodb              o            x
+\&    trInfodb            o            x
+\&    cytoBand            o            o
+\&    cytoBand_h          o            x
+\&    pfam                o            o
+\&    pfam_h              o            x
+\&    prediction          o            o
+\&    prediction_h        o            x
+\&    phyloP              o            o
+\&    phyloP_h            o            x
+\&    dbSNP               o            o
+\&    dbSNP_h             o            x
+\&    tgp                 o            o
+\&    tgp_h               o            x
+\&    esp6500             o            o
+\&    esp6500_h           o            x
+\&    cg54                o            o
+\&    cg54_h              o            x
+\&    wellderly           o            o
+\&    wellderly_h         o            x
 \&
 \&    e.g.    : $self\->set_refbuild($refbuild);
 \&              my $refbuild = $self\->get_refbuild();
@@ -669,10 +668,29 @@ to deal with large amount of variants.
 \&                trRef, prot, c, p, cc, polar, func
 \&                prRef, prAlt
 .Ve
+.SS "trWalker"
+.IX Subsection "trWalker"
+.Vb 10
+\&    About   : walk around the variant position to find possible
+\&              repeat start/end, and return the recalculated
+\&              trBegin and trEnd, together with the real
+\&              transcript originated variants and unified property
+\&              Current implementation won\*(Aqt walk around in the following
+\&              cases:
+\&              1. no\-call
+\&              2. annotation\-fail
+\&              3. snv or mnp
+\&              4. non\-exon region
+\&              5. span case or any edge case
+\&              6. delins without repeat.
+\&    Usage   : ($trBegin, $trEnd, $real_var) = 
+\&                $beda\->trWalker($tid, $rtrinfo);
+\&    Args    : trAcc and hash ref of trInfo annotation for trAcc,
+.Ve
 .SS "cmpPos"
 .IX Subsection "cmpPos"
 .Vb 5
-\&    About   : judge the order or p1 and p2, because the insertion
+\&    About   : judge the order for p1 and p2, because the insertion
 \&              will have a reverted order of left & right position
 \&    Usage   : my $cmpRst = BedAnno\->cmpPos($p1, $p2);
 \&    Args    : hgvs positio p1 and p2, with out \*(Aqc.\*(Aq or \*(Aqn.\*(Aq flag
@@ -699,7 +717,7 @@ to deal with large amount of variants.
 .IX Subsection "getCodonPos"
 .Vb 3
 \&    About   : get codon position, codon string, aa string, and frame info
-\&              for one single cds position
+\&              for one single transcript position
 \&              See getCodon_by_cdsPos()
 .Ve
 .SS "translate"

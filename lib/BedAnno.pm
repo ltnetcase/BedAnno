@@ -9,7 +9,7 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.38';
+our $VERSION = '0.39';
 
 =head1 NAME
 
@@ -320,6 +320,14 @@ our $REF_BUILD = 'GRCh37';
 
 =back
 
+=item I<condel> [condel config path]
+
+=over
+
+=item compute condel scores and prediction based on sift and polyphen2 HumVar prediction
+
+=back
+
 =item I<phyloP> [phyloP_scores.tsv.gz]
 
 =over
@@ -506,6 +514,10 @@ sub new {
 	$self->set_prediction($self->{prediction});
     }
 
+    if ( exists $self->{condel} ) {
+	$self->set_condel($self->{condel});
+    }
+
     if ( exists $self->{phyloP} ) {
 	$self->set_phyloP($self->{phyloP});
     }
@@ -539,35 +551,35 @@ sub new {
     return $self;
 }
 
+
 =head2 set/get methods for properties
 
     List of Properties:
-			get	    set
-    db			o	    o
-    tr			o	    o
-    refbuild		o	    o
-    tidb		o	    x
-    annodb		o	    x
-    trInfodb		o	    x
-    cytoBand		o	    o
-    cytoBand_h		o	    x
-    pfam		o	    o
-    pfam_h		o	    x
-    prediction		o	    o
-    prediction_h	o	    x
-    phyloP		o	    o
-    phyloP_h		o	    x
-    dbSNP		o	    o
-    dbSNP_h		o	    x
-    tgp			o	    o
-    tgp_h		o	    x
-    esp6500		o	    o
-    esp6500_h		o	    x
-    cg54		o	    o
-    cg54_h		o	    x
-    wellderly		o	    o
-    wellderly_h		o	    x
-
+                        get          set
+    db                  o            o
+    tr                  o            o
+    refbuild            o            o
+    tidb                o            x
+    annodb              o            x
+    trInfodb            o            x
+    cytoBand            o            o
+    cytoBand_h          o            x
+    pfam                o            o
+    pfam_h              o            x
+    prediction          o            o
+    prediction_h        o            x
+    phyloP              o            o
+    phyloP_h            o            x
+    dbSNP               o            o
+    dbSNP_h             o            x
+    tgp                 o            o
+    tgp_h               o            x
+    esp6500             o            o
+    esp6500_h           o            x
+    cg54                o            o
+    cg54_h              o            x
+    wellderly           o            o
+    wellderly_h         o            x
 
     e.g.    : $self->set_refbuild($refbuild);
 	      my $refbuild = $self->get_refbuild();
@@ -748,6 +760,29 @@ sub get_prediction_h {
     return undef;
 }
 
+sub set_condel {
+    my $self = shift;
+    my $condelConfig = shift;
+    $self->{condel} = $condelConfig;
+    require CondelPred if (!exists $self->{condel_h});
+    my $condel_h = CondelPred->new( $condelConfig );
+    $self->{condel_h} = $condel_h;
+    return $self;
+}
+
+sub get_condel {
+    my $self = shift;
+    return $self->{condel} if (exists $self->{condel});
+    return undef;
+}
+
+
+sub get_condel_h {
+    my $self = shift;
+    return $self->{condel_h} if (exists $self->{condel_h});
+    return undef;
+}
+
 sub set_phyloP {
     my $self = shift;
     my $phyloPdb = shift;
@@ -901,7 +936,7 @@ sub TO_JSON {
                     # optional tags:
                     prot     => $prot_acc,
                     plen     => $prot_len,
-                    csta     => $cds_start_on_trSeq, # 1 based
+                    csta     => $cds_start_on_trSeq, # 0 based
                     csto     => $cds_end_on_trSeq,   # 1 based
                     seq      => $tr_sequence,
                     
@@ -1597,7 +1632,9 @@ sub finaliseAnno {
     if (exists $annoEnt->{trInfo}) {
 	foreach my $tid (sort keys %{$annoEnt->{trInfo}}) {
 	    my $trAnnoEnt = $annoEnt->{trInfo}->{$tid};
-	    my $trdbEnt = $self->{trInfodb}->{$tid};
+	    my $qtid = $tid;
+	    $qtid =~ s/\-\d+$//;
+	    my $trdbEnt = $self->{trInfodb}->{$qtid};
 	    $trAnnoEnt->{prot} =
 	      ( !exists $trdbEnt->{prot} or $trdbEnt->{prot} eq '.' )
 	      ? ""
@@ -1789,6 +1826,14 @@ sub finaliseAnno {
 
 			}
 		    }
+
+		    if ( exists $self->{condel_h} and defined $self->{condel_h} ) {
+			my $rcondel_info = $self->{condel_h}->pred($trAnnoEnt);
+			if ( exists $rcondel_info->{condelPred} and $rcondel_info->{condelPred} ne "not_computable_was") {
+			    $trAnnoEnt->{condelPred} = $rcondel_info->{condelPred};
+			    $trAnnoEnt->{condelScore} = $rcondel_info->{condelScore};
+			}
+		    }
 		}
 	    }
 	}
@@ -1854,6 +1899,9 @@ sub getTrChange {
           ? '='
           : ( getTrRef( $trannoEnt, $unify_r, $trSeq, $strd ) );
 	$trannoEnt->{trRef} = $trRef;
+
+
+
 	my $trAlt = $trannoEnt->{trAlt};
 
 	$trannoEnt->{prot} = $trdbEnt->{prot} if ($cdsOpt);
@@ -1950,20 +1998,15 @@ sub getTrChange {
 	if ($trRef =~ /=/) {
 	    confess "Error: called variant with '=' reference seq is not allowed.\n";
 	}
-	# reparse the transcript originated var
-	my $real_var = BedAnno::Var->new( $tid, 0, length($trRef), $trRef, $trAlt );
-	if ($real_var->{guess} eq 'ref') {
+	if ($trRef eq $trAlt) {
 	    $trannoEnt->{func} = 'no-change';
 	    $trannoEnt->{c}    = $f . '=';
 	    next;
 	}
 	
-	my ($real_p, $real_r, $real_a, $real_rl, $real_al) = 
-	    $real_var->getUnifiedVar('+');
-
-	my ($trBegin, $trEnd);
-	$trBegin = reCalTrPos_by_ofst( $trannoEnt, $real_p );
-        $trEnd = reCalTrPos_by_ofst( $trannoEnt, ( $real_p + $real_rl - 1 ) );
+        my ( $trBegin, $trEnd, $real_var, $rUnified ) =
+          $self->trWalker( $tid, $trannoEnt );
+        my ( $real_p, $real_r, $real_a, $real_rl, $real_al ) = @$rUnified;
 
         $chgvs_5 =
           ($cdsOpt)
@@ -2163,11 +2206,6 @@ sub getTrChange {
                     $trannoEnt->{p} = 'p.0?';
                     next;
 		}
-		elsif ($chgvs_5 =~ /^\-/) {
-		    $trannoEnt->{func} = 'init-loss';
-		    $trannoEnt->{p}    = 'p.0?';
-		    next;
-		}
 		elsif ($chgvs_3 eq '1-1') { # cds-begin - last 5'utr intron edge
 		    $trannoEnt->{func} = 'utr-5';
 		    next;
@@ -2179,29 +2217,55 @@ sub getTrChange {
                     next;
                 }
 		# here protein sequence var should be reparsed
+		elsif ($chgvs_5 =~ /^\-(\d+)/) {
+		    my $u5_len = $1;
+		    if ($real_var->{imp} eq 'rep') {
+			if ( $u5_len > ($real_rl - $real_al ) )
+			{
+			    $trannoEnt->{func} = 'utr-5';
+			}
+			else {
+			    $trannoEnt->{func} = 'unknown';
+			}
+		    }
+		    else {
+			$trannoEnt->{func} = 'init-loss';
+			$trannoEnt->{p}    = 'p.0?';
+		    }
+		    next;
+		}
 		else {
+		    if ($chgvs_3 =~ /^\*(\d+)/) {
+			# variant get across the 3' end of cds
+			my $u3_len = $1;
+			if ( $real_var->{imp} eq 'rep'
+			    and ( $u3_len > ( $real_rl - $real_al ) ) )
+			{
+			    $trannoEnt->{func} = 'utr-3';
+			    $trannoEnt->{p} = 'p.=';
+			    next;
+			}
+		    }
 
-		    $chgvs_5 = $1+1 if ($chgvs_5 =~ /^(\d+)\+1/);
-		    $chgvs_3 = $1-1 if ($chgvs_3 =~ /^(\d+)\-1/);
+		    $chgvs_5 = $1+1 if ($chgvs_5 =~ /^(\d+)\+1$/);
+		    $chgvs_3 = $1-1 if ($chgvs_3 =~ /^(\d+)\-1$/);
 
 		    # 5' end should be in coding region.
 		    # leave this as debug information
                     $self->throw(
-                        "Error: unavailable cDot HGVS. [$chgvs_5, $chgvs_3]")
-                      if ( $chgvs_5 !~ /^\d+$/
-                        or $chgvs_3 !~ /^\d+$/
-                        or $chgvs_5 == 0
-                        or $chgvs_3 == 0 );
+                        "Error: unavailable 5' cHGVS. $chgvs_5")
+                      if ( $chgvs_5 !~ /^\d+$/ or $chgvs_5 == 0 );
+
 
 		    @cInfo5 =
 		      getCodon_by_cdsPos( $trdbEnt, $trSeq, $chgvs_5 );
 		    @cInfo3 =
-		      getCodon_by_cdsPos( $trdbEnt, $trSeq, $chgvs_3 );
+		      getCodonPos( $trdbEnt, $trSeq, $trEnd );
 
 		    my %translate_opts = ();
 		    $translate_opts{mito} = 1 if ($tid =~ /^NM_MT-/);
 		    $translate_opts{polyA} = 1 if (exists $trdbEnt->{A});
-		    $translate_opts{nostop} = 1 if (exists $trdbEnt->{X});
+		    $translate_opts{nostop} = 1 if (exists $trdbEnt->{X} or exists $trdbEnt->{U});
 		    my %altcodon_opts = %translate_opts;
                     delete $altcodon_opts{nostop}
                       if ( exists $altcodon_opts{nostop} );
@@ -2237,6 +2301,8 @@ sub getTrChange {
                         $ready_to_add_3 = substr( $trSeq, $trEnd );
 			# this variants's effect will be end at the terminal
 			$prEnd = $trdbEnt->{plen} + 1; # terminal
+                        $ready_to_add_3 .= "A" x ( 3 - ( length($trSeq) % 3 ) )
+                          if ( exists $trdbEnt->{A} );
                     }
                     else {    # chgvs_3 in cds region with no frameshift
                         $ready_to_add_3 = substr(
@@ -2292,64 +2358,54 @@ sub getTrChange {
 		    my %start_codons = ('ATG' => -1);
                     if ( exists $trdbEnt->{altstart} ) {
                         %start_codons =
-                          map { $_ => -1 } keys %{ $trdbEnt->{altstart} };
+                          map { $_ => 1 } keys %{ $trdbEnt->{altstart} };
                     }
 
 		    my $init_synon = 0; # indicate start codon search result
 		    my $init_frame_shift = 0; # indicate if init frameshift
-		    my $current_startCodon = substr($trSeq,$trdbEnt->{csta},3);
                     if ($hit_init_flag) {
 			# check if altered sequence have new start codon
                         foreach my $startCodon ( sort keys %start_codons ) {
-                            $start_codons{$startCodon} =
-                              index( $codon_alt, $startCodon );
-                            if ( $start_codons{$startCodon} > -1 ) {
+                            if ( substr( $codon_alt, 0, 3 ) eq $startCodon ) {
                                 $init_synon = 1;
-                                $current_startCodon = $startCodon;
-
-				# trim the leading non-coding region
-                                $codon_alt  = substr( $codon_alt,
-                                    $start_codons{$startCodon} );
-
-				# init frameshift
-                                if ( $start_codons{$startCodon} % 3 > 0 ) {
-                                    $init_frame_shift = 1;
-                                    my $original_var_frame = $diff_ra % 3;
-                                    my $reparsed_frame =
-                                      $start_codons{$startCodon} % 3;
-                                    if ($original_var_frame == $reparsed_frame )
-                                    { # correct to non-frameshift
-                                        $frameshift_flag = 0;
-                                    }
-                                    elsif ( $original_var_frame == 0 ) {
-					# change to a frameshift case
-                                        $codon_alt .= substr(
-                                            $trSeq,
-                                            (
-                                                $trdbEnt->{csta} +
-                                                  ( 3 * $cInfo3[0] )
-                                            )
-                                        );
-                                        $frameshift_flag = 1;
-					$prEnd = $trdbEnt->{plen} + 1;
-					$trannoEnt->{protEnd} = $prEnd;
-                                    }
-                                }
                                 last;
                             }
                         }
 
 			if ($init_synon == 0) {
-			    $trannoEnt->{func} = 'init-loss';
-			    $trannoEnt->{p}    = 'p.0?';
-			    if ($prBegin eq '1' and $prEnd eq '1') {
-                                my $zero;
-                                $trannoEnt->{prRef} = 'M';
-                                my $altCodon = substr( $codon_alt, 0, 3 );
-                                ( $trannoEnt->{prAlt}, $zero ) =
-                                  translate( $altCodon, \%altcodon_opts );
+			    if ($trAlt =~ /N/) {
+				my $all_hit = 1;
+				foreach my $base ( 'A', 'C', 'G', 'T' ) {
+				    my $subalt_codon = $codon_alt;
+				    $subalt_codon =~ s/N/$base/;
+				    if (!exists $start_codons{$subalt_codon}) {
+					$all_hit = 0;
+					last;
+				    }
+				}
+
+				$trannoEnt->{cc} =  $cInfo5[1]."=>".$codon_alt if (3 == length($codon_alt));
+				if ($all_hit == 1) {
+				    $trannoEnt->{func} = "altstart";
+				    $trannoEnt->{prAlt} = "M";
+				    $init_synon = 1;
+				}
+				else {
+				    $trannoEnt->{func} = 'unknown-no-call';
+				}
 			    }
-			    next;
+			    else {
+				$trannoEnt->{func} = 'init-loss';
+				$trannoEnt->{p}    = 'p.0?';
+				if ($prBegin eq '1' and $prEnd eq '1') {
+				    my $zero;
+				    $trannoEnt->{prRef} = 'M';
+				    my $altCodon = substr( $codon_alt, 0, 3 );
+				    ( $trannoEnt->{prAlt}, $zero ) =
+				      translate( $altCodon, \%altcodon_opts );
+				}
+				next;
+			    }
 			}
 			else {
 			    $trannoEnt->{func} = 'altstart';
@@ -2364,9 +2420,6 @@ sub getTrChange {
 		    # give out the first of single codon to be
 		    my $codon_to_be = substr($codon_alt, 0, 3);
 
-		    # debug
-#		    print STDERR Data::Dumper->Dump( [$trdbEnt, $prBegin, $prEnd, $codon_alt], ["trdbEnt", "prBegin", "prEnd", "codon_alt"] );
-
                     $prRef = substr(
                         $trdbEnt->{pseq},
                         ( $prBegin - 1 ),
@@ -2375,10 +2428,10 @@ sub getTrChange {
 
 		    # we can not allow inseq stop codon in altered sequence
 		    # due to frameshift and ambiguity.
+
 		    my $next_alt_frame;
                     ( $prAlt, $next_alt_frame ) =
                       translate( $codon_alt, \%altcodon_opts );
-
 
 		    if ($hit_init_flag) {
 			$prRef =~ s/^[A-Z]/M/; # change init pep to M
@@ -2387,13 +2440,19 @@ sub getTrChange {
 		    }
 
 		    $trannoEnt->{prRef} = $prRef;
-		    $trannoEnt->{prAlt} = $prAlt;
+		    $trannoEnt->{prAlt} ||= $prAlt;
+
+		    $prAlt = $trannoEnt->{prAlt}; # uniform prAlt
 
 		    # to indicate whether the alternate sequence 
 		    # encode a stop codon or non-frameshift, or otherwise
 		    # with a non stopped frameshift.
-                    my $non_stop_flag = ( $prAlt !~ /\*$/
-                          and ( $next_alt_frame or $frameshift_flag ) ) ? 1 : 0;
+                    my $non_stop_flag = (
+                        $prAlt !~ /\*$/
+                          and ($prRef eq "*"
+                            or $next_alt_frame
+                            or $frameshift_flag )
+                    ) ? 1 : 0;
 
 		    # To avoid large range perlre, before parse protein 
 		    # var we should first deal with frameshift issues
@@ -2404,9 +2463,13 @@ sub getTrChange {
 		    # single aa substitution, no matter which position.
 		    if ($diff_ra == 0 and $cInfo5[0] == $cInfo3[0]) {
 			# using trim due to terminal codon
-			my ($aa_to_be, $polar_to_be) = getAAandPolar($codon_to_be);
+                        my ( $aa_to_be, $polar_to_be ) =
+                          getAAandPolar($codon_to_be, \%altcodon_opts);
+			
 			$trannoEnt->{cc} = $cInfo5[1].'=>'.$codon_to_be;
-			$trannoEnt->{polar} = $cInfo5[3].'=>'.$polar_to_be;
+			if ($prRef ne $prAlt) {
+			    $trannoEnt->{polar} = $cInfo5[3].'=>'.$polar_to_be;
+			}
 		    }
 
 		    my $prSimpleSame = 0;
@@ -2432,12 +2495,14 @@ sub getTrChange {
 
 		    # non stop frameshift with extra non-coded base
 		    if ($non_stop_flag) {
-                        $trannoEnt->{func} =
-                          ( $no_parsed_pP >= $trdbEnt->{plen} )
-                          ? 'stop-loss'
-                          : 'frameshift';
-                        $trannoEnt->{p} = 'p.' . $no_parsed_prStart
-                          . ( $no_parsed_pP + 1 ) . 'fs*?';
+			if ($no_parsed_pP >= $trdbEnt->{plen} ) {
+			    $trannoEnt->{func} = 'stop-loss';
+			}
+			else {
+			    $trannoEnt->{func} = 'frameshift';
+			}
+			$trannoEnt->{p} = 'p.' . $no_parsed_prStart
+			  . ( $no_parsed_pP + 1 ) . 'fs*?';
 			next;
 		    }
 
@@ -2621,9 +2686,146 @@ sub getTrChange {
     return $annoEnt;
 }
 
+=head2 trWalker
+
+    About   : walk around the variant position to find possible
+	      repeat start/end, and return the recalculated
+	      trBegin and trEnd, together with the real
+	      transcript originated variants and unified property
+	      Current implementation won't walk around in the following
+	      cases:
+	      1. no-call
+	      2. annotation-fail
+	      3. snv or mnp
+	      4. non-exon region
+	      5. span case or any edge case
+	      6. delins without repeat.
+    Usage   : ($trBegin, $trEnd, $real_var) = 
+		$beda->trWalker($tid, $rtrinfo);
+    Args    : trAcc and hash ref of trInfo annotation for trAcc,
+	      
+
+=cut
+sub trWalker {
+    my ($self, $tid, $rtrinfo) = @_;
+
+    # reparse the transcript originated var
+    my $real_var = BedAnno::Var->new( $tid, 0, length($rtrinfo->{trRef}), 
+	$rtrinfo->{trRef}, $rtrinfo->{trAlt} );
+    my @Unified = $real_var->getUnifiedVar('+');
+    my ($real_p, $real_r, $real_a, $real_rl, $real_al) = @Unified;
+
+    my $trBegin = reCalTrPos_by_ofst( $rtrinfo, $real_p );
+    my $trEnd = reCalTrPos_by_ofst( $rtrinfo, ( $real_p + $real_rl - 1 ) );
+
+    if (
+        # skip snv and mnp
+        ( $real_rl == $real_al )
+
+        # skip span case or any edge case
+        or ( $rtrinfo->{ei_Begin} ne $rtrinfo->{ei_End} )
+
+	# skip non exon begin/end position
+	or ( $trBegin !~ /^\d+$/ or $trEnd !~ /^\d+$/ )
+
+        # skip delins without repeat
+        or (    0 != index( $real_r, $real_a )
+            and 0 != index( $real_a, $real_r ) )
+      )
+    {
+        # no correction
+        return ( $trBegin, $trEnd, $real_var, \@Unified );
+    }
+
+    my $qtid = $tid;
+    $qtid =~ s/\-\d+$//;
+    my $trdb = $self->{trInfodb}->{$qtid};
+    my $trSeq = $trdb->{seq};
+    my $trLen = $trdb->{len};
+    
+    my $ref_sta = $trBegin;
+    my $ref_sto = $trEnd;
+    my $ori_walker;
+    my $track_opt;
+    if ($real_rl < $real_al) {
+	$ref_sta = $ref_sto + 1;
+	$ori_walker = substr($real_a, $real_rl);
+	$track_opt = 0; # walk on the alt
+    }
+    else {
+	$ref_sta += $real_al;
+	$ori_walker = substr($real_r, $real_al);
+	$track_opt = 1; # walk on the ref
+    }
+
+    # walk to 3' most
+    my @cur_walker = split(//, $ori_walker);
+    my $walk_forward_step = 0;
+    for (my $p = $ref_sto; $p < $trLen; $p++) {
+	if (substr($trSeq, $p, 1) eq $cur_walker[0]) {
+	    push (@cur_walker, shift(@cur_walker));
+	}
+	else {
+	    $walk_forward_step = $p - $ref_sto;
+	    last;
+	}
+    }
+
+    $ref_sto += $walk_forward_step; # the final end on reference track
+
+    # use the 3' most element as the final matched difference
+    my $match_target = join( "", @cur_walker );
+
+    my $forward_footprint = substr($trSeq, $ref_sta-1, $walk_forward_step);
+
+    # walk to 5' most
+    @cur_walker = split(//, $ori_walker);
+    my $walk_back_step = 0;
+    for ( my $q = $ref_sta - 1; $q > 0; $q -- ) {
+	if (substr($trSeq, $q-1, 1) eq $cur_walker[-1]) {
+	    unshift( @cur_walker, pop(@cur_walker) );
+	}
+	else {
+	    $walk_back_step = $ref_sta - $q - 1;
+	    last;
+	}
+    }
+
+    my $back_most = $ref_sta - $walk_back_step;
+    my $backward_footprint =
+      substr( $trSeq, $ref_sta - $walk_back_step - 1, $walk_back_step );
+    
+    my $cur_short_track = $backward_footprint . $forward_footprint;
+    my $cur_long_track = $cur_short_track . $match_target;
+    my $target_sta = index($cur_long_track, $match_target);
+    $ref_sta = $back_most + $target_sta;
+
+    if (   $ref_sta ne $trBegin
+	or $ref_sto ne $trEnd )
+    {
+	$trBegin = $ref_sta;
+	$trEnd   = $ref_sto;
+	my ($trRef, $trAlt);
+
+	if ($track_opt) {
+	    $trRef = substr( $cur_long_track,  $target_sta );
+	    $trAlt = substr( $cur_short_track, $target_sta );
+	}
+	else {
+	    $trRef = substr( $cur_short_track, $target_sta );
+	    $trAlt = substr( $cur_long_track,  $target_sta );
+	}
+
+	$real_var = BedAnno::Var->new( $tid, 0, length($trRef), $trRef, $trAlt);
+	@Unified  = $real_var->getUnifiedVar('+');
+    }
+
+    return ($trBegin, $trEnd, $real_var, \@Unified);
+}
+
 =head2 cmpPos
 
-    About   : judge the order or p1 and p2, because the insertion
+    About   : judge the order for p1 and p2, because the insertion
               will have a reverted order of left & right position
     Usage   : my $cmpRst = BedAnno->cmpPos($p1, $p2);
     Args    : hgvs positio p1 and p2, with out 'c.' or 'n.' flag
@@ -2773,7 +2975,7 @@ sub getCodon_by_cdsPos {
 =head2 getCodonPos
 
     About   : get codon position, codon string, aa string, and frame info
-              for one single cds position
+              for one single transcript position
               See getCodon_by_cdsPos()
 
 =cut
@@ -2796,7 +2998,8 @@ sub getAAandPolar {
     my $codon = shift;
     my $rtrans_opts = shift;
     my ($aa, $zero) = translate($codon, $rtrans_opts);
-    my $polar = (exists $Polar{$aa}) ? $Polar{$aa} : '.';
+    my $polar =
+      ( exists $Polar{$aa} ) ? $Polar{$aa} : ( ( $codon =~ /N/ ) ? '?' : '.' );
     return ($aa, $polar);
 }
 
@@ -2871,7 +3074,10 @@ sub translate {
     my $prot = "";
     for (my $i = 0; $i < length($nucl); $i+=3) {
 	my $codon = substr($nucl,$i,3);
-	my $aa = (exists $C1{$codon}) ? $C1{$codon} : '.';
+        my $aa =
+          ( exists $C1{$codon} )
+          ? $C1{$codon}
+          : ( ( $codon =~ /N/ ) ? '?' : '.' );
 	if ( $mito and $codon eq 'ATA' ) {
 	    $aa = 'M';
 	}
@@ -3238,7 +3444,6 @@ sub new {
     if ( ref( $_[0] ) ) {
         if (   !exists $_[0]->{chr}
             or !exists $_[0]->{begin}
-            or !exists $_[0]->{variantSequence}
             or ( !exists $_[0]->{end} and !exists $_[0]->{referenceSequence} ) )
         {
             confess "Error: unavailable object. need keys: ",
@@ -3248,20 +3453,28 @@ sub new {
         $chr   = $_[0]->{chr};
         $start = $_[0]->{begin};
         $end   = $_[0]->{end} if ( exists $_[0]->{end} );
-	if ( defined $_[0]->{variantSequence} ) {
-	    $alt   = $_[0]->{variantSequence};
-	}
-	else {
-	    $alt   = "";
-	}
+        if ( exists $_[0]->{variantSequence}
+            and defined $_[0]->{variantSequence} )
+        {
+            $alt = $_[0]->{variantSequence};
+        }
+        else {
+            $alt = "";
+        }
 	$alt = "" if ($alt =~ /^null$/i);
+
+        if ( exists $_[0]->{referenceSequence}
+            and !defined $_[0]->{referenceSequence} )
+        {
+            $_[0]->{referenceSequence} = "";
+        }
         $ref =
           ( exists $_[0]->{end} and $start eq $end ) ? ""
           : (
             ( exists $_[0]->{referenceSequence} ) ? $_[0]->{referenceSequence}
             : "="
           );
-
+	$ref = "" if ($ref =~ /^null$/i);
     }
     else {
 	confess "Error: not enough args, need at least 4 args." if (4 > @_);
@@ -3389,7 +3602,7 @@ sub normalise_chr {
     elsif ($chr eq '25') {
 	$chr = 'MT';
     }
-    elsif ($chr =~ /^[xym]$/) {
+    elsif ($chr =~ /^[xym]$/i) {
 	$chr = uc($chr);
 	$chr .= 'T' if ($chr eq 'M');
     }
@@ -3917,7 +4130,14 @@ sub decide_major {
 	}
 
         my $rTrEnt = $annoEnt->{trInfo}->{$majorTr};
-        my $trhit  = $majorTr . "(" . $rTrEnt->{geneSym} . "): " . $rTrEnt->{c};
+	my $trhit;
+	if ( $rTrEnt->{func} eq 'annotation-fail' ) {
+	    $trhit = $majorTr . "(" . $rTrEnt->{geneSym} . "): annotation-fail";
+	}
+	else {
+	    $trhit  = $majorTr . "(" . $rTrEnt->{geneSym} . "): " . $rTrEnt->{c};
+	}
+
         $trhit .= " (" . $rTrEnt->{p} . ")"
           if ( exists $rTrEnt->{p} and $rTrEnt->{p} ne "" );
 	return $trhit;
@@ -4404,6 +4624,9 @@ sub getTrPosition {
 			    if ($trinfoEnt->{ei_Begin} =~ /^EX/) {
 				$trinfoEnt->{trRefComp}->{$trinfoEnt->{ei_Begin}} = 0;
 			    }
+			    elsif ($trinfoEnt->{ei_Begin} eq '?') {
+				$trinfoEnt->{trRefComp}->{'Q1'} = 0;
+			    }
 			    else {
 				$trinfoEnt->{trRefComp}->{$trinfoEnt->{ei_Begin}} = [ 0, 0 ];
 			    }
@@ -4500,6 +4723,18 @@ sub getTrPosition {
                         }
 
                     }
+		    elsif ($rtidDetail->{blka} eq '?') {
+			my ($af_sta, $af_sto);
+                        $af_sta =
+                          ( $$rannodb[$k]{sta} < $unify_p )
+                          ? $unify_p
+                          : $$rannodb[$k]{sta};
+                        $af_sto =
+                          ( $$rannodb[$k]{sto} < $unify_p + $unify_rl )
+                          ? $$rannodb[$k]{sto}
+                          : ( $unify_p + $unify_rl );
+			$trinfoEnt->{trRefComp}->{'Q1'} += $af_sto - $af_sta;
+		    }
 		    else { # for intron region and PROM
 			if ( $rtidDetail->{blka} =~ /^PROM/ ) {
 			    $tmp_exin = 'P0'; # for sort
@@ -4542,6 +4777,32 @@ sub getTrPosition {
 	    }
         }
     }
+
+    # final check and uniform trinfo
+    if ( exists $annoEnt->{trInfo} ) {
+	foreach my $t ( keys %{ $annoEnt->{trInfo} } ) {
+	     my $tinfo = $annoEnt->{trInfo}->{$t};
+	     if (
+		 (
+		     $tinfo->{strd} =~ /\+/
+		     and
+		     ( !exists $tinfo->{rnaEnd} or !defined $tinfo->{rnaEnd} )
+		 )
+		 or (
+		     $tinfo->{strd} =~ /\-/
+		     and (  !exists $tinfo->{rnaBegin}
+			 or !defined $tinfo->{rnaBegin} )
+		 )
+	       )
+	     {
+		 delete $annoEnt->{trInfo}->{$t};
+	     }
+	}
+	if ( 0 == scalar keys %{ $annoEnt->{trInfo} } ) {
+	     delete $annoEnt->{trInfo};
+	}
+    }
+
     $new_aeIndex ||= $aeIndex;
     return $new_aeIndex;
 }
@@ -4702,7 +4963,7 @@ sub cal_hgvs_pos {
 	else { # 0 <= $lofst <= $$rtidDetail{wlen}
         
 	    # 1. check if a mismatch block (only exon have this)
-	    if ( $rtidDetail->{mismatch} ne "" ) {
+	    if ( $rtidDetail->{mismatch} ne "" and $rtidDetail->{mismatch} ne "?" ) {
 		# for each kind of mismatch block,
 		# hit the left edge of var, the refSeq ref will
 		# contain start from the start of the mismatch
@@ -4866,7 +5127,7 @@ sub cal_hgvs_pos {
 	else { # 0 <= $lofst <= $$rtidDetail{wlen}
 
 	    # 1. check if a mismatch block (exon)
-	    if ($rtidDetail->{mismatch} ne "") {
+	    if ($rtidDetail->{mismatch} ne "" and $rtidDetail->{mismatch} ne "?") {
 		$nDot = $rtidDetail->{nsto};
 		$cDot = $rtidDetail->{csto};
 		if (!exists $cal_args{noassign} and $lofst < $rtidDetail->{wlen}) {
