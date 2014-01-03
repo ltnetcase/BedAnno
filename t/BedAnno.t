@@ -28,6 +28,9 @@ if ( -e $extradb and -r $extradb ) {
     if ( -e "$extradb/cytoBand/cytoBand_hg19_grch37.txt.gz" ) {
         $opts{cytoBand} = "$extradb/cytoBand/cytoBand_hg19_grch37.txt.gz";
     }
+    if ( -e "$extradb/RepeatMasker/rmsk.bed.gz") {
+	$opts{rmsk} = "$extradb/RepeatMasker/rmsk.bed.gz";
+    }
     if ( -e "$extradb/dbsnp/snp137.bed.gz" ) {
         $opts{dbSNP} = "$extradb/dbsnp/snp137.bed.gz";
     }

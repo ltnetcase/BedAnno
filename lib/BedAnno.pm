@@ -2,20 +2,19 @@ package BedAnno;
 
 use strict;
 use warnings;
-use threads::shared; # if threads used before BedAnno, then this will be threaded
 use Carp;
 use Data::Dumper;
 use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.39';
+our $VERSION = '0.40';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.38
+=head2 VERSION v0.40
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -38,16 +37,6 @@ The fasta sequences are indexed by samtools faidx, sequence splicing also requir
 samtools. If allele frequency information, prediction information or cytoBand 
 information is needed, then extra dependencies will be required.
 
-=head1 PARALLELED
-    
-This module can be used by multiple threads by:
-
-    use threads;
-    use threads::shared;
-    use Thread::Queue;
-
-to deal with large amount of variants.
-
 =head1 Methods
 
 =cut
@@ -56,7 +45,7 @@ our (
     %C3,      %C1,    %SO2Name, %func2SO,
     %Name2SO, %Polar, %C1toC3,  %AAnumber,
     $AAcount,
-) : shared;
+);
 
 %C3 = (
     TTT=>"Phe",	CTT=>"Leu", ATT=>"Ile",	GTT=>"Val",
@@ -239,7 +228,7 @@ $AAcount = scalar keys %C1toC3;
     unknown               => "unknown",
 );
 
-our %GenePartsOrder : shared;
+our %GenePartsOrder;
 @GenePartsOrder{
     (qw(CDS span five_prime_cis_splice_site
       three_prime_cis_splice_site ncRNA five_prime_UTR
@@ -301,6 +290,14 @@ our $REF_BUILD = 'GRCh37';
 =over
 
 =item add cytoBand information
+
+=back
+
+=item I<rmsk> [rmsk.bed.gz]
+
+=over
+
+=item add repeat tag information
 
 =back
 
@@ -471,8 +468,8 @@ our $REF_BUILD = 'GRCh37';
 =cut
 sub new {
     my ( $class, @args ) = @_;
-    my $self : shared;
-    $self = shared_clone( {@args} );
+    my $self;
+    $self = {@args};
     bless $self, ref($class) || $class;
 
     $self->throw("Error: please at least give 'db' and 'tr' path.")
@@ -541,6 +538,10 @@ sub new {
     if (exists $self->{wellderly}) {
 	$self->set_wellderly($self->{wellderly});
     }
+
+    if (exists $self->{rmsk}) {
+	$self->set_rmsk($self->{rmsk});
+    }
     
     if ($debugOpt) {
 	$t1 = [ gettimeofday ];
@@ -564,6 +565,8 @@ sub new {
     trInfodb            o            x
     cytoBand            o            o
     cytoBand_h          o            x
+    rmsk                o            o
+    rmsk_h              o            x
     pfam                o            o
     pfam_h              o            x
     prediction          o            o
@@ -609,7 +612,7 @@ sub set_db {
 	$self->throw("Error: [$db] index (.tbi) file not found, please build it first.");
     }
 
-    $self->{tidb} = shared_clone( Tabix->new( -data => $db ) );
+    $self->{tidb} = Tabix->new( -data => $db );
     my %open_args;
     if ( exists $self->{region} ) {
         $open_args{region} = $self->{region};
@@ -648,7 +651,7 @@ sub set_db {
         $open_args{mmap} = $self->{mmap};
     }
 
-    $self->{annodb} = shared_clone( $self->load_anno(%open_args) )
+    $self->{annodb} = $self->load_anno(%open_args)
       if ( exists $self->{batch} );
     return $self;
 }
@@ -680,7 +683,7 @@ sub set_tr {
 	$self->throw("Error: cannot read $tr.");
     }
     $self->{tr} = $tr;
-    $self->{trInfodb} = shared_clone( $self->readtr() );
+    $self->{trInfodb} = $self->readtr();
     return $self;
 }
 
@@ -700,7 +703,7 @@ sub set_cytoBand {
     $self->{cytoBand} = $cytodb;
     require GetCytoBand if (!exists $self->{cytoBand_h});
     my $cytoBand_h = GetCytoBand->new( db => $cytodb );
-    $self->{cytoBand_h} = shared_clone($cytoBand_h);
+    $self->{cytoBand_h} = $cytoBand_h;
     return $self;
 }
 
@@ -716,13 +719,35 @@ sub get_cytoBand_h {
     return undef;
 }
 
+sub set_rmsk {
+    my $self = shift;
+    my $rmskdb = shift;
+    $self->{rmsk} = $rmskdb if (defined $rmskdb);
+    require GetRepeatTag if (!exists $self->{rmsk_h});
+    my $rmsk_h = GetRepeatTag->new( db => $self->{rmsk} );
+    $self->{rmsk_h} = $rmsk_h;
+    return $self;
+}
+
+sub get_rmsk {
+    my $self = shift;
+    return $self->{rmsk} if (exists $self->{rmsk});
+    return undef;
+}
+
+sub get_rmsk_h {
+    my $self = shift;
+    return $self->{rmsk_h} if (exists $self->{rmsk_h});
+    return undef;
+}
+
 sub set_pfam {
     my $self = shift;
     my $pfamdb = shift;
     $self->{pfam} = $pfamdb;
     require GetPfam if (!exists $self->{pfam_h});
     my $pfam_h = GetPfam->new( db => $pfamdb );
-    $self->{pfam_h} = shared_clone($pfam_h);
+    $self->{pfam_h} = $pfam_h;
     return $self;
 }
 
@@ -744,7 +769,7 @@ sub set_prediction {
     $self->{prediction} = $predictiondb;
     require GetPrediction if (!exists $self->{prediction_h});
     my $prediction_h = GetPrediction->new( db => $predictiondb );
-    $self->{prediction_h} = shared_clone($prediction_h);
+    $self->{prediction_h} = $prediction_h;
     return $self;
 }
 
@@ -789,7 +814,7 @@ sub set_phyloP {
     $self->{phyloP} = $phyloPdb;
     require GetPhyloP46wayScore if (!exists $self->{phyloP_h});
     my $phyloP_h = GetPhyloP46wayScore->new( db => $phyloPdb );
-    $self->{phyloP_h} = shared_clone($phyloP_h);
+    $self->{phyloP_h} = $phyloP_h;
     return $self;
 }
 
@@ -811,7 +836,7 @@ sub set_dbSNP {
     $self->{dbSNP} = $dbSNPdb;
     require GetDBSNP if (!exists $self->{dbSNP_h});
     my $dbSNP_h = GetDBSNP->new( db => $dbSNPdb );
-    $self->{dbSNP_h} = shared_clone($dbSNP_h);
+    $self->{dbSNP_h} = $dbSNP_h;
     return $self;
 }
 
@@ -833,7 +858,7 @@ sub set_tgp {
     $self->{tgp} = $tgpdb;
     require GetVcfAF if (!exists $self->{tgp_h} and !exists $self->{esp6500_h});
     my $tgp_h = GetVcfAF->new( db => $tgpdb );
-    $self->{tgp_h} = shared_clone($tgp_h);
+    $self->{tgp_h} = $tgp_h;
     return $self;
 }
 
@@ -855,7 +880,7 @@ sub set_esp6500 {
     $self->{esp6500} = $esp6500db;
     require GetVcfAF if (!exists $self->{tgp_h} and !exists $self->{esp6500_h});
     my $esp6500_h = GetVcfAF->new( db => $esp6500db );
-    $self->{esp6500_h} = shared_clone($esp6500_h);
+    $self->{esp6500_h} = $esp6500_h;
     return $self;
 }
 
@@ -877,7 +902,7 @@ sub set_cg54 {
     $self->{cg54} = $cg54db;
     require GetCGpub if (!exists $self->{cg54_h} and !exists $self->{wellderly_h});
     my $cg54_h = GetCGpub->new( db => $cg54db );
-    $self->{cg54_h} = shared_clone($cg54_h);
+    $self->{cg54_h} = $cg54_h;
     return $self;
 }
 
@@ -899,7 +924,7 @@ sub set_wellderly {
     $self->{wellderly} = $wellderlydb;
     require GetCGpub if (!exists $self->{cg54_h} and !exists $self->{wellderly_h});
     my $wellderly_h = GetCGpub->new( db => $wellderlydb );
-    $self->{wellderly_h} = shared_clone($wellderly_h);
+    $self->{wellderly_h} = $wellderly_h;
     return $self;
 }
 
@@ -1270,8 +1295,7 @@ sub assign_detail {
         $detail{$tid} = $ranno;
         $detail{$tid}{offset} = $offset;
     }
-    $rannodb_k->{detail} =
-      ( is_shared($rannodb_k) ) ? shared_clone( {%detail} ) : {%detail};
+    $rannodb_k->{detail} = {%detail};
     return $rannodb_k;
 }
 
@@ -1362,6 +1386,7 @@ sub anno {
                     # when extra resource is available:
 
                     cytoBand  => $cytoBand,
+		    reptag    => $repeatTag,
 
                     # For single position for now
                     phyloPpm    => $PhyloPscorePlacentalMammals,
@@ -1476,6 +1501,10 @@ sub varanno {
     
     if (exists $self->{cytoBand}) {
 	$var->{cytoBand} = $self->{cytoBand_h}->getCB(@$var{qw(chr pos end)});
+    }
+
+    if (exists $self->{rmsk}) {
+	$var->{reptag} = $self->{rmsk_h}->getRepTag(@$var{qw(chr pos end)});
     }
 
     if (exists $self->{phyloP}) {
@@ -4023,7 +4052,6 @@ sub get_gHGVS {
 
 package BedAnno::Anno;
 use base qw(BedAnno BedAnno::Var);
-use threads::shared;
 use strict;
 use warnings;
 
