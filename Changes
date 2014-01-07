@@ -87,3 +87,5 @@
 	- add condel score and prediction, based on the VEP_plugins/Condel.pm version 2.4
 	  The scores seem a little different from the VEP version 2.6's result, though 
           the prediction are the same. from checking one of example var.
+	- change master branch to not to use threads::shared
+	- add repeat tag extradb and api.

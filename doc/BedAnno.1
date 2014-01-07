@@ -133,15 +133,15 @@
 .\" ========================================================================
 .\"
 .IX Title "BedAnno 3"
-.TH BedAnno 3 "2013-12-04" "perl v5.14.4" "User Contributed Perl Documentation"
+.TH BedAnno 3 "2014-01-03" "perl v5.14.4" "User Contributed Perl Documentation"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
 .nh
 .SH "NAME"
 BedAnno \- Perl module for annotating variation depend on the BED +1 format database.
-.SS "\s-1VERSION\s0 v0.38"
-.IX Subsection "VERSION v0.38"
+.SS "\s-1VERSION\s0 v0.40"
+.IX Subsection "VERSION v0.40"
 From version 0.32 BedAnno will change to support \s-1CG\s0's variant shell list
 and use ncbi annotation release 104 as the annotation database
 with reformatted database format, and won't give any individual
@@ -162,17 +162,6 @@ tabix is require for fast extract anno infomation randomly.
 The fasta sequences are indexed by samtools faidx, sequence splicing also requires
 samtools. If allele frequency information, prediction information or cytoBand 
 information is needed, then extra dependencies will be required.
-.SH "PARALLELED"
-.IX Header "PARALLELED"
-This module can be used by multiple threads by:
-.PP
-.Vb 3
-\&    use threads;
-\&    use threads::shared;
-\&    use Thread::Queue;
-.Ve
-.PP
-to deal with large amount of variants.
 .SH "Methods"
 .IX Header "Methods"
 .SS "new"
@@ -229,6 +218,14 @@ to deal with large amount of variants.
 .RE
 .RS 4
 .RE
+.IP "\fIrmsk\fR [rmsk.bed.gz]" 4
+.IX Item "rmsk [rmsk.bed.gz]"
+.RS 4
+.IP "add repeat tag information" 4
+.IX Item "add repeat tag information"
+.RE
+.RS 4
+.RE
 .IP "\fIpfam\fR [pfam.tsv.gz]" 4
 .IX Item "pfam [pfam.tsv.gz]"
 .RS 4
@@ -242,6 +239,14 @@ to deal with large amount of variants.
 .RS 4
 .IP "add sift, polyphen2 prediction and scores" 4
 .IX Item "add sift, polyphen2 prediction and scores"
+.RE
+.RS 4
+.RE
+.IP "\fIcondel\fR [condel config path]" 4
+.IX Item "condel [condel config path]"
+.RS 4
+.IP "compute condel scores and prediction based on sift and polyphen2 HumVar prediction" 4
+.IX Item "compute condel scores and prediction based on sift and polyphen2 HumVar prediction"
 .RE
 .RS 4
 .RE
@@ -402,6 +407,8 @@ to deal with large amount of variants.
 \&    trInfodb            o            x
 \&    cytoBand            o            o
 \&    cytoBand_h          o            x
+\&    rmsk                o            o
+\&    rmsk_h              o            x
 \&    pfam                o            o
 \&    pfam_h              o            x
 \&    prediction          o            o
@@ -439,7 +446,7 @@ to deal with large amount of variants.
 \&                    # optional tags:
 \&                    prot     => $prot_acc,
 \&                    plen     => $prot_len,
-\&                    csta     => $cds_start_on_trSeq, # 1 based
+\&                    csta     => $cds_start_on_trSeq, # 0 based
 \&                    csto     => $cds_end_on_trSeq,   # 1 based
 \&                    seq      => $tr_sequence,
 \&                    
@@ -547,6 +554,7 @@ to deal with large amount of variants.
 \&                    # when extra resource is available:
 \&
 \&                    cytoBand  => $cytoBand,
+\&                    reptag    => $repeatTag,
 \&
 \&                    # For single position for now
 \&                    phyloPpm    => $PhyloPscorePlacentalMammals,
