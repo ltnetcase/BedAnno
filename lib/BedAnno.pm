@@ -317,6 +317,15 @@ our $REF_BUILD = 'GRCh37';
 
 =back
 
+
+=item I<dbnsfp> [dbNSFPv2.1_var.tsv.gz]
+
+=over
+
+=item add dbnsfp annotation information
+
+=back
+
 =item I<condel> [condel config path]
 
 =over
@@ -519,6 +528,10 @@ sub new {
 	$self->set_phyloP($self->{phyloP});
     }
 
+    if ( exists $self->{dbnsfp} ) {
+	$self->set_dbnsfp($self->{dbnsfp});
+    }
+
     if ( exists $self->{dbSNP} ) {
 	$self->set_dbSNP($self->{dbSNP});
     }
@@ -573,6 +586,8 @@ sub new {
     prediction_h        o            x
     phyloP              o            o
     phyloP_h            o            x
+    dbnsfp              o            o
+    dbnsfp_h            o            x
     dbSNP               o            o
     dbSNP_h             o            x
     tgp                 o            o
@@ -849,6 +864,28 @@ sub get_dbSNP {
 sub get_dbSNP_h {
     my $self = shift;
     return $self->{dbSNP_h} if (exists $self->{dbSNP_h});
+    return undef;
+}
+
+sub get_dbnsfp {
+    my $self = shift;
+    return $self->{dbnsfp} if (exists $self->{dbnsfp});
+    return undef;
+}
+
+sub set_dbnsfp {
+    my $self = shift;
+    my $dbnsfp_db = shift;
+    $self->{dbnsfp} = $dbnsfp_db;
+    require GetDBNSFP if (!exists $self->{dbnsfp_h});
+    my $dbnsfp_h = GetDBNSFP->new( db => $dbnsfp_db );
+    $self->{dbnsfp_h} = $dbnsfp_h;
+    return $self;
+}
+
+sub get_dbnsfp_h {
+    my $self = shift;
+    return $self->{dbnsfp_h} if (exists $self->{dbnsfp_h});
     return undef;
 }
 
@@ -1393,6 +1430,8 @@ sub anno {
                     phyloPpr    => $PhyloPscorePrimates,
                     phyloPve    => $PhyloPscoreVetebrates,
 
+		    reptag	=> $RepeatMaskerTag,
+
                     dbsnp => {
                         $rsID => {
                             AN => $dbsnp_total_allele_count,
@@ -1483,6 +1522,10 @@ sub anno {
                         pp2divScore => $Polyphen2HumDivScore,
                         pp2varPred  => $Polyphen2HumVarPred,
                         pp2varScore => $Polyphen2HumVarScore,
+			condelPred  => $Condelpred,
+			condelScore => $Condelscore,
+			dbnsfp	    => $ref_dbnsfp_ret,
+
                     },
                     ...
                 }
@@ -1852,7 +1895,6 @@ sub finaliseAnno {
 				$trAnnoEnt->{pp2varScore} =
 				  $init_pred->{polyphen2_humvar}->[1];
 			    }
-
 			}
 		    }
 
@@ -1865,6 +1907,41 @@ sub finaliseAnno {
 		    }
 		}
 	    }
+
+	    # extra dbnsfp query need chr infomation and can be splice site
+            if (
+                    exists $self->{dbnsfp_h}
+                and defined $self->{dbnsfp_h}
+                and (
+                    $trAnnoEnt->{func} =~ /splice/
+                    or (    exists $trAnnoEnt->{prRef}
+		        and $trAnnoEnt->{prRef} ne '.'
+                        and 1 == length( $trAnnoEnt->{prRef} )
+                        and exists $trAnnoEnt->{prAlt}
+		        and $trAnnoEnt->{prAlt} ne '.'
+                        and 1 == length( $trAnnoEnt->{prAlt} ) )
+                )
+              )
+            {
+                my $dbnsfp_q = {
+                    chr   => $annoEnt->{var}->{chr},
+                    start => $annoEnt->{var}->{pos},
+                    end   => $annoEnt->{var}->{end},
+                    ref   => $annoEnt->{var}->{ref},
+                    alt   => $annoEnt->{var}->{alt},
+                };
+
+		if ( $trAnnoEnt->{func} !~ /splice/ ) {
+		    $dbnsfp_q->{aaref} = $trAnnoEnt->{prRef};
+		    $dbnsfp_q->{aaalt} = $trAnnoEnt->{prAlt};
+		    $dbnsfp_q->{aapos} = $trAnnoEnt->{protBegin};
+		}
+
+		my $ret_hash = $self->{dbnsfp_h}->getDBNSFP($dbnsfp_q);
+		if ( 0 < scalar keys %$ret_hash ) {
+		    $trAnnoEnt->{dbnsfp} = $ret_hash;
+		}
+            }
 	}
     }
 
