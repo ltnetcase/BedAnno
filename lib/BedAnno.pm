@@ -406,14 +406,6 @@ our $REF_BUILD = 'GRCh37';
 
 =back
 
-=item I<onlyPr> [boolean]
-
-=over
-
-=item limit to primary transcript for I<genes>, boolean option, default no limit.
-
-=back
-
 =item I<mmap> [boolean]
 
 =over
@@ -658,9 +650,6 @@ sub set_db {
         }
         $open_args{clean_trans} =
           { map { s/\-\d+$//; $_ => 1 } keys %{ $self->{trans} } };
-    }
-    if ( exists $self->{onlyPr} ) {
-        $open_args{onlyPr} = $self->{onlyPr};
     }
     if ( exists $self->{mmap} ) {
         $open_args{mmap} = $self->{mmap};
@@ -1191,7 +1180,6 @@ sub load_anno {
     }
 
     # trans filter is always be ahead of genes
-    my $prTag   = ( exists $args{onlyPr} ) ? 1 : 0;
     my $mmapTag = ( exists $args{mmap} )   ? 1 : 0;
     my $geneTag = ( exists $args{genes} )  ? 1 : 0;
     my $tranTag = ( exists $args{trans} )  ? 1 : 0;
@@ -1239,10 +1227,7 @@ sub load_anno {
               if (  $cont[0] =~ /\-\d+$/
                 and !$mmapTag
                 and ( !$tranTag or !exists( $$tranList{ $cont[0] } ) ) );
-            next
-              if (  $prTag
-                and ( $cont[13] ne 'Y' )
-                and ( !$tranTag or !exists( $$tranList{ $cont[0] } ) ) );
+
             my $ori_cont = $cont[0];
             $cont[0] =~ s/\-\d+$//;
             next
@@ -1272,7 +1257,7 @@ sub load_anno {
     close ANNO if ($read_all_opt);
 
     $rannodb = region_merge($rannodb)
-      if ( $prTag or $mmapTag or $geneTag or $tranTag );
+      if ( $mmapTag or $geneTag or $tranTag );
 
     return $rannodb;
 }
@@ -1636,7 +1621,14 @@ sub varanno {
 
     my $localdb;
     if (!exists $self->{batch}) { # daemon mode
-	my $locLoad = $self->load_anno( region => $var_region );
+	my %locOpts = ( region => $var_region );
+	if (exists $self->{trans}) {
+	    $locOpts{trans} = $self->{trans};
+	}
+	if (exists $self->{genes}) {
+	    $locOpts{genes} = $self->{genes};
+	}
+	my $locLoad = $self->load_anno( %locOpts );
 	$localdb = (exists $locLoad->{$var->{chr}}) ? $locLoad->{$var->{chr}} : [];
     }
     else {
