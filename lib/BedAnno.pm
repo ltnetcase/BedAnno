@@ -382,6 +382,14 @@ our $REF_BUILD = 'GRCh37';
 
 =back
 
+=item I<quiet>
+
+=over
+
+=item Suppress warning messege to output.
+
+=back
+
 =item I<batch> [boolean]
 
 =over
@@ -772,7 +780,9 @@ sub set_prediction {
     my $predictiondb = shift;
     $self->{prediction} = $predictiondb;
     require GetPrediction if (!exists $self->{prediction_h});
-    my $prediction_h = GetPrediction->new( db => $predictiondb );
+    my %common_opts = ();
+    $common_opts{quiet} = 1 if (exists $self->{quiet});
+    my $prediction_h = GetPrediction->new( db => $predictiondb, %common_opts );
     $self->{prediction_h} = $prediction_h;
     return $self;
 }
@@ -867,7 +877,9 @@ sub set_dbnsfp {
     my $dbnsfp_db = shift;
     $self->{dbnsfp} = $dbnsfp_db;
     require GetDBNSFP if (!exists $self->{dbnsfp_h});
-    my $dbnsfp_h = GetDBNSFP->new( db => $dbnsfp_db );
+    my %common_opts = ();
+    $common_opts{quiet} = 1 if (exists $self->{quiet});
+    my $dbnsfp_h = GetDBNSFP->new( db => $dbnsfp_db, %common_opts );
     $self->{dbnsfp_h} = $dbnsfp_h;
     return $self;
 }
@@ -883,7 +895,9 @@ sub set_tgp {
     my $tgpdb = shift;
     $self->{tgp} = $tgpdb;
     require GetVcfAF if (!exists $self->{tgp_h} and !exists $self->{esp6500_h});
-    my $tgp_h = GetVcfAF->new( db => $tgpdb );
+    my %common_opts = ();
+    $common_opts{quiet} = 1 if (exists $self->{quiet});
+    my $tgp_h = GetVcfAF->new( db => $tgpdb, %common_opts );
     $self->{tgp_h} = $tgp_h;
     return $self;
 }
@@ -905,7 +919,9 @@ sub set_esp6500 {
     my $esp6500db = shift;
     $self->{esp6500} = $esp6500db;
     require GetVcfAF if (!exists $self->{tgp_h} and !exists $self->{esp6500_h});
-    my $esp6500_h = GetVcfAF->new( db => $esp6500db );
+    my %common_opts = ();
+    $common_opts{quiet} = 1 if (exists $self->{quiet});
+    my $esp6500_h = GetVcfAF->new( db => $esp6500db, %common_opts );
     $self->{esp6500_h} = $esp6500_h;
     return $self;
 }
@@ -927,7 +943,9 @@ sub set_cg54 {
     my $cg54db = shift;
     $self->{cg54} = $cg54db;
     require GetCGpub if (!exists $self->{cg54_h} and !exists $self->{wellderly_h});
-    my $cg54_h = GetCGpub->new( db => $cg54db );
+    my %common_opts = ();
+    $common_opts{quiet} = 1 if (exists $self->{quiet});
+    my $cg54_h = GetCGpub->new( db => $cg54db, %common_opts );
     $self->{cg54_h} = $cg54_h;
     return $self;
 }
@@ -949,7 +967,9 @@ sub set_wellderly {
     my $wellderlydb = shift;
     $self->{wellderly} = $wellderlydb;
     require GetCGpub if (!exists $self->{cg54_h} and !exists $self->{wellderly_h});
-    my $wellderly_h = GetCGpub->new( db => $wellderlydb );
+    my %common_opts = ();
+    $common_opts{quiet} = 1 if (exists $self->{quiet});
+    my $wellderly_h = GetCGpub->new( db => $wellderlydb, %common_opts );
     $self->{wellderly_h} = $wellderly_h;
     return $self;
 }

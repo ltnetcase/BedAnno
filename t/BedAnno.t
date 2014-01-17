@@ -62,6 +62,8 @@ if ( -e $extradb and -r $extradb ) {
     }
 }
 
+$opts{quiet} = 1;
+
 use Test::Most;
 BEGIN { use_ok('BedAnno') }
 
