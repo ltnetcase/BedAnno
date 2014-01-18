@@ -3559,6 +3559,8 @@ use Carp;
 sub new {
     my $class = shift;
     my ($chr, $start, $end, $ref, $alt);
+    my %var;
+
     if ( ref( $_[0] ) ) {
         if (   !exists $_[0]->{chr}
             or !exists $_[0]->{begin}
@@ -3567,6 +3569,8 @@ sub new {
             confess "Error: unavailable object. need keys: ",
               "chr, start, alt, ref specified.";
         }
+
+	%var = %{$_[0]};
 
         $chr   = $_[0]->{chr};
         $start = $_[0]->{begin};
@@ -3593,6 +3597,13 @@ sub new {
             : "="
           );
 	$ref = "" if ($ref =~ /^null$/i);
+
+	# clean %var
+	delete $var{"chr"};
+	delete $var{"begin"};
+	delete $var{"end"} if (exists $var{end});
+	delete $var{"referenceSequence"} if (exists $var{referenceSequence});
+	delete $var{"variantSequence"} if (exists $var{variantSequence});
     }
     else {
 	confess "Error: not enough args, need at least 4 args." if (4 > @_);
@@ -3619,13 +3630,12 @@ sub new {
 	$end = $start + $rl;
     }
 
-    my %var;
 
     my $len_ref = $end - $start;            # chance to annotate long range
     my ($varType, $implicit_varType, $sm) = guess_type($len_ref, $ref, $alt);
 
     $chr = normalise_chr($chr);
-    %var = (
+    %var = ( %var,  # remain some extra keys in the var hash, e.g. var_id etc.
         chr    => $chr,
         pos    => $start,
         ref    => uc($ref),
