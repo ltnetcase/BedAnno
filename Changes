@@ -90,3 +90,4 @@
 	- add an option 'quiet' to suppress warning information for extra database query.
 	- change master branch to not to use threads::shared
 	- add repeat tag extradb and api.
+	- allow remaining extra information in the BedAnno::Var entry by using hash ref input.
