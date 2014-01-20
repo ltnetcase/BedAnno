@@ -3619,10 +3619,12 @@ sub new {
 
 	$ref = normalise_seq($ref);
 	$alt = normalise_seq($alt);
-	if (substr($ref,0,1) eq substr($alt,0,1)) {
-	    $ref = substr($ref,1);
-	    $alt = substr($alt,1);
-	}
+        if ( ( $ref ne $alt or length($ref) > 1 )
+            and substr( $ref, 0, 1 ) eq substr( $alt, 0, 1 ) )
+        {
+            $ref = substr( $ref, 1 );
+            $alt = substr( $alt, 1 );
+        }
 	else {
 	    $start -= 1; # change to 0-based start
 	}
