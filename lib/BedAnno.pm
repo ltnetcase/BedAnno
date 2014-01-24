@@ -301,6 +301,14 @@ our $REF_BUILD = 'GRCh37';
 
 =back
 
+=item I<gwas> [gwasCatalog_snp137.bed.gz]
+
+=over
+
+=item add gwas information depend on only position
+
+=back
+
 =item I<pfam> [pfam.tsv.gz]
 
 =over
@@ -317,6 +325,13 @@ our $REF_BUILD = 'GRCh37';
 
 =back
 
+=item I<condel> [condel config path]
+
+=over
+
+=item compute condel scores and prediction based on sift and polyphen2 HumVar prediction
+
+=back
 
 =item I<dbnsfp> [dbNSFPv2.1_var.tsv.gz]
 
@@ -326,11 +341,11 @@ our $REF_BUILD = 'GRCh37';
 
 =back
 
-=item I<condel> [condel config path]
+=item I<cosmic> [Cosmic_v67_241013.bed.gz]
 
 =over
 
-=item compute condel scores and prediction based on sift and polyphen2 HumVar prediction
+=item add cosmic annotation information
 
 =back
 
@@ -532,6 +547,10 @@ sub new {
 	$self->set_dbnsfp($self->{dbnsfp});
     }
 
+    if ( exists $self->{cosmic} ) {
+	$self->set_cosmic($self->{cosmic});
+    }
+
     if ( exists $self->{dbSNP} ) {
 	$self->set_dbSNP($self->{dbSNP});
     }
@@ -554,6 +573,10 @@ sub new {
 
     if (exists $self->{rmsk}) {
 	$self->set_rmsk($self->{rmsk});
+    }
+
+    if (exists $self->{gwas}) {
+	$self->set_gwas($self->{gwas});
     }
     
     if ($debugOpt) {
@@ -580,6 +603,8 @@ sub new {
     cytoBand_h          o            x
     rmsk                o            o
     rmsk_h              o            x
+    gwas                o            o
+    gwas_h              o            x
     pfam                o            o
     pfam_h              o            x
     prediction          o            o
@@ -588,6 +613,8 @@ sub new {
     phyloP_h            o            x
     dbnsfp              o            o
     dbnsfp_h            o            x
+    cosmic              o            o
+    cosmic_h            o            x
     dbSNP               o            o
     dbSNP_h             o            x
     tgp                 o            o
@@ -599,8 +626,8 @@ sub new {
     wellderly           o            o
     wellderly_h         o            x
 
-    e.g.    : $self->set_refbuild($refbuild);
-	      my $refbuild = $self->get_refbuild();
+    e.g.    : $beda->set_refbuild($refbuild);
+	      my $refbuild = $beda->get_refbuild();
 
 =cut
 sub set_refbuild {
@@ -753,6 +780,28 @@ sub get_rmsk_h {
     return undef;
 }
 
+sub set_gwas {
+    my $self = shift;
+    my $gwasdb = shift;
+    $self->{gwas} = $gwasdb if (defined $gwasdb);
+    require GetGWAS if (!exists $self->{gwas_h});
+    my $gwas_h = GetGWAS->new( db => $self->{gwas} );
+    $self->{gwas_h} = $gwas_h;
+    return $self;
+}
+
+sub get_gwas {
+    my $self = shift;
+    return $self->{gwas} if (exists $self->{gwas});
+    return undef;
+}
+
+sub get_gwas_h {
+    my $self = shift;
+    return $self->{gwas_h} if (exists $self->{gwas_h});
+    return undef;
+}
+
 sub set_pfam {
     my $self = shift;
     my $pfamdb = shift;
@@ -887,6 +936,30 @@ sub set_dbnsfp {
 sub get_dbnsfp_h {
     my $self = shift;
     return $self->{dbnsfp_h} if (exists $self->{dbnsfp_h});
+    return undef;
+}
+
+sub get_cosmic {
+    my $self = shift;
+    return $self->{cosmic} if (exists $self->{cosmic});
+    return undef;
+}
+
+sub set_cosmic {
+    my $self = shift;
+    my $cosmic_db = shift;
+    $self->{cosmic} = $cosmic_db;
+    require GetCOSMIC if (!exists $self->{cosmic_h});
+    my %common_opts = ();
+    $common_opts{quiet} = 1 if (exists $self->{quiet});
+    my $cosmic_h = GetCOSMIC->new( db => $cosmic_db, %common_opts );
+    $self->{cosmic_h} = $cosmic_h;
+    return $self;
+}
+
+sub get_cosmic_h {
+    my $self = shift;
+    return $self->{cosmic_h} if (exists $self->{cosmic_h});
     return undef;
 }
 
@@ -1429,6 +1502,7 @@ sub anno {
 
                     cytoBand  => $cytoBand,
 		    reptag    => $repeatTag,
+		    gwas      => $ref_gwas_ret,
 
                     # For single position for now
                     phyloPpm    => $PhyloPscorePlacentalMammals,
@@ -1444,6 +1518,8 @@ sub anno {
                         },
                         ...
                     },
+
+		    cosmic => $ref_cosmic_return,
 
                     tgp => {
                         AN => $tgp_total_allele_count,
@@ -1555,6 +1631,10 @@ sub varanno {
 	$var->{reptag} = $self->{rmsk_h}->getRepTag(@$var{qw(chr pos end)});
     }
 
+    if (exists $self->{gwas}) {
+	$var->{gwas} = $self->{gwas_h}->getGWAS(@$var{qw(chr pos end)});
+    }
+
     if (exists $self->{phyloP}) {
 	if ($var->{sm} == 1) {
 	    @$var{qw(phyloPpm phyloPpr phyloPve)} = 
@@ -1617,6 +1697,10 @@ sub varanno {
 
     if (exists $self->{wellderly}) {
 	$var->{wellderly} = $self->{wellderly_h}->getAF(@$var{qw(chr pos end ref alt)});
+    }
+
+    if (exists $self->{cosmic}) {
+	$var->{cosmic} = $self->{cosmic_h}->getCOSMIC(@$var{qw(chr pos end ref alt)});
     }
 
     my $t1;

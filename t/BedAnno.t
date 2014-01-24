@@ -28,8 +28,11 @@ if ( -e $extradb and -r $extradb ) {
     if ( -e "$extradb/cytoBand/cytoBand_hg19_grch37.txt.gz" ) {
         $opts{cytoBand} = "$extradb/cytoBand/cytoBand_hg19_grch37.txt.gz";
     }
-    if ( -e "$extradb/RepeatMasker/rmsk.bed.gz") {
+    if ( -e "$extradb/RepeatMasker/rmsk.bed.gz" ) {
 	$opts{rmsk} = "$extradb/RepeatMasker/rmsk.bed.gz";
+    }
+    if ( -e "$extradb/gwas/gwasCatalog_snp137.bed.gz" ) {
+	$opts{gwas} = "$extradb/gwas/gwasCatalog_snp137.bed.gz";
     }
     if ( -e "$extradb/dbsnp/snp137.bed.gz" ) {
         $opts{dbSNP} = "$extradb/dbsnp/snp137.bed.gz";
@@ -59,6 +62,9 @@ if ( -e $extradb and -r $extradb ) {
     }
     if ( -e "$extradb/dbnsfp/dbNSFPv2.1_var.tsv.gz" ) {
 	$opts{dbnsfp} = "$extradb/dbnsfp/dbNSFPv2.1_var.tsv.gz";
+    }
+    if ( -e "$extradb/cosmic/Cosmic_v67_241013.bed.gz" ) {
+	$opts{cosmic} = "$extradb/cosmic/Cosmic_v67_241013.bed.gz";
     }
 }
 
