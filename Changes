@@ -92,3 +92,4 @@
 	- add repeat tag extradb and api.
 	- allow remaining extra information in the BedAnno::Var entry by using hash ref input.
 	- fix BedAnno::Var->new for VCF reference variant parsing.
+	- reformatAnno() is changed to give uniform begin/end position
