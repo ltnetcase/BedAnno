@@ -4524,6 +4524,10 @@ sub reformatAnno {
             $trInfo{TranscriptEnd} =
               ( exists $rTr->{rnaEnd} ) ? $rTr->{rnaEnd} : "";
 
+            $trInfo{TranscriptBegin} = ""
+              if ( $trInfo{TranscriptBegin} eq '?' );
+            $trInfo{TranscriptEnd} = "" if ( $trInfo{TranscriptEnd} eq '?' );
+
 	    if ($trInfo{TranscriptBegin} !~ /^\d*$/ or $trInfo{TranscriptEnd} !~ /^\d*$/) {
 		my ($begin_anchor_sign, $begin_anchor, $begin_tail_sign, $begin_tail, 
 		    $end_anchor_sign,   $end_anchor,   $end_tail_sign,   $end_tail   );
