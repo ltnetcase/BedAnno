@@ -4523,6 +4523,85 @@ sub reformatAnno {
               ( exists $rTr->{rnaBegin} ) ? $rTr->{rnaBegin} : "";
             $trInfo{TranscriptEnd} =
               ( exists $rTr->{rnaEnd} ) ? $rTr->{rnaEnd} : "";
+
+	    if ($trInfo{TranscriptBegin} !~ /^\d*$/ or $trInfo{TranscriptEnd} !~ /^\d*$/) {
+		my ($begin_anchor_sign, $begin_anchor, $begin_tail_sign, $begin_tail, 
+		    $end_anchor_sign,   $end_anchor,   $end_tail_sign,   $end_tail   );
+		if ($trInfo{TranscriptBegin} =~ /^([\-\+]?)(\d+)([\+\-]?)(\d*)$/) {
+		    $begin_anchor_sign = $1;
+		    $begin_anchor = $2;
+		    $begin_tail_sign = $3;
+		    $begin_tail = $4;
+		}
+		if ($trInfo{TranscriptEnd} =~ /^([\-\+]?)(\d+)([\+\-]?)(\d*)$/) {
+		    $end_anchor_sign = $1;
+		    $end_anchor = $2;
+		    $end_tail_sign = $3;
+		    $end_tail = $4;
+		}
+
+                confess ( "Error: not known error",
+		   " [$trInfo{TranscriptBegin}, $trInfo{TranscriptEnd}]", "\n"
+                ) if ( !defined $begin_anchor or !defined $end_anchor );
+
+                if (
+                    (
+                            $begin_anchor_sign eq $end_anchor_sign
+                        and $begin_anchor_sign ne ""
+                    )
+                    or (    $begin_anchor eq $end_anchor
+                        and $begin_tail_sign eq $end_tail_sign
+                        and $begin_tail_sign ne "" )
+                    or (    $begin_anchor == $end_anchor - 1
+                        and $begin_tail_sign eq "+"
+                        and $end_tail_sign eq "-" )
+                  )
+                {
+                    $trInfo{TranscriptBegin} = "";
+                    $trInfo{TranscriptEnd}   = "";
+                }
+		else {
+
+		    if ($end_anchor_sign eq "+") { # current method don't know the length of transcript
+			$trInfo{TranscriptEnd} = "";
+		    }
+		    elsif ($end_anchor_sign eq "") {
+			if ($begin_anchor_sign eq "+" and $begin_anchor eq "1") {
+			    $trInfo{TranscriptBegin} = "";
+			    $trInfo{TranscriptEnd} = "";
+			}
+			else {
+			    if ($end_tail_sign eq "+") {
+				$trInfo{TranscriptEnd} = $end_anchor;
+			    }
+			    elsif ($end_tail_sign eq "-") {
+				$trInfo{TranscriptEnd} = $end_anchor - 1;
+			    }
+			}
+		    }
+
+		    if ($begin_anchor_sign eq "-") {
+			$trInfo{TranscriptBegin} = 1;
+		    }
+		    elsif ($begin_anchor_sign eq "") {
+			if ($end_anchor_sign eq "-" and $end_anchor eq "1") {
+			    $trInfo{TranscriptBegin} = "";
+			    $trInfo{TranscriptEnd} = "";
+			}
+			else {
+			    if ($begin_tail_sign eq "-") {
+				$trInfo{TranscriptBegin} = $begin_anchor;
+			    }
+			    elsif ($begin_tail_sign eq "+") {
+				$trInfo{TranscriptBegin} = $begin_anchor + 1;
+			    }
+			}
+		    }
+
+		}
+
+	    }
+
             $trInfo{ProteinBegin} =
               ( exists $rTr->{protBegin} ) ? $rTr->{protBegin} : "";
             $trInfo{ProteinEnd} =
