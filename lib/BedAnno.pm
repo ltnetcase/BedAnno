@@ -42,7 +42,7 @@ information is needed, then extra dependencies will be required.
 =cut
 
 our (
-    %C3,      %C1,    %SO2Name, %func2SO,
+    %C3,      %C1,    %SO2Name, %func2SO,  %Name2Index,
     %Name2SO, %Polar, %C1toC3,  %AAnumber,
     $AAcount,
 );
@@ -194,6 +194,27 @@ $AAcount = scalar keys %C1toC3;
     "abnormal-inseq-stop" => "abnormal-inseq-stop",
 );
 
+%Name2Index = (
+    stop_gained                  => 18,
+    frameshift_variant           => 17,
+    transcript_ablation          => 16,
+    initiator_codon_variant      => 15,
+    "unknown-likely-deleterious" => 14,
+    inframe_insertion            => 13,
+    inframe_deletion             => 12,
+    inframe_delins               => 11,
+    missense_variant             => 10,
+    stop_lost                    => 9,
+    stop_retained_variant        => 8,
+    synonymous_variant           => 7,
+    "no-change"                  => 6,
+    unknown                      => 5,
+    "unknown-no-call"            => 4,
+    "abnormal-intron"            => 3,
+    "abnormal-inseq-stop"        => 2,
+    "annotation-fail"            => 1,
+);
+
 %Name2SO = reverse(%SO2Name);
 
 %func2SO = (
@@ -203,7 +224,7 @@ $AAcount = scalar keys %C1toC3;
     "cds-del"             => "SO:0001822",
     "cds-indel"           => "inframe_delins",
     "cds-ins"             => "SO:0001821",
-    "cds-loss"		  => "unknown-likely-deleterious",
+    "cds-loss"            => "unknown-likely-deleterious",
     "coding-synon"        => "SO:0001819",
     "init-loss"           => "SO:0001582",
     "no-change"           => "no-change",
@@ -223,8 +244,8 @@ $AAcount = scalar keys %C1toC3;
     missense              => "SO:0001583",
     ncRNA                 => "unknown",
     nonsense              => "SO:0001587",
-    promoter		  => "unknown",
-    span		  => "unknown-likely-deleterious",
+    promoter              => "unknown",
+    span                  => "unknown-likely-deleterious",
     unknown               => "unknown",
 );
 
@@ -249,7 +270,7 @@ our $REF_BUILD = 'GRCh37';
 
     my $beda = BedAnno->new( db => "in.bed.gz", tr => 'in.trans.fas.gz', batch => 1 );
 
-=item Args	- (all database files should be tabix indexed)
+=item Args    - (all database files should be tabix indexed)
 
 =over
 
@@ -627,7 +648,7 @@ sub new {
     wellderly_h         o            x
 
     e.g.    : $beda->set_refbuild($refbuild);
-	      my $refbuild = $beda->get_refbuild();
+              my $refbuild = $beda->get_refbuild();
 
 =cut
 sub set_refbuild {
@@ -1603,9 +1624,9 @@ sub anno {
                         pp2divScore => $Polyphen2HumDivScore,
                         pp2varPred  => $Polyphen2HumVarPred,
                         pp2varScore => $Polyphen2HumVarScore,
-			condelPred  => $Condelpred,
-			condelScore => $Condelscore,
-			dbnsfp	    => $ref_dbnsfp_ret,
+                        condelPred  => $Condelpred,
+                        condelScore => $Condelscore,
+                        dbnsfp      => $ref_dbnsfp_ret,
 
                     },
                     ...
@@ -2891,21 +2912,21 @@ sub getTrChange {
 =head2 trWalker
 
     About   : walk around the variant position to find possible
-	      repeat start/end, and return the recalculated
-	      trBegin and trEnd, together with the real
-	      transcript originated variants and unified property
-	      Current implementation won't walk around in the following
-	      cases:
-	      1. no-call
-	      2. annotation-fail
-	      3. snv or mnp
-	      4. non-exon region
-	      5. span case or any edge case
-	      6. delins without repeat.
+              repeat start/end, and return the recalculated
+              trBegin and trEnd, together with the real
+              transcript originated variants and unified property
+              Current implementation won't walk around in the following
+              cases:
+              1. no-call
+              2. annotation-fail
+              3. snv or mnp
+              4. non-exon region
+              5. span case or any edge case
+              6. delins without repeat.
     Usage   : ($trBegin, $trEnd, $real_var) = 
-		$beda->trWalker($tid, $rtrinfo);
+              $beda->trWalker($tid, $rtrinfo);
     Args    : trAcc and hash ref of trInfo annotation for trAcc,
-	      
+          
 
 =cut
 sub trWalker {
@@ -4010,12 +4031,12 @@ sub guess_type {
     my ($len_ref, $ref, $alt) = @_;
     # imp_varType: implicit variant type is for HGVS naming
     # varType    : to be output as varType name. can be as the key
-    #		   to get the SO term by Name2SO hash.
-    # sm	 : single or multiple bases tag
-    #		   0 - for insertion, 0 base
-    #		   1 - for single base variants
-    #		   2 - for non-equal-length multiple bases variants
-    #		   3 - for equal-length multiple bases delins
+    #              to get the SO term by Name2SO hash.
+    # sm         : single or multiple bases tag
+    #              0 - for insertion, 0 base
+    #              1 - for single base variants
+    #              2 - for non-equal-length multiple bases variants
+    #              3 - for equal-length multiple bases delins
     my ($imp_varType, $varType, $sm);
     if ($len_ref == 0) {
 	if ($ref eq $alt) {
@@ -4271,34 +4292,34 @@ sub TO_JSON {
     About   : In finalise step, decide a major transcript to report for a var.
     Usage   : my $majorTranscriptVarName = $annoEnt->decide_major();
     Returns : A string in the following format:
-	      If the transcript has a pName: 
-		    mrnaAcc(geneSymbol): cName (pName), 
-		    e.g. NM_145651.2(SCGB1C1): c.13C>T (p.R5C)
-	      If the transcript does not have a pName: 
-		    mrnaAcc(geneSymbol): cName
-	      If only intergenic
-		    chr: gName (intergenic)
-		    e.g. chrX: g.220025A>T (intergenic)
+              If the transcript has a pName: 
+                  mrnaAcc(geneSymbol): cName (pName), 
+                  e.g. NM_145651.2(SCGB1C1): c.13C>T (p.R5C)
+              If the transcript does not have a pName: 
+                  mrnaAcc(geneSymbol): cName
+              If only intergenic
+                  chr: gName (intergenic)
+                  e.g. chrX: g.220025A>T (intergenic)
     Note    : use the primaryTag to find reference standard or primary transcript,
-	      if only one have the primaryTag "Y", then use it,
-	      otherwise, sort by GenePart: 
-		  1.  CDS
-		  2.  span
-		  3.  five_prime_cis_splice_site
-		  4.  three_prime_cis_splice_site
-		  5.  ncRNA
-		  6.  five_prime_UTR
-		  7.  three_prime_UTR
-		  8.  interior_intron
-		  9.  five_prime_UTR_intron
-		  10. three_prime_UTR_intron
-		  11. abnormal-intron
-		  12. promoter
-		  13. annotation-fail
-		  14. intergenic_region
-	      and choose the first one, if more than one transcript have the 
-	      same reference standard and same GenePart, then choose the first
-	      one which prior in name sorting.
+              if only one have the primaryTag "Y", then use it,
+              otherwise, sort by GenePart: 
+                1.  CDS
+                2.  span
+                3.  five_prime_cis_splice_site
+                4.  three_prime_cis_splice_site
+                5.  ncRNA
+                6.  five_prime_UTR
+                7.  three_prime_UTR
+                8.  interior_intron
+                9.  five_prime_UTR_intron
+                10. three_prime_UTR_intron
+                11. abnormal-intron
+                12. promoter
+                13. annotation-fail
+                14. intergenic_region
+              and choose the first one, if more than one transcript have the 
+              same reference standard and same GenePart, then choose the first
+              one which prior in name sorting.
 
 =cut
 sub decide_major {
@@ -4373,59 +4394,60 @@ sub get_first_tr {
     About   : reformat the BedAnno::Anno entry to fit the need of crawler
     Usage   : my $crawler_need = $anno->reformatAnno();
     Note    : ID mapping changes are list the following:
-	      var group:
-	      refbuild -> referenceBuild
-	      chr -> chr
-	      pos -> begin
-	      end -> end
-	      ref -> referenceSequence
-	      alt -> variantSequence
-	      guess -> varType
-	      varTypeSO -> varTypeSO
-	      cytoBand -> cytoband
-	      dbsnp => {rsID1,rsID2 ... } -> dbsnpIds
-	      cg54 => AF -> CG54_AF
-	      cg54 => AN -> CG54_AN
-	      tgp => AF -> 1000G_AF
-	      tgp => AN -> 1000G_AN
-	      wellderly => AF -> Wellderly_AF
-	      wellderly => AN -> Wellderly_AN
-	      esp6500 => AF -> ESP6500_AF
-	      esp6500 => AN -> ESP6500_AN
-	      phyloPpm -> PhyloPscorePlacentalMammals
-	      phyloPpr -> PhyloPscorePrimates
-	      phyloPve -> PhyloPscoreVetebrates
-	      gHGVS -> gHGVS
-	      TranscriptVarName => $anno->decide_major();
+              var group:
+              refbuild -> referenceBuild
+              chr -> chr
+              pos -> begin
+              end -> end
+              ref -> referenceSequence
+              alt -> variantSequence
+              guess -> varType
+              varTypeSO -> varTypeSO
+              cytoBand -> cytoband
+              dbsnp => {rsID1,rsID2 ... } -> dbsnpIds
+              cg54 => AF -> CG54_AF
+              cg54 => AN -> CG54_AN
+              tgp => AF -> 1000G_AF
+              tgp => AN -> 1000G_AN
+              wellderly => AF -> Wellderly_AF
+              wellderly => AN -> Wellderly_AN
+              esp6500 => AF -> ESP6500_AF
+              esp6500 => AN -> ESP6500_AN
+              phyloPpm -> PhyloPscorePlacentalMammals
+              phyloPpr -> PhyloPscorePrimates
+              phyloPve -> PhyloPscoreVetebrates
+              gHGVS -> gHGVS
+              TranscriptVarName => $anno->decide_major();
 
-	      trInfo group:
-	      geneId -> GeneID
-	      geneSym -> GeneSym
-	      prot -> ProteinAccession
-	      strd -> TranscriptOrientation
-	      rnaBegin -> TranscriptBegin
-	      rnaEnd -> TranscriptEnd
-	      protBegin -> ProteinBegin
-	      protEnd -> ProteinEnd
-	      pfamId -> PFAM_ID
-	      pfamName -> PFAM_NAME
-	      genepart -> GenePart
-	      genepartSO -> GenePartSO
-	      genepartIndex -> GenePartIndex
-	      exonIndex -> ExonNumber
-	      intronIndex -> IntronNumer
-	      funcSOname -> FunctionImpact
-	      funcSO -> FunctionImpactSO
-	      c -> cHGVS
-	      p -> pHGVS
-	      cc -> CodonChange
-	      polar -> AAPolarityRef + AAPolarityVar
-	      siftPred -> SIFTpred
-	      siftScore -> SIFTscore
-	      pp2divPred -> Polyphen2HumDivPred
-	      pp2divScore -> Polyphen2HumDivScore
-	      pp2varPred -> Polyphen2VarPred
-	      pp2varScore -> Polyphen2VarScore
+              trInfo group:
+              geneId -> GeneID
+              geneSym -> GeneSym
+              prot -> ProteinAccession
+              strd -> TranscriptOrientation
+              rnaBegin -> TranscriptBegin
+              rnaEnd -> TranscriptEnd
+              protBegin -> ProteinBegin
+              protEnd -> ProteinEnd
+              pfamId -> PFAM_ID
+              pfamName -> PFAM_NAME
+              genepart -> GenePart
+              genepartSO -> GenePartSO
+              genepartIndex -> GenePartIndex
+              exonIndex -> ExonNumber
+              intronIndex -> IntronNumer
+              funcSOname -> FunctionImpact
+              ImpactIndex -> IndexofFuncSOname
+              funcSO -> FunctionImpactSO
+              c -> cHGVS
+              p -> pHGVS
+              cc -> CodonChange
+              polar -> AAPolarityRef + AAPolarityVar
+              siftPred -> SIFTpred
+              siftScore -> SIFTscore
+              pp2divPred -> Polyphen2HumDivPred
+              pp2divScore -> Polyphen2HumDivScore
+              pp2varPred -> Polyphen2VarPred
+              pp2varScore -> Polyphen2VarScore
 
 =cut
 sub reformatAnno {
@@ -4476,7 +4498,7 @@ sub reformatAnno {
 	  ProteinBegin ProteinEnd 
 	  PFAM_ID PFAM_NAME 
 	  GenePartIndex ExonNumber IntronNumer 
-	  FunctionImpact FunctionImpactSO 
+	  FunctionImpact ImpactIndex FunctionImpactSO 
 	  cHGVS pHGVS CodonChange 
 	  AAPolarityRef AAPolarityVar 
 	  SIFTpred SIFTscore 
@@ -4490,69 +4512,78 @@ sub reformatAnno {
 	$crawler_need->{trInfo}->{""}->{GenePartSO} = "SO:0000605";
     }
     else {
-	foreach my $trAcc (sort keys %{$anno->{trInfo}}) {
-	    my $rTr = $anno->{trInfo}->{$trAcc};
-	    my %trInfo = ();
+        foreach my $trAcc ( sort keys %{ $anno->{trInfo} } ) {
+            my $rTr    = $anno->{trInfo}->{$trAcc};
+            my %trInfo = ();
             @trInfo{qw(GeneID GeneSym TranscriptOrientation)} =
               @$rTr{qw(geneId geneSym strd)};
             $trInfo{ProteinAccession} =
               ( exists $rTr->{prot} ) ? $rTr->{prot} : "";
-	    $trInfo{TranscriptBegin} = 
-	      ( exists $rTr->{rnaBegin} ) ? $rTr->{rnaBegin} : "";
-	    $trInfo{TranscriptEnd} = 
-	      ( exists $rTr->{rnaEnd} ) ? $rTr->{rnaEnd} : "";
-	    $trInfo{ProteinBegin} = 
-	      ( exists $rTr->{protBegin} ) ? $rTr->{protBegin} : "";
-	    $trInfo{ProteinEnd} = 
-	      ( exists $rTr->{protEnd} ) ? $rTr->{protEnd} : "";
-	    $trInfo{PFAM_ID} = 
-	      ( exists $rTr->{pfamId} ) ? $rTr->{pfamId} : "";
-	    $trInfo{PFAM_NAME} = 
-	      ( exists $rTr->{pfamName} ) ? $rTr->{pfamName} : "";
-	    $trInfo{GenePart} = 
-	      ( exists $rTr->{genepart} ) ? $rTr->{genepart} : "";
-	    $trInfo{GenePartSO} = 
-	      ( exists $rTr->{genepartSO} and $rTr->{genepartSO} =~ /SO:/ ) ? $rTr->{genepartSO} : "";
-	    $trInfo{GenePartIndex} = 
-	      ( exists $rTr->{genepartIndex} ) ? $rTr->{genepartIndex} : "";
-	    $trInfo{ExonNumber} = 
-	      ( exists $rTr->{exonIndex} ) ? $rTr->{exonIndex} : "";
-	    $trInfo{IntronNumber} = 
-	      ( exists $rTr->{intronIndex} ) ? $rTr->{intronIndex} : "";
-	    $trInfo{FunctionImpact} = 
-	      ( exists $rTr->{funcSOname} ) ? $rTr->{funcSOname} : "";
-	    $trInfo{FunctionImpactSO} = 
-	      ( exists $rTr->{funcSO} and $rTr->{funcSO} =~ /SO:/ ) ? $rTr->{funcSO} : "";
-	    $trInfo{cHGVS} = 
-	      ( exists $rTr->{c} ) ? $rTr->{c} : "";
-	    $trInfo{pHGVS} = 
-	      ( exists $rTr->{p} ) ? $rTr->{p} : "";
-	    $trInfo{CodonChange} = 
-	      ( exists $rTr->{cc} ) ? $rTr->{cc} : "";
-	    $trInfo{SIFTpred} = 
-	      ( exists $rTr->{siftPred} ) ? $rTr->{siftPred} : "";
-	    $trInfo{SIFTscore} = 
-	      ( exists $rTr->{siftScore} ) ? $rTr->{siftScore} : "";
-	    $trInfo{Polyphen2HumDivPred} = 
-	      ( exists $rTr->{pp2divPred} ) ? $rTr->{pp2divPred} : "";
-	    $trInfo{Polyphen2HumDivScore} = 
-	      ( exists $rTr->{pp2divScore} ) ? $rTr->{pp2divScore} : "";
-	    $trInfo{Polyphen2VarPred} = 
-	      ( exists $rTr->{pp2varPred} ) ? $rTr->{pp2varPred} : "";
-	    $trInfo{Polyphen2VarScore} = 
-	      ( exists $rTr->{pp2varScore} ) ? $rTr->{pp2varScore} : "";
-	    $trInfo{AAPolarityRef} = "";
-	    $trInfo{AAPolarityVar} = "";
-	    if (exists $rTr->{polar} ) {
-		my @pol = split(/=>/, $rTr->{polar});
-		if (2 == @pol) {
-		    $trInfo{AAPolarityRef} = $pol[0];
-		    $trInfo{AAPolarityVar} = $pol[1];
-		}
-	    }
+            $trInfo{TranscriptBegin} =
+              ( exists $rTr->{rnaBegin} ) ? $rTr->{rnaBegin} : "";
+            $trInfo{TranscriptEnd} =
+              ( exists $rTr->{rnaEnd} ) ? $rTr->{rnaEnd} : "";
+            $trInfo{ProteinBegin} =
+              ( exists $rTr->{protBegin} ) ? $rTr->{protBegin} : "";
+            $trInfo{ProteinEnd} =
+              ( exists $rTr->{protEnd} ) ? $rTr->{protEnd} : "";
+            $trInfo{PFAM_ID} =
+              ( exists $rTr->{pfamId} ) ? $rTr->{pfamId} : "";
+            $trInfo{PFAM_NAME} =
+              ( exists $rTr->{pfamName} ) ? $rTr->{pfamName} : "";
+            $trInfo{GenePart} =
+              ( exists $rTr->{genepart} ) ? $rTr->{genepart} : "";
+            $trInfo{GenePartSO} =
+              ( exists $rTr->{genepartSO} and $rTr->{genepartSO} =~ /SO:/ )
+              ? $rTr->{genepartSO}
+              : "";
+            $trInfo{GenePartIndex} =
+              ( exists $rTr->{genepartIndex} ) ? $rTr->{genepartIndex} : "";
+            $trInfo{ExonNumber} =
+              ( exists $rTr->{exonIndex} ) ? $rTr->{exonIndex} : "";
+            $trInfo{IntronNumber} =
+              ( exists $rTr->{intronIndex} ) ? $rTr->{intronIndex} : "";
+            $trInfo{FunctionImpact} =
+              ( exists $rTr->{funcSOname} ) ? $rTr->{funcSOname} : "";
+            $trInfo{ImpactIndex} =
+              ( exists $Name2Index{ $rTr->{funcSOname} } )
+              ? $Name2Index{ $rTr->{funcSOname} }
+              : "";
+            $trInfo{FunctionImpactSO} =
+              ( exists $rTr->{funcSO} and $rTr->{funcSO} =~ /SO:/ )
+              ? $rTr->{funcSO}
+              : "";
+            $trInfo{cHGVS} =
+              ( exists $rTr->{c} ) ? $rTr->{c} : "";
+            $trInfo{pHGVS} =
+              ( exists $rTr->{p} ) ? $rTr->{p} : "";
+            $trInfo{CodonChange} =
+              ( exists $rTr->{cc} ) ? $rTr->{cc} : "";
+            $trInfo{SIFTpred} =
+              ( exists $rTr->{siftPred} ) ? $rTr->{siftPred} : "";
+            $trInfo{SIFTscore} =
+              ( exists $rTr->{siftScore} ) ? $rTr->{siftScore} : "";
+            $trInfo{Polyphen2HumDivPred} =
+              ( exists $rTr->{pp2divPred} ) ? $rTr->{pp2divPred} : "";
+            $trInfo{Polyphen2HumDivScore} =
+              ( exists $rTr->{pp2divScore} ) ? $rTr->{pp2divScore} : "";
+            $trInfo{Polyphen2VarPred} =
+              ( exists $rTr->{pp2varPred} ) ? $rTr->{pp2varPred} : "";
+            $trInfo{Polyphen2VarScore} =
+              ( exists $rTr->{pp2varScore} ) ? $rTr->{pp2varScore} : "";
+            $trInfo{AAPolarityRef} = "";
+            $trInfo{AAPolarityVar} = "";
 
-	    $crawler_need->{trInfo}->{$trAcc} = {%trInfo};
-	}
+            if ( exists $rTr->{polar} ) {
+                my @pol = split( /=>/, $rTr->{polar} );
+                if ( 2 == @pol ) {
+                    $trInfo{AAPolarityRef} = $pol[0];
+                    $trInfo{AAPolarityVar} = $pol[1];
+                }
+            }
+
+            $crawler_need->{trInfo}->{$trAcc} = {%trInfo};
+        }
     }
     return $crawler_need;
 }
