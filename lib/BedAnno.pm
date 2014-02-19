@@ -2101,7 +2101,7 @@ sub finaliseAnno {
 =head2 decide_major
 
     About   : In finalise step, decide a major transcript to report for a var.
-    Usage   : my $majorTranscriptVarName = $annoEnt->decide_major();
+    Usage   : my $majorTranscriptVarName = decide_major($annoEnt);
     Returns : A string in the following format:
               If the transcript has a pName: 
                   mrnaAcc(geneSymbol): cName (pName), 
