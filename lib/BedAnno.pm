@@ -4546,7 +4546,7 @@ sub reformatAnno {
 	  FunctionImpact ImpactIndex FunctionImpactSO 
 	  cHGVS pHGVS CodonChange 
 	  AAPolarityRef AAPolarityVar 
-	  SIFTpred SIFTscore 
+	  SIFTpred SIFTscore
 	  Polyphen2HumDivPred Polyphen2HumDivScore 
 	  Polyphen2VarPred Polyphen2VarScore);
 
@@ -4556,6 +4556,7 @@ sub reformatAnno {
 	$crawler_need->{trInfo}->{""}->{GenePart} = "intergenic_region";
 	$crawler_need->{trInfo}->{""}->{GenePartSO} = "SO:0000605";
 	$crawler_need->{trInfo}->{""}->{GenePartIndex} = 13;
+	$crawler_need->{trInfo}->{""}->{TranscriptVarName} = $crawler_need->{var}->{VarName};
     }
     else {
         foreach my $trAcc ( sort keys %{ $anno->{trInfo} } ) {
@@ -4565,6 +4566,8 @@ sub reformatAnno {
               @$rTr{qw(geneId geneSym strd)};
             $trInfo{ProteinAccession} =
               ( exists $rTr->{prot} ) ? $rTr->{prot} : "";
+            $trInfo{TranscriptVarName} =
+              ( exists $rTr->{trVarName} ) ? $rTr->{trVarName} : "";
             $trInfo{TranscriptBegin} =
               ( exists $rTr->{rnaBegin} ) ? $rTr->{rnaBegin} : "";
             $trInfo{TranscriptEnd} =
