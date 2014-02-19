@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.40';
+our $VERSION = '0.41';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.40
+=head2 VERSION v0.41
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -41,10 +41,10 @@ information is needed, then extra dependencies will be required.
 
 =cut
 
-our (
-    %C3,      %C1,    %SO2Name, %func2SO,  %Name2Index,
-    %Name2SO, %Polar, %C1toC3,  %AAnumber,
-    $AAcount,
+our ( %C3, %C1, %SO2Name, %func2SO,  %Name2SO, 
+      %Polar,   %C1toC3,  %AAnumber, $AAcount, 
+      %varTypeName2Index, %genepartName2Index, 
+      %funcName2Index,
 );
 
 %C3 = (
@@ -194,25 +194,53 @@ $AAcount = scalar keys %C1toC3;
     "abnormal-inseq-stop" => "abnormal-inseq-stop",
 );
 
-%Name2Index = (
-    stop_gained                  => 18,
-    frameshift_variant           => 17,
-    transcript_ablation          => 16,
-    initiator_codon_variant      => 15,
-    "unknown-likely-deleterious" => 14,
-    inframe_insertion            => 13,
-    inframe_deletion             => 12,
-    inframe_delins               => 11,
-    missense_variant             => 10,
-    stop_lost                    => 9,
-    stop_retained_variant        => 8,
-    synonymous_variant           => 7,
-    "no-change"                  => 6,
-    unknown                      => 5,
-    "unknown-no-call"            => 4,
-    "abnormal-intron"            => 3,
-    "abnormal-inseq-stop"        => 2,
-    "annotation-fail"            => 1,
+%varTypeName2Index = (
+    # varType
+    snv                          => 1,
+    ins                          => 2,
+    del                          => 3,
+    delins                       => 4,
+    'no-call'                    => 5,
+    'ref'                        => 6,
+);
+
+%genepartName2Index = (
+    # genepart
+    CDS                          => 1,
+    span                         => 2,
+    five_prime_cis_splice_site   => 3,
+    three_prime_cis_splice_site  => 4,
+    five_prime_UTR               => 5,
+    three_prime_UTR              => 6,
+    ncRNA                        => 7,
+    promoter                     => 8,
+    five_prime_UTR_intron        => 9,
+    three_prime_UTR_intron       => 10,
+    interior_intron              => 11,
+    abnormal_intron              => 12,
+    intergenic                   => 13,
+    'annotation-fail'            => 14,
+);
+
+%funcName2Index = (
+    stop_gained                  => 1,
+    frameshift_variant           => 2,
+    transcript_ablation          => 3,
+    initiator_codon_variant      => 4,
+    "unknown-likely-deleterious" => 5,
+    inframe_insertion            => 6,
+    inframe_deletion             => 7,
+    inframe_delins               => 8,
+    missense_variant             => 9,
+    stop_lost                    => 10,
+    stop_retained_variant        => 11,
+    synonymous_variant           => 12,
+    "no-change"                  => 13,
+    unknown                      => 14,
+    "unknown-no-call"            => 15,
+    "abnormal-intron"            => 16,
+    "abnormal-inseq-stop"        => 17,
+    "annotation-fail"            => 18,
 );
 
 %Name2SO = reverse(%SO2Name);
@@ -1564,6 +1592,7 @@ sub anno {
                 },
                 trInfo => {
                     $tid => {
+			trVarName     => $transcriptVariantName,
                         geneId        => $Entrez_Gene_ID,
                         geneSym       => $Gene_Symbol,
                         prot          => $Protein_Acc_Ver,
@@ -1587,7 +1616,7 @@ sub anno {
                         ei_End        => $imp_End_exIntr_number,
                         genepart      => $GenePart,
                         genepartSO    => $GenePartSO,
-                        genepartIndex => $GenePartIndex,
+                        componentIndex => $componentIndex,
                         exonIndex     => $exonIndex,               # '.' for N/A
                         intronIndex   => $intronIndex,             # '.' for N/A
                         funcSOname    => $FunctionImpact,
@@ -1848,15 +1877,15 @@ sub finaliseAnno {
                   if ( !exists $trAnnoEnt->{exin} );
 
                 if ( $trAnnoEnt->{exin} =~ /^EX(\d+)/ ) {
-                    $trAnnoEnt->{genepartIndex} = $1;
+                    $trAnnoEnt->{componentIndex} = $1;
                     $trAnnoEnt->{exonIndex}     = $1;
                 }
                 elsif ( $trAnnoEnt->{exin} =~ /^IVS(\d+)/ ) {
-                    $trAnnoEnt->{genepartIndex} = $1;
+                    $trAnnoEnt->{componentIndex} = $1;
                     $trAnnoEnt->{intronIndex}   = $1;
                 }
                 else {
-                    $trAnnoEnt->{genepartIndex} = 0;
+                    $trAnnoEnt->{componentIndex} = 0;
                 }
             }
             elsif ($trAnnoEnt->{rnaBegin} =~ /^\+/
@@ -1873,9 +1902,9 @@ sub finaliseAnno {
                   ? $trAnnoEnt->{r_Begin} . '-' . $trAnnoEnt->{r_End}
                   : $trAnnoEnt->{r_End} . '-' . $trAnnoEnt->{r_Begin};
                 $trAnnoEnt->{exin}          = $trAnnoEnt->{ei_Begin};
-                $trAnnoEnt->{genepartIndex} = $1
+                $trAnnoEnt->{componentIndex} = $1
                   if ( $trAnnoEnt->{ei_Begin} =~ /(\d+)/ );
-                $trAnnoEnt->{intronIndex} = $trAnnoEnt->{genepartIndex};
+                $trAnnoEnt->{intronIndex} = $trAnnoEnt->{componentIndex};
             }
             else {    # non-equal exon intron number or UTR/CDS span
                 $genepartSO = 'span';
@@ -1885,9 +1914,9 @@ sub finaliseAnno {
                   : $trAnnoEnt->{r_End} . '-' . $trAnnoEnt->{r_Begin};
                 if ( $trAnnoEnt->{ei_Begin} eq $trAnnoEnt->{ei_End} ) {
                     $trAnnoEnt->{exin}          = $trAnnoEnt->{ei_Begin};
-                    $trAnnoEnt->{genepartIndex} = $1
+                    $trAnnoEnt->{componentIndex} = $1
                       if ( $trAnnoEnt->{ei_Begin} =~ /EX(\d+)/ );
-                    $trAnnoEnt->{exonIndex} = $trAnnoEnt->{genepartIndex};
+                    $trAnnoEnt->{exonIndex} = $trAnnoEnt->{componentIndex};
                 }
                 else {    # for same index exon intron give this index
                     $trAnnoEnt->{exin} =
@@ -1896,7 +1925,7 @@ sub finaliseAnno {
                       : $trAnnoEnt->{ei_End} . '-' . $trAnnoEnt->{ei_Begin};
 
                     if ( $trAnnoEnt->{exin} =~ /(\d+)\D+(\d+)/ and $1 eq $2 ) {
-                        $trAnnoEnt->{genepartIndex} = $1;
+                        $trAnnoEnt->{componentIndex} = $1;
                     }
                 }
             }
@@ -1906,8 +1935,8 @@ sub finaliseAnno {
 
 	    $trAnnoEnt->{genepart} = $SO2Name{$genepartSO};
 	    $trAnnoEnt->{genepartSO} = ( $genepartSO =~ /^SO:/ ) ? $genepartSO : "";
-	    $trAnnoEnt->{genepartIndex} = '.'
-	      if ( !exists $trAnnoEnt->{genepartIndex} );
+	    $trAnnoEnt->{componentIndex} = '.'
+	      if ( !exists $trAnnoEnt->{componentIndex} );
 	    $trAnnoEnt->{exonIndex} = '.' if ( !exists $trAnnoEnt->{exonIndex} );
 	    $trAnnoEnt->{intronIndex} = '.'
 	      if ( !exists $trAnnoEnt->{intronIndex} );
@@ -2059,10 +2088,121 @@ sub finaliseAnno {
 		    $trAnnoEnt->{dbnsfp} = $ret_hash;
 		}
             }
+
+	    $trAnnoEnt->{trVarName} = _getTrVarName($tid, $trAnnoEnt);
 	}
     }
 
+    $annoEnt->{var}->{varName} = decide_major($annoEnt);
+
     return $annoEnt;
+}
+
+=head2 decide_major
+
+    About   : In finalise step, decide a major transcript to report for a var.
+    Usage   : my $majorTranscriptVarName = $annoEnt->decide_major();
+    Returns : A string in the following format:
+              If the transcript has a pName: 
+                  mrnaAcc(geneSymbol): cName (pName), 
+                  e.g. NM_145651.2(SCGB1C1): c.13C>T (p.R5C)
+              If the transcript does not have a pName: 
+                  mrnaAcc(geneSymbol): cName
+              If only intergenic
+                  chr: gName (intergenic)
+                  e.g. chrX: g.220025A>T (intergenic)
+    Note    : use the primaryTag to find reference standard or primary transcript,
+              if only one have the primaryTag "Y", then use it,
+              otherwise, sort by GenePart: 
+                1.  CDS
+                2.  span
+                3.  five_prime_cis_splice_site
+                4.  three_prime_cis_splice_site
+                5.  ncRNA
+                6.  five_prime_UTR
+                7.  three_prime_UTR
+                8.  interior_intron
+                9.  five_prime_UTR_intron
+                10. three_prime_UTR_intron
+                11. abnormal-intron
+                12. promoter
+                13. annotation-fail
+                14. intergenic_region
+              and choose the first one, if more than one transcript have the 
+              same reference standard and same GenePart, then choose the first
+              one which prior in name sorting.
+
+=cut
+sub decide_major {
+    my $annoEnt = shift;
+    if (   !exists $annoEnt->{trInfo}
+        or 0 == scalar keys %{ $annoEnt->{trInfo} }
+        or exists $annoEnt->{trInfo}->{""} )
+    {
+        my $intergenic =
+          $annoEnt->{var}->{chr} . ": " . $annoEnt->{var}->{gHGVS};
+        $intergenic = "chr" . $intergenic if ( $intergenic =~ /^[\dXYM]/ );
+        $intergenic .= " (intergenic)";    # for only intergenic
+        return $intergenic;
+    }
+    else {
+	my %prTrs = ();
+	my %nonPrTrs = ();
+	foreach my $tid (keys %{$annoEnt->{trInfo}}) {
+	    if ( !exists $annoEnt->{trInfo}->{$tid}->{genepart} ) {
+		confess "Error: cannot decide major transcript before finaliseAnno";
+	    }
+	    if ( $annoEnt->{trInfo}->{$tid}->{primaryTag} eq "Y" ) {
+		$prTrs{$tid} = $annoEnt->{trInfo}->{$tid}->{genepart};
+	    }
+	    else {
+		$nonPrTrs{$tid} = $annoEnt->{trInfo}->{$tid}->{genepart};
+	    }
+	}
+
+	my $majorTr;
+	if ( 0 < keys %prTrs ) { # hit primary transcripts
+	    if ( 1 == keys %prTrs ) {
+		my ($majorTid) = keys %prTrs;
+		$majorTr = $majorTid;
+	    }
+	    else {
+		$majorTr = get_first_tr(\%prTrs);
+	    }
+	}
+	else { # hit only non-primary transcripts
+	    $majorTr = get_first_tr(\%nonPrTrs);
+	}
+
+        my $rTrEnt = $annoEnt->{trInfo}->{$majorTr};
+	return $annoEnt->{trInfo}->{$majorTr}->{trVarName};
+    }
+}
+
+sub get_first_tr {
+    my $rGeneParts_hash = shift;
+    my @ordered_Trs = sort {
+        $GenePartsOrder{ $rGeneParts_hash->{$a} }
+          <=> $GenePartsOrder{ $rGeneParts_hash->{$b} }
+          or $a cmp $b
+    } keys %$rGeneParts_hash;
+
+    return $ordered_Trs[0];
+}
+
+sub _getTrVarName {
+    my ($trID, $rTrEnt) = @_;
+    my $trhit;
+    if ( $rTrEnt->{func} eq 'annotation-fail' ) {
+	$trhit = $trID . "(" . $rTrEnt->{geneSym} . "): annotation-fail";
+    }
+    else {
+	$trhit  = $trID . "(" . $rTrEnt->{geneSym} . "): " . $rTrEnt->{c};
+    }
+
+    $trhit .= " (" . $rTrEnt->{p} . ")"
+      if ( exists $rTrEnt->{p} and $rTrEnt->{p} ne "" );
+    return $trhit;
 }
 
 =head2 getTrChange
@@ -4287,108 +4427,6 @@ sub TO_JSON {
     return { %{ shift() } };
 }
 
-=head2 decide_major
-
-    About   : In finalise step, decide a major transcript to report for a var.
-    Usage   : my $majorTranscriptVarName = $annoEnt->decide_major();
-    Returns : A string in the following format:
-              If the transcript has a pName: 
-                  mrnaAcc(geneSymbol): cName (pName), 
-                  e.g. NM_145651.2(SCGB1C1): c.13C>T (p.R5C)
-              If the transcript does not have a pName: 
-                  mrnaAcc(geneSymbol): cName
-              If only intergenic
-                  chr: gName (intergenic)
-                  e.g. chrX: g.220025A>T (intergenic)
-    Note    : use the primaryTag to find reference standard or primary transcript,
-              if only one have the primaryTag "Y", then use it,
-              otherwise, sort by GenePart: 
-                1.  CDS
-                2.  span
-                3.  five_prime_cis_splice_site
-                4.  three_prime_cis_splice_site
-                5.  ncRNA
-                6.  five_prime_UTR
-                7.  three_prime_UTR
-                8.  interior_intron
-                9.  five_prime_UTR_intron
-                10. three_prime_UTR_intron
-                11. abnormal-intron
-                12. promoter
-                13. annotation-fail
-                14. intergenic_region
-              and choose the first one, if more than one transcript have the 
-              same reference standard and same GenePart, then choose the first
-              one which prior in name sorting.
-
-=cut
-sub decide_major {
-    my $annoEnt = shift;
-    if (   !exists $annoEnt->{trInfo}
-        or 0 == scalar keys %{ $annoEnt->{trInfo} }
-        or exists $annoEnt->{trInfo}->{""} )
-    {
-        my $intergenic =
-          $annoEnt->{var}->{chr} . ": " . $annoEnt->{var}->{gHGVS};
-        $intergenic = "chr" . $intergenic if ( $intergenic =~ /^[\dXYM]/ );
-        $intergenic .= " (intergenic)";    # for only intergenic
-        return $intergenic;
-    }
-    else {
-	my %prTrs = ();
-	my %nonPrTrs = ();
-	foreach my $tid (keys %{$annoEnt->{trInfo}}) {
-	    if ( !exists $annoEnt->{trInfo}->{$tid}->{genepart} ) {
-		confess "Error: cannot decide major transcript before finaliseAnno";
-	    }
-	    if ( $annoEnt->{trInfo}->{$tid}->{primaryTag} eq "Y" ) {
-		$prTrs{$tid} = $annoEnt->{trInfo}->{$tid}->{genepart};
-	    }
-	    else {
-		$nonPrTrs{$tid} = $annoEnt->{trInfo}->{$tid}->{genepart};
-	    }
-	}
-
-	my $majorTr;
-	if ( 0 < keys %prTrs ) { # hit primary transcripts
-	    if ( 1 == keys %prTrs ) {
-		my ($majorTid) = keys %prTrs;
-		$majorTr = $majorTid;
-	    }
-	    else {
-		$majorTr = get_first_tr(\%prTrs);
-	    }
-	}
-	else { # hit only non-primary transcripts
-	    $majorTr = get_first_tr(\%nonPrTrs);
-	}
-
-        my $rTrEnt = $annoEnt->{trInfo}->{$majorTr};
-	my $trhit;
-	if ( $rTrEnt->{func} eq 'annotation-fail' ) {
-	    $trhit = $majorTr . "(" . $rTrEnt->{geneSym} . "): annotation-fail";
-	}
-	else {
-	    $trhit  = $majorTr . "(" . $rTrEnt->{geneSym} . "): " . $rTrEnt->{c};
-	}
-
-        $trhit .= " (" . $rTrEnt->{p} . ")"
-          if ( exists $rTrEnt->{p} and $rTrEnt->{p} ne "" );
-	return $trhit;
-    }
-}
-
-sub get_first_tr {
-    my $rGeneParts_hash = shift;
-    my @ordered_Trs = sort {
-        $GenePartsOrder{ $rGeneParts_hash->{$a} }
-          <=> $GenePartsOrder{ $rGeneParts_hash->{$b} }
-          or $a cmp $b
-    } keys %$rGeneParts_hash;
-
-    return $ordered_Trs[0];
-}
-
 =head2 reformatAnno
 
     About   : reformat the BedAnno::Anno entry to fit the need of crawler
@@ -4417,7 +4455,7 @@ sub get_first_tr {
               phyloPpr -> PhyloPscorePrimates
               phyloPve -> PhyloPscoreVetebrates
               gHGVS -> gHGVS
-              TranscriptVarName => $anno->decide_major();
+              varName -> VarName
 
               trInfo group:
               geneId -> GeneID
@@ -4432,11 +4470,12 @@ sub get_first_tr {
               pfamName -> PFAM_NAME
               genepart -> GenePart
               genepartSO -> GenePartSO
-              genepartIndex -> GenePartIndex
+	      Indexofgenepart -> GenePartIndex
+              componentIndex -> ComponentIndex
               exonIndex -> ExonNumber
               intronIndex -> IntronNumer
               funcSOname -> FunctionImpact
-              ImpactIndex -> IndexofFuncSOname
+              IndexofFuncSOname -> ImpactIndex
               funcSO -> FunctionImpactSO
               c -> cHGVS
               p -> pHGVS
@@ -4462,10 +4501,16 @@ sub reformatAnno {
             referenceSequence => $var->{ref},
             variantSequence   => $var->{alt},
             varType           => $var->{guess},
-            varTypeSO         => ($var->{varTypeSO} =~ /SO:/) ? $var->{varTypeSO} : "",
+            varTypeIndex      => ((exists $varTypeName2Index{ $var->{guess} })
+				    ? $varTypeName2Index{ $var->{guess} }
+				    : "" ),
+            varTypeSO         => (( $var->{varTypeSO} =~ /SO:/ ) 
+				    ? $var->{varTypeSO}
+				    : ""),
             gHGVS             => $var->{gHGVS},
-	    TranscriptVarName => $anno->decide_major(),
-            cytoband => ( ( exists $var->{cytoBand} ) ? $var->{cytoBand} : "" ),
+            VarName           => $var->{varName},
+            cytoband          => ( ( exists $var->{cytoBand} ) 
+				    ? $var->{cytoBand} : "" ),
             dbsnpIds => (
                 ( exists $var->{dbsnp} )
                 ? join( ";", sort keys %{ $var->{dbsnp} } )
@@ -4497,7 +4542,7 @@ sub reformatAnno {
 	  TranscriptOrientation TranscriptBegin TranscriptEnd 
 	  ProteinBegin ProteinEnd 
 	  PFAM_ID PFAM_NAME 
-	  GenePartIndex ExonNumber IntronNumer 
+	  ComponentIndex ExonNumber IntronNumer 
 	  FunctionImpact ImpactIndex FunctionImpactSO 
 	  cHGVS pHGVS CodonChange 
 	  AAPolarityRef AAPolarityVar 
@@ -4510,6 +4555,7 @@ sub reformatAnno {
 	$crawler_need->{trInfo}->{""} = {%empty_tr};
 	$crawler_need->{trInfo}->{""}->{GenePart} = "intergenic_region";
 	$crawler_need->{trInfo}->{""}->{GenePartSO} = "SO:0000605";
+	$crawler_need->{trInfo}->{""}->{GenePartIndex} = 13;
     }
     else {
         foreach my $trAcc ( sort keys %{ $anno->{trInfo} } ) {
@@ -4626,12 +4672,16 @@ sub reformatAnno {
               ( exists $rTr->{pfamName} ) ? $rTr->{pfamName} : "";
             $trInfo{GenePart} =
               ( exists $rTr->{genepart} ) ? $rTr->{genepart} : "";
+	    $trInfo{GenePartIndex} = 
+	      ( exists $genepartName2Index{ $rTr->{genepart} } )
+	      ? $genepartName2Index{ $rTr->{genepart} }
+	      : "";
             $trInfo{GenePartSO} =
               ( exists $rTr->{genepartSO} and $rTr->{genepartSO} =~ /SO:/ )
               ? $rTr->{genepartSO}
               : "";
-            $trInfo{GenePartIndex} =
-              ( exists $rTr->{genepartIndex} ) ? $rTr->{genepartIndex} : "";
+            $trInfo{ComponentIndex} =
+              ( exists $rTr->{componentIndex} ) ? $rTr->{componentIndex} : "";
             $trInfo{ExonNumber} =
               ( exists $rTr->{exonIndex} ) ? $rTr->{exonIndex} : "";
             $trInfo{IntronNumber} =
@@ -4639,8 +4689,8 @@ sub reformatAnno {
             $trInfo{FunctionImpact} =
               ( exists $rTr->{funcSOname} ) ? $rTr->{funcSOname} : "";
             $trInfo{ImpactIndex} =
-              ( exists $Name2Index{ $rTr->{funcSOname} } )
-              ? $Name2Index{ $rTr->{funcSOname} }
+              ( exists $funcName2Index{ $rTr->{funcSOname} } )
+              ? $funcName2Index{ $rTr->{funcSOname} }
               : "";
             $trInfo{FunctionImpactSO} =
               ( exists $rTr->{funcSO} and $rTr->{funcSO} =~ /SO:/ )

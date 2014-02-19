@@ -469,7 +469,7 @@ my $snv_varanno = bless(
                 'geneId'        => '653635',
                 'geneSym'       => 'WASH7P',
                 'genepart'      => 'ncRNA',
-                'genepartIndex' => '11',
+                'componentIndex' => '11',
                 'genepartSO'    => 'SO:0000655',
                 'intronIndex'   => '.',
                 'postEnd'       => {
@@ -540,7 +540,7 @@ my $ins_varanno = bless(
                 'geneId'        => '653635',
                 'geneSym'       => 'WASH7P',
                 'genepart'      => 'ncRNA',
-                'genepartIndex' => '11',
+                'componentIndex' => '11',
                 'genepartSO'    => 'SO:0000655',
                 'intronIndex'   => '.',
                 'postEnd'       => {
@@ -611,7 +611,7 @@ my $del_varanno = bless(
                 'geneId'        => '653635',
                 'geneSym'       => 'WASH7P',
                 'genepart'      => 'ncRNA',
-                'genepartIndex' => '11',
+                'componentIndex' => '11',
                 'genepartSO'    => 'SO:0000655',
                 'intronIndex'   => '.',
                 'postEnd'       => {
@@ -682,7 +682,7 @@ my $rep_varanno = bless(
                 'geneId'        => '653635',
                 'geneSym'       => 'WASH7P',
                 'genepart'      => 'ncRNA',
-                'genepartIndex' => '11',
+                'componentIndex' => '11',
                 'genepartSO'    => 'SO:0000655',
                 'intronIndex'   => '.',
                 'postEnd'       => {
@@ -776,7 +776,7 @@ my $delins_varanno = bless(
                 'geneId'        => '653635',
                 'geneSym'       => 'WASH7P',
                 'genepart'      => 'ncRNA',
-                'genepartIndex' => '11',
+                'componentIndex' => '11',
                 'genepartSO'    => 'SO:0000655',
                 'intronIndex'   => '.',
                 'postEnd'       => {
@@ -847,7 +847,7 @@ my $subs_varanno = bless(
                 'geneId'        => '653635',
                 'geneSym'       => 'WASH7P',
                 'genepart'      => 'ncRNA',
-                'genepartIndex' => '11',
+                'componentIndex' => '11',
                 'genepartSO'    => 'SO:0000655',
                 'intronIndex'   => '.',
                 'postEnd'       => {
@@ -919,7 +919,7 @@ my $no_call_varanno = bless(
                 'geneId'        => '653635',
                 'geneSym'       => 'WASH7P',
                 'genepart'      => 'ncRNA',
-                'genepartIndex' => '11',
+                'componentIndex' => '11',
                 'genepartSO'    => 'SO:0000655',
                 'intronIndex'   => '.',
                 'postEnd'       => {
@@ -979,7 +979,7 @@ my $no_call_edge_varanno = bless(
                 'r'             => 'PROM',
                 'protBegin'     => '',
                 'cdsBegin'      => '',
-                'genepartIndex' => 0,
+                'componentIndex' => 0,
                 'ei_End'        => '.',
                 'trRef'         => '=',
                 'protEnd'       => '',
@@ -1051,7 +1051,7 @@ my $cds_rna_snv1_anno = {
     'geneId'        => '2876',
     'geneSym'       => 'GPX1',
     'genepart'      => 'CDS',
-    'genepartIndex' => '1',
+    'componentIndex' => '1',
     'genepartSO'    => 'SO:0000316',
     'intronIndex'   => '.',
     'p'             => 'p.0?',
@@ -1101,7 +1101,7 @@ my $cds_rna_snv2_anno = {
     'geneId'        => '2876',
     'geneSym'       => 'GPX1',
     'genepart'      => 'CDS',
-    'genepartIndex' => '1',
+    'componentIndex' => '1',
     'genepartSO'    => 'SO:0000316',
     'intronIndex'   => '.',
     'p'             => 'p.A3S',
@@ -1154,7 +1154,7 @@ my $cds_rna_delins_anno = bless(
                 'geneId'        => '4747',
                 'geneSym'       => 'NEFL',
                 'genepart'      => 'CDS',
-                'genepartIndex' => '3',
+                'componentIndex' => '3',
                 'genepartSO'    => 'SO:0000316',
                 'intronIndex'   => '.',
                 'p'             => 'p.S472fs*2',
@@ -1227,7 +1227,7 @@ my $cds_no_change_anno = bless(
                 'geneId'        => '4747',
                 'geneSym'       => 'NEFL',
                 'genepart'      => 'CDS',
-                'genepartIndex' => '3',
+                'componentIndex' => '3',
                 'genepartSO'    => 'SO:0000316',
                 'intronIndex'   => '.',
                 'postEnd'       => {
@@ -1299,7 +1299,7 @@ my $cds_snv_anno = bless(
                 'geneId'        => '4747',
                 'geneSym'       => 'NEFL',
                 'genepart'      => 'CDS',
-                'genepartIndex' => '3',
+                'componentIndex' => '3',
                 'genepartSO'    => 'SO:0000316',
                 'intronIndex'   => '.',
                 'p'             => 'p.P471H',
@@ -1373,7 +1373,7 @@ my $cds_del_anno = bless(
                 'geneId'        => '4747',
                 'geneSym'       => 'NEFL',
                 'genepart'      => 'CDS',
-                'genepartIndex' => '3',
+                'componentIndex' => '3',
                 'genepartSO'    => 'SO:0000316',
                 'intronIndex'   => '.',
                 'p'             => 'p.S472fs*78',
@@ -1444,7 +1444,7 @@ my $large_del_anno = {
     'geneId'        => '178',
     'geneSym'       => 'AGL',
     'genepart'      => 'CDS',
-    'genepartIndex' => '4',
+    'componentIndex' => '4',
     'genepartSO'    => 'SO:0000316',
     'intronIndex'   => '.',
     'p'             => 'p.G116_L122del',
@@ -1496,7 +1496,7 @@ my $cds_ins_anno = bless(
                 'geneId'        => '4747',
                 'geneSym'       => 'NEFL',
                 'genepart'      => 'CDS',
-                'genepartIndex' => '3',
+                'componentIndex' => '3',
                 'genepartSO'    => 'SO:0000316',
                 'intronIndex'   => '.',
                 'p'             => 'p.P470[2>3]',
@@ -1569,7 +1569,7 @@ my $cds_rep_anno = bless(
                 'geneId'        => '2876',
                 'geneSym'       => 'GPX1',
                 'genepart'      => 'CDS',
-                'genepartIndex' => '1',
+                'componentIndex' => '1',
                 'genepartSO'    => 'SO:0000316',
                 'intronIndex'   => '.',
                 'p'             => 'p.A7[7>5]',
@@ -1617,7 +1617,7 @@ my $cds_rep_anno = bless(
                 'geneId'        => '2876',
                 'geneSym'       => 'GPX1',
                 'genepart'      => 'CDS',
-                'genepartIndex' => '1',
+                'componentIndex' => '1',
                 'genepartSO'    => 'SO:0000316',
                 'intronIndex'   => '.',
                 'p'             => 'p.A7[7>5]',
@@ -1713,7 +1713,7 @@ my $cds_delins_anno = bless(
                 'geneId'        => '148398',
                 'geneSym'       => 'SAMD11',
                 'genepart'      => 'three_prime_cis_splice_site',
-                'genepartIndex' => '2',
+                'componentIndex' => '2',
                 'genepartSO'    => 'SO:0000164',
                 'intronIndex'   => '2',
                 'postEnd'       => {
@@ -1785,7 +1785,7 @@ my $cds_no_call_anno = bless(
                 'geneId'        => '148398',
                 'geneSym'       => 'SAMD11',
                 'genepart'      => 'five_prime_UTR',
-                'genepartIndex' => '2',
+                'componentIndex' => '2',
                 'genepartSO'    => 'SO:0000204',
                 'intronIndex'   => '.',
                 'postEnd'       => {
@@ -1830,7 +1830,7 @@ my $cds_no_call_anno = bless(
                 'geneId'        => '100130417',
                 'geneSym'       => 'LOC100130417',
                 'genepart'      => 'promoter',
-                'genepartIndex' => 0,
+                'componentIndex' => 0,
                 'genepartSO'    => 'SO:0000167',
                 'intronIndex'   => '.',
                 'postEnd'       => {
@@ -1909,7 +1909,7 @@ my $no_call_edge_ins_trinfo = {
         'nDot' => 88,
         'exin' => 'EX1'
     },
-    'genepartIndex' => '1',
+    'componentIndex' => '1',
     'ei_End'        => 'EX1',
     'trRef'         => '=',
     'protEnd'       => '',
@@ -1955,7 +1955,7 @@ my $promoter_anno = {
         'nDot' => -49,
         'exin' => '.'
     },
-    'genepartIndex' => 0,
+    'componentIndex' => 0,
     'ei_End'        => '.',
     'trRef'         => 'C',
     'protEnd'       => '',
@@ -2011,7 +2011,7 @@ my $left_edge_mismatch_anno = {
         'nDot' => 1515,
         'exin' => 'EX3'
     },
-    'genepartIndex' => '3',
+    'componentIndex' => '3',
     'trRef'         => '',
     'protEnd'       => 544,
     'cdsEnd'        => '1413',
@@ -2053,7 +2053,7 @@ my $span_annotation_fail = {
         'nDot' => '?',
         'exin' => '?'
     },
-    'genepartIndex' => 0,
+    'componentIndex' => 0,
     'ei_End'        => '?',
     'protEnd'       => '',
     'cdsEnd'        => '?',
@@ -2107,7 +2107,7 @@ my $rep_span_cds_utr3 = {
         'nDot' => 907,
         'exin' => 'EX6E'
     },
-    'genepartIndex' => '6',
+    'componentIndex' => '6',
     'trRef'         => 'A',
     'protEnd'       => '',
     'cdsEnd'        => '833',
@@ -2145,7 +2145,7 @@ my $mt_no_call_ncRNA = {
         'nDot' => -1,
         'exin' => '.'
     },
-    'genepartIndex' => '1',
+    'componentIndex' => '1',
     'ei_End'        => 'EX1E',
     'trRef'         => 'G',
     'protEnd'       => '',
@@ -2191,7 +2191,7 @@ my $mt_span_no_call = {
         'nDot' => -8,
         'exin' => '.'
     },
-    'genepartIndex' => '.',
+    'componentIndex' => '.',
     'ei_End'        => 'EX1E',
     'trRef'         => 'CCCCACAGTTTATGTA',
     'protEnd'       => '',
@@ -2249,7 +2249,7 @@ my $mt_altstart = {
         'nDot' => 2,
         'exin' => 'EX1E'
     },
-    'genepartIndex' => '1',
+    'componentIndex' => '1',
     'trRef'         => 'A',
     'protEnd'       => 1,
     'cdsEnd'        => '3',
@@ -2298,7 +2298,7 @@ my $mt_init_loss = {
         'nDot' => -1,
         'exin' => '.'
     },
-    'genepartIndex' => '1',
+    'componentIndex' => '1',
     'trRef'         => 'A',
     'protEnd'       => 1,
     'cdsEnd'        => '1',
@@ -2348,7 +2348,7 @@ my $no_call_altstart = {
         'nDot' => 2,
         'exin' => 'EX1E'
     },
-    'genepartIndex' => '1',
+    'componentIndex' => '1',
     'trRef'         => 'A',
     'protEnd'       => 1,
     'cdsEnd'        => '3',
@@ -2398,7 +2398,7 @@ my $mt_no_call_initloss = {
         'nDot' => -1,
         'exin' => '.'
     },
-    'genepartIndex' => '1',
+    'componentIndex' => '1',
     'trRef'         => 'A',
     'protEnd'       => 1,
     'cdsEnd'        => '1',
@@ -2447,7 +2447,7 @@ my $mt_nonsense = {
         'nDot' => 128,
         'exin' => 'EX1E'
     },
-    'genepartIndex' => '1',
+    'componentIndex' => '1',
     'trRef'         => 'C',
     'protEnd'       => 43,
     'cdsEnd'        => '129',
@@ -2498,7 +2498,7 @@ my $mt_missense = {
         'nDot' => 127,
         'exin' => 'EX1E'
     },
-    'genepartIndex' => '1',
+    'componentIndex' => '1',
     'trRef'         => 'A',
     'protEnd'       => 43,
     'cdsEnd'        => '128',
@@ -2549,7 +2549,7 @@ my $mt_coding_synon = {
         'nDot' => 128,
         'exin' => 'EX1E'
     },
-    'genepartIndex' => '1',
+    'componentIndex' => '1',
     'trRef'         => 'C',
     'protEnd'       => 43,
     'cdsEnd'        => '129',
@@ -2599,7 +2599,7 @@ my $mt_stop_loss = {
         'nDot' => 955,
         'exin' => 'EX1E'
     },
-    'genepartIndex' => '1',
+    'componentIndex' => '1',
     'trRef'         => 'A',
     'protEnd'       => 319,
     'cdsEnd'        => '956',
@@ -2761,6 +2761,9 @@ exit 0;
 sub test_ok {
     my ( $tag, $expect, $tid, @args ) = @_;
     my $ranno = $beda->anno(@args);
+    if (exists $ranno->{trInfo} and exists $ranno->{trInfo}->{$tid} and exists $ranno->{trInfo}->{$tid}->{trVarName}) {
+	delete $ranno->{trInfo}->{$tid}->{trVarName};
+    }
     if (
         !is_deeply( $ranno->{trInfo}->{$tid}, $expect, "for [ $tag ]")
       )
@@ -2780,6 +2783,14 @@ sub test_parse_var {
 sub test_varanno {
     my ( $tag, $expect, $vara )   = @_;
     my ( $vAnno,  $noneed ) = $beda->varanno($vara);
+    if (exists $vAnno->{var} and exists $vAnno->{var}->{varName}) {
+	delete $vAnno->{var}->{varName};
+    }
+    if (exists $vAnno->{trInfo}) {
+	foreach my $tid (keys %{$vAnno->{trInfo}}) {
+	    delete $vAnno->{trInfo}->{$tid}->{trVarName} if (exists $vAnno->{trInfo}->{$tid}->{trVarName});
+	}
+    }
     if ( !is_deeply( $vAnno, $expect, "for [ $tag ]" ) ) {
         explain "The anno infomations are: ", $vAnno;
     }

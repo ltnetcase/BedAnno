@@ -93,3 +93,10 @@
 	- allow remaining extra information in the BedAnno::Var entry by using hash ref input.
 	- fix BedAnno::Var->new for VCF reference variant parsing.
 	- reformatAnno() is changed to give uniform begin/end position
+
+0.41 Wed Feb 19 14:44:44 2014
+	- for crawler need, move TranscriptVarName to VarName
+	- for crawler need, move GenePartIndex to ComponentIndex
+	- for crawler need, add ImpactIndex, GenePartIndex, varTypeIndex
+	- for crawler need, add trVarName for each transcript.
+	- add varName to var hash, add trVarName to trInfo tr hash.

@@ -19,6 +19,7 @@ not ok 15 - for [ snv_varanno ]
 #       'c' => 'n.1721G>T',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => '11',
 #       'ei_Begin' => 'EX11E',
 #       'ei_End' => 'EX11E',
 #       'exin' => 'EX11E',
@@ -29,7 +30,6 @@ not ok 15 - for [ snv_varanno ]
 #       'geneId' => '653635',
 #       'geneSym' => 'WASH7P',
 #       'genepart' => 'ncRNA',
-#       'genepartIndex' => '11',
 #       'genepartSO' => 'SO:0000655',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -104,6 +104,7 @@ not ok 16 - for [ ins_varanno ]
 #       'c' => 'n.1720_1721insTAGCTATTC',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => '11',
 #       'ei_Begin' => 'EX11E',
 #       'ei_End' => 'EX11E',
 #       'exin' => 'EX11E',
@@ -114,7 +115,6 @@ not ok 16 - for [ ins_varanno ]
 #       'geneId' => '653635',
 #       'geneSym' => 'WASH7P',
 #       'genepart' => 'ncRNA',
-#       'genepartIndex' => '11',
 #       'genepartSO' => 'SO:0000655',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -186,6 +186,7 @@ not ok 17 - for [ del_varanno ]
 #       'c' => 'n.1715_1721del',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => '11',
 #       'ei_Begin' => 'EX11E',
 #       'ei_End' => 'EX11E',
 #       'exin' => 'EX11E',
@@ -196,7 +197,6 @@ not ok 17 - for [ del_varanno ]
 #       'geneId' => '653635',
 #       'geneSym' => 'WASH7P',
 #       'genepart' => 'ncRNA',
-#       'genepartIndex' => '11',
 #       'genepartSO' => 'SO:0000655',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -268,6 +268,7 @@ not ok 18 - for [ rep_varanno ]
 #       'c' => 'n.1718_1719delinsCTACTACTACT',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => '11',
 #       'ei_Begin' => 'EX11E',
 #       'ei_End' => 'EX11E',
 #       'exin' => 'EX11E',
@@ -278,7 +279,6 @@ not ok 18 - for [ rep_varanno ]
 #       'geneId' => '653635',
 #       'geneSym' => 'WASH7P',
 #       'genepart' => 'ncRNA',
-#       'genepartIndex' => '11',
 #       'genepartSO' => 'SO:0000655',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -373,6 +373,7 @@ not ok 19 - for [ delins_varanno ]
 #       'c' => 'n.1717_1721delinsAC',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => '11',
 #       'ei_Begin' => 'EX11E',
 #       'ei_End' => 'EX11E',
 #       'exin' => 'EX11E',
@@ -383,7 +384,6 @@ not ok 19 - for [ delins_varanno ]
 #       'geneId' => '653635',
 #       'geneSym' => 'WASH7P',
 #       'genepart' => 'ncRNA',
-#       'genepartIndex' => '11',
 #       'genepartSO' => 'SO:0000655',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -455,6 +455,7 @@ not ok 20 - for [ subs_varanno ]
 #       'c' => 'n.1717_1721delinsACACA',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => '11',
 #       'ei_Begin' => 'EX11E',
 #       'ei_End' => 'EX11E',
 #       'exin' => 'EX11E',
@@ -465,7 +466,6 @@ not ok 20 - for [ subs_varanno ]
 #       'geneId' => '653635',
 #       'geneSym' => 'WASH7P',
 #       'genepart' => 'ncRNA',
-#       'genepartIndex' => '11',
 #       'genepartSO' => 'SO:0000655',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -542,6 +542,7 @@ not ok 21 - for [ no_call_varanno ]
 #       'c' => 'n.1720_1721ins?',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => '11',
 #       'ei_Begin' => 'EX11E',
 #       'ei_End' => 'EX11E',
 #       'exin' => 'EX11E',
@@ -552,7 +553,6 @@ not ok 21 - for [ no_call_varanno ]
 #       'geneId' => '653635',
 #       'geneSym' => 'WASH7P',
 #       'genepart' => 'ncRNA',
-#       'genepartIndex' => '11',
 #       'genepartSO' => 'SO:0000655',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -623,6 +623,7 @@ not ok 22 - for [ cds_rna_delins_anno ]
 #       'c' => 'c.1412_1413insT',
 #       'cdsBegin' => '1413',
 #       'cdsEnd' => '1413',
+#       'componentIndex' => '3',
 #       'ei_Begin' => 'EX3',
 #       'ei_End' => 'EX3',
 #       'exin' => 'EX3',
@@ -633,7 +634,6 @@ not ok 22 - for [ cds_rna_delins_anno ]
 #       'geneId' => '4747',
 #       'geneSym' => 'NEFL',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '3',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.S472fs*2',
@@ -713,6 +713,7 @@ not ok 23 - for [ cds_no_change_anno ]
 #       'c' => 'c.=',
 #       'cdsBegin' => '1414',
 #       'cdsEnd' => '1413',
+#       'componentIndex' => '3',
 #       'ei_Begin' => 'EX3',
 #       'ei_End' => 'EX3',
 #       'exin' => 'EX3',
@@ -723,7 +724,6 @@ not ok 23 - for [ cds_no_change_anno ]
 #       'geneId' => '4747',
 #       'geneSym' => 'NEFL',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '3',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -810,6 +810,7 @@ not ok 24 - for [ cds_snv_anno ]
 #       'cc' => 'CCC=>CAC',
 #       'cdsBegin' => '1412',
 #       'cdsEnd' => '1412',
+#       'componentIndex' => '3',
 #       'ei_Begin' => 'EX3',
 #       'ei_End' => 'EX3',
 #       'exin' => 'EX3',
@@ -820,7 +821,6 @@ not ok 24 - for [ cds_snv_anno ]
 #       'geneId' => '4747',
 #       'geneSym' => 'NEFL',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '3',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.P471H',
@@ -901,6 +901,7 @@ not ok 25 - for [ cds_del_anno ]
 #       'c' => 'c.1408C[6>5]',
 #       'cdsBegin' => '1412',
 #       'cdsEnd' => '1412',
+#       'componentIndex' => '3',
 #       'ei_Begin' => 'EX3',
 #       'ei_End' => 'EX3',
 #       'exin' => 'EX3',
@@ -911,7 +912,6 @@ not ok 25 - for [ cds_del_anno ]
 #       'geneId' => '4747',
 #       'geneSym' => 'NEFL',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '3',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.S472fs*78',
@@ -991,6 +991,7 @@ not ok 26 - for [ cds_ins_anno ]
 #       'c' => 'c.1408C[6>9]',
 #       'cdsBegin' => '1412',
 #       'cdsEnd' => '1411',
+#       'componentIndex' => '3',
 #       'ei_Begin' => 'EX3',
 #       'ei_End' => 'EX3',
 #       'exin' => 'EX3',
@@ -1001,7 +1002,6 @@ not ok 26 - for [ cds_ins_anno ]
 #       'geneId' => '4747',
 #       'geneSym' => 'NEFL',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '3',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.P470[2>3]',
@@ -1078,6 +1078,7 @@ not ok 27 - for [ cds_rep_anno ]
 #       'c' => 'c.21GGC[6>4]',
 #       'cdsBegin' => '21',
 #       'cdsEnd' => '38',
+#       'componentIndex' => '1',
 #       'ei_Begin' => 'EX1',
 #       'ei_End' => 'EX1',
 #       'exin' => 'EX1',
@@ -1088,7 +1089,6 @@ not ok 27 - for [ cds_rep_anno ]
 #       'geneId' => '2876',
 #       'geneSym' => 'GPX1',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '1',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.A7[7>5]',
@@ -1128,6 +1128,7 @@ not ok 27 - for [ cds_rep_anno ]
 #       'c' => 'c.21GGC[6>4]',
 #       'cdsBegin' => '21',
 #       'cdsEnd' => '38',
+#       'componentIndex' => '1',
 #       'ei_Begin' => 'EX1E',
 #       'ei_End' => 'EX1E',
 #       'exin' => 'EX1E',
@@ -1138,7 +1139,6 @@ not ok 27 - for [ cds_rep_anno ]
 #       'geneId' => '2876',
 #       'geneSym' => 'GPX1',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '1',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.A7[7>5]',
@@ -1238,6 +1238,7 @@ not ok 28 - for [ cds_delins_anno ]
 #       'c' => 'c.73-2_73-1delinsTC',
 #       'cdsBegin' => '73-2',
 #       'cdsEnd' => '73-1',
+#       'componentIndex' => '2',
 #       'ei_Begin' => 'IVS2',
 #       'ei_End' => 'IVS2',
 #       'exin' => 'IVS2',
@@ -1248,7 +1249,6 @@ not ok 28 - for [ cds_delins_anno ]
 #       'geneId' => '148398',
 #       'geneSym' => 'SAMD11',
 #       'genepart' => 'three_prime_cis_splice_site',
-#       'genepartIndex' => '2',
 #       'genepartSO' => 'SO:0000164',
 #       'intronIndex' => '2',
 #       'postEnd' => {
@@ -1327,6 +1327,7 @@ not ok 29 - for [ cds_no_call_anno ]
 #       'c' => 'c.-2T>N',
 #       'cdsBegin' => '-2',
 #       'cdsEnd' => '-2',
+#       'componentIndex' => '2',
 #       'ei_Begin' => 'EX2',
 #       'ei_End' => 'EX2',
 #       'exin' => 'EX2',
@@ -1337,7 +1338,6 @@ not ok 29 - for [ cds_no_call_anno ]
 #       'geneId' => '148398',
 #       'geneSym' => 'SAMD11',
 #       'genepart' => 'five_prime_UTR',
-#       'genepartIndex' => '2',
 #       'genepartSO' => 'SO:0000204',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -1372,6 +1372,7 @@ not ok 29 - for [ cds_no_call_anno ]
 #       'c' => 'n.-6503A>N',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -1382,7 +1383,6 @@ not ok 29 - for [ cds_no_call_anno ]
 #       'geneId' => '100130417',
 #       'geneSym' => 'LOC100130417',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -1460,6 +1460,7 @@ not ok 30 - for [ no_call_edge_varanno ]
 #       'c' => 'n.-11873_-1874delins?',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -1470,7 +1471,6 @@ not ok 30 - for [ no_call_edge_varanno ]
 #       'geneId' => '100287102',
 #       'geneSym' => 'DDX11L1',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -1539,6 +1539,7 @@ not ok 32 - for [ cds_rna_snv1_anno ]
 #       'c' => 'c.3G>A',
 #       'cdsBegin' => '3',
 #       'cdsEnd' => '3',
+#       'componentIndex' => '1',
 #       'dbnsfp' => {
 #         'MA_pred' => '.',
 #         'MT_pred' => 'D',
@@ -1577,7 +1578,6 @@ not ok 32 - for [ cds_rna_snv1_anno ]
 #       'geneId' => '2876',
 #       'geneSym' => 'GPX1',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '1',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.0?',
@@ -1623,6 +1623,7 @@ not ok 32 - for [ cds_rna_snv1_anno ]
 #       'c' => 'c.3G>A',
 #       'cdsBegin' => '3',
 #       'cdsEnd' => '3',
+#       'componentIndex' => '1',
 #       'dbnsfp' => {
 #         'MA_pred' => '.',
 #         'MT_pred' => 'D',
@@ -1661,7 +1662,6 @@ not ok 32 - for [ cds_rna_snv1_anno ]
 #       'geneId' => '2876',
 #       'geneSym' => 'GPX1',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '1',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.0?',
@@ -1701,7 +1701,8 @@ not ok 32 - for [ cds_rna_snv1_anno ]
 #       'trRef' => 'G',
 #       'trRefComp' => {
 #         'EX1E' => 1
-#       }
+#       },
+#       'trVarName' => 'NM_201397.1(GPX1): c.3G>A (p.0?)'
 #     }
 #   },
 #   'var' => bless( {
@@ -1737,6 +1738,7 @@ not ok 32 - for [ cds_rna_snv1_anno ]
 #       'AF' => 0,
 #       'AN' => 0
 #     },
+#     'varName' => 'NM_000581.2(GPX1): c.3G>A (p.0?)',
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -1748,6 +1750,7 @@ not ok 33 - for [ cds_rna_snv2_anno ]
 #       'cc' => 'GCT=>TCT',
 #       'cdsBegin' => '7',
 #       'cdsEnd' => '7',
+#       'componentIndex' => '1',
 #       'dbnsfp' => {
 #         'MA_pred' => 'P',
 #         'MT_pred' => 'P',
@@ -1786,7 +1789,6 @@ not ok 33 - for [ cds_rna_snv2_anno ]
 #       'geneId' => '2876',
 #       'geneSym' => 'GPX1',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '1',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.A3S',
@@ -1834,6 +1836,7 @@ not ok 33 - for [ cds_rna_snv2_anno ]
 #       'cc' => 'GCT=>TCT',
 #       'cdsBegin' => '7',
 #       'cdsEnd' => '7',
+#       'componentIndex' => '1',
 #       'dbnsfp' => {
 #         'MA_pred' => 'P',
 #         'MT_pred' => 'P',
@@ -1872,7 +1875,6 @@ not ok 33 - for [ cds_rna_snv2_anno ]
 #       'geneId' => '2876',
 #       'geneSym' => 'GPX1',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '1',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.A3S',
@@ -1913,7 +1915,8 @@ not ok 33 - for [ cds_rna_snv2_anno ]
 #       'trRef' => 'G',
 #       'trRefComp' => {
 #         'EX1E' => 1
-#       }
+#       },
+#       'trVarName' => 'NM_201397.1(GPX1): c.7G>T (p.A3S)'
 #     }
 #   },
 #   'var' => bless( {
@@ -1949,6 +1952,7 @@ not ok 33 - for [ cds_rna_snv2_anno ]
 #       'AF' => 0,
 #       'AN' => 0
 #     },
+#     'varName' => 'NM_000581.2(GPX1): c.7G>T (p.A3S)',
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -1959,6 +1963,7 @@ not ok 34 - for [ large_del_anno ]
 #       'c' => 'c.345_365del',
 #       'cdsBegin' => '345',
 #       'cdsEnd' => '365',
+#       'componentIndex' => '4',
 #       'ei_Begin' => 'EX4',
 #       'ei_End' => 'EX4',
 #       'exin' => 'EX4',
@@ -1969,7 +1974,6 @@ not ok 34 - for [ large_del_anno ]
 #       'geneId' => '178',
 #       'geneSym' => 'AGL',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '4',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.G116_L122del',
@@ -2003,12 +2007,14 @@ not ok 34 - for [ large_del_anno ]
 #       'trRef' => 'TGGTGCTGATAATCATGTGCT',
 #       'trRefComp' => {
 #         'EX4' => 21
-#       }
+#       },
+#       'trVarName' => 'NM_000028.2(AGL): c.345_365del (p.G116_L122del)'
 #     },
 #     'NM_000642.2' => {
 #       'c' => 'c.345_365del',
 #       'cdsBegin' => '345',
 #       'cdsEnd' => '365',
+#       'componentIndex' => '4',
 #       'ei_Begin' => 'EX4',
 #       'ei_End' => 'EX4',
 #       'exin' => 'EX4',
@@ -2019,7 +2025,6 @@ not ok 34 - for [ large_del_anno ]
 #       'geneId' => '178',
 #       'geneSym' => 'AGL',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '4',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.G116_L122del',
@@ -2059,6 +2064,7 @@ not ok 34 - for [ large_del_anno ]
 #       'c' => 'c.345_365del',
 #       'cdsBegin' => '345',
 #       'cdsEnd' => '365',
+#       'componentIndex' => '4',
 #       'ei_Begin' => 'EX4',
 #       'ei_End' => 'EX4',
 #       'exin' => 'EX4',
@@ -2069,7 +2075,6 @@ not ok 34 - for [ large_del_anno ]
 #       'geneId' => '178',
 #       'geneSym' => 'AGL',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '4',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.G116_L122del',
@@ -2103,12 +2108,14 @@ not ok 34 - for [ large_del_anno ]
 #       'trRef' => 'TGGTGCTGATAATCATGTGCT',
 #       'trRefComp' => {
 #         'EX4' => 21
-#       }
+#       },
+#       'trVarName' => 'NM_000643.2(AGL): c.345_365del (p.G116_L122del)'
 #     },
 #     'NM_000644.2' => {
 #       'c' => 'c.345_365del',
 #       'cdsBegin' => '345',
 #       'cdsEnd' => '365',
+#       'componentIndex' => '4',
 #       'ei_Begin' => 'EX4',
 #       'ei_End' => 'EX4',
 #       'exin' => 'EX4',
@@ -2119,7 +2126,6 @@ not ok 34 - for [ large_del_anno ]
 #       'geneId' => '178',
 #       'geneSym' => 'AGL',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '4',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.G116_L122del',
@@ -2153,12 +2159,14 @@ not ok 34 - for [ large_del_anno ]
 #       'trRef' => 'TGGTGCTGATAATCATGTGCT',
 #       'trRefComp' => {
 #         'EX4' => 21
-#       }
+#       },
+#       'trVarName' => 'NM_000644.2(AGL): c.345_365del (p.G116_L122del)'
 #     },
 #     'NM_000645.2' => {
 #       'c' => 'c.294_314del',
 #       'cdsBegin' => '294',
 #       'cdsEnd' => '314',
+#       'componentIndex' => '2',
 #       'ei_Begin' => 'EX2',
 #       'ei_End' => 'EX2',
 #       'exin' => 'EX2',
@@ -2169,7 +2177,6 @@ not ok 34 - for [ large_del_anno ]
 #       'geneId' => '178',
 #       'geneSym' => 'AGL',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '2',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.G99_L105del',
@@ -2203,12 +2210,14 @@ not ok 34 - for [ large_del_anno ]
 #       'trRef' => 'TGGTGCTGATAATCATGTGCT',
 #       'trRefComp' => {
 #         'EX2' => 21
-#       }
+#       },
+#       'trVarName' => 'NM_000645.2(AGL): c.294_314del (p.G99_L105del)'
 #     },
 #     'NM_000646.2' => {
 #       'c' => 'c.297_317del',
 #       'cdsBegin' => '297',
 #       'cdsEnd' => '317',
+#       'componentIndex' => '4',
 #       'ei_Begin' => 'EX4',
 #       'ei_End' => 'EX4',
 #       'exin' => 'EX4',
@@ -2219,7 +2228,6 @@ not ok 34 - for [ large_del_anno ]
 #       'geneId' => '178',
 #       'geneSym' => 'AGL',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '4',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.G100_L106del',
@@ -2253,7 +2261,8 @@ not ok 34 - for [ large_del_anno ]
 #       'trRef' => 'TGGTGCTGATAATCATGTGCT',
 #       'trRefComp' => {
 #         'EX4' => 21
-#       }
+#       },
+#       'trVarName' => 'NM_000646.2(AGL): c.297_317del (p.G100_L106del)'
 #     }
 #   },
 #   'var' => bless( {
@@ -2286,6 +2295,7 @@ not ok 34 - for [ large_del_anno ]
 #       'AF' => 0,
 #       'AN' => 0
 #     },
+#     'varName' => 'NM_000642.2(AGL): c.345_365del (p.G116_L122del)',
 #     'varTypeSO' => 'SO:0000159'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -2297,6 +2307,7 @@ not ok 36 - for [ left_edge_mismatch_anno ]
 #       'c' => 'c.1413CT[2>3]',
 #       'cdsBegin' => '1414',
 #       'cdsEnd' => '1413',
+#       'componentIndex' => '3',
 #       'ei_Begin' => 'EX3',
 #       'ei_End' => 'EX3',
 #       'exin' => 'EX3',
@@ -2307,7 +2318,6 @@ not ok 36 - for [ left_edge_mismatch_anno ]
 #       'geneId' => '4747',
 #       'geneSym' => 'NEFL',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '3',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.E473fs*78',
@@ -2374,6 +2384,7 @@ not ok 36 - for [ left_edge_mismatch_anno ]
 #       'AF' => 0,
 #       'AN' => 0
 #     },
+#     'varName' => 'NM_006158.3(NEFL): c.1413CT[2>3] (p.E473fs*78)',
 #     'varTypeSO' => 'SO:0000667'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -2389,6 +2400,7 @@ not ok 42 - for [ MT_altstart ]
 #       'c' => 'c.1-u5218A>T',
 #       'cdsBegin' => '1-u5218',
 #       'cdsEnd' => '1-u5218',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -2399,7 +2411,6 @@ not ok 42 - for [ MT_altstart ]
 #       'geneId' => '4508',
 #       'geneSym' => 'MT-ATP6',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -2431,12 +2442,14 @@ not ok 42 - for [ MT_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ATP6(MT-ATP6): c.1-u5218A>T'
 #     },
 #     'NM_MT-ATP8' => {
 #       'c' => 'c.1-u5057A>T',
 #       'cdsBegin' => '1-u5057',
 #       'cdsEnd' => '1-u5057',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -2447,7 +2460,6 @@ not ok 42 - for [ MT_altstart ]
 #       'geneId' => '4509',
 #       'geneSym' => 'MT-ATP8',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -2479,12 +2491,14 @@ not ok 42 - for [ MT_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ATP8(MT-ATP8): c.1-u5057A>T'
 #     },
 #     'NM_MT-COX1' => {
 #       'c' => 'c.1-u2595A>T',
 #       'cdsBegin' => '1-u2595',
 #       'cdsEnd' => '1-u2595',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -2495,7 +2509,6 @@ not ok 42 - for [ MT_altstart ]
 #       'geneId' => '4512',
 #       'geneSym' => 'MT-COX1',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -2527,12 +2540,14 @@ not ok 42 - for [ MT_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-COX1(MT-COX1): c.1-u2595A>T'
 #     },
 #     'NM_MT-COX2' => {
 #       'c' => 'c.1-u4277A>T',
 #       'cdsBegin' => '1-u4277',
 #       'cdsEnd' => '1-u4277',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -2543,7 +2558,6 @@ not ok 42 - for [ MT_altstart ]
 #       'geneId' => '4513',
 #       'geneSym' => 'MT-COX2',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -2575,12 +2589,14 @@ not ok 42 - for [ MT_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-COX2(MT-COX2): c.1-u4277A>T'
 #     },
 #     'NM_MT-COX3' => {
 #       'c' => 'c.1-u5898A>T',
 #       'cdsBegin' => '1-u5898',
 #       'cdsEnd' => '1-u5898',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -2591,7 +2607,6 @@ not ok 42 - for [ MT_altstart ]
 #       'geneId' => '4514',
 #       'geneSym' => 'MT-COX3',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -2623,13 +2638,15 @@ not ok 42 - for [ MT_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-COX3(MT-COX3): c.1-u5898A>T'
 #     },
 #     'NM_MT-ND1' => {
 #       'c' => 'c.3A>T',
 #       'cc' => 'ATA=>ATT',
 #       'cdsBegin' => '3',
 #       'cdsEnd' => '3',
+#       'componentIndex' => '1',
 #       'ei_Begin' => 'EX1E',
 #       'ei_End' => 'EX1E',
 #       'exin' => 'EX1E',
@@ -2640,7 +2657,6 @@ not ok 42 - for [ MT_altstart ]
 #       'geneId' => '4535',
 #       'geneSym' => 'MT-ND1',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '1',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.=',
@@ -2680,6 +2696,7 @@ not ok 42 - for [ MT_altstart ]
 #       'c' => 'c.1-u1161A>T',
 #       'cdsBegin' => '1-u1161',
 #       'cdsEnd' => '1-u1161',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -2690,7 +2707,6 @@ not ok 42 - for [ MT_altstart ]
 #       'geneId' => '4536',
 #       'geneSym' => 'MT-ND2',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -2722,12 +2738,14 @@ not ok 42 - for [ MT_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND2(MT-ND2): c.1-u1161A>T'
 #     },
 #     'NM_MT-ND3' => {
 #       'c' => 'c.1-u6750A>T',
 #       'cdsBegin' => '1-u6750',
 #       'cdsEnd' => '1-u6750',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -2738,7 +2756,6 @@ not ok 42 - for [ MT_altstart ]
 #       'geneId' => '4537',
 #       'geneSym' => 'MT-ND3',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -2770,12 +2787,14 @@ not ok 42 - for [ MT_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND3(MT-ND3): c.1-u6750A>T'
 #     },
 #     'NM_MT-ND4' => {
 #       'c' => 'c.1-u7451A>T',
 #       'cdsBegin' => '1-u7451',
 #       'cdsEnd' => '1-u7451',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -2786,7 +2805,6 @@ not ok 42 - for [ MT_altstart ]
 #       'geneId' => '4538',
 #       'geneSym' => 'MT-ND4',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -2818,12 +2836,14 @@ not ok 42 - for [ MT_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND4(MT-ND4): c.1-u7451A>T'
 #     },
 #     'NM_MT-ND4L' => {
 #       'c' => 'c.1-u7161A>T',
 #       'cdsBegin' => '1-u7161',
 #       'cdsEnd' => '1-u7161',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -2834,7 +2854,6 @@ not ok 42 - for [ MT_altstart ]
 #       'geneId' => '4539',
 #       'geneSym' => 'MT-ND4L',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -2866,12 +2885,14 @@ not ok 42 - for [ MT_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND4L(MT-ND4L): c.1-u7161A>T'
 #     },
 #     'NR_MT-TRND' => {
 #       'c' => 'n.-4209A>T',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -2882,7 +2903,6 @@ not ok 42 - for [ MT_altstart ]
 #       'geneId' => '4555',
 #       'geneSym' => 'MT-TRND',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -2914,12 +2934,14 @@ not ok 42 - for [ MT_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRND(MT-TRND): n.-4209A>T'
 #     },
 #     'NR_MT-TRNG' => {
 #       'c' => 'n.-6682A>T',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -2930,7 +2952,6 @@ not ok 42 - for [ MT_altstart ]
 #       'geneId' => '4563',
 #       'geneSym' => 'MT-TRNG',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -2962,12 +2983,14 @@ not ok 42 - for [ MT_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNG(MT-TRNG): n.-6682A>T'
 #     },
 #     'NR_MT-TRNI' => {
 #       'c' => 'n.-954A>T',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -2978,7 +3001,6 @@ not ok 42 - for [ MT_altstart ]
 #       'geneId' => '4565',
 #       'geneSym' => 'MT-TRNI',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -3010,12 +3032,14 @@ not ok 42 - for [ MT_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNI(MT-TRNI): n.-954A>T'
 #     },
 #     'NR_MT-TRNK' => {
 #       'c' => 'n.-4986A>T',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -3026,7 +3050,6 @@ not ok 42 - for [ MT_altstart ]
 #       'geneId' => '4566',
 #       'geneSym' => 'MT-TRNK',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -3058,12 +3081,14 @@ not ok 42 - for [ MT_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNK(MT-TRNK): n.-4986A>T'
 #     },
 #     'NR_MT-TRNM' => {
 #       'c' => 'n.-1093A>T',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -3074,7 +3099,6 @@ not ok 42 - for [ MT_altstart ]
 #       'geneId' => '4569',
 #       'geneSym' => 'MT-TRNM',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -3106,12 +3130,14 @@ not ok 42 - for [ MT_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNM(MT-TRNM): n.-1093A>T'
 #     },
 #     'NR_MT-TRNR' => {
 #       'c' => 'n.-7096A>T',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -3122,7 +3148,6 @@ not ok 42 - for [ MT_altstart ]
 #       'geneId' => '4573',
 #       'geneSym' => 'MT-TRNR',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -3154,12 +3179,14 @@ not ok 42 - for [ MT_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNR(MT-TRNR): n.-7096A>T'
 #     },
 #     'NR_MT-TRNW' => {
 #       'c' => 'n.-2203A>T',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -3170,7 +3197,6 @@ not ok 42 - for [ MT_altstart ]
 #       'geneId' => '4578',
 #       'geneSym' => 'MT-TRNW',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -3202,7 +3228,8 @@ not ok 42 - for [ MT_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNW(MT-TRNW): n.-2203A>T'
 #     }
 #   },
 #   'var' => bless( {
@@ -3238,6 +3265,7 @@ not ok 42 - for [ MT_altstart ]
 #       'AF' => 0,
 #       'AN' => 0
 #     },
+#     'varName' => 'NM_MT-ND1(MT-ND1): c.3A>T (p.=)',
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -3248,6 +3276,7 @@ not ok 43 - for [ Mt_init_loss ]
 #       'c' => 'c.1-u5220A>C',
 #       'cdsBegin' => '1-u5220',
 #       'cdsEnd' => '1-u5220',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -3258,7 +3287,6 @@ not ok 43 - for [ Mt_init_loss ]
 #       'geneId' => '4508',
 #       'geneSym' => 'MT-ATP6',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -3290,12 +3318,14 @@ not ok 43 - for [ Mt_init_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ATP6(MT-ATP6): c.1-u5220A>C'
 #     },
 #     'NM_MT-ATP8' => {
 #       'c' => 'c.1-u5059A>C',
 #       'cdsBegin' => '1-u5059',
 #       'cdsEnd' => '1-u5059',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -3306,7 +3336,6 @@ not ok 43 - for [ Mt_init_loss ]
 #       'geneId' => '4509',
 #       'geneSym' => 'MT-ATP8',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -3338,12 +3367,14 @@ not ok 43 - for [ Mt_init_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ATP8(MT-ATP8): c.1-u5059A>C'
 #     },
 #     'NM_MT-COX1' => {
 #       'c' => 'c.1-u2597A>C',
 #       'cdsBegin' => '1-u2597',
 #       'cdsEnd' => '1-u2597',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -3354,7 +3385,6 @@ not ok 43 - for [ Mt_init_loss ]
 #       'geneId' => '4512',
 #       'geneSym' => 'MT-COX1',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -3386,12 +3416,14 @@ not ok 43 - for [ Mt_init_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-COX1(MT-COX1): c.1-u2597A>C'
 #     },
 #     'NM_MT-COX2' => {
 #       'c' => 'c.1-u4279A>C',
 #       'cdsBegin' => '1-u4279',
 #       'cdsEnd' => '1-u4279',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -3402,7 +3434,6 @@ not ok 43 - for [ Mt_init_loss ]
 #       'geneId' => '4513',
 #       'geneSym' => 'MT-COX2',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -3434,12 +3465,14 @@ not ok 43 - for [ Mt_init_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-COX2(MT-COX2): c.1-u4279A>C'
 #     },
 #     'NM_MT-COX3' => {
 #       'c' => 'c.1-u5900A>C',
 #       'cdsBegin' => '1-u5900',
 #       'cdsEnd' => '1-u5900',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -3450,7 +3483,6 @@ not ok 43 - for [ Mt_init_loss ]
 #       'geneId' => '4514',
 #       'geneSym' => 'MT-COX3',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -3482,12 +3514,14 @@ not ok 43 - for [ Mt_init_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-COX3(MT-COX3): c.1-u5900A>C'
 #     },
 #     'NM_MT-ND1' => {
 #       'c' => 'c.1A>C',
 #       'cdsBegin' => '1',
 #       'cdsEnd' => '1',
+#       'componentIndex' => '1',
 #       'condelPred' => 'deleterious',
 #       'condelScore' => '0.720',
 #       'ei_Begin' => 'EX1E',
@@ -3500,7 +3534,6 @@ not ok 43 - for [ Mt_init_loss ]
 #       'geneId' => '4535',
 #       'geneSym' => 'MT-ND1',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '1',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.0?',
@@ -3546,6 +3579,7 @@ not ok 43 - for [ Mt_init_loss ]
 #       'c' => 'c.1-u1163A>C',
 #       'cdsBegin' => '1-u1163',
 #       'cdsEnd' => '1-u1163',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -3556,7 +3590,6 @@ not ok 43 - for [ Mt_init_loss ]
 #       'geneId' => '4536',
 #       'geneSym' => 'MT-ND2',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -3588,12 +3621,14 @@ not ok 43 - for [ Mt_init_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND2(MT-ND2): c.1-u1163A>C'
 #     },
 #     'NM_MT-ND3' => {
 #       'c' => 'c.1-u6752A>C',
 #       'cdsBegin' => '1-u6752',
 #       'cdsEnd' => '1-u6752',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -3604,7 +3639,6 @@ not ok 43 - for [ Mt_init_loss ]
 #       'geneId' => '4537',
 #       'geneSym' => 'MT-ND3',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -3636,12 +3670,14 @@ not ok 43 - for [ Mt_init_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND3(MT-ND3): c.1-u6752A>C'
 #     },
 #     'NM_MT-ND4' => {
 #       'c' => 'c.1-u7453A>C',
 #       'cdsBegin' => '1-u7453',
 #       'cdsEnd' => '1-u7453',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -3652,7 +3688,6 @@ not ok 43 - for [ Mt_init_loss ]
 #       'geneId' => '4538',
 #       'geneSym' => 'MT-ND4',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -3684,12 +3719,14 @@ not ok 43 - for [ Mt_init_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND4(MT-ND4): c.1-u7453A>C'
 #     },
 #     'NM_MT-ND4L' => {
 #       'c' => 'c.1-u7163A>C',
 #       'cdsBegin' => '1-u7163',
 #       'cdsEnd' => '1-u7163',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -3700,7 +3737,6 @@ not ok 43 - for [ Mt_init_loss ]
 #       'geneId' => '4539',
 #       'geneSym' => 'MT-ND4L',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -3732,12 +3768,14 @@ not ok 43 - for [ Mt_init_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND4L(MT-ND4L): c.1-u7163A>C'
 #     },
 #     'NR_MT-TRND' => {
 #       'c' => 'n.-4211A>C',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -3748,7 +3786,6 @@ not ok 43 - for [ Mt_init_loss ]
 #       'geneId' => '4555',
 #       'geneSym' => 'MT-TRND',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -3780,12 +3817,14 @@ not ok 43 - for [ Mt_init_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRND(MT-TRND): n.-4211A>C'
 #     },
 #     'NR_MT-TRNG' => {
 #       'c' => 'n.-6684A>C',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -3796,7 +3835,6 @@ not ok 43 - for [ Mt_init_loss ]
 #       'geneId' => '4563',
 #       'geneSym' => 'MT-TRNG',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -3828,12 +3866,14 @@ not ok 43 - for [ Mt_init_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNG(MT-TRNG): n.-6684A>C'
 #     },
 #     'NR_MT-TRNI' => {
 #       'c' => 'n.-956A>C',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -3844,7 +3884,6 @@ not ok 43 - for [ Mt_init_loss ]
 #       'geneId' => '4565',
 #       'geneSym' => 'MT-TRNI',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -3876,12 +3915,14 @@ not ok 43 - for [ Mt_init_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNI(MT-TRNI): n.-956A>C'
 #     },
 #     'NR_MT-TRNK' => {
 #       'c' => 'n.-4988A>C',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -3892,7 +3933,6 @@ not ok 43 - for [ Mt_init_loss ]
 #       'geneId' => '4566',
 #       'geneSym' => 'MT-TRNK',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -3924,12 +3964,14 @@ not ok 43 - for [ Mt_init_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNK(MT-TRNK): n.-4988A>C'
 #     },
 #     'NR_MT-TRNM' => {
 #       'c' => 'n.-1095A>C',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -3940,7 +3982,6 @@ not ok 43 - for [ Mt_init_loss ]
 #       'geneId' => '4569',
 #       'geneSym' => 'MT-TRNM',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -3972,12 +4013,14 @@ not ok 43 - for [ Mt_init_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNM(MT-TRNM): n.-1095A>C'
 #     },
 #     'NR_MT-TRNR' => {
 #       'c' => 'n.-7098A>C',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -3988,7 +4031,6 @@ not ok 43 - for [ Mt_init_loss ]
 #       'geneId' => '4573',
 #       'geneSym' => 'MT-TRNR',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -4020,12 +4062,14 @@ not ok 43 - for [ Mt_init_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNR(MT-TRNR): n.-7098A>C'
 #     },
 #     'NR_MT-TRNW' => {
 #       'c' => 'n.-2205A>C',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -4036,7 +4080,6 @@ not ok 43 - for [ Mt_init_loss ]
 #       'geneId' => '4578',
 #       'geneSym' => 'MT-TRNW',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -4068,7 +4111,8 @@ not ok 43 - for [ Mt_init_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNW(MT-TRNW): n.-2205A>C'
 #     }
 #   },
 #   'var' => bless( {
@@ -4104,6 +4148,7 @@ not ok 43 - for [ Mt_init_loss ]
 #       'AF' => 0,
 #       'AN' => 0
 #     },
+#     'varName' => 'NM_MT-ND1(MT-ND1): c.1A>C (p.0?)',
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -4114,6 +4159,7 @@ not ok 44 - for [ No_call_altstart ]
 #       'c' => 'c.1-u5218A>N',
 #       'cdsBegin' => '1-u5218',
 #       'cdsEnd' => '1-u5218',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -4124,7 +4170,6 @@ not ok 44 - for [ No_call_altstart ]
 #       'geneId' => '4508',
 #       'geneSym' => 'MT-ATP6',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -4156,12 +4201,14 @@ not ok 44 - for [ No_call_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ATP6(MT-ATP6): c.1-u5218A>N'
 #     },
 #     'NM_MT-ATP8' => {
 #       'c' => 'c.1-u5057A>N',
 #       'cdsBegin' => '1-u5057',
 #       'cdsEnd' => '1-u5057',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -4172,7 +4219,6 @@ not ok 44 - for [ No_call_altstart ]
 #       'geneId' => '4509',
 #       'geneSym' => 'MT-ATP8',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -4204,12 +4250,14 @@ not ok 44 - for [ No_call_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ATP8(MT-ATP8): c.1-u5057A>N'
 #     },
 #     'NM_MT-COX1' => {
 #       'c' => 'c.1-u2595A>N',
 #       'cdsBegin' => '1-u2595',
 #       'cdsEnd' => '1-u2595',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -4220,7 +4268,6 @@ not ok 44 - for [ No_call_altstart ]
 #       'geneId' => '4512',
 #       'geneSym' => 'MT-COX1',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -4252,12 +4299,14 @@ not ok 44 - for [ No_call_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-COX1(MT-COX1): c.1-u2595A>N'
 #     },
 #     'NM_MT-COX2' => {
 #       'c' => 'c.1-u4277A>N',
 #       'cdsBegin' => '1-u4277',
 #       'cdsEnd' => '1-u4277',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -4268,7 +4317,6 @@ not ok 44 - for [ No_call_altstart ]
 #       'geneId' => '4513',
 #       'geneSym' => 'MT-COX2',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -4300,12 +4348,14 @@ not ok 44 - for [ No_call_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-COX2(MT-COX2): c.1-u4277A>N'
 #     },
 #     'NM_MT-COX3' => {
 #       'c' => 'c.1-u5898A>N',
 #       'cdsBegin' => '1-u5898',
 #       'cdsEnd' => '1-u5898',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -4316,7 +4366,6 @@ not ok 44 - for [ No_call_altstart ]
 #       'geneId' => '4514',
 #       'geneSym' => 'MT-COX3',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -4348,13 +4397,15 @@ not ok 44 - for [ No_call_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-COX3(MT-COX3): c.1-u5898A>N'
 #     },
 #     'NM_MT-ND1' => {
 #       'c' => 'c.3A>N',
 #       'cc' => 'ATA=>ATN',
 #       'cdsBegin' => '3',
 #       'cdsEnd' => '3',
+#       'componentIndex' => '1',
 #       'ei_Begin' => 'EX1E',
 #       'ei_End' => 'EX1E',
 #       'exin' => 'EX1E',
@@ -4365,7 +4416,6 @@ not ok 44 - for [ No_call_altstart ]
 #       'geneId' => '4535',
 #       'geneSym' => 'MT-ND1',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '1',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.=',
@@ -4405,6 +4455,7 @@ not ok 44 - for [ No_call_altstart ]
 #       'c' => 'c.1-u1161A>N',
 #       'cdsBegin' => '1-u1161',
 #       'cdsEnd' => '1-u1161',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -4415,7 +4466,6 @@ not ok 44 - for [ No_call_altstart ]
 #       'geneId' => '4536',
 #       'geneSym' => 'MT-ND2',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -4447,12 +4497,14 @@ not ok 44 - for [ No_call_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND2(MT-ND2): c.1-u1161A>N'
 #     },
 #     'NM_MT-ND3' => {
 #       'c' => 'c.1-u6750A>N',
 #       'cdsBegin' => '1-u6750',
 #       'cdsEnd' => '1-u6750',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -4463,7 +4515,6 @@ not ok 44 - for [ No_call_altstart ]
 #       'geneId' => '4537',
 #       'geneSym' => 'MT-ND3',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -4495,12 +4546,14 @@ not ok 44 - for [ No_call_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND3(MT-ND3): c.1-u6750A>N'
 #     },
 #     'NM_MT-ND4' => {
 #       'c' => 'c.1-u7451A>N',
 #       'cdsBegin' => '1-u7451',
 #       'cdsEnd' => '1-u7451',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -4511,7 +4564,6 @@ not ok 44 - for [ No_call_altstart ]
 #       'geneId' => '4538',
 #       'geneSym' => 'MT-ND4',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -4543,12 +4595,14 @@ not ok 44 - for [ No_call_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND4(MT-ND4): c.1-u7451A>N'
 #     },
 #     'NM_MT-ND4L' => {
 #       'c' => 'c.1-u7161A>N',
 #       'cdsBegin' => '1-u7161',
 #       'cdsEnd' => '1-u7161',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -4559,7 +4613,6 @@ not ok 44 - for [ No_call_altstart ]
 #       'geneId' => '4539',
 #       'geneSym' => 'MT-ND4L',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -4591,12 +4644,14 @@ not ok 44 - for [ No_call_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND4L(MT-ND4L): c.1-u7161A>N'
 #     },
 #     'NR_MT-TRND' => {
 #       'c' => 'n.-4209A>N',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -4607,7 +4662,6 @@ not ok 44 - for [ No_call_altstart ]
 #       'geneId' => '4555',
 #       'geneSym' => 'MT-TRND',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -4639,12 +4693,14 @@ not ok 44 - for [ No_call_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRND(MT-TRND): n.-4209A>N'
 #     },
 #     'NR_MT-TRNG' => {
 #       'c' => 'n.-6682A>N',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -4655,7 +4711,6 @@ not ok 44 - for [ No_call_altstart ]
 #       'geneId' => '4563',
 #       'geneSym' => 'MT-TRNG',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -4687,12 +4742,14 @@ not ok 44 - for [ No_call_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNG(MT-TRNG): n.-6682A>N'
 #     },
 #     'NR_MT-TRNI' => {
 #       'c' => 'n.-954A>N',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -4703,7 +4760,6 @@ not ok 44 - for [ No_call_altstart ]
 #       'geneId' => '4565',
 #       'geneSym' => 'MT-TRNI',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -4735,12 +4791,14 @@ not ok 44 - for [ No_call_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNI(MT-TRNI): n.-954A>N'
 #     },
 #     'NR_MT-TRNK' => {
 #       'c' => 'n.-4986A>N',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -4751,7 +4809,6 @@ not ok 44 - for [ No_call_altstart ]
 #       'geneId' => '4566',
 #       'geneSym' => 'MT-TRNK',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -4783,12 +4840,14 @@ not ok 44 - for [ No_call_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNK(MT-TRNK): n.-4986A>N'
 #     },
 #     'NR_MT-TRNM' => {
 #       'c' => 'n.-1093A>N',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -4799,7 +4858,6 @@ not ok 44 - for [ No_call_altstart ]
 #       'geneId' => '4569',
 #       'geneSym' => 'MT-TRNM',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -4831,12 +4889,14 @@ not ok 44 - for [ No_call_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNM(MT-TRNM): n.-1093A>N'
 #     },
 #     'NR_MT-TRNR' => {
 #       'c' => 'n.-7096A>N',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -4847,7 +4907,6 @@ not ok 44 - for [ No_call_altstart ]
 #       'geneId' => '4573',
 #       'geneSym' => 'MT-TRNR',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -4879,12 +4938,14 @@ not ok 44 - for [ No_call_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNR(MT-TRNR): n.-7096A>N'
 #     },
 #     'NR_MT-TRNW' => {
 #       'c' => 'n.-2203A>N',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -4895,7 +4956,6 @@ not ok 44 - for [ No_call_altstart ]
 #       'geneId' => '4578',
 #       'geneSym' => 'MT-TRNW',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -4927,7 +4987,8 @@ not ok 44 - for [ No_call_altstart ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNW(MT-TRNW): n.-2203A>N'
 #     }
 #   },
 #   'var' => bless( {
@@ -4963,6 +5024,7 @@ not ok 44 - for [ No_call_altstart ]
 #       'AF' => 0,
 #       'AN' => 0
 #     },
+#     'varName' => 'NM_MT-ND1(MT-ND1): c.3A>N (p.=)',
 #     'varTypeSO' => 'no-call'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -4973,6 +5035,7 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #       'c' => 'c.1-u5220A>?',
 #       'cdsBegin' => '1-u5220',
 #       'cdsEnd' => '1-u5220',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -4983,7 +5046,6 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #       'geneId' => '4508',
 #       'geneSym' => 'MT-ATP6',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -5015,12 +5077,14 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ATP6(MT-ATP6): c.1-u5220A>?'
 #     },
 #     'NM_MT-ATP8' => {
 #       'c' => 'c.1-u5059A>?',
 #       'cdsBegin' => '1-u5059',
 #       'cdsEnd' => '1-u5059',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -5031,7 +5095,6 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #       'geneId' => '4509',
 #       'geneSym' => 'MT-ATP8',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -5063,12 +5126,14 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ATP8(MT-ATP8): c.1-u5059A>?'
 #     },
 #     'NM_MT-COX1' => {
 #       'c' => 'c.1-u2597A>?',
 #       'cdsBegin' => '1-u2597',
 #       'cdsEnd' => '1-u2597',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -5079,7 +5144,6 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #       'geneId' => '4512',
 #       'geneSym' => 'MT-COX1',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -5111,12 +5175,14 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-COX1(MT-COX1): c.1-u2597A>?'
 #     },
 #     'NM_MT-COX2' => {
 #       'c' => 'c.1-u4279A>?',
 #       'cdsBegin' => '1-u4279',
 #       'cdsEnd' => '1-u4279',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -5127,7 +5193,6 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #       'geneId' => '4513',
 #       'geneSym' => 'MT-COX2',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -5159,12 +5224,14 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-COX2(MT-COX2): c.1-u4279A>?'
 #     },
 #     'NM_MT-COX3' => {
 #       'c' => 'c.1-u5900A>?',
 #       'cdsBegin' => '1-u5900',
 #       'cdsEnd' => '1-u5900',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -5175,7 +5242,6 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #       'geneId' => '4514',
 #       'geneSym' => 'MT-COX3',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -5207,13 +5273,15 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-COX3(MT-COX3): c.1-u5900A>?'
 #     },
 #     'NM_MT-ND1' => {
 #       'c' => 'c.1A>?',
 #       'cc' => 'ATA=>?',
 #       'cdsBegin' => '1',
 #       'cdsEnd' => '1',
+#       'componentIndex' => '1',
 #       'ei_Begin' => 'EX1E',
 #       'ei_End' => 'EX1E',
 #       'exin' => 'EX1E',
@@ -5224,7 +5292,6 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #       'geneId' => '4535',
 #       'geneSym' => 'MT-ND1',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '1',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.M1?',
@@ -5263,6 +5330,7 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #       'c' => 'c.1-u1163A>?',
 #       'cdsBegin' => '1-u1163',
 #       'cdsEnd' => '1-u1163',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -5273,7 +5341,6 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #       'geneId' => '4536',
 #       'geneSym' => 'MT-ND2',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -5305,12 +5372,14 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND2(MT-ND2): c.1-u1163A>?'
 #     },
 #     'NM_MT-ND3' => {
 #       'c' => 'c.1-u6752A>?',
 #       'cdsBegin' => '1-u6752',
 #       'cdsEnd' => '1-u6752',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -5321,7 +5390,6 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #       'geneId' => '4537',
 #       'geneSym' => 'MT-ND3',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -5353,12 +5421,14 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND3(MT-ND3): c.1-u6752A>?'
 #     },
 #     'NM_MT-ND4' => {
 #       'c' => 'c.1-u7453A>?',
 #       'cdsBegin' => '1-u7453',
 #       'cdsEnd' => '1-u7453',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -5369,7 +5439,6 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #       'geneId' => '4538',
 #       'geneSym' => 'MT-ND4',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -5401,12 +5470,14 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND4(MT-ND4): c.1-u7453A>?'
 #     },
 #     'NM_MT-ND4L' => {
 #       'c' => 'c.1-u7163A>?',
 #       'cdsBegin' => '1-u7163',
 #       'cdsEnd' => '1-u7163',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -5417,7 +5488,6 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #       'geneId' => '4539',
 #       'geneSym' => 'MT-ND4L',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -5449,12 +5519,14 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND4L(MT-ND4L): c.1-u7163A>?'
 #     },
 #     'NR_MT-TRND' => {
 #       'c' => 'n.-4211A>?',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -5465,7 +5537,6 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #       'geneId' => '4555',
 #       'geneSym' => 'MT-TRND',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -5497,12 +5568,14 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRND(MT-TRND): n.-4211A>?'
 #     },
 #     'NR_MT-TRNG' => {
 #       'c' => 'n.-6684A>?',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -5513,7 +5586,6 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #       'geneId' => '4563',
 #       'geneSym' => 'MT-TRNG',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -5545,12 +5617,14 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNG(MT-TRNG): n.-6684A>?'
 #     },
 #     'NR_MT-TRNI' => {
 #       'c' => 'n.-956A>?',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -5561,7 +5635,6 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #       'geneId' => '4565',
 #       'geneSym' => 'MT-TRNI',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -5593,12 +5666,14 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNI(MT-TRNI): n.-956A>?'
 #     },
 #     'NR_MT-TRNK' => {
 #       'c' => 'n.-4988A>?',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -5609,7 +5684,6 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #       'geneId' => '4566',
 #       'geneSym' => 'MT-TRNK',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -5641,12 +5715,14 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNK(MT-TRNK): n.-4988A>?'
 #     },
 #     'NR_MT-TRNM' => {
 #       'c' => 'n.-1095A>?',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -5657,7 +5733,6 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #       'geneId' => '4569',
 #       'geneSym' => 'MT-TRNM',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -5689,12 +5764,14 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNM(MT-TRNM): n.-1095A>?'
 #     },
 #     'NR_MT-TRNR' => {
 #       'c' => 'n.-7098A>?',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -5705,7 +5782,6 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #       'geneId' => '4573',
 #       'geneSym' => 'MT-TRNR',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -5737,12 +5813,14 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNR(MT-TRNR): n.-7098A>?'
 #     },
 #     'NR_MT-TRNW' => {
 #       'c' => 'n.-2205A>?',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -5753,7 +5831,6 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #       'geneId' => '4578',
 #       'geneSym' => 'MT-TRNW',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -5785,7 +5862,8 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNW(MT-TRNW): n.-2205A>?'
 #     }
 #   },
 #   'var' => bless( {
@@ -5820,6 +5898,7 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #       'AF' => 0,
 #       'AN' => 0
 #     },
+#     'varName' => 'NM_MT-ND1(MT-ND1): c.1A>? (p.M1?)',
 #     'varTypeSO' => 'no-call'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -5830,6 +5909,7 @@ not ok 46 - for [ Mt_nonsense ]
 #       'c' => 'c.1-u5092C>A',
 #       'cdsBegin' => '1-u5092',
 #       'cdsEnd' => '1-u5092',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -5840,7 +5920,6 @@ not ok 46 - for [ Mt_nonsense ]
 #       'geneId' => '4508',
 #       'geneSym' => 'MT-ATP6',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -5872,12 +5951,14 @@ not ok 46 - for [ Mt_nonsense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ATP6(MT-ATP6): c.1-u5092C>A'
 #     },
 #     'NM_MT-ATP8' => {
 #       'c' => 'c.1-u4931C>A',
 #       'cdsBegin' => '1-u4931',
 #       'cdsEnd' => '1-u4931',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -5888,7 +5969,6 @@ not ok 46 - for [ Mt_nonsense ]
 #       'geneId' => '4509',
 #       'geneSym' => 'MT-ATP8',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -5920,12 +6000,14 @@ not ok 46 - for [ Mt_nonsense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ATP8(MT-ATP8): c.1-u4931C>A'
 #     },
 #     'NM_MT-COX1' => {
 #       'c' => 'c.1-u2469C>A',
 #       'cdsBegin' => '1-u2469',
 #       'cdsEnd' => '1-u2469',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -5936,7 +6018,6 @@ not ok 46 - for [ Mt_nonsense ]
 #       'geneId' => '4512',
 #       'geneSym' => 'MT-COX1',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -5968,12 +6049,14 @@ not ok 46 - for [ Mt_nonsense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-COX1(MT-COX1): c.1-u2469C>A'
 #     },
 #     'NM_MT-COX2' => {
 #       'c' => 'c.1-u4151C>A',
 #       'cdsBegin' => '1-u4151',
 #       'cdsEnd' => '1-u4151',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -5984,7 +6067,6 @@ not ok 46 - for [ Mt_nonsense ]
 #       'geneId' => '4513',
 #       'geneSym' => 'MT-COX2',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -6016,12 +6098,14 @@ not ok 46 - for [ Mt_nonsense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-COX2(MT-COX2): c.1-u4151C>A'
 #     },
 #     'NM_MT-COX3' => {
 #       'c' => 'c.1-u5772C>A',
 #       'cdsBegin' => '1-u5772',
 #       'cdsEnd' => '1-u5772',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -6032,7 +6116,6 @@ not ok 46 - for [ Mt_nonsense ]
 #       'geneId' => '4514',
 #       'geneSym' => 'MT-COX3',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -6064,13 +6147,15 @@ not ok 46 - for [ Mt_nonsense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-COX3(MT-COX3): c.1-u5772C>A'
 #     },
 #     'NM_MT-ND1' => {
 #       'c' => 'c.129C>A',
 #       'cc' => 'TAC=>TAA',
 #       'cdsBegin' => '129',
 #       'cdsEnd' => '129',
+#       'componentIndex' => '1',
 #       'ei_Begin' => 'EX1E',
 #       'ei_End' => 'EX1E',
 #       'exin' => 'EX1E',
@@ -6081,7 +6166,6 @@ not ok 46 - for [ Mt_nonsense ]
 #       'geneId' => '4535',
 #       'geneSym' => 'MT-ND1',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '1',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.Y43*',
@@ -6122,6 +6206,7 @@ not ok 46 - for [ Mt_nonsense ]
 #       'c' => 'c.1-u1035C>A',
 #       'cdsBegin' => '1-u1035',
 #       'cdsEnd' => '1-u1035',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -6132,7 +6217,6 @@ not ok 46 - for [ Mt_nonsense ]
 #       'geneId' => '4536',
 #       'geneSym' => 'MT-ND2',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -6164,12 +6248,14 @@ not ok 46 - for [ Mt_nonsense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND2(MT-ND2): c.1-u1035C>A'
 #     },
 #     'NM_MT-ND3' => {
 #       'c' => 'c.1-u6624C>A',
 #       'cdsBegin' => '1-u6624',
 #       'cdsEnd' => '1-u6624',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -6180,7 +6266,6 @@ not ok 46 - for [ Mt_nonsense ]
 #       'geneId' => '4537',
 #       'geneSym' => 'MT-ND3',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -6212,12 +6297,14 @@ not ok 46 - for [ Mt_nonsense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND3(MT-ND3): c.1-u6624C>A'
 #     },
 #     'NM_MT-ND4' => {
 #       'c' => 'c.1-u7325C>A',
 #       'cdsBegin' => '1-u7325',
 #       'cdsEnd' => '1-u7325',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -6228,7 +6315,6 @@ not ok 46 - for [ Mt_nonsense ]
 #       'geneId' => '4538',
 #       'geneSym' => 'MT-ND4',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -6260,12 +6346,14 @@ not ok 46 - for [ Mt_nonsense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND4(MT-ND4): c.1-u7325C>A'
 #     },
 #     'NM_MT-ND4L' => {
 #       'c' => 'c.1-u7035C>A',
 #       'cdsBegin' => '1-u7035',
 #       'cdsEnd' => '1-u7035',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -6276,7 +6364,6 @@ not ok 46 - for [ Mt_nonsense ]
 #       'geneId' => '4539',
 #       'geneSym' => 'MT-ND4L',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -6308,12 +6395,14 @@ not ok 46 - for [ Mt_nonsense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND4L(MT-ND4L): c.1-u7035C>A'
 #     },
 #     'NR_MT-TRND' => {
 #       'c' => 'n.-4083C>A',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -6324,7 +6413,6 @@ not ok 46 - for [ Mt_nonsense ]
 #       'geneId' => '4555',
 #       'geneSym' => 'MT-TRND',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -6356,12 +6444,14 @@ not ok 46 - for [ Mt_nonsense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRND(MT-TRND): n.-4083C>A'
 #     },
 #     'NR_MT-TRNG' => {
 #       'c' => 'n.-6556C>A',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -6372,7 +6462,6 @@ not ok 46 - for [ Mt_nonsense ]
 #       'geneId' => '4563',
 #       'geneSym' => 'MT-TRNG',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -6404,12 +6493,14 @@ not ok 46 - for [ Mt_nonsense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNG(MT-TRNG): n.-6556C>A'
 #     },
 #     'NR_MT-TRNI' => {
 #       'c' => 'n.-828C>A',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -6420,7 +6511,6 @@ not ok 46 - for [ Mt_nonsense ]
 #       'geneId' => '4565',
 #       'geneSym' => 'MT-TRNI',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -6452,12 +6542,14 @@ not ok 46 - for [ Mt_nonsense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNI(MT-TRNI): n.-828C>A'
 #     },
 #     'NR_MT-TRNK' => {
 #       'c' => 'n.-4860C>A',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -6468,7 +6560,6 @@ not ok 46 - for [ Mt_nonsense ]
 #       'geneId' => '4566',
 #       'geneSym' => 'MT-TRNK',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -6500,12 +6591,14 @@ not ok 46 - for [ Mt_nonsense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNK(MT-TRNK): n.-4860C>A'
 #     },
 #     'NR_MT-TRNM' => {
 #       'c' => 'n.-967C>A',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -6516,7 +6609,6 @@ not ok 46 - for [ Mt_nonsense ]
 #       'geneId' => '4569',
 #       'geneSym' => 'MT-TRNM',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -6548,12 +6640,14 @@ not ok 46 - for [ Mt_nonsense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNM(MT-TRNM): n.-967C>A'
 #     },
 #     'NR_MT-TRNR' => {
 #       'c' => 'n.-6970C>A',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -6564,7 +6658,6 @@ not ok 46 - for [ Mt_nonsense ]
 #       'geneId' => '4573',
 #       'geneSym' => 'MT-TRNR',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -6596,12 +6689,14 @@ not ok 46 - for [ Mt_nonsense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNR(MT-TRNR): n.-6970C>A'
 #     },
 #     'NR_MT-TRNW' => {
 #       'c' => 'n.-2077C>A',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -6612,7 +6707,6 @@ not ok 46 - for [ Mt_nonsense ]
 #       'geneId' => '4578',
 #       'geneSym' => 'MT-TRNW',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -6644,7 +6738,8 @@ not ok 46 - for [ Mt_nonsense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNW(MT-TRNW): n.-2077C>A'
 #     }
 #   },
 #   'var' => bless( {
@@ -6680,6 +6775,7 @@ not ok 46 - for [ Mt_nonsense ]
 #       'AF' => 0,
 #       'AN' => 0
 #     },
+#     'varName' => 'NM_MT-ND1(MT-ND1): c.129C>A (p.Y43*)',
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -6690,6 +6786,7 @@ not ok 47 - for [ Mt_missense ]
 #       'c' => 'c.1-u5093A>G',
 #       'cdsBegin' => '1-u5093',
 #       'cdsEnd' => '1-u5093',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -6700,7 +6797,6 @@ not ok 47 - for [ Mt_missense ]
 #       'geneId' => '4508',
 #       'geneSym' => 'MT-ATP6',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -6732,12 +6828,14 @@ not ok 47 - for [ Mt_missense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ATP6(MT-ATP6): c.1-u5093A>G'
 #     },
 #     'NM_MT-ATP8' => {
 #       'c' => 'c.1-u4932A>G',
 #       'cdsBegin' => '1-u4932',
 #       'cdsEnd' => '1-u4932',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -6748,7 +6846,6 @@ not ok 47 - for [ Mt_missense ]
 #       'geneId' => '4509',
 #       'geneSym' => 'MT-ATP8',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -6780,12 +6877,14 @@ not ok 47 - for [ Mt_missense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ATP8(MT-ATP8): c.1-u4932A>G'
 #     },
 #     'NM_MT-COX1' => {
 #       'c' => 'c.1-u2470A>G',
 #       'cdsBegin' => '1-u2470',
 #       'cdsEnd' => '1-u2470',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -6796,7 +6895,6 @@ not ok 47 - for [ Mt_missense ]
 #       'geneId' => '4512',
 #       'geneSym' => 'MT-COX1',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -6828,12 +6926,14 @@ not ok 47 - for [ Mt_missense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-COX1(MT-COX1): c.1-u2470A>G'
 #     },
 #     'NM_MT-COX2' => {
 #       'c' => 'c.1-u4152A>G',
 #       'cdsBegin' => '1-u4152',
 #       'cdsEnd' => '1-u4152',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -6844,7 +6944,6 @@ not ok 47 - for [ Mt_missense ]
 #       'geneId' => '4513',
 #       'geneSym' => 'MT-COX2',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -6876,12 +6975,14 @@ not ok 47 - for [ Mt_missense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-COX2(MT-COX2): c.1-u4152A>G'
 #     },
 #     'NM_MT-COX3' => {
 #       'c' => 'c.1-u5773A>G',
 #       'cdsBegin' => '1-u5773',
 #       'cdsEnd' => '1-u5773',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -6892,7 +6993,6 @@ not ok 47 - for [ Mt_missense ]
 #       'geneId' => '4514',
 #       'geneSym' => 'MT-COX3',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -6924,13 +7024,15 @@ not ok 47 - for [ Mt_missense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-COX3(MT-COX3): c.1-u5773A>G'
 #     },
 #     'NM_MT-ND1' => {
 #       'c' => 'c.128A>G',
 #       'cc' => 'TAC=>TGC',
 #       'cdsBegin' => '128',
 #       'cdsEnd' => '128',
+#       'componentIndex' => '1',
 #       'condelPred' => 'neutral',
 #       'condelScore' => '0.384',
 #       'ei_Begin' => 'EX1E',
@@ -6943,7 +7045,6 @@ not ok 47 - for [ Mt_missense ]
 #       'geneId' => '4535',
 #       'geneSym' => 'MT-ND1',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '1',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.Y43C',
@@ -6990,6 +7091,7 @@ not ok 47 - for [ Mt_missense ]
 #       'c' => 'c.1-u1036A>G',
 #       'cdsBegin' => '1-u1036',
 #       'cdsEnd' => '1-u1036',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -7000,7 +7102,6 @@ not ok 47 - for [ Mt_missense ]
 #       'geneId' => '4536',
 #       'geneSym' => 'MT-ND2',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -7032,12 +7133,14 @@ not ok 47 - for [ Mt_missense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND2(MT-ND2): c.1-u1036A>G'
 #     },
 #     'NM_MT-ND3' => {
 #       'c' => 'c.1-u6625A>G',
 #       'cdsBegin' => '1-u6625',
 #       'cdsEnd' => '1-u6625',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -7048,7 +7151,6 @@ not ok 47 - for [ Mt_missense ]
 #       'geneId' => '4537',
 #       'geneSym' => 'MT-ND3',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -7080,12 +7182,14 @@ not ok 47 - for [ Mt_missense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND3(MT-ND3): c.1-u6625A>G'
 #     },
 #     'NM_MT-ND4' => {
 #       'c' => 'c.1-u7326A>G',
 #       'cdsBegin' => '1-u7326',
 #       'cdsEnd' => '1-u7326',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -7096,7 +7200,6 @@ not ok 47 - for [ Mt_missense ]
 #       'geneId' => '4538',
 #       'geneSym' => 'MT-ND4',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -7128,12 +7231,14 @@ not ok 47 - for [ Mt_missense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND4(MT-ND4): c.1-u7326A>G'
 #     },
 #     'NM_MT-ND4L' => {
 #       'c' => 'c.1-u7036A>G',
 #       'cdsBegin' => '1-u7036',
 #       'cdsEnd' => '1-u7036',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -7144,7 +7249,6 @@ not ok 47 - for [ Mt_missense ]
 #       'geneId' => '4539',
 #       'geneSym' => 'MT-ND4L',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -7176,12 +7280,14 @@ not ok 47 - for [ Mt_missense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND4L(MT-ND4L): c.1-u7036A>G'
 #     },
 #     'NR_MT-TRND' => {
 #       'c' => 'n.-4084A>G',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -7192,7 +7298,6 @@ not ok 47 - for [ Mt_missense ]
 #       'geneId' => '4555',
 #       'geneSym' => 'MT-TRND',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -7224,12 +7329,14 @@ not ok 47 - for [ Mt_missense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRND(MT-TRND): n.-4084A>G'
 #     },
 #     'NR_MT-TRNG' => {
 #       'c' => 'n.-6557A>G',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -7240,7 +7347,6 @@ not ok 47 - for [ Mt_missense ]
 #       'geneId' => '4563',
 #       'geneSym' => 'MT-TRNG',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -7272,12 +7378,14 @@ not ok 47 - for [ Mt_missense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNG(MT-TRNG): n.-6557A>G'
 #     },
 #     'NR_MT-TRNI' => {
 #       'c' => 'n.-829A>G',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -7288,7 +7396,6 @@ not ok 47 - for [ Mt_missense ]
 #       'geneId' => '4565',
 #       'geneSym' => 'MT-TRNI',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -7320,12 +7427,14 @@ not ok 47 - for [ Mt_missense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNI(MT-TRNI): n.-829A>G'
 #     },
 #     'NR_MT-TRNK' => {
 #       'c' => 'n.-4861A>G',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -7336,7 +7445,6 @@ not ok 47 - for [ Mt_missense ]
 #       'geneId' => '4566',
 #       'geneSym' => 'MT-TRNK',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -7368,12 +7476,14 @@ not ok 47 - for [ Mt_missense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNK(MT-TRNK): n.-4861A>G'
 #     },
 #     'NR_MT-TRNM' => {
 #       'c' => 'n.-968A>G',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -7384,7 +7494,6 @@ not ok 47 - for [ Mt_missense ]
 #       'geneId' => '4569',
 #       'geneSym' => 'MT-TRNM',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -7416,12 +7525,14 @@ not ok 47 - for [ Mt_missense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNM(MT-TRNM): n.-968A>G'
 #     },
 #     'NR_MT-TRNR' => {
 #       'c' => 'n.-6971A>G',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -7432,7 +7543,6 @@ not ok 47 - for [ Mt_missense ]
 #       'geneId' => '4573',
 #       'geneSym' => 'MT-TRNR',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -7464,12 +7574,14 @@ not ok 47 - for [ Mt_missense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNR(MT-TRNR): n.-6971A>G'
 #     },
 #     'NR_MT-TRNW' => {
 #       'c' => 'n.-2078A>G',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -7480,7 +7592,6 @@ not ok 47 - for [ Mt_missense ]
 #       'geneId' => '4578',
 #       'geneSym' => 'MT-TRNW',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -7512,7 +7623,8 @@ not ok 47 - for [ Mt_missense ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNW(MT-TRNW): n.-2078A>G'
 #     }
 #   },
 #   'var' => bless( {
@@ -7548,6 +7660,7 @@ not ok 47 - for [ Mt_missense ]
 #       'AF' => 0,
 #       'AN' => 0
 #     },
+#     'varName' => 'NM_MT-ND1(MT-ND1): c.128A>G (p.Y43C)',
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -7558,6 +7671,7 @@ not ok 48 - for [ Mt_coding_synon ]
 #       'c' => 'c.1-u5092C>T',
 #       'cdsBegin' => '1-u5092',
 #       'cdsEnd' => '1-u5092',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -7568,7 +7682,6 @@ not ok 48 - for [ Mt_coding_synon ]
 #       'geneId' => '4508',
 #       'geneSym' => 'MT-ATP6',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -7600,12 +7713,14 @@ not ok 48 - for [ Mt_coding_synon ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ATP6(MT-ATP6): c.1-u5092C>T'
 #     },
 #     'NM_MT-ATP8' => {
 #       'c' => 'c.1-u4931C>T',
 #       'cdsBegin' => '1-u4931',
 #       'cdsEnd' => '1-u4931',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -7616,7 +7731,6 @@ not ok 48 - for [ Mt_coding_synon ]
 #       'geneId' => '4509',
 #       'geneSym' => 'MT-ATP8',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -7648,12 +7762,14 @@ not ok 48 - for [ Mt_coding_synon ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ATP8(MT-ATP8): c.1-u4931C>T'
 #     },
 #     'NM_MT-COX1' => {
 #       'c' => 'c.1-u2469C>T',
 #       'cdsBegin' => '1-u2469',
 #       'cdsEnd' => '1-u2469',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -7664,7 +7780,6 @@ not ok 48 - for [ Mt_coding_synon ]
 #       'geneId' => '4512',
 #       'geneSym' => 'MT-COX1',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -7696,12 +7811,14 @@ not ok 48 - for [ Mt_coding_synon ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-COX1(MT-COX1): c.1-u2469C>T'
 #     },
 #     'NM_MT-COX2' => {
 #       'c' => 'c.1-u4151C>T',
 #       'cdsBegin' => '1-u4151',
 #       'cdsEnd' => '1-u4151',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -7712,7 +7829,6 @@ not ok 48 - for [ Mt_coding_synon ]
 #       'geneId' => '4513',
 #       'geneSym' => 'MT-COX2',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -7744,12 +7860,14 @@ not ok 48 - for [ Mt_coding_synon ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-COX2(MT-COX2): c.1-u4151C>T'
 #     },
 #     'NM_MT-COX3' => {
 #       'c' => 'c.1-u5772C>T',
 #       'cdsBegin' => '1-u5772',
 #       'cdsEnd' => '1-u5772',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -7760,7 +7878,6 @@ not ok 48 - for [ Mt_coding_synon ]
 #       'geneId' => '4514',
 #       'geneSym' => 'MT-COX3',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -7792,13 +7909,15 @@ not ok 48 - for [ Mt_coding_synon ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-COX3(MT-COX3): c.1-u5772C>T'
 #     },
 #     'NM_MT-ND1' => {
 #       'c' => 'c.129C>T',
 #       'cc' => 'TAC=>TAT',
 #       'cdsBegin' => '129',
 #       'cdsEnd' => '129',
+#       'componentIndex' => '1',
 #       'ei_Begin' => 'EX1E',
 #       'ei_End' => 'EX1E',
 #       'exin' => 'EX1E',
@@ -7809,7 +7928,6 @@ not ok 48 - for [ Mt_coding_synon ]
 #       'geneId' => '4535',
 #       'geneSym' => 'MT-ND1',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '1',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.=',
@@ -7849,6 +7967,7 @@ not ok 48 - for [ Mt_coding_synon ]
 #       'c' => 'c.1-u1035C>T',
 #       'cdsBegin' => '1-u1035',
 #       'cdsEnd' => '1-u1035',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -7859,7 +7978,6 @@ not ok 48 - for [ Mt_coding_synon ]
 #       'geneId' => '4536',
 #       'geneSym' => 'MT-ND2',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -7891,12 +8009,14 @@ not ok 48 - for [ Mt_coding_synon ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND2(MT-ND2): c.1-u1035C>T'
 #     },
 #     'NM_MT-ND3' => {
 #       'c' => 'c.1-u6624C>T',
 #       'cdsBegin' => '1-u6624',
 #       'cdsEnd' => '1-u6624',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -7907,7 +8027,6 @@ not ok 48 - for [ Mt_coding_synon ]
 #       'geneId' => '4537',
 #       'geneSym' => 'MT-ND3',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -7939,12 +8058,14 @@ not ok 48 - for [ Mt_coding_synon ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND3(MT-ND3): c.1-u6624C>T'
 #     },
 #     'NM_MT-ND4' => {
 #       'c' => 'c.1-u7325C>T',
 #       'cdsBegin' => '1-u7325',
 #       'cdsEnd' => '1-u7325',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -7955,7 +8076,6 @@ not ok 48 - for [ Mt_coding_synon ]
 #       'geneId' => '4538',
 #       'geneSym' => 'MT-ND4',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -7987,12 +8107,14 @@ not ok 48 - for [ Mt_coding_synon ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND4(MT-ND4): c.1-u7325C>T'
 #     },
 #     'NM_MT-ND4L' => {
 #       'c' => 'c.1-u7035C>T',
 #       'cdsBegin' => '1-u7035',
 #       'cdsEnd' => '1-u7035',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -8003,7 +8125,6 @@ not ok 48 - for [ Mt_coding_synon ]
 #       'geneId' => '4539',
 #       'geneSym' => 'MT-ND4L',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -8035,12 +8156,14 @@ not ok 48 - for [ Mt_coding_synon ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND4L(MT-ND4L): c.1-u7035C>T'
 #     },
 #     'NR_MT-TRND' => {
 #       'c' => 'n.-4083C>T',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -8051,7 +8174,6 @@ not ok 48 - for [ Mt_coding_synon ]
 #       'geneId' => '4555',
 #       'geneSym' => 'MT-TRND',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -8083,12 +8205,14 @@ not ok 48 - for [ Mt_coding_synon ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRND(MT-TRND): n.-4083C>T'
 #     },
 #     'NR_MT-TRNG' => {
 #       'c' => 'n.-6556C>T',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -8099,7 +8223,6 @@ not ok 48 - for [ Mt_coding_synon ]
 #       'geneId' => '4563',
 #       'geneSym' => 'MT-TRNG',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -8131,12 +8254,14 @@ not ok 48 - for [ Mt_coding_synon ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNG(MT-TRNG): n.-6556C>T'
 #     },
 #     'NR_MT-TRNI' => {
 #       'c' => 'n.-828C>T',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -8147,7 +8272,6 @@ not ok 48 - for [ Mt_coding_synon ]
 #       'geneId' => '4565',
 #       'geneSym' => 'MT-TRNI',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -8179,12 +8303,14 @@ not ok 48 - for [ Mt_coding_synon ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNI(MT-TRNI): n.-828C>T'
 #     },
 #     'NR_MT-TRNK' => {
 #       'c' => 'n.-4860C>T',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -8195,7 +8321,6 @@ not ok 48 - for [ Mt_coding_synon ]
 #       'geneId' => '4566',
 #       'geneSym' => 'MT-TRNK',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -8227,12 +8352,14 @@ not ok 48 - for [ Mt_coding_synon ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNK(MT-TRNK): n.-4860C>T'
 #     },
 #     'NR_MT-TRNM' => {
 #       'c' => 'n.-967C>T',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -8243,7 +8370,6 @@ not ok 48 - for [ Mt_coding_synon ]
 #       'geneId' => '4569',
 #       'geneSym' => 'MT-TRNM',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -8275,12 +8401,14 @@ not ok 48 - for [ Mt_coding_synon ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNM(MT-TRNM): n.-967C>T'
 #     },
 #     'NR_MT-TRNR' => {
 #       'c' => 'n.-6970C>T',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -8291,7 +8419,6 @@ not ok 48 - for [ Mt_coding_synon ]
 #       'geneId' => '4573',
 #       'geneSym' => 'MT-TRNR',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -8323,12 +8450,14 @@ not ok 48 - for [ Mt_coding_synon ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNR(MT-TRNR): n.-6970C>T'
 #     },
 #     'NR_MT-TRNW' => {
 #       'c' => 'n.-2077C>T',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -8339,7 +8468,6 @@ not ok 48 - for [ Mt_coding_synon ]
 #       'geneId' => '4578',
 #       'geneSym' => 'MT-TRNW',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -8371,7 +8499,8 @@ not ok 48 - for [ Mt_coding_synon ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNW(MT-TRNW): n.-2077C>T'
 #     }
 #   },
 #   'var' => bless( {
@@ -8407,6 +8536,7 @@ not ok 48 - for [ Mt_coding_synon ]
 #       'AF' => 0,
 #       'AN' => 0
 #     },
+#     'varName' => 'NM_MT-ND1(MT-ND1): c.129C>T (p.=)',
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -8417,6 +8547,7 @@ not ok 49 - for [ Mt_stop_loss ]
 #       'c' => 'c.1-u4265A>G',
 #       'cdsBegin' => '1-u4265',
 #       'cdsEnd' => '1-u4265',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -8427,7 +8558,6 @@ not ok 49 - for [ Mt_stop_loss ]
 #       'geneId' => '4508',
 #       'geneSym' => 'MT-ATP6',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -8459,12 +8589,14 @@ not ok 49 - for [ Mt_stop_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ATP6(MT-ATP6): c.1-u4265A>G'
 #     },
 #     'NM_MT-ATP8' => {
 #       'c' => 'c.1-u4104A>G',
 #       'cdsBegin' => '1-u4104',
 #       'cdsEnd' => '1-u4104',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -8475,7 +8607,6 @@ not ok 49 - for [ Mt_stop_loss ]
 #       'geneId' => '4509',
 #       'geneSym' => 'MT-ATP8',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -8507,12 +8638,14 @@ not ok 49 - for [ Mt_stop_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ATP8(MT-ATP8): c.1-u4104A>G'
 #     },
 #     'NM_MT-COX1' => {
 #       'c' => 'c.1-u1642A>G',
 #       'cdsBegin' => '1-u1642',
 #       'cdsEnd' => '1-u1642',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -8523,7 +8656,6 @@ not ok 49 - for [ Mt_stop_loss ]
 #       'geneId' => '4512',
 #       'geneSym' => 'MT-COX1',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -8555,12 +8687,14 @@ not ok 49 - for [ Mt_stop_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-COX1(MT-COX1): c.1-u1642A>G'
 #     },
 #     'NM_MT-COX2' => {
 #       'c' => 'c.1-u3324A>G',
 #       'cdsBegin' => '1-u3324',
 #       'cdsEnd' => '1-u3324',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -8571,7 +8705,6 @@ not ok 49 - for [ Mt_stop_loss ]
 #       'geneId' => '4513',
 #       'geneSym' => 'MT-COX2',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -8603,12 +8736,14 @@ not ok 49 - for [ Mt_stop_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-COX2(MT-COX2): c.1-u3324A>G'
 #     },
 #     'NM_MT-COX3' => {
 #       'c' => 'c.1-u4945A>G',
 #       'cdsBegin' => '1-u4945',
 #       'cdsEnd' => '1-u4945',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -8619,7 +8754,6 @@ not ok 49 - for [ Mt_stop_loss ]
 #       'geneId' => '4514',
 #       'geneSym' => 'MT-COX3',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -8651,13 +8785,15 @@ not ok 49 - for [ Mt_stop_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-COX3(MT-COX3): c.1-u4945A>G'
 #     },
 #     'NM_MT-ND1' => {
 #       'c' => 'c.956A>G',
 #       'cc' => 'TAA=>TGA',
 #       'cdsBegin' => '956',
 #       'cdsEnd' => '956',
+#       'componentIndex' => '1',
 #       'ei_Begin' => 'EX1E',
 #       'ei_End' => 'EX1E',
 #       'exin' => 'EX1E',
@@ -8668,7 +8804,6 @@ not ok 49 - for [ Mt_stop_loss ]
 #       'geneId' => '4535',
 #       'geneSym' => 'MT-ND1',
 #       'genepart' => 'CDS',
-#       'genepartIndex' => '1',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.*319fs*?',
@@ -8703,6 +8838,7 @@ not ok 49 - for [ Mt_stop_loss ]
 #       'c' => 'c.1-u208A>G',
 #       'cdsBegin' => '1-u208',
 #       'cdsEnd' => '1-u208',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -8713,7 +8849,6 @@ not ok 49 - for [ Mt_stop_loss ]
 #       'geneId' => '4536',
 #       'geneSym' => 'MT-ND2',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -8745,12 +8880,14 @@ not ok 49 - for [ Mt_stop_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND2(MT-ND2): c.1-u208A>G'
 #     },
 #     'NM_MT-ND3' => {
 #       'c' => 'c.1-u5797A>G',
 #       'cdsBegin' => '1-u5797',
 #       'cdsEnd' => '1-u5797',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -8761,7 +8898,6 @@ not ok 49 - for [ Mt_stop_loss ]
 #       'geneId' => '4537',
 #       'geneSym' => 'MT-ND3',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -8793,12 +8929,14 @@ not ok 49 - for [ Mt_stop_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND3(MT-ND3): c.1-u5797A>G'
 #     },
 #     'NM_MT-ND4' => {
 #       'c' => 'c.1-u6498A>G',
 #       'cdsBegin' => '1-u6498',
 #       'cdsEnd' => '1-u6498',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -8809,7 +8947,6 @@ not ok 49 - for [ Mt_stop_loss ]
 #       'geneId' => '4538',
 #       'geneSym' => 'MT-ND4',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -8841,12 +8978,14 @@ not ok 49 - for [ Mt_stop_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND4(MT-ND4): c.1-u6498A>G'
 #     },
 #     'NM_MT-ND4L' => {
 #       'c' => 'c.1-u6208A>G',
 #       'cdsBegin' => '1-u6208',
 #       'cdsEnd' => '1-u6208',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -8857,7 +8996,6 @@ not ok 49 - for [ Mt_stop_loss ]
 #       'geneId' => '4539',
 #       'geneSym' => 'MT-ND4L',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -8889,12 +9027,14 @@ not ok 49 - for [ Mt_stop_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NM_MT-ND4L(MT-ND4L): c.1-u6208A>G'
 #     },
 #     'NR_MT-TRND' => {
 #       'c' => 'n.-3256A>G',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -8905,7 +9045,6 @@ not ok 49 - for [ Mt_stop_loss ]
 #       'geneId' => '4555',
 #       'geneSym' => 'MT-TRND',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -8937,12 +9076,14 @@ not ok 49 - for [ Mt_stop_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRND(MT-TRND): n.-3256A>G'
 #     },
 #     'NR_MT-TRNG' => {
 #       'c' => 'n.-5729A>G',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -8953,7 +9094,6 @@ not ok 49 - for [ Mt_stop_loss ]
 #       'geneId' => '4563',
 #       'geneSym' => 'MT-TRNG',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -8985,12 +9125,14 @@ not ok 49 - for [ Mt_stop_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNG(MT-TRNG): n.-5729A>G'
 #     },
 #     'NR_MT-TRNI' => {
 #       'c' => 'n.-1A>G',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -9001,7 +9143,6 @@ not ok 49 - for [ Mt_stop_loss ]
 #       'geneId' => '4565',
 #       'geneSym' => 'MT-TRNI',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -9033,12 +9174,14 @@ not ok 49 - for [ Mt_stop_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNI(MT-TRNI): n.-1A>G'
 #     },
 #     'NR_MT-TRNK' => {
 #       'c' => 'n.-4033A>G',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -9049,7 +9192,6 @@ not ok 49 - for [ Mt_stop_loss ]
 #       'geneId' => '4566',
 #       'geneSym' => 'MT-TRNK',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -9081,12 +9223,14 @@ not ok 49 - for [ Mt_stop_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNK(MT-TRNK): n.-4033A>G'
 #     },
 #     'NR_MT-TRNM' => {
 #       'c' => 'n.-140A>G',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -9097,7 +9241,6 @@ not ok 49 - for [ Mt_stop_loss ]
 #       'geneId' => '4569',
 #       'geneSym' => 'MT-TRNM',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -9129,12 +9272,14 @@ not ok 49 - for [ Mt_stop_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNM(MT-TRNM): n.-140A>G'
 #     },
 #     'NR_MT-TRNR' => {
 #       'c' => 'n.-6143A>G',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -9145,7 +9290,6 @@ not ok 49 - for [ Mt_stop_loss ]
 #       'geneId' => '4573',
 #       'geneSym' => 'MT-TRNR',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -9177,12 +9321,14 @@ not ok 49 - for [ Mt_stop_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNR(MT-TRNR): n.-6143A>G'
 #     },
 #     'NR_MT-TRNW' => {
 #       'c' => 'n.-1250A>G',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
+#       'componentIndex' => 0,
 #       'ei_Begin' => '.',
 #       'ei_End' => '.',
 #       'exin' => '.',
@@ -9193,7 +9339,6 @@ not ok 49 - for [ Mt_stop_loss ]
 #       'geneId' => '4578',
 #       'geneSym' => 'MT-TRNW',
 #       'genepart' => 'promoter',
-#       'genepartIndex' => 0,
 #       'genepartSO' => 'SO:0000167',
 #       'intronIndex' => '.',
 #       'postEnd' => {
@@ -9225,7 +9370,8 @@ not ok 49 - for [ Mt_stop_loss ]
 #           0,
 #           1
 #         ]
-#       }
+#       },
+#       'trVarName' => 'NR_MT-TRNW(MT-TRNW): n.-1250A>G'
 #     }
 #   },
 #   'var' => bless( {
@@ -9261,6 +9407,7 @@ not ok 49 - for [ Mt_stop_loss ]
 #       'AF' => 0,
 #       'AN' => 0
 #     },
+#     'varName' => 'NM_MT-ND1(MT-ND1): c.956A>G (p.*319fs*?)',
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
