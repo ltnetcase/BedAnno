@@ -4462,6 +4462,7 @@ sub TO_JSON {
               geneSym -> GeneSym
               prot -> ProteinAccession
               strd -> TranscriptOrientation
+	      trVarName -> TranscriptVarName
               rnaBegin -> TranscriptBegin
               rnaEnd -> TranscriptEnd
               protBegin -> ProteinBegin
