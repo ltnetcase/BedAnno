@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.41';
+our $VERSION = '0.42';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.41
+=head2 VERSION v0.42
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -1111,6 +1111,67 @@ sub get_wellderly_h {
 
 sub TO_JSON {
     return { %{ shift() } };
+}
+
+sub DESTROY {
+    my $self = shift;
+    if (exists $self->{tidb} and defined $self->{tidb}) {
+	$self->{tidb}->DESTROY() if ($self->{tidb}->can('DESTROY'));
+	delete $self->{tidb};
+    }
+    if (exists $self->{cytoBand_h} and defined $self->{cytoBand_h}) {
+	$self->{cytoBand_h}->DESTROY() if ($self->{cytoBand_h}->can('DESTROY'));
+	delete $self->{cytoBand_h};
+    }
+    if (exists $self->{rmsk_h} and defined $self->{rmsk_h}) {
+	$self->{rmsk_h}->DESTROY() if ($self->{rmsk_h}->can('DESTROY'));
+	delete $self->{rmsk_h};
+    }
+    if (exists $self->{gwas_h} and defined $self->{gwas_h}) {
+	$self->{gwas_h}->DESTROY() if ($self->{gwas_h}->can('DESTROY'));
+	delete $self->{gwas_h};
+    }
+    if (exists $self->{pfam_h} and defined $self->{pfam_h}) {
+	$self->{pfam_h}->DESTROY() if ($self->{pfam_h}->can('DESTROY'));
+	delete $self->{pfam_h};
+    }
+    if (exists $self->{prediction_h} and defined $self->{prediction_h}) {
+	$self->{prediction_h}->DESTROY() if ($self->{prediction_h}->can('DESTROY'));
+	delete $self->{prediction_h};
+    }
+    if (exists $self->{phyloP_h} and defined $self->{phyloP_h}) {
+	$self->{phyloP_h}->DESTROY() if ($self->{phyloP_h}->can('DESTROY'));
+	delete $self->{phyloP_h};
+    }
+    if (exists $self->{dbSNP_h} and defined $self->{dbSNP_h}) {
+	$self->{dbSNP_h}->DESTROY() if ($self->{dbSNP_h}->can('DESTROY'));
+	delete $self->{dbSNP_h};
+    }
+    if (exists $self->{dbnsfp_h} and defined $self->{dbnsfp_h}) {
+	$self->{dbnsfp_h}->DESTROY() if ($self->{dbnsfp_h}->can('DESTROY'));
+	delete $self->{dbnsfp_h};
+    }
+    if (exists $self->{cosmic_h} and defined $self->{cosmic_h}) {
+	$self->{cosmic_h}->DESTROY() if ($self->{cosmic_h}->can('DESTROY'));
+	delete $self->{cosmic_h};
+    }
+    if (exists $self->{tgp_h} and defined $self->{tgp_h}) {
+	$self->{tgp_h}->DESTROY() if ($self->{tgp_h}->can('DESTROY'));
+	delete $self->{tgp_h};
+    }
+    if (exists $self->{esp6500_h} and defined $self->{esp6500_h}) {
+	$self->{esp6500_h}->DESTROY() if ($self->{esp6500_h}->can('DESTROY'));
+	delete $self->{esp6500_h};
+    }
+    if (exists $self->{cg54_h} and defined $self->{cg54_h}) {
+	$self->{cg54_h}->DESTROY() if ($self->{cg54_h}->can('DESTROY'));
+	delete $self->{cg54_h};
+    }
+    if (exists $self->{wellderly_h} and defined $self->{wellderly_h}) {
+	$self->{wellderly_h}->DESTROY() if ($self->{wellderly_h}->can('DESTROY'));
+	delete $self->{wellderly_h};
+    }
+    return;
 }
 
 =head2 readtr

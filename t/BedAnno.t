@@ -2756,6 +2756,8 @@ test_ok ("Mt_stop_loss", $mt_stop_loss, "NM_MT-ND1",
 
 
 done_testing();
+
+$beda->DESTROY();
 exit 0;
 
 sub test_ok {
