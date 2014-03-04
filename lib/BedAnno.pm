@@ -5489,46 +5489,68 @@ sub cal_hgvs_pos {
 	    # 6. intron
 	    elsif ($exin =~ /IVS/) {
 		my $half_length = $rtidDetail->{wlen} / 2;
-		if ($lofst > $half_length) { # drop into latter part
-                    if (   $rtidDetail->{nsto} =~ /^\d+\d+$/
-                        or $rtidDetail->{csto} =~ /^\d+\d+$/ )
-                    {
-                        confess "Error format of database, ",
-                          "intron right pos description error!\n";
-                    }
-
-		    if ($rtidDetail->{nsto} =~ /^(\d+\+?)(\-?\d+)$/) {
-                        $nDot =
-                            ($strd)
-                          ? ( $1 . ( $2 - $rofst ) )
-                          : ( $1 . ( $2 + $rofst ) );
+		if ( $gpSO =~ /abnormal_intron/ ) {
+		    # for abnormal intron
+		    # the length may be less than 2 bp
+		    # and then the nsta nsto and csta csto
+		    # will point to the neighbor exons' edge
+		    if ($lofst > $half_length) {
+			if ($rtidDetail->{nsto} =~ /\d+/) {
+                            $nDot =
+                              ($strd)
+                              ? $rtidDetail->{nsto} . '-' . ( $rofst + 1 )
+                              : $rtidDetail->{nsto} . '+' . ( $rofst + 1 );
+			}
+			if ($rtidDetail->{csto} =~ /\d+/) {
+                            $cDot =
+                              ($strd)
+                              ? $rtidDetail->{csto} . '-' . ( $rofst + 1 )
+                              : $rtidDetail->{csto} . '+' . ( $rofst + 1 );
+			}
 		    }
-		    if ($rtidDetail->{csto} =~ /^([\*\-]?\d+\+?)(\-?\d+)$/) {
-                        $cDot =
-                            ($strd)
-                          ? ( $1 . ( $2 - $rofst ) )
-                          : ( $1 . ( $2 + $rofst ) );
+		    else {
+			if ($rtidDetail->{nsta} =~ /\d+/) {
+                            $nDot =
+                              ($strd)
+                              ? $rtidDetail->{nsta} . '+' . ( $lofst + 1 )
+                              : $rtidDetail->{nsta} . '-' . ( $lofst + 1 );
+			}
+			if ($rtidDetail->{csta} =~ /\d+/) {
+                            $cDot =
+                              ($strd)
+                              ? $rtidDetail->{csta} . '+' . ( $lofst + 1 )
+                              : $rtidDetail->{csta} . '-' . ( $lofst + 1 );
+			}
 		    }
 		}
 		else {
-                    if (   $rtidDetail->{nsta} =~ /^\d+\d+$/
-                        or $rtidDetail->{csta} =~ /^\d+\d+$/ )
-                    {
-                        confess "Error format of database, ",
-                          "intron left pos description error!\n";
-                    }
-
-		    if ($rtidDetail->{nsta} =~ /^(\d+\+?)(\-?\d+)$/) {
-                        $nDot =
-                            ($strd)
-                          ? ( $1 . ( $2 + $lofst ) )
-                          : ( $1 . ( $2 - $lofst ) );
+		    if ($lofst > $half_length) { # drop into latter part
+			if ($rtidDetail->{nsto} =~ /^(\d+\+?)(\-?\d+)$/) {
+			    $nDot =
+				($strd)
+			      ? ( $1 . ( $2 - $rofst ) )
+			      : ( $1 . ( $2 + $rofst ) );
+			}
+			if ($rtidDetail->{csto} =~ /^([\*\-]?\d+\+?)(\-?\d+)$/) {
+			    $cDot =
+				($strd)
+			      ? ( $1 . ( $2 - $rofst ) )
+			      : ( $1 . ( $2 + $rofst ) );
+			}
 		    }
-		    if ($rtidDetail->{csta} =~ /^([\*\-]?\d+\+?)(\-?\d+)$/) {
-                        $cDot =
-                            ($strd)
-                          ? ( $1 . ( $2 + $lofst ) )
-                          : ( $1 . ( $2 - $lofst ) );
+		    else {
+			if ($rtidDetail->{nsta} =~ /^(\d+\+?)(\-?\d+)$/) {
+			    $nDot =
+				($strd)
+			      ? ( $1 . ( $2 + $lofst ) )
+			      : ( $1 . ( $2 - $lofst ) );
+			}
+			if ($rtidDetail->{csta} =~ /^([\*\-]?\d+\+?)(\-?\d+)$/) {
+			    $cDot =
+				($strd)
+			      ? ( $1 . ( $2 + $lofst ) )
+			      : ( $1 . ( $2 - $lofst ) );
+			}
 		    }
 		}
 	    }
