@@ -217,8 +217,8 @@ $AAcount = scalar keys %C1toC3;
     five_prime_UTR_intron        => 9,
     three_prime_UTR_intron       => 10,
     interior_intron              => 11,
-    abnormal_intron              => 12,
     intergenic                   => 13,
+    'abnormal-intron'            => 12,
     'annotation-fail'            => 14,
 );
 
@@ -1538,6 +1538,7 @@ sub parse_annoent {
     my @tags =
       qw(gsym gid strd blka gpSO exin nsta nsto csta csto wlen mismatch pr);
     @annoinfo{@tags} = @infos;
+    $annoinfo{gpSO} = 'abnormal-intron' if ($annoinfo{gpSO} eq 'abnormal_intron');
     return ( $tid, \%annoinfo );
 }
 
@@ -2001,6 +2002,7 @@ sub finaliseAnno {
                 }
             }
 
+	    $genepartSO = 'abnormal-intron' if ($genepartSO eq 'abnormal-intron');
 	    confess "Error: unknown genepartSO [$genepartSO]."
 	      if ( !exists $SO2Name{$genepartSO} );
 
@@ -5489,7 +5491,7 @@ sub cal_hgvs_pos {
 	    # 6. intron
 	    elsif ($exin =~ /IVS/) {
 		my $half_length = $rtidDetail->{wlen} / 2;
-		if ( $gpSO =~ /abnormal_intron/ ) {
+		if ( $gpSO eq 'abnormal-intron' ) {
 		    # for abnormal intron
 		    # the length may be less than 2 bp
 		    # and then the nsta nsto and csta csto
@@ -5663,46 +5665,65 @@ sub cal_hgvs_pos {
 	    # 6. intron
 	    elsif ($exin =~ /IVS/) {
 		my $half_length = $rtidDetail->{wlen} / 2;
-		if ($real_ofst > $half_length) { # drop into latter part
-                    if (   $rtidDetail->{nsto} =~ /^\d+\d+$/
-                        or $rtidDetail->{csto} =~ /^\d+\d+$/ )
-                    {
-                        confess "Error format of database, ",
-                          "intron right pos description error!\n";
-                    }
 
-		    if ($rtidDetail->{nsto} =~ /^(\d+\+?)(\-?\d+)$/) {
-                        $nDot =
-                            ($strd)
-                          ? ( $1 . ( $2 - $rofst ) )
-                          : ( $1 . ( $2 + $rofst ) );
+		if ($gpSO eq 'abnormal-intron') {
+		    if ($real_ofst > $half_length ) {
+			if ($rtidDetail->{nsto} =~ /\d+/) {
+                            $nDot =
+                              ($strd)
+                              ? $rtidDetail->{nsto} . '-' . ( $rofst + 1 )
+                              : $rtidDetail->{nsto} . '+' . ( $rofst + 1 );
+			}
+			if ($rtidDetail->{csto} =~ /\d+/) {
+                            $cDot =
+                              ($strd)
+                              ? $rtidDetail->{csto} . '-' . ( $rofst + 1 )
+                              : $rtidDetail->{csto} . '+' . ( $rofst + 1 );
+			}
 		    }
-		    if ($rtidDetail->{csto} =~ /^([\*\-]?\d+\+?)(\-?\d+)$/) {
-                        $cDot =
-                            ($strd)
-                          ? ( $1 . ( $2 - $rofst ) )
-                          : ( $1 . ( $2 + $rofst ) );
+		    else {
+			if ($rtidDetail->{nsta} =~ /\d+/) {
+			    $nDot =
+				($strd)
+			      ? $rtidDetail->{nsta} . '+' . ( $real_ofst + 1 )
+			      : $rtidDetail->{nsta} . '-' . ( $real_ofst + 1 );
+			}
+			if ($rtidDetail->{csta} =~ /\d+/) {
+			    $cDot =
+				($strd)
+			      ? $rtidDetail->{csta} . '+' . ( $real_ofst + 1 )
+			      : $rtidDetail->{csta} . '-' . ( $real_ofst + 1 );
+			}
 		    }
 		}
 		else {
-                    if (   $rtidDetail->{nsta} =~ /^\d+\d+$/
-                        or $rtidDetail->{csta} =~ /^\d+\d+$/ )
-                    {
-                        confess "Error format of database, ",
-                          "intron left pos description error!\n";
-                    }
-
-		    if ($rtidDetail->{nsta} =~ /^(\d+\+?)(\-?\d+)$/) {
-                        $nDot =
-                            ($strd)
-                          ? ( $1 . ( $2 + $real_ofst ) )
-                          : ( $1 . ( $2 - $real_ofst ) );
+		    if ($real_ofst > $half_length) { # drop into latter part
+			if ($rtidDetail->{nsto} =~ /^(\d+\+?)(\-?\d+)$/) {
+			    $nDot =
+				($strd)
+			      ? ( $1 . ( $2 - $rofst ) )
+			      : ( $1 . ( $2 + $rofst ) );
+			}
+			if ($rtidDetail->{csto} =~ /^([\*\-]?\d+\+?)(\-?\d+)$/) {
+			    $cDot =
+				($strd)
+			      ? ( $1 . ( $2 - $rofst ) )
+			      : ( $1 . ( $2 + $rofst ) );
+			}
 		    }
-		    if ($rtidDetail->{csta} =~ /^([\*\-]?\d+\+?)(\-?\d+)$/) {
-                        $cDot =
-                            ($strd)
-                          ? ( $1 . ( $2 + $real_ofst ) )
-                          : ( $1 . ( $2 - $real_ofst ) );
+		    else {
+			if ($rtidDetail->{nsta} =~ /^(\d+\+?)(\-?\d+)$/) {
+			    $nDot =
+				($strd)
+			      ? ( $1 . ( $2 + $real_ofst ) )
+			      : ( $1 . ( $2 - $real_ofst ) );
+			}
+			if ($rtidDetail->{csta} =~ /^([\*\-]?\d+\+?)(\-?\d+)$/) {
+			    $cDot =
+				($strd)
+			      ? ( $1 . ( $2 + $real_ofst ) )
+			      : ( $1 . ( $2 - $real_ofst ) );
+			}
 		    }
 		}
 	    }
