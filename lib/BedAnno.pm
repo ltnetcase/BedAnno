@@ -1602,6 +1602,8 @@ sub anno {
                     # import all the keys from original parsed var entry
                     # and add the following keys by this method.
 
+		    varName => $var_mutation_name,
+
                     # information
                     varTypeSO => $varTypeSO,
                     gHGVS     => $gHGVS,
@@ -1953,6 +1955,14 @@ sub finaliseAnno {
                 or $trAnnoEnt->{rnaEnd} =~ /^\+/ )
             {
                 $genepartSO = 'span';    # 3'downstream span
+                $trAnnoEnt->{r} =
+                  ($strd)
+                  ? $trAnnoEnt->{r_Begin} . '-' . $trAnnoEnt->{r_End}
+                  : $trAnnoEnt->{r_End} . '-' . $trAnnoEnt->{r_Begin};
+                $trAnnoEnt->{exin} =
+                  ($strd)
+                  ? $trAnnoEnt->{ei_Begin}
+                  : $trAnnoEnt->{ei_End};
             }
             elsif ( $trAnnoEnt->{ei_Begin} =~ /^IVS/
                 and $trAnnoEnt->{ei_Begin} eq $trAnnoEnt->{ei_End} )
@@ -1994,6 +2004,8 @@ sub finaliseAnno {
 	    confess "Error: unknown genepartSO [$genepartSO]."
 	      if ( !exists $SO2Name{$genepartSO} );
 
+	    $trAnnoEnt->{exin} = '.' if (!exists $trAnnoEnt->{exin});
+	    $trAnnoEnt->{r} = '.' if (!exists $trAnnoEnt->{r});
 	    $trAnnoEnt->{genepart} = $SO2Name{$genepartSO};
 	    $trAnnoEnt->{genepartSO} = ( $genepartSO =~ /^SO:/ ) ? $genepartSO : "";
 	    $trAnnoEnt->{componentIndex} = '.'
