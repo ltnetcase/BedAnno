@@ -2134,6 +2134,106 @@ my $rep_span_cds_utr3 = {
     'funcSOname' => 'unknown'
 };
 
+my $cds_edge_ins_anno = {
+    'protBegin' => 34,
+    'ei_End'    => 'IVS2',
+    'exin'      => 'EX3',
+    'prot'      => 'NP_006832.1',
+    'trRefComp' => {
+        'EX3' => 0
+    },
+    'r_End'    => 'AC1',
+    'c'        => 'c.102-1_102insG',
+    'rnaBegin' => 243,
+    'ei_Begin' => 'EX3',
+    'r'        => 'C2',
+    'cdsBegin' => '102',
+    'preStart' => {
+        'r'    => 'AC1',
+        'cDot' => '102-1',
+        'nDot' => '243-1',
+        'exin' => 'IVS2'
+    },
+    'trRef'          => '',
+    'protEnd'        => 505,
+    'cdsEnd'         => '102-1',
+    'exonIndex'      => '3',
+    'r_Begin'        => 'C2',
+    'trAlt'          => 'G',
+    'intronIndex'    => '.',
+    'strd'           => '+',
+    'componentIndex' => '3',
+    'geneSym'        => 'SLC38A3',
+    'postEnd'        => {
+        'r'    => 'C2',
+        'cDot' => '102',
+        'nDot' => 243,
+        'exin' => 'EX3'
+    },
+    'geneId'   => '10991',
+    'p'        => 'p.V35fs*27',
+    'rnaEnd'   => '243-1',
+    'prAlt'    => 'RGRGPCTELYGGQELPTEKSQQGATLH*',
+    'genepart' => 'CDS',
+    'prRef' =>
+'RVEDPARSCMEGKSFLQKSPSKEPHFTDFEGKTSFGMSVFNLSNAIMGSGILGLAYAMANTGIILFLFLLTAVALLSSYSIHLLLKSSGVVGIRAYEQLGYRAFGTPGKLAAALAITLQNIGAMSSYLYIIKSELPLVIQTFLNLEEKTSDWYMNGNYLVILVSVTIILPLALMRQLGYLGYSSGFSLSCMVFFLIAVIYKKFHVPCPLPPNFNNTTGNFSHVEIVKEKVQLQVEPEASAFCTPSYFTLNSQTAYTIPIMAFAFVCHPEVLPIYTELKDPSKKKMQHISNLSIAVMYIMYFLAALFGYLTFYNGVESELLHTYSKVDPFDVLILCVRVAVLTAVTLTVPIVLFPVRRAIQQMLFPNQEFSWLRHVLIAVGLLTCINLLVIFAPNILGIFGVIGATSAPFLIFIFPAIFYFRIMPTEKEPARSTPKILALCFAMLGFLLMTMSLSFIIIDWASGTSRHGGNH*',
+    'func'       => 'frameshift',
+    'funcSO'     => 'SO:0001589',
+    'genepartSO' => 'SO:0000316',
+    'funcSOname' => 'frameshift_variant',
+    'primaryTag' => 'Y'
+  };
+
+my $cds_edge_ins2_anno = {
+    'protBegin' => 279,
+    'ei_End'    => 'EX7',
+    'exin'      => 'EX7',
+    'prot'      => 'NP_055772.2',
+    'trRefComp' => {
+        'IVS7' => [ 0 ],
+        'EX7'  => 0
+    },
+    'r_End'    => 'C6',
+    'c'        => 'c.834_834+1insGTTA',
+    'rnaBegin' => '1112+1',
+    'ei_Begin' => 'IVS7',
+    'r'        => 'C6',
+    'cdsBegin' => '834+1',
+    'preStart' => {
+        'r'    => 'C6',
+        'cDot' => '834',
+        'nDot' => 1112,
+        'exin' => 'EX7'
+    },
+    'trRef'     => '',
+    'protEnd'   => 1199,
+    'cdsEnd'    => '834',
+    'exonIndex' => '7',
+    'r_Begin'   => 'DC6',
+    'trAlt'     => 'GTTA',
+    'intronIndex'    => '.',
+    'strd'           => '+',
+    'componentIndex' => '7',
+    'geneSym'        => 'DENND3',
+    'postEnd'        => {
+        'r'    => 'DC6',
+        'cDot' => '834+1',
+        'nDot' => '1112+1',
+        'exin' => 'IVS7'
+    },
+    'geneId'   => '22898',
+    'p'        => 'p.E279fs*12',
+    'rnaEnd'   => 1112,
+    'prAlt'    => 'VRSRRFSSDKY*',
+    'genepart' => 'CDS',
+    'prRef' =>
+'EADGLVLINIDHGSITYSKSTDDNVDIPDVPLLAAQTFIQRVQSLQLHHELHAAHLLSSTDLKEGRAHRRSWQQKLNCQIQQTTLQLLVSIFRDVKNHLNYEHRVFNSEEFLKTRAPGDHQFYKQVLDTYMFHSFLKARLNRRMDAFAQMDLDTQSEEDRINGMLLSPRRPTVEKRASRKSSHLHVTHRRMVVSMPNLQDIAMPELAPRNSSLRLTDTAGCRGSSAVLNVTPKSPYTFKIPEIHFPLESKCVQAYHAHFVSMLSEAMCFLAPDNSLLLARYLYLRGLVYLMQGQLLNALLDFQNLYKTDIRIFPTDLVKRTVESMSAPEWEGAEQAPELMRLISEILDKPHEASKLDDHVKKFKLPKKHMQLGDFMKRVQESGIVKDASIIHRLFEALTVGQEKQIDPETFKDFYNCWKETEAEAQEVSLPWLVMEHLDKNECVCKLSSSVKTNLGVGKIAMTQKRLFLLTEGRPGYLEISTFRNIEEVRRTTTTFLLRRIPTLKIRVASKKEVFEANLKTECDLWHLMVKEMWAGKKLADDHKDPHYVQQALTNVLLMDAVVGTLQSPGAIYAASKLSYFDKMSNEMPMTLPETTLETLKHKINPSAGEAFPQAVDVLLYTPGHLDPAEKVEDAHPKLWCALSEGKVTVFNASSWTIHQHSFKVGTAKVNCMVMADQNQVWVGSEDSVIYIINVHSMSCNKQLTAHCSSVTDLIVQDGQEAPSNVYSCSMDGMVLVWNVSTLQVTSRFQLPRGGLTSIRLHGGRLWCCTGNSIMVMKMNGSLHQELKIEENFKDTSTSFLAFQLLPEEEQLWAACAGRSEVYIWSLKDLAQPPQRVPLEDCSEINCMIRVKKQVWVGSRGLGQGTPKGKIYVIDAERKTVEKELVAHMDTVRTLCSAEDRYVLSGSGREEGKVAIWKGE*',
+    'func'       => 'frameshift',
+    'funcSO'     => 'SO:0001589',
+    'genepartSO' => 'SO:0000316',
+    'funcSOname' => 'frameshift_variant',
+    'primaryTag' => 'Y'
+};
 
 my $mt_no_call_ncRNA = {
     'r'         => 'R1E',
@@ -2671,6 +2771,10 @@ test_ok ( "large_del_anno", $large_del_anno, 'NM_000642.2',
    "chr1", 100327863, 100327884, "TGGTGCTGATAATCATGTGCT", "" );
 test_ok ( "promoter_anno", $promoter_anno, 'NM_033492.1',
    "chr1", 1590520, 1590521, "G", "A" );
+test_ok ( "cds_edge_ins_anno", $cds_edge_ins_anno, 'NM_006841.4',
+   "chr3", 50251833, 50251833, "", "G" );
+test_ok ( "cds_edge_ins2_anno", $cds_edge_ins2_anno, 'NM_014957.2',
+   "chr8", 142161936, 142161936, "", "GTTA" );
 test_ok ( "left_edge_mismatch_anno", $left_edge_mismatch_anno, 'NM_006158.3',
    "chr8", 24811065, 24811065, "", "A" );
 test_ok ( "downstream_no_call", $downstream_no_call, "NR_037481.1",

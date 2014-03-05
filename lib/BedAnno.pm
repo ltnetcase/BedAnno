@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.42';
+our $VERSION = '0.43';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.42
+=head2 VERSION v0.43
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -2649,7 +2649,7 @@ sub getTrChange {
 		    next;
 		}
                 elsif ( $chgvs_5 =~ /^(\d+)\+1/
-                    and $1 == ( $trannoEnt->{csto} - $trannoEnt->{csta} ) )
+                    and $1 == ( $trdbEnt->{csto} - $trdbEnt->{csta} ) )
                 {
                     $trannoEnt->{func} = 'utr-3';
                     next;
@@ -2685,8 +2685,10 @@ sub getTrChange {
 			}
 		    }
 
-		    $chgvs_5 = $1+1 if ($chgvs_5 =~ /^(\d+)\+1$/);
-		    $chgvs_3 = $1-1 if ($chgvs_3 =~ /^(\d+)\-1$/);
+		    $chgvs_5 = $1+1 if ($cmpPos < 0 and $chgvs_5 =~ /^(\d+)\+1$/);
+		    $chgvs_3 = $1-1 if ($cmpPos < 0 and $chgvs_3 =~ /^(\d+)\-1$/);
+		    $trBegin = $1+1 if ($cmpPos < 0 and $trBegin =~ /^(\d+)\+1$/);
+		    $trEnd = $1-1 if ($cmpPos < 0 and $trEnd =~ /^(\d+)\-1$/);
 
 		    # 5' end should be in coding region.
 		    # leave this as debug information
@@ -3675,14 +3677,17 @@ sub getTrRef {
     my $trStart  = getTrStart( $trannoEnt->{rnaBegin} );
     foreach my $exin (@tag_sort) {
         if ( $exin !~ /^EX/ ) {
-            my $int_seq = substr(
+            my $int_seq =
+              ( 2 == scalar @{ $trannoEnt->{trRefComp}->{$exin} } )
+              ? substr(
                 $refgenome,
                 $trannoEnt->{trRefComp}->{$exin}->[0],
                 (
                     $trannoEnt->{trRefComp}->{$exin}->[1] -
                       $trannoEnt->{trRefComp}->{$exin}->[0]
                 )
-            );
+              )
+              : "";
             $int_seq = BedAnno->rev_comp($int_seq) if ( !$strd );
             $trRef .= $int_seq;
         }

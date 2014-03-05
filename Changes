@@ -103,3 +103,6 @@
 
 0.42 Mon Mar 3 15:15:15 2014
 	- add DESTROY method to prevent memory leak.
+
+0.43 Wes Mar 5 13:45:45 2014
+	- fix bugs for cds exon-intron edge insertion variants.
