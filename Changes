@@ -106,3 +106,6 @@
 
 0.43 Wes Mar 5 13:45:45 2014
 	- fix bugs for cds exon-intron edge insertion variants.
+
+0.44 Thu Mar 6 13:58:58 2014
+	- fix a bug for using trans options to limit annotation.
