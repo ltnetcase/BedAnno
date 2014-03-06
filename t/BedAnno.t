@@ -21,6 +21,7 @@ $config  ||= "config";
 my %opts = (
     db    => "$data/test_db.bed.gz",
     tr    => "$data/test.fas.gz",
+    trans => "$data/trans.list",
     batch => 1,
 );
 

@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.43';
+our $VERSION = '0.42';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.43
+=head2 VERSION v0.42
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -719,6 +719,7 @@ sub set_db {
             open( GENE, $self->{genes} ) or $self->throw("$self->{genes} : $!");
             my %genes = map { s/\s+//g; $_ => 1 } <GENE>;
             close GENE;
+	    $self->{genes} = \%genes;
             $open_args{genes} = \%genes;
         }
     }
@@ -730,10 +731,13 @@ sub set_db {
             open( TRAN, $self->{trans} ) or $self->throw("$self->{trans} : $!");
             my %trans = map { s/\s+//g; $_ => 1 } <TRAN>;
             close TRAN;
+	    $self->{trans} = \%trans;
             $open_args{trans} = \%trans;
         }
-        $open_args{clean_trans} =
+	my $rclean_trans =
           { map { s/\-\d+$//; $_ => 1 } keys %{ $self->{trans} } };
+        $open_args{clean_trans} = $rclean_trans;
+	$self->{clean_trans} = $rclean_trans;
     }
     if ( exists $self->{mmap} ) {
         $open_args{mmap} = $self->{mmap};

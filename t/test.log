@@ -2300,7 +2300,208 @@ not ok 34 - for [ large_del_anno ]
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
 ok 35 - for [ promoter_anno ]
-not ok 36 - for [ left_edge_mismatch_anno ]
+not ok 36 - for [ cds_edge_ins_anno ]
+# The anno infor are: bless( {
+#   'trInfo' => {
+#     'NM_006841.4' => {
+#       'c' => 'c.102-1_102insG',
+#       'cdsBegin' => '102',
+#       'cdsEnd' => '102-1',
+#       'componentIndex' => '3',
+#       'ei_Begin' => 'EX3',
+#       'ei_End' => 'IVS2',
+#       'exin' => 'EX3',
+#       'exonIndex' => '3',
+#       'func' => 'frameshift',
+#       'funcSO' => 'SO:0001589',
+#       'funcSOname' => 'frameshift_variant',
+#       'geneId' => '10991',
+#       'geneSym' => 'SLC38A3',
+#       'genepart' => 'CDS',
+#       'genepartSO' => 'SO:0000316',
+#       'intronIndex' => '.',
+#       'p' => 'p.V35fs*27',
+#       'pfamId' => 'PF01490.13',
+#       'pfamName' => 'Transmembrane amino acid transporter protein',
+#       'postEnd' => {
+#         'cDot' => '102',
+#         'exin' => 'EX3',
+#         'nDot' => 243,
+#         'r' => 'C2'
+#       },
+#       'prAlt' => 'RGRGPCTELYGGQELPTEKSQQGATLH*',
+#       'prRef' => 'RVEDPARSCMEGKSFLQKSPSKEPHFTDFEGKTSFGMSVFNLSNAIMGSGILGLAYAMANTGIILFLFLLTAVALLSSYSIHLLLKSSGVVGIRAYEQLGYRAFGTPGKLAAALAITLQNIGAMSSYLYIIKSELPLVIQTFLNLEEKTSDWYMNGNYLVILVSVTIILPLALMRQLGYLGYSSGFSLSCMVFFLIAVIYKKFHVPCPLPPNFNNTTGNFSHVEIVKEKVQLQVEPEASAFCTPSYFTLNSQTAYTIPIMAFAFVCHPEVLPIYTELKDPSKKKMQHISNLSIAVMYIMYFLAALFGYLTFYNGVESELLHTYSKVDPFDVLILCVRVAVLTAVTLTVPIVLFPVRRAIQQMLFPNQEFSWLRHVLIAVGLLTCINLLVIFAPNILGIFGVIGATSAPFLIFIFPAIFYFRIMPTEKEPARSTPKILALCFAMLGFLLMTMSLSFIIIDWASGTSRHGGNH*',
+#       'preStart' => {
+#         'cDot' => '102-1',
+#         'exin' => 'IVS2',
+#         'nDot' => '243-1',
+#         'r' => 'AC1'
+#       },
+#       'primaryTag' => 'Y',
+#       'prot' => 'NP_006832.1',
+#       'protBegin' => 34,
+#       'protEnd' => 505,
+#       'r' => 'C2',
+#       'r_Begin' => 'C2',
+#       'r_End' => 'AC1',
+#       'rnaBegin' => 243,
+#       'rnaEnd' => '243-1',
+#       'strd' => '+',
+#       'trAlt' => 'G',
+#       'trRef' => '',
+#       'trRefComp' => {
+#         'EX3' => 0
+#       }
+#     }
+#   },
+#   'var' => bless( {
+#     'alt' => 'G',
+#     'altlen' => 1,
+#     'cg54' => {
+#       'AF' => '1.000000',
+#       'AN' => 107
+#     },
+#     'chr' => '3',
+#     'cosmic' => {},
+#     'cytoBand' => '3p21.31',
+#     'dbsnp' => {
+#       'rs139650676' => {
+#         'AF' => '0.999100',
+#         'AN' => '2184',
+#         'Alleles' => '-,G,',
+#         'bitfields' => '',
+#         'class' => 'insertion',
+#         'exception' => '',
+#         'func' => 'splice-3',
+#         'weight' => '1'
+#       }
+#     },
+#     'end' => 50251833,
+#     'esp6500' => {
+#       'AF' => '0.998403',
+#       'AN' => 11896
+#     },
+#     'gHGVS' => 'g.50251833_50251834insG',
+#     'guess' => 'ins',
+#     'gwas' => {},
+#     'imp' => 'ins',
+#     'pos' => 50251833,
+#     'ref' => '',
+#     'refbuild' => 'GRCh37',
+#     'reflen' => 0,
+#     'reptag' => '.',
+#     'sm' => 0,
+#     'tgp' => {
+#       'AF' => '1.000000',
+#       'AN' => 2184
+#     },
+#     'varName' => 'NM_006841.4(SLC38A3): c.102-1_102insG (p.V35fs*27)',
+#     'varTypeSO' => 'SO:0000667'
+#   }, 'BedAnno::Var' )
+# }, 'BedAnno::Anno' )
+not ok 37 - for [ cds_edge_ins2_anno ]
+# The anno infor are: bless( {
+#   'trInfo' => {
+#     'NM_014957.2' => {
+#       'c' => 'c.834_834+1insGTTA',
+#       'cdsBegin' => '834+1',
+#       'cdsEnd' => '834',
+#       'componentIndex' => '7',
+#       'ei_Begin' => 'IVS7',
+#       'ei_End' => 'EX7',
+#       'exin' => 'EX7',
+#       'exonIndex' => '7',
+#       'func' => 'frameshift',
+#       'funcSO' => 'SO:0001589',
+#       'funcSOname' => 'frameshift_variant',
+#       'geneId' => '22898',
+#       'geneSym' => 'DENND3',
+#       'genepart' => 'CDS',
+#       'genepartSO' => 'SO:0000316',
+#       'intronIndex' => '.',
+#       'p' => 'p.E279fs*12',
+#       'pfamId' => 'PF02141.16;PF03455.14;PF00400.27',
+#       'pfamName' => 'DENN (AEX-3) domain;dDENN domain;WD domain, G-beta repeat',
+#       'postEnd' => {
+#         'cDot' => '834+1',
+#         'exin' => 'IVS7',
+#         'nDot' => '1112+1',
+#         'r' => 'DC6'
+#       },
+#       'prAlt' => 'VRSRRFSSDKY*',
+#       'prRef' => 'EADGLVLINIDHGSITYSKSTDDNVDIPDVPLLAAQTFIQRVQSLQLHHELHAAHLLSSTDLKEGRAHRRSWQQKLNCQIQQTTLQLLVSIFRDVKNHLNYEHRVFNSEEFLKTRAPGDHQFYKQVLDTYMFHSFLKARLNRRMDAFAQMDLDTQSEEDRINGMLLSPRRPTVEKRASRKSSHLHVTHRRMVVSMPNLQDIAMPELAPRNSSLRLTDTAGCRGSSAVLNVTPKSPYTFKIPEIHFPLESKCVQAYHAHFVSMLSEAMCFLAPDNSLLLARYLYLRGLVYLMQGQLLNALLDFQNLYKTDIRIFPTDLVKRTVESMSAPEWEGAEQAPELMRLISEILDKPHEASKLDDHVKKFKLPKKHMQLGDFMKRVQESGIVKDASIIHRLFEALTVGQEKQIDPETFKDFYNCWKETEAEAQEVSLPWLVMEHLDKNECVCKLSSSVKTNLGVGKIAMTQKRLFLLTEGRPGYLEISTFRNIEEVRRTTTTFLLRRIPTLKIRVASKKEVFEANLKTECDLWHLMVKEMWAGKKLADDHKDPHYVQQALTNVLLMDAVVGTLQSPGAIYAASKLSYFDKMSNEMPMTLPETTLETLKHKINPSAGEAFPQAVDVLLYTPGHLDPAEKVEDAHPKLWCALSEGKVTVFNASSWTIHQHSFKVGTAKVNCMVMADQNQVWVGSEDSVIYIINVHSMSCNKQLTAHCSSVTDLIVQDGQEAPSNVYSCSMDGMVLVWNVSTLQVTSRFQLPRGGLTSIRLHGGRLWCCTGNSIMVMKMNGSLHQELKIEENFKDTSTSFLAFQLLPEEEQLWAACAGRSEVYIWSLKDLAQPPQRVPLEDCSEINCMIRVKKQVWVGSRGLGQGTPKGKIYVIDAERKTVEKELVAHMDTVRTLCSAEDRYVLSGSGREEGKVAIWKGE*',
+#       'preStart' => {
+#         'cDot' => '834',
+#         'exin' => 'EX7',
+#         'nDot' => 1112,
+#         'r' => 'C6'
+#       },
+#       'primaryTag' => 'Y',
+#       'prot' => 'NP_055772.2',
+#       'protBegin' => 279,
+#       'protEnd' => 1199,
+#       'r' => 'C6',
+#       'r_Begin' => 'DC6',
+#       'r_End' => 'C6',
+#       'rnaBegin' => '1112+1',
+#       'rnaEnd' => 1112,
+#       'strd' => '+',
+#       'trAlt' => 'GTTA',
+#       'trRef' => '',
+#       'trRefComp' => {
+#         'EX7' => 0,
+#         'IVS7' => [
+#           0
+#         ]
+#       }
+#     }
+#   },
+#   'var' => bless( {
+#     'alt' => 'GTTA',
+#     'altlen' => 4,
+#     'cg54' => {
+#       'AF' => 0,
+#       'AN' => 0
+#     },
+#     'chr' => '8',
+#     'cosmic' => {},
+#     'cytoBand' => '8q24.3',
+#     'dbsnp' => {
+#       'rs143399544' => {
+#         'AF' => 0,
+#         'AN' => 0,
+#         'Alleles' => '',
+#         'bitfields' => '',
+#         'class' => 'insertion',
+#         'exception' => '',
+#         'func' => 'splice-5',
+#         'weight' => '1'
+#       }
+#     },
+#     'end' => 142161936,
+#     'esp6500' => {
+#       'AF' => 0,
+#       'AN' => 0
+#     },
+#     'gHGVS' => 'g.142161936_142161937insGTTA',
+#     'guess' => 'ins',
+#     'gwas' => {},
+#     'imp' => 'ins',
+#     'pos' => 142161936,
+#     'ref' => '',
+#     'refbuild' => 'GRCh37',
+#     'reflen' => 0,
+#     'reptag' => '.',
+#     'sm' => 0,
+#     'tgp' => {
+#       'AF' => 0,
+#       'AN' => 0
+#     },
+#     'varName' => 'NM_014957.2(DENND3): c.834_834+1insGTTA (p.E279fs*12)',
+#     'varTypeSO' => 'SO:0000667'
+#   }, 'BedAnno::Var' )
+# }, 'BedAnno::Anno' )
+not ok 38 - for [ left_edge_mismatch_anno ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_006158.3' => {
@@ -2388,12 +2589,12 @@ not ok 36 - for [ left_edge_mismatch_anno ]
 #     'varTypeSO' => 'SO:0000667'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-ok 37 - for [ downstream_no_call ]
-ok 38 - for [ span_annotation_fail ]
-ok 39 - for [ rep_span_cds_utr3 ]
-ok 40 - for [ MT_no_call_ncRNA ]
-ok 41 - for [ MT_span_no_call ]
-not ok 42 - for [ MT_altstart ]
+ok 39 - for [ downstream_no_call ]
+ok 40 - for [ span_annotation_fail ]
+ok 41 - for [ rep_span_cds_utr3 ]
+ok 42 - for [ MT_no_call_ncRNA ]
+ok 43 - for [ MT_span_no_call ]
+not ok 44 - for [ MT_altstart ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -3269,7 +3470,7 @@ not ok 42 - for [ MT_altstart ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 43 - for [ Mt_init_loss ]
+not ok 45 - for [ Mt_init_loss ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -4152,7 +4353,7 @@ not ok 43 - for [ Mt_init_loss ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 44 - for [ No_call_altstart ]
+not ok 46 - for [ No_call_altstart ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -5028,7 +5229,7 @@ not ok 44 - for [ No_call_altstart ]
 #     'varTypeSO' => 'no-call'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 45 - for [ Mt_no_call_initloss ]
+not ok 47 - for [ Mt_no_call_initloss ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -5902,7 +6103,7 @@ not ok 45 - for [ Mt_no_call_initloss ]
 #     'varTypeSO' => 'no-call'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 46 - for [ Mt_nonsense ]
+not ok 48 - for [ Mt_nonsense ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -6779,7 +6980,7 @@ not ok 46 - for [ Mt_nonsense ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 47 - for [ Mt_missense ]
+not ok 49 - for [ Mt_missense ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -7664,7 +7865,7 @@ not ok 47 - for [ Mt_missense ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 48 - for [ Mt_coding_synon ]
+not ok 50 - for [ Mt_coding_synon ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -8540,7 +8741,7 @@ not ok 48 - for [ Mt_coding_synon ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 49 - for [ Mt_stop_loss ]
+not ok 51 - for [ Mt_stop_loss ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -9411,4 +9612,4 @@ not ok 49 - for [ Mt_stop_loss ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-1..49
+1..51
