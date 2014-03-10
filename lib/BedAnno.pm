@@ -4601,18 +4601,18 @@ sub reformatAnno {
                 ? join( ";", sort keys %{ $var->{dbsnp} } )
                 : ""
             ),
-            CG54_AF    => ( ( exists $var->{cg54} ) ? $var->{cg54}->{AF} : "" ),
-            CG54_AN    => ( ( exists $var->{cg54} ) ? $var->{cg54}->{AN} : "" ),
-            "1000G_AF" => ( ( exists $var->{tgp} )  ? $var->{tgp}->{AF}  : "" ),
-            "1000G_AN" => ( ( exists $var->{tgp} )  ? $var->{tgp}->{AN}  : "" ),
+            CG54_AF    => ( ( exists $var->{cg54} and exists $var->{cg54}->{AF} ) ? $var->{cg54}->{AF} : "" ),
+            CG54_AN    => ( ( exists $var->{cg54} and exists $var->{cg54}->{AN} ) ? $var->{cg54}->{AN} : "" ),
+            "1000G_AF" => ( ( exists $var->{tgp} and exists $var->{tgp}->{AF} )  ? $var->{tgp}->{AF}  : "" ),
+            "1000G_AN" => ( ( exists $var->{tgp} and exists $var->{tgp}->{AN} )  ? $var->{tgp}->{AN}  : "" ),
             Wellderly_AF =>
-              ( ( exists $var->{wellderly} ) ? $var->{wellderly}->{AF} : "" ),
+              ( ( exists $var->{wellderly} and exists $var->{wellderly}->{AF} ) ? $var->{wellderly}->{AF} : "" ),
             Wellderly_AN =>
-              ( ( exists $var->{wellderly} ) ? $var->{wellderly}->{AN} : "" ),
+              ( ( exists $var->{wellderly} and exists $var->{wellderly}->{AN} ) ? $var->{wellderly}->{AN} : "" ),
             ESP6500_AF =>
-              ( ( exists $var->{esp6500} ) ? $var->{esp6500}->{AF} : "" ),
+              ( ( exists $var->{esp6500} and exists $var->{esp6500}->{AF} ) ? $var->{esp6500}->{AF} : "" ),
             ESP6500_AN =>
-              ( ( exists $var->{esp6500} ) ? $var->{esp6500}->{AN} : "" ),
+              ( ( exists $var->{esp6500} and exists $var->{esp6500}->{AN} ) ? $var->{esp6500}->{AN} : "" ),
             PhyloPscorePlacentalMammals =>
               ( ( exists $var->{phyloPpm} ) ? $var->{phyloPpm} : "" ),
             PhyloPscorePrimates =>

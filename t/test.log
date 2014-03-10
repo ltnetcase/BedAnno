@@ -586,10 +586,7 @@ not ok 21 - for [ no_call_varanno ]
 #   },
 #   'var' => bless( {
 #     'alt' => '?',
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => '1',
 #     'cosmic' => {},
 #     'cytoBand' => '1p36.33',
@@ -1501,10 +1498,7 @@ not ok 30 - for [ no_call_edge_varanno ]
 #   },
 #   'var' => bless( {
 #     'alt' => '?',
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => '1',
 #     'cosmic' => {},
 #     'cytoBand' => '1p36.33',
@@ -3436,19 +3430,13 @@ not ok 44 - for [ MT_altstart ]
 #   'var' => bless( {
 #     'alt' => 'T',
 #     'altlen' => 1,
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => 'MT',
 #     'cosmic' => {},
 #     'cytoBand' => '.',
 #     'dbsnp' => {},
 #     'end' => 3309,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'm.3308A>T',
 #     'guess' => 'snv',
 #     'gwas' => {},
@@ -3462,10 +3450,7 @@ not ok 44 - for [ MT_altstart ]
 #     'reflen' => 1,
 #     'reptag' => '.',
 #     'sm' => 1,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'tgp' => {},
 #     'varName' => 'NM_MT-ND1(MT-ND1): c.3A>T (p.=)',
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
@@ -4319,19 +4304,13 @@ not ok 45 - for [ Mt_init_loss ]
 #   'var' => bless( {
 #     'alt' => 'C',
 #     'altlen' => 1,
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => 'MT',
 #     'cosmic' => {},
 #     'cytoBand' => '.',
 #     'dbsnp' => {},
 #     'end' => 3307,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'm.3306A>C',
 #     'guess' => 'snv',
 #     'gwas' => {},
@@ -4345,10 +4324,7 @@ not ok 45 - for [ Mt_init_loss ]
 #     'reflen' => 1,
 #     'reptag' => '.',
 #     'sm' => 1,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'tgp' => {},
 #     'varName' => 'NM_MT-ND1(MT-ND1): c.1A>C (p.0?)',
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
@@ -5195,19 +5171,13 @@ not ok 46 - for [ No_call_altstart ]
 #   'var' => bless( {
 #     'alt' => 'N',
 #     'altlen' => 1,
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => 'MT',
 #     'cosmic' => {},
 #     'cytoBand' => '.',
 #     'dbsnp' => {},
 #     'end' => 3309,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'm.3308A>N',
 #     'guess' => 'no-call',
 #     'gwas' => {},
@@ -5221,10 +5191,7 @@ not ok 46 - for [ No_call_altstart ]
 #     'reflen' => 1,
 #     'reptag' => '.',
 #     'sm' => 1,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'tgp' => {},
 #     'varName' => 'NM_MT-ND1(MT-ND1): c.3A>N (p.=)',
 #     'varTypeSO' => 'no-call'
 #   }, 'BedAnno::Var' )
@@ -6069,19 +6036,13 @@ not ok 47 - for [ Mt_no_call_initloss ]
 #   },
 #   'var' => bless( {
 #     'alt' => '?',
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => 'MT',
 #     'cosmic' => {},
 #     'cytoBand' => '.',
 #     'dbsnp' => {},
 #     'end' => 3307,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'm.3306A>?',
 #     'guess' => 'no-call',
 #     'gwas' => {},
@@ -6095,10 +6056,7 @@ not ok 47 - for [ Mt_no_call_initloss ]
 #     'reflen' => 1,
 #     'reptag' => '.',
 #     'sm' => 1,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'tgp' => {},
 #     'varName' => 'NM_MT-ND1(MT-ND1): c.1A>? (p.M1?)',
 #     'varTypeSO' => 'no-call'
 #   }, 'BedAnno::Var' )
@@ -6946,19 +6904,13 @@ not ok 48 - for [ Mt_nonsense ]
 #   'var' => bless( {
 #     'alt' => 'A',
 #     'altlen' => 1,
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => 'MT',
 #     'cosmic' => {},
 #     'cytoBand' => '.',
 #     'dbsnp' => {},
 #     'end' => 3435,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'm.3434C>A',
 #     'guess' => 'snv',
 #     'gwas' => {},
@@ -6972,10 +6924,7 @@ not ok 48 - for [ Mt_nonsense ]
 #     'reflen' => 1,
 #     'reptag' => '.',
 #     'sm' => 1,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'tgp' => {},
 #     'varName' => 'NM_MT-ND1(MT-ND1): c.129C>A (p.Y43*)',
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
@@ -7831,19 +7780,13 @@ not ok 49 - for [ Mt_missense ]
 #   'var' => bless( {
 #     'alt' => 'G',
 #     'altlen' => 1,
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => 'MT',
 #     'cosmic' => {},
 #     'cytoBand' => '.',
 #     'dbsnp' => {},
 #     'end' => 3434,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'm.3433A>G',
 #     'guess' => 'snv',
 #     'gwas' => {},
@@ -7857,10 +7800,7 @@ not ok 49 - for [ Mt_missense ]
 #     'reflen' => 1,
 #     'reptag' => '.',
 #     'sm' => 1,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'tgp' => {},
 #     'varName' => 'NM_MT-ND1(MT-ND1): c.128A>G (p.Y43C)',
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
@@ -8707,19 +8647,13 @@ not ok 50 - for [ Mt_coding_synon ]
 #   'var' => bless( {
 #     'alt' => 'T',
 #     'altlen' => 1,
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => 'MT',
 #     'cosmic' => {},
 #     'cytoBand' => '.',
 #     'dbsnp' => {},
 #     'end' => 3435,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'm.3434C>T',
 #     'guess' => 'snv',
 #     'gwas' => {},
@@ -8733,10 +8667,7 @@ not ok 50 - for [ Mt_coding_synon ]
 #     'reflen' => 1,
 #     'reptag' => '.',
 #     'sm' => 1,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'tgp' => {},
 #     'varName' => 'NM_MT-ND1(MT-ND1): c.129C>T (p.=)',
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
@@ -9578,19 +9509,13 @@ not ok 51 - for [ Mt_stop_loss ]
 #   'var' => bless( {
 #     'alt' => 'G',
 #     'altlen' => 1,
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => 'MT',
 #     'cosmic' => {},
 #     'cytoBand' => '.',
 #     'dbsnp' => {},
 #     'end' => 4262,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'm.4261A>G',
 #     'guess' => 'snv',
 #     'gwas' => {},
@@ -9604,10 +9529,7 @@ not ok 51 - for [ Mt_stop_loss ]
 #     'reflen' => 1,
 #     'reptag' => '.',
 #     'sm' => 1,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'tgp' => {},
 #     'varName' => 'NM_MT-ND1(MT-ND1): c.956A>G (p.*319fs*?)',
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
