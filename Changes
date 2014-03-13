@@ -2,16 +2,16 @@
 	- original version; created by h2xs 1.23 with options
 		-AXc -n BedAnno -b v5.10.1
 
-0.10  Mon Jul 8 17:01:02 2013
+0.10  Mon Jul 08 17:01:02 2013
 	- alpha version released.
 
-0.11  Mon Jul 8 22:01:02 2013
+0.11  Mon Jul 08 22:01:02 2013
 	- add method write_using() to generate db information files.
 
-0.12  Tue Jul 9 13:01:02 2013
+0.12  Tue Jul 09 13:01:02 2013
 	- fix a bug in parse_cPos, when dealing with intron mutation
 
-0.13  Tue Jul 9 22:32:02 2013
+0.13  Tue Jul 09 22:32:02 2013
 	- add a new type 'c' to write_using() method to make the
 	  complete annotation region be available to generate.
 
@@ -52,7 +52,7 @@
 	- change to support short peptide code annotation by add a new parameter: "short",
 	  in the 'new' method. e.g.
 
-0.32  Tue Oct 8  16:43:01 2013
+0.32  Tue Oct 08 16:43:01 2013
 	- change internal tech and db format to support CG's shell list and VCF, also
 	  will change to annotate on real refSeq sequence, not the cut from refgenome
 	  pseudo ones.
@@ -66,10 +66,10 @@
 	- The reformatAnno() will have a new key "TranscriptVarName" in "var" to give the value
 	  please use "man doc/BedAnno.1" to check the detail in "decide_major" method description
 
-0.35  Sat Nov 2  18:43:05 2013
+0.35  Sat Nov 02 18:43:05 2013
 	- change to use Tabix Perl API instead of system call cmd: tabix
 
-0.36  Wed Nov 6  14:44:04 2013
+0.36  Wed Nov 06 14:44:04 2013
 	- get rid of fetchseq by samtools faidx, hash all transcript sequences at the very beginning.
 
 0.37  Fri Nov 15 20:13:43 2013
@@ -94,18 +94,26 @@
 	- fix BedAnno::Var->new for VCF reference variant parsing.
 	- reformatAnno() is changed to give uniform begin/end position
 
-0.41 Wed Feb 19 14:44:44 2014
+0.41  Wed Feb 19 14:44:44 2014
 	- for crawler need, move TranscriptVarName to VarName
 	- for crawler need, move GenePartIndex to ComponentIndex
 	- for crawler need, add ImpactIndex, GenePartIndex, varTypeIndex
 	- for crawler need, add trVarName for each transcript.
 	- add varName to var hash, add trVarName to trInfo tr hash.
 
-0.42 Mon Mar 3 15:15:15 2014
+0.42  Mon Mar 03 15:15:15 2014
 	- add DESTROY method to prevent memory leak.
 
-0.43 Wes Mar 5 13:45:45 2014
+0.43  Wes Mar 05 13:45:45 2014
 	- fix bugs for cds exon-intron edge insertion variants.
 
-0.44 Thu Mar 6 13:58:58 2014
+0.44  Thu Mar 06 13:58:58 2014
 	- fix a bug for using trans options to limit annotation.
+
+0.45  Thu Mar 13 11:18:23 2014
+	- fix a problem when repeat get across two different region,
+	  original cHGVS will give the repeat format cHGVS, and for now,
+	  it will give it as a delins.
+	- add new keys alt_cHGVS and alt_pHGVS to transcript var hash
+          to give a backward compatible HGVS naming for repeat format
+	  HGVS, which can be easily used to query public databases.

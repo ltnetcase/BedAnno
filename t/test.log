@@ -895,6 +895,7 @@ not ok 25 - for [ cds_del_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_006158.3' => {
+#       'alt_cHGVS' => 'c.1413delC',
 #       'c' => 'c.1408C[6>5]',
 #       'cdsBegin' => '1412',
 #       'cdsEnd' => '1412',
@@ -985,6 +986,8 @@ not ok 26 - for [ cds_ins_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_006158.3' => {
+#       'alt_cHGVS' => 'c.1411_1413dupCCC',
+#       'alt_pHGVS' => 'p.P471dup',
 #       'c' => 'c.1408C[6>9]',
 #       'cdsBegin' => '1412',
 #       'cdsEnd' => '1411',
@@ -1072,6 +1075,8 @@ not ok 27 - for [ cds_rep_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_000581.2' => {
+#       'alt_cHGVS' => 'c.33_38delGGCGGC',
+#       'alt_pHGVS' => 'p.A12_A13del',
 #       'c' => 'c.21GGC[6>4]',
 #       'cdsBegin' => '21',
 #       'cdsEnd' => '38',
@@ -1122,6 +1127,8 @@ not ok 27 - for [ cds_rep_anno ]
 #       }
 #     },
 #     'NM_201397.1' => {
+#       'alt_cHGVS' => 'c.33_38delGGCGGC',
+#       'alt_pHGVS' => 'p.A12_A13del',
 #       'c' => 'c.21GGC[6>4]',
 #       'cdsBegin' => '21',
 #       'cdsEnd' => '38',
@@ -2499,6 +2506,7 @@ not ok 38 - for [ left_edge_mismatch_anno ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_006158.3' => {
+#       'alt_cHGVS' => 'c.1415_1416dupCT',
 #       'c' => 'c.1413CT[2>3]',
 #       'cdsBegin' => '1414',
 #       'cdsEnd' => '1413',

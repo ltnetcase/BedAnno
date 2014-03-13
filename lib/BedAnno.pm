@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.44';
+our $VERSION = '0.45';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.44
+=head2 VERSION v0.45
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -46,6 +46,8 @@ our ( %C3, %C1, %SO2Name, %func2SO,  %Name2SO,
       %varTypeName2Index, %genepartName2Index, 
       %funcName2Index,
 );
+
+our $CURRENT_MT = 'NC_012920.1';
 
 %C3 = (
     TTT=>"Phe",	CTT=>"Leu", ATT=>"Ile",	GTT=>"Val",
@@ -2222,6 +2224,10 @@ sub decide_major {
           $annoEnt->{var}->{chr} . ": " . $annoEnt->{var}->{gHGVS};
         $intergenic = "chr" . $intergenic if ( $intergenic =~ /^[\dXYM]/ );
         $intergenic .= " (intergenic)";    # for only intergenic
+
+	if ($intergenic =~ /^chrMT/) {
+	    $intergenic =~ s/^chrMT/$CURRENT_MT/;
+	}
         return $intergenic;
     }
     else {
@@ -2470,7 +2476,22 @@ sub getTrChange {
 
 	# * check if a repeat case, and use cerntain chgvs string
 	# * assign cHGVS string
-	if ($real_var->{imp} eq 'rep') {
+        if (
+            $real_var->{imp} eq 'rep'
+
+            # not get across the edge of cds/non-cds region
+            and !( $chgvs_5 !~ /^\d+$/ xor $chgvs_3 !~ /^\d+$/ )
+
+            # not get across the edge of intron/exon region or promoter / 3'd
+            and !(
+                    $chgvs_5 !~ /\d+[\+\-][ud]?\d+/ 
+		xor $chgvs_3 !~ /\d+[\+\-][ud]?\d+/
+            )
+
+            # we currently assume repeat variant won't get across more than
+            # two region, so ommit other case test
+          )
+        {
             my $trRep = $real_var->{rep};
 
             if (    $real_var->{ref_cn} == 1
@@ -2484,15 +2505,208 @@ sub getTrChange {
                       $f . $chgvs_5 . '_' . $chgvs_3 . 'dup' . $trRep;
                 }
             }
-	    else {
-		$trannoEnt->{c} =
-		    $f
-		  . $chgvs_5
-		  . $trRep . '['
-		  . $real_var->{ref_cn} . '>'
-		  . $real_var->{alt_cn} . ']';
+            else {
+                $trannoEnt->{c} =
+                    $f
+                  . $chgvs_5
+                  . $trRep . '['
+                  . $real_var->{ref_cn} . '>'
+                  . $real_var->{alt_cn} . ']';
+            }
+
+	    # add a new key: alt_cHGVS, using for query database which 
+	    # do not have current standard cHGVS string, especially
+	    # for repeat case
+
+            if (   $real_var->{ref_cn} > $real_var->{alt_cn}
+                or $real_var->{ref_cn} >
+                ( $real_var->{alt_cn} - $real_var->{ref_cn} ) )
+            { # deletion or duplication in previous definition
+                my $changed_cn =
+                  abs( $real_var->{ref_cn} - $real_var->{alt_cn} );
+                my $changed_type =
+                  ( $real_var->{ref_cn} > $real_var->{alt_cn} ) ? 'del' : 'dup';
+                my $changed_cont = $trRep x $changed_cn;
+
+                if ( $changed_cn == 1 and $real_var->{replen} == 1 ) {
+                    $trannoEnt->{alt_cHGVS} = $f . $chgvs_3 . $changed_type . $trRep;
+                }
+                else {
+                    my $changed_cont = $trRep x $changed_cn;
+                    my $renew_offset =
+                      $real_var->{replen} *
+                      ( ( $real_var->{ref_cn} > $real_var->{alt_cn} )
+                        ? $real_var->{alt_cn}
+                        : ( $real_var->{ref_cn} * 2 - $real_var->{alt_cn} ) );
+                    if ( $chgvs_5 =~ /^\d+$/ ) {    # cds / ncRNA exon
+                        $trannoEnt->{alt_cHGVS} =
+                            $f
+                          . ( $chgvs_5 + $renew_offset ) . '_'
+                          . $chgvs_3 . $changed_type
+                          . $changed_cont;
+                    }
+                    elsif ( $chgvs_5 =~ /^([\*\+]?)(\-?\d+)$/ ) {
+
+                        # utr region / ncRNA promoter 3'd region
+                        my $sig       = $1;
+                        my $start_pos = $2;
+                        if ( $sig eq '' ) {         # 5 utr
+                            $trannoEnt->{alt_cHGVS} =
+                                $f
+                              . ( $start_pos + $renew_offset ) . '_'
+                              . $chgvs_3 . $changed_type
+                              . $changed_cont;
+                        }
+                        else {                      # 3 utr
+                            $trannoEnt->{alt_cHGVS} =
+                                $f
+                              . $sig
+                              . ( $start_pos + $renew_offset ) . '_'
+                              . $chgvs_3 . $changed_type
+                              . $changed_cont;
+                        }
+                    }
+                    elsif ( $chgvs_5 =~ /^(\-?[^\-\+]+)(\+?d?)(\-?u?\d+)$/ ) {
+
+                        # intron or promoter or 3'downstream
+                        my $anchor5 = $1;
+                        my $sig5    = $2;
+                        my $offset5 = $3;
+                        my $u5_opt  = 0;
+                        if ( $offset5 =~ /u/ ) {
+                            $u5_opt = 1;
+                            $offset5 =~ s/u//;
+                        }
+                        if ( $chgvs_3 =~ /^(\-?[^\-\+]+)(\+?d?)(\-?u?\d+)$/ ) {
+                            my $anchor3 = $1;
+                            my $sig3    = $2;
+                            my $offset3 = $3;
+                            my $u3_opt  = 0;
+                            if ( $offset3 =~ /u/ ) {
+                                $u3_opt = 1;
+                                $offset3 =~ s/u//;
+                            }
+                            if ( $anchor3 eq $anchor5 and $sig5 eq $sig3 ) {
+                                my $anc_5 = $offset5 + $renew_offset;
+                                $anc_5 =~ s/^-/-u/ if ($u5_opt);
+                                $trannoEnt->{alt_cHGVS} =
+                                    $f
+                                  . $anchor5
+                                  . $sig5
+                                  . $anc_5 . '_'
+                                  . $chgvs_3 . $changed_type
+                                  . $changed_cont;
+                            }
+                            elsif ( $anchor3 ne $anchor5
+                                and $sig5 eq '+'
+                                and $sig3 eq '' )
+                            {    # assume same intron
+                                my $half_offset =
+                                  ( $real_rl - ( $offset5 + $offset3 ) ) / 2;
+
+                                if ( $renew_offset < $half_offset ) {
+                                    $trannoEnt->{alt_cHGVS} =
+                                        $f
+                                      . $anchor5
+                                      . $sig5
+                                      . ( $offset5 + $renew_offset ) . '_'
+                                      . $chgvs_3 . $changed_type
+                                      . $changed_cont;
+                                }
+                                else {
+                                    $trannoEnt->{alt_cHGVS} =
+                                        $f
+                                      . $anchor3
+                                      . $sig3
+                                      . ( $offset3 -
+                                          ( $real_var->{replen} * $changed_cn )
+                                          + 1 )
+                                      . '_'
+                                      . $chgvs_3
+                                      . $changed_type
+                                      . $changed_cont;
+                                }
+                            }
+                            else {
+                                $self->warn(
+                                    "Warning: repeat get across more than",
+                                    " 3 different region: $tid:$trannoEnt->{c}"
+                                ) if ( !exists $self->{quiet} );
+                            }
+                        }
+                        else {
+                            $self->warn(
+                                "Warning: not both intron while parsing",
+                                " alt_cHGVS : $tid:$trannoEnt->{c}"
+                            ) if ( !exists $self->{quiet} );
+                        }
+                    }
+                    else {
+                        $self->warn(
+			    "Warning: Unknown chgvs5 while ",
+			    "parsing alt_cHGVS : $tid: $chgvs_5"
+                        ) if ( !exists $self->{quiet} );
+                    }
+                }
+            }
+	    else { # insertion
+		my $ins_cn = $real_var->{alt_cn} - $real_var->{ref_cn};
+		my $ins_cont = $trRep x $ins_cn;
+		if ($chgvs_3 =~ /^\d+$/) { # cds / ncRNA exon
+		    $trannoEnt->{alt_cHGVS} =
+			$f
+		      . $chgvs_3 . '_'
+		      . ( $chgvs_3 + 1 ) . 'ins'
+		      . $ins_cont;
+		}
+		elsif ($chgvs_3 =~ /^([\*\+]?)(\-?\d+)$/) { # utr or ncRNA ext
+		    my $sig = $1;
+		    my $ins_pos = $2;
+		    if ($ins_pos eq '-1') {
+			$trannoEnt->{alt_cHGVS} = $f . '-1_1ins' . $ins_cont;
+		    }
+		    else {
+			$trannoEnt->{alt_cHGVS} =
+			    $f
+			  . $chgvs_3 . '_'
+			  . $sig
+			  . ( $ins_pos + 1 ) . 'ins'
+			  . $ins_cont;
+		    }
+		}
+		elsif ($chgvs_3 =~ /^(\-?[^\-\+]+)(\+?d?)(\-?u?\d+)$/) { # intron
+		    my $anchor = $1;
+		    my $sig = $2;
+		    my $ofst = $3;
+		    my $u3opt = 0;
+		    if ($ofst =~ /u/) {
+			$u3opt = 1;
+			$ofst =~ s/u//;
+		    }
+		    if ($ofst eq '-1') {
+			$trannoEnt->{alt_cHGVS} =
+			  $f . $chgvs_3 . '_' . $anchor . 'ins' . $ins_cont;
+		    }
+		    else {
+			my $anc3 = $ofst + 1;
+			$anc3 =~ s/^-/-u/ if ($u3opt);
+			$trannoEnt->{alt_cHGVS} =
+			    $f
+			  . $chgvs_3 . '_'
+			  . $anchor
+			  . $sig
+			  . $anc3 . 'ins'
+			  . $ins_cont;
+		    }
+		}
+		else {
+		    $self->warn(
+			"Warning: Unknown chgvs5 while ",
+			"parsing alt_cHGVS : $tid: $chgvs_3"
+		    ) if ( !exists $self->{quiet} );
+		}
 	    }
-	}
+        }
 	else {
 	    if ( $cmpPos == 0 ) {    # 1 bp
 
@@ -3051,6 +3265,58 @@ sub getTrChange {
                               . $prVar->{alt_cn} . ']';
                         }
 
+			# add a new key alt_pHGVS for querying 
+			# previous database, do exactly like alt_cHGVS
+			# but will be much more simple.
+			
+			my $phgvs_5 = $p_P + 1;
+			my $phgvs_3 = $p_P + ($prVar->{ref_cn} * $prVar->{replen});
+			my $repPrSta = substr( $prVar->{rep}, 0, 1 );
+			my $repPrEnd = substr( $prVar->{rep}, -1, 1 );
+			if (   $prVar->{ref_cn} > $prVar->{alt_cn}
+			    or $prVar->{ref_cn} >
+			    ( $prVar->{alt_cn} - $prVar->{ref_cn} ) )
+			{ # deletion or duplication in previous definition
+			    my $changed_cn =
+			      abs( $prVar->{ref_cn} - $prVar->{alt_cn} );
+			    my $changed_type =
+			      ( $prVar->{ref_cn} > $prVar->{alt_cn} ) ? 'del' : 'dup';
+			    my $changed_cont = $prVar->{rep} x $changed_cn;
+
+			    if ( $changed_cn == 1 and $prVar->{replen} == 1 ) {
+                                $trannoEnt->{alt_pHGVS} = 'p.'
+                                  . $prVar->{rep}
+                                  . $phgvs_3
+                                  . $changed_type;
+			    }
+			    else {
+                                my $changed_cont = $prVar->{rep} x $changed_cn;
+                                my $renew_offset = $prVar->{replen} * (
+                                    ( $prVar->{ref_cn} > $prVar->{alt_cn} )
+                                    ? $prVar->{alt_cn}
+                                    : ( $prVar->{ref_cn} * 2 -
+                                          $prVar->{alt_cn} )
+                                );
+                                $trannoEnt->{alt_pHGVS} =
+                                    'p.'
+                                  . $repPrSta
+                                  . ( $phgvs_5 + $renew_offset ) . '_'
+                                  . $repPrEnd
+                                  . $phgvs_3
+                                  . $changed_type;
+			    }
+			}
+			else { # insertion
+			    my $ins_cn = $prVar->{alt_cn} - $prVar->{ref_cn};
+			    my $ins_cont = $prVar->{rep} x $ins_cn;
+			    my $prPost = substr($trdbEnt->{pseq}, $phgvs_3, 1);
+			    $trannoEnt->{alt_pHGVS} =
+				'p.'
+			      . $repPrEnd . $phgvs_3 . '_'
+			      . $prPost . ( $phgvs_3 + 1 ) . 'ins'
+			      . $ins_cont;
+			}
+
 			next;
 		    }
 
@@ -3570,7 +3836,9 @@ sub reCalTrPos_by_ofst {
 	my $cur_blk_len;
 	if ( $exin !~ /^EX/ ) {
             $cur_blk_len =
-              ( $trannoEnt->{trRefComp}->{$exin}->[1] -
+              ( 2 > @{ $trannoEnt->{trRefComp}->{$exin} } )
+              ? 0
+              : ( $trannoEnt->{trRefComp}->{$exin}->[1] -
                   $trannoEnt->{trRefComp}->{$exin}->[0] );
 	}
 	else {

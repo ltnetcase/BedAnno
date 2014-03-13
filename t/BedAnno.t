@@ -1361,6 +1361,7 @@ my $cds_del_anno = bless(
     {
         'trInfo' => {
             'NM_006158.3' => {
+		'alt_cHGVS'	=> 'c.1413delC',
                 'c'             => 'c.1408C[6>5]',
                 'cdsBegin'      => '1412',
                 'cdsEnd'        => '1412',
@@ -1484,6 +1485,8 @@ my $cds_ins_anno = bless(
     {
         'trInfo' => {
             'NM_006158.3' => {
+		'alt_cHGVS'     => 'c.1411_1413dupCCC',
+		'alt_pHGVS'     => 'p.P471dup',
                 'c'             => 'c.1408C[6>9]',
                 'cdsBegin'      => '1412',
                 'cdsEnd'        => '1411',
@@ -1557,6 +1560,8 @@ my $cds_rep_anno = bless(
     {
         'trInfo' => {
             'NM_000581.2' => {
+		'alt_cHGVS'     => 'c.33_38delGGCGGC',
+		'alt_pHGVS'     => 'p.A12_A13del',
                 'c'             => 'c.21GGC[6>4]',
                 'cdsBegin'      => '21',
                 'cdsEnd'        => '38',
@@ -1605,6 +1610,8 @@ my $cds_rep_anno = bless(
                 }
             },
             'NM_201397.1' => {
+		'alt_cHGVS'     => 'c.33_38delGGCGGC',
+		'alt_pHGVS'     => 'p.A12_A13del',
                 'c'             => 'c.21GGC[6>4]',
                 'cdsBegin'      => '21',
                 'cdsEnd'        => '38',
@@ -1993,6 +2000,7 @@ my $promoter_anno = {
 };
 
 my $left_edge_mismatch_anno = {
+    'alt_cHGVS' => 'c.1415_1416dupCT',
     'protBegin' => 471,
     'ei_End'    => 'EX3',
     'exin'      => 'EX3',
@@ -2097,7 +2105,7 @@ my $rep_span_cds_utr3 = {
         'EX6E' => 1
     },
     'r_End'    => 'C6E',
-    'c'        => 'c.833A[14>13]',
+    'c'	       => 'c.833_*12delinsAAAAAAAAAAAAA',
     'rnaBegin' => 908,
     'ei_Begin' => 'EX6E',
     'r'        => 'C6E',
