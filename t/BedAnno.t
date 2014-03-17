@@ -2143,6 +2143,52 @@ my $rep_span_cds_utr3 = {
     'funcSOname' => 'unknown'
 };
 
+my $middle_intron = {
+    'protBegin' => '',
+    'ei_End'    => 'IVS12',
+    'exin'      => 'IVS12',
+    'prot'      => 'NP_001706.2',
+    'trRefComp' => {
+        'IVS12' => [ 0, 1 ]
+    },
+    'r_End'    => 'IC11',
+    'c'        => 'c.1313-396G>A',
+    'rnaBegin' => '1894-396',
+    'ei_Begin' => 'IVS12',
+    'r'        => 'IC11',
+    'cdsBegin' => '1313-396',
+    'preStart' => {
+        'r'    => 'IC11',
+        'cDot' => '1312+396',
+        'nDot' => '1893+396',
+        'exin' => 'IVS12'
+    },
+    'trRef'          => 'G',
+    'protEnd'        => '',
+    'cdsEnd'         => '1313-396',
+    'exonIndex'      => '.',
+    'r_Begin'        => 'IC11',
+    'trAlt'          => 'A',
+    'intronIndex'    => '12',
+    'strd'           => '+',
+    'componentIndex' => '12',
+    'geneSym'        => 'BLK',
+    'postEnd'        => {
+        'r'    => 'IC11',
+        'cDot' => '1313-395',
+        'nDot' => '1894-395',
+        'exin' => 'IVS12'
+    },
+    'geneId'     => '640',
+    'rnaEnd'     => '1894-396',
+    'genepart'   => 'interior_intron',
+    'func'       => 'intron',
+    'genepartSO' => 'SO:0000191',
+    'funcSO'     => '',
+    'primaryTag' => 'Y',
+    'funcSOname' => 'unknown'
+};
+
 my $cds_edge_ins_anno = {
     'protBegin' => 34,
     'ei_End'    => 'IVS2',
@@ -2792,6 +2838,8 @@ test_ok ( "span_annotation_fail", $span_annotation_fail, "NM_001042758.1",
    "chr1", 206538994, 206539014, "=", "?" );
 test_ok ( "rep_span_cds_utr3", $rep_span_cds_utr3, "NM_007115.3",
    "chr2", 152236045, 152236046, "A", "" );
+test_ok ( "middle_intron", $middle_intron, "NM_001715.2",
+   "chr8", 11421015, 11421016, "G", "A" );
 
 
 test_ok ( "MT_no_call_ncRNA", $mt_no_call_ncRNA, 'NR_MT-TRNF', 

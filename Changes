@@ -117,3 +117,6 @@
 	- add new keys alt_cHGVS and alt_pHGVS to transcript var hash
           to give a backward compatible HGVS naming for repeat format
 	  HGVS, which can be easily used to query public databases.
+
+0.46  Mon Mar 17 12:20:12 2014
+	- fix a bug for middle intron variant

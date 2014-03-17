@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.45';
+our $VERSION = '0.46';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.45
+=head2 VERSION v0.46
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -5773,7 +5773,7 @@ sub cal_hgvs_pos {
 		    # the length may be less than 2 bp
 		    # and then the nsta nsto and csta csto
 		    # will point to the neighbor exons' edge
-		    if ($lofst > $half_length) {
+		    if ($lofst >= $half_length) {
 			if ($rtidDetail->{nsto} =~ /\d+/) {
                             $nDot =
                               ($strd)
@@ -5803,7 +5803,7 @@ sub cal_hgvs_pos {
 		    }
 		}
 		else {
-		    if ($lofst > $half_length) { # drop into latter part
+		    if ($lofst >= $half_length) { # drop into latter part
 			if ($rtidDetail->{nsto} =~ /^(\d+\+?)(\-?\d+)$/) {
 			    $nDot =
 				($strd)
@@ -5944,7 +5944,7 @@ sub cal_hgvs_pos {
 		my $half_length = $rtidDetail->{wlen} / 2;
 
 		if ($gpSO eq 'abnormal-intron') {
-		    if ($real_ofst > $half_length ) {
+		    if ($real_ofst >= $half_length ) {
 			if ($rtidDetail->{nsto} =~ /\d+/) {
                             $nDot =
                               ($strd)
@@ -5974,7 +5974,7 @@ sub cal_hgvs_pos {
 		    }
 		}
 		else {
-		    if ($real_ofst > $half_length) { # drop into latter part
+		    if ($real_ofst >= $half_length) { # drop into latter part
 			if ($rtidDetail->{nsto} =~ /^(\d+\+?)(\-?\d+)$/) {
 			    $nDot =
 				($strd)
