@@ -2342,10 +2342,7 @@ sub getTrChange {
 	# debug
 	#print STDERR Data::Dumper->Dump( [$tid, $trannoEnt, $unify_r, $trSeq, $strd], ["tid", "trannoEnt", "unify_r", "trSeq", "strd"] );
 
-        my $trRef =
-          ( $unify_r =~ /=/ )
-          ? '='
-          : ( getTrRef( $trannoEnt, $unify_r, $trSeq, $strd ) );
+        my $trRef = getTrRef( $trannoEnt, $unify_r, $trSeq, $strd );
 	$trannoEnt->{trRef} = $trRef;
 
 
@@ -3949,6 +3946,7 @@ sub getTrRef {
     my $trStart  = getTrStart( $trannoEnt->{rnaBegin} );
     foreach my $exin (@tag_sort) {
         if ( $exin !~ /^EX/ ) {
+	    return '=' if ($refgenome eq '=');
             my $int_seq =
               ( 2 == scalar @{ $trannoEnt->{trRefComp}->{$exin} } )
               ? substr(

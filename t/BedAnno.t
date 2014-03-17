@@ -946,7 +946,7 @@ my $no_call_varanno = bless(
                 'rnaEnd'    => 1720,
                 'strd'      => '-',
                 'trAlt'     => '?',
-                'trRef'     => '=',
+                'trRef'     => '',
                 'trRefComp' => {
                     'EX11E' => 0
                 }
@@ -1919,7 +1919,7 @@ my $no_call_edge_ins_trinfo = {
     },
     'componentIndex' => '1',
     'ei_End'        => 'EX1',
-    'trRef'         => '=',
+    'trRef'         => '',
     'protEnd'       => '',
     'cdsEnd'        => '-1',
     'exonIndex'     => '1',

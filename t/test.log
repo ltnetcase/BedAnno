@@ -578,7 +578,7 @@ not ok 21 - for [ no_call_varanno ]
 #       'rnaEnd' => 1720,
 #       'strd' => '-',
 #       'trAlt' => '?',
-#       'trRef' => '=',
+#       'trRef' => '',
 #       'trRefComp' => {
 #         'EX11E' => 0
 #       }
