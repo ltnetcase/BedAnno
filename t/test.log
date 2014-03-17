@@ -2851,7 +2851,7 @@ not ok 45 - for [ MT_altstart ]
 #       'genepart' => 'CDS',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
-#       'p' => 'p.=',
+#       'p' => 'p.(=)',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'postEnd' => {
@@ -3448,7 +3448,7 @@ not ok 45 - for [ MT_altstart ]
 #     'reptag' => '.',
 #     'sm' => 1,
 #     'tgp' => {},
-#     'varName' => 'NM_MT-ND1(MT-ND1): c.3A>T (p.=)',
+#     'varName' => 'NM_MT-ND1(MT-ND1): c.3A>T (p.(=))',
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -4592,7 +4592,7 @@ not ok 47 - for [ No_call_altstart ]
 #       'genepart' => 'CDS',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
-#       'p' => 'p.=',
+#       'p' => 'p.(=)',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'postEnd' => {
@@ -5189,7 +5189,7 @@ not ok 47 - for [ No_call_altstart ]
 #     'reptag' => '.',
 #     'sm' => 1,
 #     'tgp' => {},
-#     'varName' => 'NM_MT-ND1(MT-ND1): c.3A>N (p.=)',
+#     'varName' => 'NM_MT-ND1(MT-ND1): c.3A>N (p.(=))',
 #     'varTypeSO' => 'no-call'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -8068,7 +8068,7 @@ not ok 51 - for [ Mt_coding_synon ]
 #       'genepart' => 'CDS',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
-#       'p' => 'p.=',
+#       'p' => 'p.(=)',
 #       'pfamId' => 'PF00146.16',
 #       'pfamName' => 'NADH dehydrogenase',
 #       'postEnd' => {
@@ -8665,7 +8665,7 @@ not ok 51 - for [ Mt_coding_synon ]
 #     'reptag' => '.',
 #     'sm' => 1,
 #     'tgp' => {},
-#     'varName' => 'NM_MT-ND1(MT-ND1): c.129C>T (p.=)',
+#     'varName' => 'NM_MT-ND1(MT-ND1): c.129C>T (p.(=))',
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )

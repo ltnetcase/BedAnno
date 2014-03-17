@@ -2133,7 +2133,7 @@ my $rep_span_cds_utr3 = {
         'exin' => 'EX6E'
     },
     'geneId'     => '7130',
-    'p'          => 'p.=',
+    'p'          => 'p.(=)',
     'rnaEnd'     => 908,
     'genepart'   => 'CDS',
     'func'       => 'utr-3',
@@ -2421,7 +2421,7 @@ my $mt_altstart = {
         'exin' => 'EX1E'
     },
     'geneId'     => '4535',
-    'p'          => 'p.=',
+    'p'          => 'p.(=)',
     'rnaEnd'     => 3,
     'genepart'   => 'CDS',
     'prAlt'      => 'M',
@@ -2520,7 +2520,7 @@ my $no_call_altstart = {
         'exin' => 'EX1E'
     },
     'geneId'     => '4535',
-    'p'          => 'p.=',
+    'p'          => 'p.(=)',
     'rnaEnd'     => 3,
     'prAlt'      => 'M',
     'genepart'   => 'CDS',
@@ -2721,7 +2721,7 @@ my $mt_coding_synon = {
         'exin' => 'EX1E'
     },
     'geneId'     => '4535',
-    'p'          => 'p.=',
+    'p'          => 'p.(=)',
     'rnaEnd'     => 129,
     'prAlt'      => 'Y',
     'genepart'   => 'CDS',
