@@ -2895,7 +2895,7 @@ sub getTrChange {
 			    and ( $u3_len > ( $real_rl - $real_al ) ) )
 			{
 			    $trannoEnt->{func} = 'utr-3';
-			    $trannoEnt->{p} = 'p.=';
+			    $trannoEnt->{p} = 'p.(=)';
 			    next;
 			}
 		    }
@@ -3175,7 +3175,7 @@ sub getTrChange {
 			else {
 			    $trannoEnt->{func} = 'coding-synon';
 			}
-			$trannoEnt->{p}    = 'p.=';
+			$trannoEnt->{p}    = 'p.(=)';
 			next;
 		    }
 
@@ -3327,7 +3327,7 @@ sub getTrChange {
 			    # altstart don't fix this
 			    # use pHGVS to indicate 
 			    # altstart here
-			    $trannoEnt->{p} = 'p.=';
+			    $trannoEnt->{p} = 'p.(=)';
 
 			    # can it be utr-5?
 			    $trannoEnt->{func} = 'utr-5';
