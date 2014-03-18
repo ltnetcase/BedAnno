@@ -599,7 +599,7 @@ my $del_varanno = bless(
     {
         'trInfo' => {
             'NR_024540.1' => {
-                'c'             => 'n.1715_1721del',
+                'c'             => 'n.1715_1721delAACTGAG',
                 'cdsBegin'      => '',
                 'cdsEnd'        => '',
                 'ei_Begin'      => 'EX11E',
@@ -670,7 +670,7 @@ my $rep_varanno = bless(
     {
         'trInfo' => {
             'NR_024540.1' => {
-                'c'             => 'n.1718_1719delinsCTACTACTACT',
+                'c'             => 'n.1718_1719delTGinsCTACTACTACT',
                 'cdsBegin'      => '',
                 'cdsEnd'        => '',
                 'ei_Begin'      => 'EX11E',
@@ -764,7 +764,7 @@ my $delins_varanno = bless(
     {
         'trInfo' => {
             'NR_024540.1' => {
-                'c'             => 'n.1717_1721delinsAC',
+                'c'             => 'n.1717_1721delCTGAGinsAC',
                 'cdsBegin'      => '',
                 'cdsEnd'        => '',
                 'ei_Begin'      => 'EX11E',
@@ -835,7 +835,7 @@ my $subs_varanno = bless(
     {
         'trInfo' => {
             'NR_024540.1' => {
-                'c'             => 'n.1717_1721delinsACACA',
+                'c'             => 'n.1717_1721delCTGAGinsACACA',
                 'cdsBegin'      => '',
                 'cdsEnd'        => '',
                 'ei_Begin'      => 'EX11E',
@@ -1433,7 +1433,7 @@ my $cds_del_anno = bless(
 );
 
 my $large_del_anno = {
-    'c'             => 'c.345_365del',
+    'c'             => 'c.345_365delTGGTGCTGATAATCATGTGCT',
     'cdsBegin'      => '345',
     'cdsEnd'        => '365',
     'ei_Begin'      => 'EX4',
@@ -1708,7 +1708,7 @@ my $cds_delins_anno = bless(
     {
         'trInfo' => {
             'NM_152486.2' => {
-                'c'             => 'c.73-2_73-1delinsTC',
+                'c'             => 'c.73-2_73-1delAGinsTC',
                 'cdsBegin'      => '73-2',
                 'cdsEnd'        => '73-1',
                 'ei_Begin'      => 'IVS2',
@@ -2105,7 +2105,7 @@ my $rep_span_cds_utr3 = {
         'EX6E' => 1
     },
     'r_End'    => 'C6E',
-    'c'	       => 'c.833_*12delinsAAAAAAAAAAAAA',
+    'c'	       => 'c.833_*12delAAAAAAAAAAAAAAinsAAAAAAAAAAAAA',
     'rnaBegin' => 908,
     'ei_Begin' => 'EX6E',
     'r'        => 'C6E',

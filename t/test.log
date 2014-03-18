@@ -183,7 +183,7 @@ not ok 17 - for [ del_varanno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
-#       'c' => 'n.1715_1721del',
+#       'c' => 'n.1715_1721delAACTGAG',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
 #       'componentIndex' => '11',
@@ -265,7 +265,7 @@ not ok 18 - for [ rep_varanno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
-#       'c' => 'n.1718_1719delinsCTACTACTACT',
+#       'c' => 'n.1718_1719delTGinsCTACTACTACT',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
 #       'componentIndex' => '11',
@@ -370,7 +370,7 @@ not ok 19 - for [ delins_varanno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
-#       'c' => 'n.1717_1721delinsAC',
+#       'c' => 'n.1717_1721delCTGAGinsAC',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
 #       'componentIndex' => '11',
@@ -452,7 +452,7 @@ not ok 20 - for [ subs_varanno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NR_024540.1' => {
-#       'c' => 'n.1717_1721delinsACACA',
+#       'c' => 'n.1717_1721delCTGAGinsACACA',
 #       'cdsBegin' => '',
 #       'cdsEnd' => '',
 #       'componentIndex' => '11',
@@ -1233,7 +1233,7 @@ not ok 28 - for [ cds_delins_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_152486.2' => {
-#       'c' => 'c.73-2_73-1delinsTC',
+#       'c' => 'c.73-2_73-1delAGinsTC',
 #       'cdsBegin' => '73-2',
 #       'cdsEnd' => '73-1',
 #       'componentIndex' => '2',
@@ -1949,7 +1949,7 @@ not ok 34 - for [ large_del_anno ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_000028.2' => {
-#       'c' => 'c.345_365del',
+#       'c' => 'c.345_365delTGGTGCTGATAATCATGTGCT',
 #       'cdsBegin' => '345',
 #       'cdsEnd' => '365',
 #       'componentIndex' => '4',
@@ -1997,10 +1997,10 @@ not ok 34 - for [ large_del_anno ]
 #       'trRefComp' => {
 #         'EX4' => 21
 #       },
-#       'trVarName' => 'NM_000028.2(AGL): c.345_365del (p.G116_L122del)'
+#       'trVarName' => 'NM_000028.2(AGL): c.345_365delTGGTGCTGATAATCATGTGCT (p.G116_L122del)'
 #     },
 #     'NM_000642.2' => {
-#       'c' => 'c.345_365del',
+#       'c' => 'c.345_365delTGGTGCTGATAATCATGTGCT',
 #       'cdsBegin' => '345',
 #       'cdsEnd' => '365',
 #       'componentIndex' => '4',
@@ -2050,7 +2050,7 @@ not ok 34 - for [ large_del_anno ]
 #       }
 #     },
 #     'NM_000643.2' => {
-#       'c' => 'c.345_365del',
+#       'c' => 'c.345_365delTGGTGCTGATAATCATGTGCT',
 #       'cdsBegin' => '345',
 #       'cdsEnd' => '365',
 #       'componentIndex' => '4',
@@ -2098,10 +2098,10 @@ not ok 34 - for [ large_del_anno ]
 #       'trRefComp' => {
 #         'EX4' => 21
 #       },
-#       'trVarName' => 'NM_000643.2(AGL): c.345_365del (p.G116_L122del)'
+#       'trVarName' => 'NM_000643.2(AGL): c.345_365delTGGTGCTGATAATCATGTGCT (p.G116_L122del)'
 #     },
 #     'NM_000644.2' => {
-#       'c' => 'c.345_365del',
+#       'c' => 'c.345_365delTGGTGCTGATAATCATGTGCT',
 #       'cdsBegin' => '345',
 #       'cdsEnd' => '365',
 #       'componentIndex' => '4',
@@ -2149,10 +2149,10 @@ not ok 34 - for [ large_del_anno ]
 #       'trRefComp' => {
 #         'EX4' => 21
 #       },
-#       'trVarName' => 'NM_000644.2(AGL): c.345_365del (p.G116_L122del)'
+#       'trVarName' => 'NM_000644.2(AGL): c.345_365delTGGTGCTGATAATCATGTGCT (p.G116_L122del)'
 #     },
 #     'NM_000645.2' => {
-#       'c' => 'c.294_314del',
+#       'c' => 'c.294_314delTGGTGCTGATAATCATGTGCT',
 #       'cdsBegin' => '294',
 #       'cdsEnd' => '314',
 #       'componentIndex' => '2',
@@ -2200,10 +2200,10 @@ not ok 34 - for [ large_del_anno ]
 #       'trRefComp' => {
 #         'EX2' => 21
 #       },
-#       'trVarName' => 'NM_000645.2(AGL): c.294_314del (p.G99_L105del)'
+#       'trVarName' => 'NM_000645.2(AGL): c.294_314delTGGTGCTGATAATCATGTGCT (p.G99_L105del)'
 #     },
 #     'NM_000646.2' => {
-#       'c' => 'c.297_317del',
+#       'c' => 'c.297_317delTGGTGCTGATAATCATGTGCT',
 #       'cdsBegin' => '297',
 #       'cdsEnd' => '317',
 #       'componentIndex' => '4',
@@ -2251,7 +2251,7 @@ not ok 34 - for [ large_del_anno ]
 #       'trRefComp' => {
 #         'EX4' => 21
 #       },
-#       'trVarName' => 'NM_000646.2(AGL): c.297_317del (p.G100_L106del)'
+#       'trVarName' => 'NM_000646.2(AGL): c.297_317delTGGTGCTGATAATCATGTGCT (p.G100_L106del)'
 #     }
 #   },
 #   'var' => bless( {
@@ -2284,7 +2284,7 @@ not ok 34 - for [ large_del_anno ]
 #       'AF' => 0,
 #       'AN' => 0
 #     },
-#     'varName' => 'NM_000642.2(AGL): c.345_365del (p.G116_L122del)',
+#     'varName' => 'NM_000642.2(AGL): c.345_365delTGGTGCTGATAATCATGTGCT (p.G116_L122del)',
 #     'varTypeSO' => 'SO:0000159'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
