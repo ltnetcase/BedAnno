@@ -556,6 +556,26 @@ sub new {
 	$t0 = [ gettimeofday ];
     }
 
+    if ( exists $self->{genes} ) {
+        if ( !ref( $self->{genes} ) ) {
+            open( GENE, $self->{genes} ) or $self->throw("$self->{genes} : $!");
+            my %genes = map { s/\s+//g; $_ => 1 } <GENE>;
+            close GENE;
+	    $self->{genes} = \%genes;
+        }
+    }
+    if ( exists $self->{trans} ) {
+        if ( !ref( $self->{trans} ) ) {
+            open( TRAN, $self->{trans} ) or $self->throw("$self->{trans} : $!");
+            my %trans = map { s/\s+//g; $_ => 1 } <TRAN>;
+            close TRAN;
+	    $self->{trans} = \%trans;
+        }
+	my $rclean_trans =
+          { map { s/\-\d+$//; $_ => 1 } keys %{ $self->{trans} } };
+	$self->{clean_trans} = $rclean_trans;
+    }
+
     $self->set_db($self->{db});
 
     my $t1;
@@ -706,6 +726,9 @@ sub set_db {
     }
 
     $self->{tidb} = Tabix->new( -data => $db );
+
+    return $self if (!exists $self->{batch});
+
     my %open_args;
     if ( exists $self->{region} ) {
         $open_args{region} = $self->{region};
@@ -714,39 +737,18 @@ sub set_db {
         $open_args{regbed} = $self->{regbed};
     }
     if ( exists $self->{genes} ) {
-        if ( ref( $self->{genes} ) eq 'HASH' ) {
-            $open_args{genes} = $self->{genes};
-        }
-        else {
-            open( GENE, $self->{genes} ) or $self->throw("$self->{genes} : $!");
-            my %genes = map { s/\s+//g; $_ => 1 } <GENE>;
-            close GENE;
-	    $self->{genes} = \%genes;
-            $open_args{genes} = \%genes;
-        }
+	$open_args{genes} = $self->{genes};
     }
-    if ( exists $self->{trans} ) {
-        if ( ref( $self->{trans} ) eq 'HASH' ) {
-            $open_args{trans} = $self->{trans};
-        }
-        else {
-            open( TRAN, $self->{trans} ) or $self->throw("$self->{trans} : $!");
-            my %trans = map { s/\s+//g; $_ => 1 } <TRAN>;
-            close TRAN;
-	    $self->{trans} = \%trans;
-            $open_args{trans} = \%trans;
-        }
-	my $rclean_trans =
-          { map { s/\-\d+$//; $_ => 1 } keys %{ $self->{trans} } };
-        $open_args{clean_trans} = $rclean_trans;
-	$self->{clean_trans} = $rclean_trans;
+    if ( exists $self->{trans} and exists $self->{clean_trans}) {
+	$open_args{trans} = $self->{trans};
+        $open_args{clean_trans} = $self->{clean_trans};
     }
     if ( exists $self->{mmap} ) {
         $open_args{mmap} = $self->{mmap};
     }
 
-    $self->{annodb} = $self->load_anno(%open_args)
-      if ( exists $self->{batch} );
+    $self->{annodb} = $self->load_anno(%open_args);
+
     return $self;
 }
 
@@ -777,7 +779,10 @@ sub set_tr {
 	$self->throw("Error: cannot read $tr.");
     }
     $self->{tr} = $tr;
-    $self->{trInfodb} = $self->readtr();
+    my %load_opts = ();
+    $load_opts{genes} = $self->{genes} if (exists $self->{genes});
+    $load_opts{trans} = $self->{trans} if (exists $self->{trans});
+    $self->{trInfodb} = $self->readtr( %load_opts );
     return $self;
 }
 
@@ -1178,6 +1183,172 @@ sub DESTROY {
 	delete $self->{wellderly_h};
     }
     return;
+}
+
+=head2 write_using
+
+    About   : write the current using database information to files
+    Usage   : $beda->write_using( $file, $type );
+    Args    : file gives the filename to output, and type is one of the following:
+		g:  gene symbol list
+		t:  transcript acc.ver list
+		c:  the complete annotation region, in bed format,
+		    which can be used as the variation calling region.
+		b:  standard bed format of only exon region
+		a:  BED +1 format, exon region with '+1' annotation, 
+		    oneline per one exon for one transcript, this
+		    format allow redundancy exists, and not sorted by
+		    chromosomal coordinates, but by the transcript acc.ver
+		    and the exon number, this file is mainly for 
+		    transcript originated statistics for only exon.
+
+=cut
+sub write_using {
+    my ($self, $file, $type) = @_;
+    open (F, ">", $file) or $self->throw("$file: $!");
+
+    my %open_args;
+    if ( exists $self->{region} ) {
+        $open_args{region} = $self->{region};
+    }
+    if ( !exists $self->{region} and exists $self->{regbed} ) {
+        $open_args{regbed} = $self->{regbed};
+    }
+    if ( exists $self->{genes} ) {
+	$open_args{genes} = $self->{genes};
+    }
+    if ( exists $self->{trans} and exists $self->{clean_trans}) {
+	$open_args{trans} = $self->{trans};
+        $open_args{clean_trans} = $self->{clean_trans};
+    }
+    if ( exists $self->{mmap} ) {
+        $open_args{mmap} = $self->{mmap};
+    }
+    my $annodb_load = $self->load_anno(%open_args);
+    my (%genes, %trans, @beds, %anno, @complete) = ();
+    foreach my $chr (sort keys %$annodb_load) {
+	foreach my $bedent (@{$annodb_load->{$chr}}) {
+	    if ($type eq 'c') {
+		push (@complete, [ $chr, $$bedent{sta}, $$bedent{sto} ]);
+		next;
+	    }
+	    my $exOpt = 0;
+	    foreach my $annoblk (keys %{$$bedent{annos}}) {
+# tid         gsym  gid strd blka gpgo exin nsta nsto csta csto wlen mismatch    pr
+# NM_015658.3|NOC2L|26155|-|3U1E|205|EX19E|2817|2801|*508|*492|0|D,879582,879582,.|Y
+		my @info = split(/\|/, $annoblk);
+
+		if ($type eq 'g') {
+		    $genes{$info[1]} = 1;
+		}
+		elsif ($type eq 't') {
+		    $trans{$info[0]} = 1;
+		}
+		elsif ($type eq 'b') {
+		    $exOpt = 1 if ($info[4] =~ /^EX/);
+		}
+		elsif ($type eq 'a') {
+		    if ( $info[4] =~ /^EX/) {
+			if (   !exists( $anno{ $info[0] } )
+			    or !exists( $anno{ $info[0] }{ $info[4] } ) )
+			{
+			    $anno{ $info[0] }{ $info[6] }{chr} = $chr;
+			    $anno{ $info[0] }{ $info[6] }{sta} = $$bedent{sta};
+			    $anno{ $info[0] }{ $info[6] }{sto} = $$bedent{sto};
+			    $anno{ $info[0] }{ $info[6] }{blk} = $annoblk;
+			}
+			elsif ($$bedent{sto} > $anno{ $info[0] }{ $info[6] }{sto}) {
+			    $anno{ $info[0] }{ $info[6] }{sto} = $$bedent{sto};
+			}
+			else {
+			    $self->throw("Error: bad db, non-departed beds, or no-sort!");
+			}
+		    }
+		}
+		else { $self->throw("type: $type not regconized."); }
+	    }
+	    push (@beds, [ $chr, $$bedent{sta}, $$bedent{sto} ]) if ($type eq 'b' and $exOpt);
+	}
+    }
+
+    if ($type eq 'g') {
+	say F join("\n", (sort keys %genes));
+    }
+    elsif ($type eq 't') {
+	say F join("\n", (sort keys %trans));
+    }
+    elsif ($type eq 'b') { # merge bed regions due to pre-sorted db.
+	if (0 == @beds) {
+	    $self->warn("no region in db.");
+	    return;
+	}
+	my ($pre_chr, $pre_sta, $pre_sto) = @{$beds[0]};
+	for (my $i = 1; $i < @beds; $i++) {
+	    my ($cur_chr, $cur_sta, $cur_sto) = @{$beds[$i]};
+	    if (($cur_chr ne $pre_chr) or ($cur_sta > $pre_sto)) {
+		say F join("\t", $pre_chr, $pre_sta, $pre_sto);
+		($pre_chr, $pre_sta, $pre_sto) = ($cur_chr, $cur_sta, $cur_sto);
+	    }
+	    elsif ($cur_sta == $pre_sto) {
+		$pre_sto = $cur_sto;
+	    }
+	    else {
+		$self->throw("Error: bad db, non-departed beds, or no-sort!");
+	    }
+	}
+	say F join("\t", $pre_chr, $pre_sta, $pre_sto);
+    }
+    elsif ($type eq 'a') {
+	foreach my $nm (sort keys %anno) {
+	    foreach my $ex (sort exsort keys %{$anno{$nm}}) {
+		say F join("\t", $anno{$nm}{$ex}{chr}, $anno{$nm}{$ex}{sta},
+		    $anno{$nm}{$ex}{sto}, $anno{$nm}{$ex}{blk});
+	    }
+	}
+    }
+    elsif ($type eq 'c') {
+	if (0 == @complete) {
+	    $self->warn("no region in db.");
+	    return;
+	}
+	my ($pre_chr, $pre_sta, $pre_sto) = @{$complete[0]};
+	for (my $i = 1; $i < @complete; $i++) {
+	    my ($cur_chr, $cur_sta, $cur_sto) = @{$complete[$i]};
+	    if (($cur_chr ne $pre_chr) or ($cur_sta > $pre_sto)) {
+		say F join("\t", $pre_chr, $pre_sta, $pre_sto);
+		($pre_chr, $pre_sta, $pre_sto) = ($cur_chr, $cur_sta, $cur_sto);
+	    }
+	    elsif ($cur_sta == $pre_sto) {
+		$pre_sto = $cur_sto;
+	    }
+	    else {
+		$self->throw("Error: bad db, non-departed complete, or no-sort!");
+	    }
+	}
+	say F join("\t", $pre_chr, $pre_sta, $pre_sto);
+    }
+    else { $self->throw("type: $type not regconized."); }
+
+    close F;
+    return;
+}
+
+sub exsort {
+    my ($sym, $anum, $bnum);
+    if ($a =~ /^EX([\+\-\*]?)(\d+)[EP]?$/) {
+	$sym = $1;
+	$anum = $2;
+    }
+    if ($b =~ /^EX[\+\-\*]?(\d+)[EP]?$/) {
+	$bnum = $1;
+    }
+    confess "ExIn number format error. [$a, $b]" if (!defined $anum or !defined $bnum);
+    if (!defined $sym or $sym !~ /\-/) {
+	$anum <=> $bnum;
+    }
+    else {
+	$bnum <=> $anum;
+    }
 }
 
 =head2 readtr
