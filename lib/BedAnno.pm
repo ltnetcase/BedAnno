@@ -3358,13 +3358,16 @@ sub getTrChange {
 
 			$trannoEnt->{func} = 'frameshift';
 			$trannoEnt->{p}    = 'p.'. $no_parsed_prStart 
-			    . ( $no_parsed_pP + 1 ) . $no_parsed_prAlt_Start . 'fs*';
-			if ($prAlt =~ /\*$/) { # ext length estimated
-                            $trannoEnt->{p} .=
-                              ( length($prAlt) - $prSimpleSame );
-			}
-			else { # don't meet a stop codon
-			    $trannoEnt->{p} .= '?';
+			    . ( $no_parsed_pP + 1 ) . $no_parsed_prAlt_Start;
+			my $ext_length = ( length($prAlt) - $prSimpleSame );
+			if ($ext_length > 1 or $prAlt !~ /\*$/) {
+			    $trannoEnt->{p} .= 'fs*';
+			    if ($prAlt =~ /\*$/) { # ext length estimated
+				$trannoEnt->{p} .= $ext_length;
+			    }
+			    else { # don't meet a stop codon
+				$trannoEnt->{p} .= '?';
+			    }
 			}
 			next;
 		    }

@@ -128,3 +128,4 @@
 	- fix a bug in exon-intron span case
 	- add a limitation of repeat parsing, for time consuming.
 	- fix a minor problem for outside promoter region span case
+	- fix a 'fs*1' problem
