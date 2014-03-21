@@ -64,19 +64,13 @@ not ok 15 - for [ snv_varanno ]
 #   'var' => bless( {
 #     'alt' => 'A',
 #     'altlen' => 1,
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => '1',
 #     'cosmic' => {},
 #     'cytoBand' => '1p36.33',
 #     'dbsnp' => {},
 #     'end' => 14410,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'g.14409C>A',
 #     'guess' => 'snv',
 #     'gwas' => {},
@@ -90,10 +84,7 @@ not ok 15 - for [ snv_varanno ]
 #     'reflen' => 1,
 #     'reptag' => '.',
 #     'sm' => 1,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'tgp' => {},
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -149,19 +140,13 @@ not ok 16 - for [ ins_varanno ]
 #   'var' => bless( {
 #     'alt' => 'GAATAGCTA',
 #     'altlen' => 9,
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => '1',
 #     'cosmic' => {},
 #     'cytoBand' => '1p36.33',
 #     'dbsnp' => {},
 #     'end' => 14410,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'g.14410_14411insGAATAGCTA',
 #     'guess' => 'ins',
 #     'gwas' => {},
@@ -172,10 +157,7 @@ not ok 16 - for [ ins_varanno ]
 #     'reflen' => 0,
 #     'reptag' => '.',
 #     'sm' => 0,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'tgp' => {},
 #     'varTypeSO' => 'SO:0000667'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -231,19 +213,13 @@ not ok 17 - for [ del_varanno ]
 #   'var' => bless( {
 #     'alt' => '',
 #     'altlen' => 0,
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => '1',
 #     'cosmic' => {},
 #     'cytoBand' => '1p36.33',
 #     'dbsnp' => {},
 #     'end' => 14417,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'g.14411_14417delTAGATCG',
 #     'guess' => 'del',
 #     'gwas' => {},
@@ -254,10 +230,7 @@ not ok 17 - for [ del_varanno ]
 #     'reflen' => 7,
 #     'reptag' => '.',
 #     'sm' => 2,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'tgp' => {},
 #     'varTypeSO' => 'SO:0000159'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -330,19 +303,13 @@ not ok 18 - for [ rep_varanno ]
 #     'alt' => 'TAGTAGTAGTAGA',
 #     'alt_cn' => 4,
 #     'altlen' => 13,
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => '1',
 #     'cosmic' => {},
 #     'cytoBand' => '1p36.33',
 #     'dbsnp' => {},
 #     'end' => 14414,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'g.14411TAG[1>4]',
 #     'guess' => 'delins',
 #     'gwas' => {},
@@ -359,10 +326,7 @@ not ok 18 - for [ rep_varanno ]
 #     'reptag' => '.',
 #     'rl' => 3,
 #     'sm' => 2,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'tgp' => {},
 #     'varTypeSO' => 'SO:1000032'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -418,19 +382,13 @@ not ok 19 - for [ delins_varanno ]
 #   'var' => bless( {
 #     'alt' => 'GT',
 #     'altlen' => 2,
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => '1',
 #     'cosmic' => {},
 #     'cytoBand' => '1p36.33',
 #     'dbsnp' => {},
 #     'end' => 14414,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'g.14410_14414delCTAGAinsGT',
 #     'guess' => 'delins',
 #     'gwas' => {},
@@ -441,10 +399,7 @@ not ok 19 - for [ delins_varanno ]
 #     'reflen' => 5,
 #     'reptag' => '.',
 #     'sm' => 2,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'tgp' => {},
 #     'varTypeSO' => 'SO:1000032'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -500,19 +455,13 @@ not ok 20 - for [ subs_varanno ]
 #   'var' => bless( {
 #     'alt' => 'TGTGT',
 #     'altlen' => 5,
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => '1',
 #     'cosmic' => {},
 #     'cytoBand' => '1p36.33',
 #     'dbsnp' => {},
 #     'end' => 14414,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'g.14410_14414delCATGAinsTGTGT',
 #     'guess' => 'delins',
 #     'gwas' => {},
@@ -528,10 +477,7 @@ not ok 20 - for [ subs_varanno ]
 #       14414
 #     ],
 #     'sm' => 3,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'tgp' => {},
 #     'varTypeSO' => 'SO:1000032'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -627,7 +573,7 @@ not ok 22 - for [ cds_rna_delins_anno ]
 #       'genepart' => 'CDS',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
-#       'p' => 'p.S472fs*2',
+#       'p' => 'p.S472Lfs*2',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'postEnd' => {
@@ -664,19 +610,13 @@ not ok 22 - for [ cds_rna_delins_anno ]
 #   'var' => bless( {
 #     'alt' => 'A',
 #     'altlen' => 1,
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => '8',
 #     'cosmic' => {},
 #     'cytoBand' => '8p21.2',
 #     'dbsnp' => {},
 #     'end' => 24811066,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'g.24811065G>A',
 #     'guess' => 'snv',
 #     'gwas' => {},
@@ -690,10 +630,7 @@ not ok 22 - for [ cds_rna_delins_anno ]
 #     'reflen' => 1,
 #     'reptag' => '.',
 #     'sm' => 1,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'tgp' => {},
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -852,19 +789,13 @@ not ok 24 - for [ cds_snv_anno ]
 #   'var' => bless( {
 #     'alt' => 'T',
 #     'altlen' => 1,
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => '8',
 #     'cosmic' => {},
 #     'cytoBand' => '8p21.2',
 #     'dbsnp' => {},
 #     'end' => 24811067,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'g.24811066G>T',
 #     'guess' => 'snv',
 #     'gwas' => {},
@@ -878,10 +809,7 @@ not ok 24 - for [ cds_snv_anno ]
 #     'reflen' => 1,
 #     'reptag' => '.',
 #     'sm' => 1,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'tgp' => {},
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -906,7 +834,7 @@ not ok 25 - for [ cds_del_anno ]
 #       'genepart' => 'CDS',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
-#       'p' => 'p.S472fs*78',
+#       'p' => 'p.S472Lfs*78',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'postEnd' => {
@@ -943,19 +871,13 @@ not ok 25 - for [ cds_del_anno ]
 #   'var' => bless( {
 #     'alt' => '',
 #     'altlen' => 0,
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => '8',
 #     'cosmic' => {},
 #     'cytoBand' => '8p21.2',
 #     'dbsnp' => {},
 #     'end' => 24811067,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'g.24811067delG',
 #     'guess' => 'del',
 #     'gwas' => {},
@@ -969,10 +891,7 @@ not ok 25 - for [ cds_del_anno ]
 #     'reflen' => 1,
 #     'reptag' => '.',
 #     'sm' => 1,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'tgp' => {},
 #     'varTypeSO' => 'SO:0000159'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -1035,19 +954,13 @@ not ok 26 - for [ cds_ins_anno ]
 #   'var' => bless( {
 #     'alt' => 'GGG',
 #     'altlen' => 3,
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => '8',
 #     'cosmic' => {},
 #     'cytoBand' => '8p21.2',
 #     'dbsnp' => {},
 #     'end' => 24811067,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'g.24811067_24811068insGGG',
 #     'guess' => 'ins',
 #     'gwas' => {},
@@ -1058,10 +971,7 @@ not ok 26 - for [ cds_ins_anno ]
 #     'reflen' => 0,
 #     'reptag' => '.',
 #     'sm' => 0,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'tgp' => {},
 #     'varTypeSO' => 'SO:0000667'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -1193,19 +1103,13 @@ not ok 27 - for [ cds_rep_anno ]
 #     'alt' => 'GCCGCCGCCGCC',
 #     'alt_cn' => 4,
 #     'altlen' => 12,
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => '3',
 #     'cosmic' => {},
 #     'cytoBand' => '3p21.31',
 #     'dbsnp' => {},
 #     'end' => 49395691,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'g.49395674GCC[6>4]',
 #     'guess' => 'delins',
 #     'gwas' => {},
@@ -1222,10 +1126,7 @@ not ok 27 - for [ cds_rep_anno ]
 #     'reptag' => '.',
 #     'rl' => 18,
 #     'sm' => 2,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'tgp' => {},
 #     'varTypeSO' => 'SO:1000032'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -1284,19 +1185,13 @@ not ok 28 - for [ cds_delins_anno ]
 #   'var' => bless( {
 #     'alt' => 'TC',
 #     'altlen' => 2,
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => '1',
 #     'cosmic' => {},
 #     'cytoBand' => '1p36.33',
 #     'dbsnp' => {},
 #     'end' => 865534,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'g.865533_865534delAGinsTC',
 #     'guess' => 'delins',
 #     'gwas' => {},
@@ -1311,10 +1206,7 @@ not ok 28 - for [ cds_delins_anno ]
 #       865534
 #     ],
 #     'sm' => 3,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'tgp' => {},
 #     'varTypeSO' => 'SO:1000032'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -1418,19 +1310,13 @@ not ok 29 - for [ cds_no_call_anno ]
 #   'var' => bless( {
 #     'alt' => 'N',
 #     'altlen' => 1,
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => '1',
 #     'cosmic' => {},
 #     'cytoBand' => '1p36.33',
 #     'dbsnp' => {},
 #     'end' => 861320,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'g.861319T>N',
 #     'guess' => 'no-call',
 #     'gwas' => {},
@@ -1444,10 +1330,7 @@ not ok 29 - for [ cds_no_call_anno ]
 #     'reflen' => 1,
 #     'reptag' => '.',
 #     'sm' => 1,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'tgp' => {},
 #     'varTypeSO' => 'no-call'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -1697,19 +1580,13 @@ not ok 32 - for [ cds_rna_snv1_anno ]
 #   'var' => bless( {
 #     'alt' => 'T',
 #     'altlen' => 1,
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => '3',
 #     'cosmic' => {},
 #     'cytoBand' => '3p21.31',
 #     'dbsnp' => {},
 #     'end' => 49395709,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'g.49395708C>T',
 #     'guess' => 'snv',
 #     'gwas' => {},
@@ -1723,10 +1600,7 @@ not ok 32 - for [ cds_rna_snv1_anno ]
 #     'reflen' => 1,
 #     'reptag' => '.',
 #     'sm' => 1,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'tgp' => {},
 #     'varName' => 'NM_000581.2(GPX1): c.3G>A (p.0?)',
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
@@ -1911,19 +1785,13 @@ not ok 33 - for [ cds_rna_snv2_anno ]
 #   'var' => bless( {
 #     'alt' => 'A',
 #     'altlen' => 1,
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => '3',
 #     'cosmic' => {},
 #     'cytoBand' => '3p21.31',
 #     'dbsnp' => {},
 #     'end' => 49395705,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'g.49395704C>A',
 #     'guess' => 'snv',
 #     'gwas' => {},
@@ -1937,10 +1805,7 @@ not ok 33 - for [ cds_rna_snv2_anno ]
 #     'reflen' => 1,
 #     'reptag' => '.',
 #     'sm' => 1,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'tgp' => {},
 #     'varName' => 'NM_000581.2(GPX1): c.7G>T (p.A3S)',
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
@@ -2257,19 +2122,13 @@ not ok 34 - for [ large_del_anno ]
 #   'var' => bless( {
 #     'alt' => '',
 #     'altlen' => 0,
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => '1',
 #     'cosmic' => {},
 #     'cytoBand' => '1p21.2',
 #     'dbsnp' => {},
 #     'end' => 100327884,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'g.100327864_100327884delTGGTGCTGATAATCATGTGCT',
 #     'guess' => 'del',
 #     'gwas' => {},
@@ -2280,10 +2139,7 @@ not ok 34 - for [ large_del_anno ]
 #     'reflen' => 21,
 #     'reptag' => '.',
 #     'sm' => 2,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'tgp' => {},
 #     'varName' => 'NM_000642.2(AGL): c.345_365delTGGTGCTGATAATCATGTGCT (p.G116_L122del)',
 #     'varTypeSO' => 'SO:0000159'
 #   }, 'BedAnno::Var' )
@@ -2309,7 +2165,7 @@ not ok 36 - for [ cds_edge_ins_anno ]
 #       'genepart' => 'CDS',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
-#       'p' => 'p.V35fs*27',
+#       'p' => 'p.V35Gfs*27',
 #       'pfamId' => 'PF01490.13',
 #       'pfamName' => 'Transmembrane amino acid transporter protein',
 #       'postEnd' => {
@@ -2384,7 +2240,7 @@ not ok 36 - for [ cds_edge_ins_anno ]
 #       'AF' => '1.000000',
 #       'AN' => 2184
 #     },
-#     'varName' => 'NM_006841.4(SLC38A3): c.102-1_102insG (p.V35fs*27)',
+#     'varName' => 'NM_006841.4(SLC38A3): c.102-1_102insG (p.V35Gfs*27)',
 #     'varTypeSO' => 'SO:0000667'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -2408,7 +2264,7 @@ not ok 37 - for [ cds_edge_ins2_anno ]
 #       'genepart' => 'CDS',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
-#       'p' => 'p.E279fs*12',
+#       'p' => 'p.E279Vfs*12',
 #       'pfamId' => 'PF02141.16;PF03455.14;PF00400.27',
 #       'pfamName' => 'DENN (AEX-3) domain;dDENN domain;WD domain, G-beta repeat',
 #       'postEnd' => {
@@ -2448,10 +2304,7 @@ not ok 37 - for [ cds_edge_ins2_anno ]
 #   'var' => bless( {
 #     'alt' => 'GTTA',
 #     'altlen' => 4,
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => '8',
 #     'cosmic' => {},
 #     'cytoBand' => '8q24.3',
@@ -2468,10 +2321,7 @@ not ok 37 - for [ cds_edge_ins2_anno ]
 #       }
 #     },
 #     'end' => 142161936,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'g.142161936_142161937insGTTA',
 #     'guess' => 'ins',
 #     'gwas' => {},
@@ -2482,11 +2332,8 @@ not ok 37 - for [ cds_edge_ins2_anno ]
 #     'reflen' => 0,
 #     'reptag' => '.',
 #     'sm' => 0,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
-#     'varName' => 'NM_014957.2(DENND3): c.834_834+1insGTTA (p.E279fs*12)',
+#     'tgp' => {},
+#     'varName' => 'NM_014957.2(DENND3): c.834_834+1insGTTA (p.E279Vfs*12)',
 #     'varTypeSO' => 'SO:0000667'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -2511,7 +2358,7 @@ not ok 38 - for [ left_edge_mismatch_anno ]
 #       'genepart' => 'CDS',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
-#       'p' => 'p.E473fs*78',
+#       'p' => 'p.E473Lfs*78',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'postEnd' => {
@@ -2548,19 +2395,13 @@ not ok 38 - for [ left_edge_mismatch_anno ]
 #   'var' => bless( {
 #     'alt' => 'A',
 #     'altlen' => 1,
-#     'cg54' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'cg54' => {},
 #     'chr' => '8',
 #     'cosmic' => {},
 #     'cytoBand' => '8p21.2',
 #     'dbsnp' => {},
 #     'end' => 24811065,
-#     'esp6500' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
+#     'esp6500' => {},
 #     'gHGVS' => 'g.24811065_24811066insA',
 #     'guess' => 'ins',
 #     'gwas' => {},
@@ -2571,11 +2412,8 @@ not ok 38 - for [ left_edge_mismatch_anno ]
 #     'reflen' => 0,
 #     'reptag' => '.',
 #     'sm' => 0,
-#     'tgp' => {
-#       'AF' => 0,
-#       'AN' => 0
-#     },
-#     'varName' => 'NM_006158.3(NEFL): c.1413CT[2>3] (p.E473fs*78)',
+#     'tgp' => {},
+#     'varName' => 'NM_006158.3(NEFL): c.1413CT[2>3] (p.E473Lfs*78)',
 #     'varTypeSO' => 'SO:0000667'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -8935,7 +8773,7 @@ not ok 52 - for [ Mt_stop_loss ]
 #       'genepart' => 'CDS',
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
-#       'p' => 'p.*319fs*?',
+#       'p' => 'p.*319Wfs*?',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'polar' => '.=>NP',
@@ -9527,7 +9365,7 @@ not ok 52 - for [ Mt_stop_loss ]
 #     'reptag' => '.',
 #     'sm' => 1,
 #     'tgp' => {},
-#     'varName' => 'NM_MT-ND1(MT-ND1): c.956A>G (p.*319fs*?)',
+#     'varName' => 'NM_MT-ND1(MT-ND1): c.956A>G (p.*319Wfs*?)',
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )

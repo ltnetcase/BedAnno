@@ -3320,6 +3320,7 @@ sub getTrChange {
 		    my $no_parsed_pP = $prBegin - 1 + $prSimpleSame;
                     my $no_parsed_prStart =
                       substr( $trdbEnt->{pseq}, $no_parsed_pP, 1 );
+		    my $no_parsed_prAlt_Start = substr( $prAlt, $prSimpleSame, 1 );
 
 		    # non stop frameshift with extra non-coded base
 		    if ($non_stop_flag) {
@@ -3330,7 +3331,7 @@ sub getTrChange {
 			    $trannoEnt->{func} = 'frameshift';
 			}
 			$trannoEnt->{p} = 'p.' . $no_parsed_prStart
-			  . ( $no_parsed_pP + 1 ) . 'fs*?';
+			  . ( $no_parsed_pP + 1 ) . $no_parsed_prAlt_Start . 'fs*?';
 			next;
 		    }
 
@@ -3357,7 +3358,7 @@ sub getTrChange {
 
 			$trannoEnt->{func} = 'frameshift';
 			$trannoEnt->{p}    = 'p.'. $no_parsed_prStart 
-			    . ( $no_parsed_pP + 1 ) . 'fs*';
+			    . ( $no_parsed_pP + 1 ) . $no_parsed_prAlt_Start . 'fs*';
 			if ($prAlt =~ /\*$/) { # ext length estimated
                             $trannoEnt->{p} .=
                               ( length($prAlt) - $prSimpleSame );
@@ -3994,6 +3995,10 @@ sub reCalTrPos_by_ofst {
 	$cur_ex_start = $1;
 	$intOfst = $2;
     }
+    if ($intOfst =~ /^\+/) {
+	$cur_ex_start += 1;
+    }
+
     if ($cur_ex_start =~ /^-/) {
 	$intOfst = $cur_ex_start;
 	$cur_ex_start = 1;
@@ -4001,6 +4006,7 @@ sub reCalTrPos_by_ofst {
     if ($intOfst eq '') {
 	$intOfst = 0;
     }
+
 
     foreach my $exin (@tag_sort) {
 	my $cur_blk_len;
@@ -4243,7 +4249,9 @@ use strict;
 use warnings;
 use Data::Dumper;
 use Carp;
- 
+
+our $MAX_COMPLEX_PARSING = 200;
+
 =head1 METHOD
 
 =head2 new
@@ -4426,6 +4434,9 @@ sub new {
 	return $var;
     }
     
+    return $var
+      if ( length($ref) > $MAX_COMPLEX_PARSING
+        or length($alt) > $MAX_COMPLEX_PARSING );
     return $var->parse_complex();
 }
 
@@ -6048,7 +6059,7 @@ sub cal_hgvs_pos {
                   ? ( $$rtidDetail{nsto} - $ex_ofst )
                   : ( -$ex_ofst );
                 if ( $$rtidDetail{csto} =~ /^(\S+)\-u(\d+)/ ) {
-                    $cDot = $1 . '-u' . ( $2 - $ex_ofst );
+                    $cDot = $1 . '-u' . ( $2 + $ex_ofst );
                 }
 	    }
 	}
