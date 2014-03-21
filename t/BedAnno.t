@@ -2189,6 +2189,107 @@ my $middle_intron = {
     'funcSOname' => 'unknown'
 };
 
+my $fs1_rep_del = {
+    'alt_cHGVS'      => 'c.60_61delTG',
+    'c'              => 'c.58TG[2>1]',
+    'cdsBegin'       => '60',
+    'cdsEnd'         => '61',
+    'componentIndex' => '3',
+    'ei_Begin'       => 'EX3',
+    'ei_End'         => 'EX3',
+    'exin'           => 'EX3',
+    'exonIndex'      => '3',
+    'func'           => 'frameshift',
+    'funcSO'         => 'SO:0001589',
+    'funcSOname'     => 'frameshift_variant',
+    'geneId'         => '1497',
+    'geneSym'        => 'CTNS',
+    'genepart'       => 'CDS',
+    'genepartSO'     => 'SO:0000316',
+    'intronIndex'    => '.',
+    'p'              => 'p.C20*',
+    'postEnd'        => {
+        'cDot' => '61+1',
+        'exin' => 'IVS3',
+        'nDot' => '531+1',
+        'r'    => 'DC1'
+    },
+    'prAlt' => '*',
+    'prRef' =>
+'CESSVSLTVPPVVKLENGSSTNVSLTLRPPLNATLVITFEITFRSKNITILELPDEVVVPPGVTNSSFQVTSQNVGQLTVYLHGNHSNQTGPRIRFLVIRSSAISIINQVIGWIYFVAWSISFYPQVIMNWRRKSVIGLSFDFVALNLTGFVAYSVFNIGLLWVPYIKEQFLLKYPNGVNPVNSNDVFFSLHAVVLTLIIIVQCCLYERGGQRVSWPAIGFLVLAWLFAFVTMIVAAVGVTTWLQFLFCFSYIKLAVTLVKYFPQAYMNFYYKSTEGWSIGNVLLDFTGGSFSLLQMFLQSYNNDQWTLIFGDPTKFGLGVFSIVFDVVFFIQHFCLYRKRPGLQAARTGSGSRLRQDWAPSLQPKALPQTTSVSASSLKG*',
+    'preStart' => {
+        'cDot' => '59',
+        'exin' => 'EX3',
+        'nDot' => 529,
+        'r'    => 'C1'
+    },
+    'primaryTag' => 'Y',
+    'prot'       => 'NP_001026851.2',
+    'protBegin'  => 20,
+    'protEnd'    => 401,
+    'r'          => 'C1',
+    'r_Begin'    => 'C1',
+    'r_End'      => 'C1',
+    'rnaBegin'   => 530,
+    'rnaEnd'     => 531,
+    'strd'       => '+',
+    'trAlt'      => '',
+    'trRef'      => 'TG',
+    'trRefComp'  => {
+        'EX3' => 2
+    }
+};
+
+my $fs1_del = {
+    'c'              => 'c.519_520delCA',
+    'cdsBegin'       => '519',
+    'cdsEnd'         => '520',
+    'componentIndex' => '8',
+    'ei_Begin'       => 'EX8',
+    'ei_End'         => 'EX8',
+    'exin'           => 'EX8',
+    'exonIndex'      => '8',
+    'func'           => 'frameshift',
+    'funcSO'         => 'SO:0001589',
+    'funcSOname'     => 'frameshift_variant',
+    'geneId'         => '1497',
+    'geneSym'        => 'CTNS',
+    'genepart'       => 'CDS',
+    'genepartSO'     => 'SO:0000316',
+    'intronIndex'    => '.',
+    'p'              => 'p.Y173*',
+    'postEnd'        => {
+        'cDot' => '521',
+        'exin' => 'EX8',
+        'nDot' => 991,
+        'r'    => 'C6'
+    },
+    'prAlt' => '*',
+    'prRef' =>
+'YSVFNIGLLWVPYIKEQFLLKYPNGVNPVNSNDVFFSLHAVVLTLIIIVQCCLYERGGQRVSWPAIGFLVLAWLFAFVTMIVAAVGVTTWLQFLFCFSYIKLAVTLVKYFPQAYMNFYYKSTEGWSIGNVLLDFTGGSFSLLQMFLQSYNNDQWTLIFGDPTKFGLGVFSIVFDVVFFIQHFCLYRKRPGLQAARTGSGSRLRQDWAPSLQPKALPQTTSVSASSLKG*',
+    'preStart' => {
+        'cDot' => '518',
+        'exin' => 'EX8',
+        'nDot' => 988,
+        'r'    => 'C6'
+    },
+    'primaryTag' => 'Y',
+    'prot'       => 'NP_001026851.2',
+    'protBegin'  => 173,
+    'protEnd'    => 401,
+    'r'          => 'C6',
+    'r_Begin'    => 'C6',
+    'r_End'      => 'C6',
+    'rnaBegin'   => 989,
+    'rnaEnd'     => 990,
+    'strd'       => '+',
+    'trAlt'      => '',
+    'trRef'      => 'CA',
+    'trRefComp'  => {
+        'EX8' => 2
+    }
+};
+
 my $cds_edge_ins_anno = {
     'protBegin' => 34,
     'ei_End'    => 'IVS2',
@@ -2840,7 +2941,10 @@ test_ok ( "rep_span_cds_utr3", $rep_span_cds_utr3, "NM_007115.3",
    "chr2", 152236045, 152236046, "A", "" );
 test_ok ( "middle_intron", $middle_intron, "NM_001715.2",
    "chr8", 11421015, 11421016, "G", "A" );
-
+test_ok ( "fs1_rep_del", $fs1_rep_del, "NM_001031681.2",
+   "chr17", 3543559, 3543561, "TG", "" );
+test_ok ( "fs1_del", $fs1_del, "NM_001031681.2",
+   "chr17", 3559837, 3559839, "CA", "" );
 
 test_ok ( "MT_no_call_ncRNA", $mt_no_call_ncRNA, 'NR_MT-TRNF', 
    "chrMT", 576, 577, "G", "N" );

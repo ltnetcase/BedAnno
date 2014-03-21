@@ -2421,9 +2421,320 @@ ok 39 - for [ downstream_no_call ]
 ok 40 - for [ span_annotation_fail ]
 ok 41 - for [ rep_span_cds_utr3 ]
 ok 42 - for [ middle_intron ]
-ok 43 - for [ MT_no_call_ncRNA ]
-ok 44 - for [ MT_span_no_call ]
-not ok 45 - for [ MT_altstart ]
+not ok 43 - for [ fs1_rep_del ]
+# The anno infor are: bless( {
+#   'trInfo' => {
+#     'NM_001031681.2' => {
+#       'alt_cHGVS' => 'c.60_61delTG',
+#       'c' => 'c.58TG[2>1]',
+#       'cdsBegin' => '60',
+#       'cdsEnd' => '61',
+#       'componentIndex' => '3',
+#       'ei_Begin' => 'EX3',
+#       'ei_End' => 'EX3',
+#       'exin' => 'EX3',
+#       'exonIndex' => '3',
+#       'func' => 'frameshift',
+#       'funcSO' => 'SO:0001589',
+#       'funcSOname' => 'frameshift_variant',
+#       'geneId' => '1497',
+#       'geneSym' => 'CTNS',
+#       'genepart' => 'CDS',
+#       'genepartSO' => 'SO:0000316',
+#       'intronIndex' => '.',
+#       'p' => 'p.C20*',
+#       'pfamId' => 'PF04193.9;PF04193.9',
+#       'pfamName' => 'PQ loop repeat ;PQ loop repeat ',
+#       'postEnd' => {
+#         'cDot' => '61+1',
+#         'exin' => 'IVS3',
+#         'nDot' => '531+1',
+#         'r' => 'DC1'
+#       },
+#       'prAlt' => '*',
+#       'prRef' => 'CESSVSLTVPPVVKLENGSSTNVSLTLRPPLNATLVITFEITFRSKNITILELPDEVVVPPGVTNSSFQVTSQNVGQLTVYLHGNHSNQTGPRIRFLVIRSSAISIINQVIGWIYFVAWSISFYPQVIMNWRRKSVIGLSFDFVALNLTGFVAYSVFNIGLLWVPYIKEQFLLKYPNGVNPVNSNDVFFSLHAVVLTLIIIVQCCLYERGGQRVSWPAIGFLVLAWLFAFVTMIVAAVGVTTWLQFLFCFSYIKLAVTLVKYFPQAYMNFYYKSTEGWSIGNVLLDFTGGSFSLLQMFLQSYNNDQWTLIFGDPTKFGLGVFSIVFDVVFFIQHFCLYRKRPGLQAARTGSGSRLRQDWAPSLQPKALPQTTSVSASSLKG*',
+#       'preStart' => {
+#         'cDot' => '59',
+#         'exin' => 'EX3',
+#         'nDot' => 529,
+#         'r' => 'C1'
+#       },
+#       'primaryTag' => 'Y',
+#       'prot' => 'NP_001026851.2',
+#       'protBegin' => 20,
+#       'protEnd' => 401,
+#       'r' => 'C1',
+#       'r_Begin' => 'C1',
+#       'r_End' => 'C1',
+#       'rnaBegin' => 530,
+#       'rnaEnd' => 531,
+#       'strd' => '+',
+#       'trAlt' => '',
+#       'trRef' => 'TG',
+#       'trRefComp' => {
+#         'EX3' => 2
+#       }
+#     },
+#     'NM_004937.2' => {
+#       'alt_cHGVS' => 'c.60_61delTG',
+#       'c' => 'c.58TG[2>1]',
+#       'cdsBegin' => '60',
+#       'cdsEnd' => '61',
+#       'componentIndex' => '3',
+#       'ei_Begin' => 'EX3',
+#       'ei_End' => 'EX3',
+#       'exin' => 'EX3',
+#       'exonIndex' => '3',
+#       'func' => 'frameshift',
+#       'funcSO' => 'SO:0001589',
+#       'funcSOname' => 'frameshift_variant',
+#       'geneId' => '1497',
+#       'geneSym' => 'CTNS',
+#       'genepart' => 'CDS',
+#       'genepartSO' => 'SO:0000316',
+#       'intronIndex' => '.',
+#       'p' => 'p.C20*',
+#       'pfamId' => 'PF04193.9;PF04193.9',
+#       'pfamName' => 'PQ loop repeat ;PQ loop repeat ',
+#       'postEnd' => {
+#         'cDot' => '61+1',
+#         'exin' => 'IVS3',
+#         'nDot' => '654+1',
+#         'r' => 'DC1'
+#       },
+#       'prAlt' => '*',
+#       'prRef' => 'CESSVSLTVPPVVKLENGSSTNVSLTLRPPLNATLVITFEITFRSKNITILELPDEVVVPPGVTNSSFQVTSQNVGQLTVYLHGNHSNQTGPRIRFLVIRSSAISIINQVIGWIYFVAWSISFYPQVIMNWRRKSVIGLSFDFVALNLTGFVAYSVFNIGLLWVPYIKEQFLLKYPNGVNPVNSNDVFFSLHAVVLTLIIIVQCCLYERGGQRVSWPAIGFLVLAWLFAFVTMIVAAVGVTTWLQFLFCFSYIKLAVTLVKYFPQAYMNFYYKSTEGWSIGNVLLDFTGGSFSLLQMFLQSYNNDQWTLIFGDPTKFGLGVFSIVFDVVFFIQHFCLYRKRPGYDQLN*',
+#       'preStart' => {
+#         'cDot' => '59',
+#         'exin' => 'EX3',
+#         'nDot' => 652,
+#         'r' => 'C1'
+#       },
+#       'primaryTag' => 'N',
+#       'prot' => 'NP_004928.2',
+#       'protBegin' => 20,
+#       'protEnd' => 368,
+#       'r' => 'C1',
+#       'r_Begin' => 'C1',
+#       'r_End' => 'C1',
+#       'rnaBegin' => 653,
+#       'rnaEnd' => 654,
+#       'strd' => '+',
+#       'trAlt' => '',
+#       'trRef' => 'TG',
+#       'trRefComp' => {
+#         'EX3' => 2
+#       },
+#       'trVarName' => 'NM_004937.2(CTNS): c.58TG[2>1] (p.C20*)'
+#     },
+#     'NM_013276.2' => {
+#       'c' => 'c.-103-u3945_-103-u3944delCA',
+#       'cdsBegin' => '-103-u3945',
+#       'cdsEnd' => '-103-u3944',
+#       'componentIndex' => 0,
+#       'ei_Begin' => '.',
+#       'ei_End' => '.',
+#       'exin' => '.',
+#       'exonIndex' => '.',
+#       'func' => 'promoter',
+#       'funcSO' => '',
+#       'funcSOname' => 'unknown',
+#       'geneId' => '23729',
+#       'geneSym' => 'SHPK',
+#       'genepart' => 'promoter',
+#       'genepartSO' => 'SO:0000167',
+#       'intronIndex' => '.',
+#       'postEnd' => {
+#         'cDot' => '-103-u3943',
+#         'exin' => '.',
+#         'nDot' => -3943,
+#         'r' => 'PROM'
+#       },
+#       'preStart' => {
+#         'cDot' => '-103-u3946',
+#         'exin' => '.',
+#         'nDot' => -3946,
+#         'r' => 'PROM'
+#       },
+#       'primaryTag' => 'Y',
+#       'prot' => 'NP_037408.2',
+#       'protBegin' => '',
+#       'protEnd' => '',
+#       'r' => 'PROM',
+#       'r_Begin' => 'PROM',
+#       'r_End' => 'PROM',
+#       'rnaBegin' => -3945,
+#       'rnaEnd' => -3944,
+#       'strd' => '-',
+#       'trAlt' => '',
+#       'trRef' => 'CA',
+#       'trRefComp' => {
+#         'P0' => [
+#           0,
+#           2
+#         ]
+#       },
+#       'trVarName' => 'NM_013276.2(SHPK): c.-103-u3945_-103-u3944delCA'
+#     }
+#   },
+#   'var' => bless( {
+#     'alt' => '',
+#     'altlen' => 0,
+#     'cg54' => {},
+#     'chr' => '17',
+#     'cosmic' => {},
+#     'cytoBand' => '17p13.2',
+#     'dbsnp' => {},
+#     'end' => 3543561,
+#     'esp6500' => {},
+#     'gHGVS' => 'g.3543560_3543561delTG',
+#     'guess' => 'del',
+#     'gwas' => {},
+#     'imp' => 'del',
+#     'pos' => 3543559,
+#     'ref' => 'TG',
+#     'refbuild' => 'GRCh37',
+#     'reflen' => 2,
+#     'reptag' => '.',
+#     'sm' => 2,
+#     'tgp' => {},
+#     'varName' => 'NM_001031681.2(CTNS): c.58TG[2>1] (p.C20*)',
+#     'varTypeSO' => 'SO:0000159'
+#   }, 'BedAnno::Var' )
+# }, 'BedAnno::Anno' )
+not ok 44 - for [ fs1_del ]
+# The anno infor are: bless( {
+#   'trInfo' => {
+#     'NM_001031681.2' => {
+#       'c' => 'c.519_520delCA',
+#       'cdsBegin' => '519',
+#       'cdsEnd' => '520',
+#       'componentIndex' => '8',
+#       'ei_Begin' => 'EX8',
+#       'ei_End' => 'EX8',
+#       'exin' => 'EX8',
+#       'exonIndex' => '8',
+#       'func' => 'frameshift',
+#       'funcSO' => 'SO:0001589',
+#       'funcSOname' => 'frameshift_variant',
+#       'geneId' => '1497',
+#       'geneSym' => 'CTNS',
+#       'genepart' => 'CDS',
+#       'genepartSO' => 'SO:0000316',
+#       'intronIndex' => '.',
+#       'p' => 'p.Y173*',
+#       'pfamId' => 'PF04193.9;PF04193.9',
+#       'pfamName' => 'PQ loop repeat ;PQ loop repeat ',
+#       'postEnd' => {
+#         'cDot' => '521',
+#         'exin' => 'EX8',
+#         'nDot' => 991,
+#         'r' => 'C6'
+#       },
+#       'prAlt' => '*',
+#       'prRef' => 'YSVFNIGLLWVPYIKEQFLLKYPNGVNPVNSNDVFFSLHAVVLTLIIIVQCCLYERGGQRVSWPAIGFLVLAWLFAFVTMIVAAVGVTTWLQFLFCFSYIKLAVTLVKYFPQAYMNFYYKSTEGWSIGNVLLDFTGGSFSLLQMFLQSYNNDQWTLIFGDPTKFGLGVFSIVFDVVFFIQHFCLYRKRPGLQAARTGSGSRLRQDWAPSLQPKALPQTTSVSASSLKG*',
+#       'preStart' => {
+#         'cDot' => '518',
+#         'exin' => 'EX8',
+#         'nDot' => 988,
+#         'r' => 'C6'
+#       },
+#       'primaryTag' => 'Y',
+#       'prot' => 'NP_001026851.2',
+#       'protBegin' => 173,
+#       'protEnd' => 401,
+#       'r' => 'C6',
+#       'r_Begin' => 'C6',
+#       'r_End' => 'C6',
+#       'rnaBegin' => 989,
+#       'rnaEnd' => 990,
+#       'strd' => '+',
+#       'trAlt' => '',
+#       'trRef' => 'CA',
+#       'trRefComp' => {
+#         'EX8' => 2
+#       }
+#     },
+#     'NM_004937.2' => {
+#       'c' => 'c.519_520delCA',
+#       'cdsBegin' => '519',
+#       'cdsEnd' => '520',
+#       'componentIndex' => '8',
+#       'ei_Begin' => 'EX8',
+#       'ei_End' => 'EX8',
+#       'exin' => 'EX8',
+#       'exonIndex' => '8',
+#       'func' => 'frameshift',
+#       'funcSO' => 'SO:0001589',
+#       'funcSOname' => 'frameshift_variant',
+#       'geneId' => '1497',
+#       'geneSym' => 'CTNS',
+#       'genepart' => 'CDS',
+#       'genepartSO' => 'SO:0000316',
+#       'intronIndex' => '.',
+#       'p' => 'p.Y173*',
+#       'pfamId' => 'PF04193.9;PF04193.9',
+#       'pfamName' => 'PQ loop repeat ;PQ loop repeat ',
+#       'postEnd' => {
+#         'cDot' => '521',
+#         'exin' => 'EX8',
+#         'nDot' => 1114,
+#         'r' => 'C6'
+#       },
+#       'prAlt' => '*',
+#       'prRef' => 'YSVFNIGLLWVPYIKEQFLLKYPNGVNPVNSNDVFFSLHAVVLTLIIIVQCCLYERGGQRVSWPAIGFLVLAWLFAFVTMIVAAVGVTTWLQFLFCFSYIKLAVTLVKYFPQAYMNFYYKSTEGWSIGNVLLDFTGGSFSLLQMFLQSYNNDQWTLIFGDPTKFGLGVFSIVFDVVFFIQHFCLYRKRPGYDQLN*',
+#       'preStart' => {
+#         'cDot' => '518',
+#         'exin' => 'EX8',
+#         'nDot' => 1111,
+#         'r' => 'C6'
+#       },
+#       'primaryTag' => 'N',
+#       'prot' => 'NP_004928.2',
+#       'protBegin' => 173,
+#       'protEnd' => 368,
+#       'r' => 'C6',
+#       'r_Begin' => 'C6',
+#       'r_End' => 'C6',
+#       'rnaBegin' => 1112,
+#       'rnaEnd' => 1113,
+#       'strd' => '+',
+#       'trAlt' => '',
+#       'trRef' => 'CA',
+#       'trRefComp' => {
+#         'EX8' => 2
+#       },
+#       'trVarName' => 'NM_004937.2(CTNS): c.519_520delCA (p.Y173*)'
+#     }
+#   },
+#   'var' => bless( {
+#     'alt' => '',
+#     'altlen' => 0,
+#     'cg54' => {},
+#     'chr' => '17',
+#     'cosmic' => {},
+#     'cytoBand' => '17p13.2',
+#     'dbsnp' => {},
+#     'end' => 3559839,
+#     'esp6500' => {},
+#     'gHGVS' => 'g.3559838_3559839delCA',
+#     'guess' => 'del',
+#     'gwas' => {},
+#     'imp' => 'del',
+#     'pos' => 3559837,
+#     'ref' => 'CA',
+#     'refbuild' => 'GRCh37',
+#     'reflen' => 2,
+#     'reptag' => '.',
+#     'sm' => 2,
+#     'tgp' => {},
+#     'varName' => 'NM_001031681.2(CTNS): c.519_520delCA (p.Y173*)',
+#     'varTypeSO' => 'SO:0000159'
+#   }, 'BedAnno::Var' )
+# }, 'BedAnno::Anno' )
+ok 45 - for [ MT_no_call_ncRNA ]
+ok 46 - for [ MT_span_no_call ]
+not ok 47 - for [ MT_altstart ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -3290,7 +3601,7 @@ not ok 45 - for [ MT_altstart ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 46 - for [ Mt_init_loss ]
+not ok 48 - for [ Mt_init_loss ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -4164,7 +4475,7 @@ not ok 46 - for [ Mt_init_loss ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 47 - for [ No_call_altstart ]
+not ok 49 - for [ No_call_altstart ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -5031,7 +5342,7 @@ not ok 47 - for [ No_call_altstart ]
 #     'varTypeSO' => 'no-call'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 48 - for [ Mt_no_call_initloss ]
+not ok 50 - for [ Mt_no_call_initloss ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -5896,7 +6207,7 @@ not ok 48 - for [ Mt_no_call_initloss ]
 #     'varTypeSO' => 'no-call'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 49 - for [ Mt_nonsense ]
+not ok 51 - for [ Mt_nonsense ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -6764,7 +7075,7 @@ not ok 49 - for [ Mt_nonsense ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 50 - for [ Mt_missense ]
+not ok 52 - for [ Mt_missense ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -7640,7 +7951,7 @@ not ok 50 - for [ Mt_missense ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 51 - for [ Mt_coding_synon ]
+not ok 53 - for [ Mt_coding_synon ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -8507,7 +8818,7 @@ not ok 51 - for [ Mt_coding_synon ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 52 - for [ Mt_stop_loss ]
+not ok 54 - for [ Mt_stop_loss ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -9369,4 +9680,4 @@ not ok 52 - for [ Mt_stop_loss ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-1..52
+1..54
