@@ -129,3 +129,7 @@
 	- add a limitation of repeat parsing, for time consuming.
 	- fix a minor problem for outside promoter region span case
 	- fix a 'fs*1' problem
+
+0.48  Mon Mar 24 19:33:20
+	- fix reformatAnno to give chromosome a "chr" prefix.
+	- fix protBegin for frameshift variant with skipping the same bases.

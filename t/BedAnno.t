@@ -1175,7 +1175,7 @@ my $cds_rna_delins_anno = bless(
                 },
 		'primaryTag'=> 'N',
                 'prot'      => 'NP_006149.2',
-                'protBegin' => 471,
+                'protBegin' => 472,
                 'protEnd'   => 544,
                 'r'         => 'C3',
                 'r_Begin'   => 'C3',
@@ -1395,7 +1395,7 @@ my $cds_del_anno = bless(
 		'prRef' => 'PPSEGEAEEEEKDKEEAEEEEAAEEEEAAKEESEEAKEEEEGGEGEEGEETKEAEEEEKKVEGAGEEQAAKKKD*',
 		'primaryTag'=> 'N',
                 'prot'      => 'NP_006149.2',
-                'protBegin' => 470,
+                'protBegin' => 472,
                 'protEnd'   => 544,
                 'r'         => 'C3',
                 'r_Begin'   => 'C3',
@@ -2001,7 +2001,7 @@ my $promoter_anno = {
 
 my $left_edge_mismatch_anno = {
     'alt_cHGVS' => 'c.1415_1416dupCT',
-    'protBegin' => 471,
+    'protBegin' => 473,
     'ei_End'    => 'EX3',
     'exin'      => 'EX3',
     'prot'      => 'NP_006149.2',
@@ -2291,7 +2291,7 @@ my $fs1_del = {
 };
 
 my $cds_edge_ins_anno = {
-    'protBegin' => 34,
+    'protBegin' => 35,
     'ei_End'    => 'IVS2',
     'exin'      => 'EX3',
     'prot'      => 'NP_006832.1',

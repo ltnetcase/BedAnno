@@ -124,15 +124,15 @@
 .\" ========================================================================
 .\"
 .IX Title "BedAnno 3"
-.TH BedAnno 3 "2014-03-18" "perl v5.14.2" "User Contributed Perl Documentation"
+.TH BedAnno 3 "2014-03-24" "perl v5.14.2" "User Contributed Perl Documentation"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
 .nh
 .SH "NAME"
 BedAnno \- Perl module for annotating variation depend on the BED +1 format database.
-.SS "\s-1VERSION\s0 v0.47"
-.IX Subsection "VERSION v0.47"
+.SS "\s-1VERSION\s0 v0.48"
+.IX Subsection "VERSION v0.48"
 From version 0.32 BedAnno will change to support \s-1CG\s0's variant shell list
 and use ncbi annotation release 104 as the annotation database
 with reformatted database format, and won't give any individual
@@ -449,6 +449,24 @@ information is needed, then extra dependencies will be required.
 \&
 \&    e.g.    : $beda\->set_refbuild($refbuild);
 \&              my $refbuild = $beda\->get_refbuild();
+.Ve
+.SS "write_using"
+.IX Subsection "write_using"
+.Vb 10
+\&    About   : write the current using database information to files
+\&    Usage   : $beda\->write_using( $file, $type );
+\&    Args    : file gives the filename to output, and type is one of the following:
+\&                g:  gene symbol list
+\&                t:  transcript acc.ver list
+\&                c:  the complete annotation region, in bed format,
+\&                    which can be used as the variation calling region.
+\&                b:  standard bed format of only exon region
+\&                a:  BED +1 format, exon region with \*(Aq+1\*(Aq annotation, 
+\&                    oneline per one exon for one transcript, this
+\&                    format allow redundancy exists, and not sorted by
+\&                    chromosomal coordinates, but by the transcript acc.ver
+\&                    and the exon number, this file is mainly for 
+\&                    transcript originated statistics for only exon.
 .Ve
 .SS "readtr"
 .IX Subsection "readtr"
