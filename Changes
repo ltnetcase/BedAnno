@@ -133,3 +133,9 @@
 0.48  Mon Mar 24 19:33:20
 	- fix reformatAnno to give chromosome a "chr" prefix.
 	- fix protBegin for frameshift variant with skipping the same bases.
+
+0.49  Tue Mar 25 22:04:00
+	- enhance pDot name to add prWalker to allow protein variant walk around
+	  It'll allow tandom protein seq repeat to be called following the 3'most rule,
+          and only will be difference to previous notation when there exists a tandom
+	  repeat protein sequence which its nucleotide sequence is not tandom repeat.

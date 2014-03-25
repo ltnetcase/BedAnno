@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.48';
+our $VERSION = '0.49';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.48
+=head2 VERSION v0.49
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -3377,8 +3377,9 @@ sub getTrChange {
 		    # parse the protein variants
 		    # to recognize the repeat and adjust to correct position
                     my $prVar =
-                      BedAnno::Var->new( $trdbEnt->{prot}, ( $prBegin - 1 ),
-                        $prEnd, $prRef, $prAlt );
+                      $self->prWalker( $trdbEnt->{pseq}, $prBegin, $prEnd,
+                        $prRef, $prAlt );
+
 		    # 0-based
                     my ( $p_P, $p_r, $p_a, $prl, $pal ) =
                       $prVar->getUnifiedVar('+');
@@ -3572,6 +3573,43 @@ sub getTrChange {
     return $annoEnt;
 }
 
+=head2 prWalker
+
+    About   : act as trWalker, but on protein sequence
+    Usage   : $prVar = $beda->prWalker( $prSeq,  $prBegin, $prEnd, $prRef, $prAlt );
+    Args    : prSeq   - whole protein sequence
+	      prBegin - protein variant Begin position (1 based)
+	      prEnd   - protein variant End position (1 based)
+	      prRef   - protein variant reference sequence
+	      prAlt   - protein variant alt sequence
+
+=cut
+sub prWalker {
+    my ($self, $prSeq, $prBegin, $prEnd, $prRef, $prAlt) = @_;
+    my $prVar =
+      BedAnno::Var->new( "nouse", ( $prBegin - 1 ), $prEnd, $prRef, $prAlt );
+    my ($pr_P, $pr_r, $pr_a, $pr_rl, $pr_al) = $prVar->getUnifiedVar('+');
+
+    if ( $pr_rl == $pr_al
+        or ( 0 != index( $pr_r, $pr_a ) and 0 != index( $pr_a, $pr_r ) ) )
+    {
+        return $prVar;
+    }
+
+    $prBegin = $pr_P + 1;
+    $prEnd   = $pr_P + $pr_rl;
+
+    my ( $ref_sta, $ref_sto, $renew_prRef, $renew_prAlt ) =
+      walker( $prBegin, $prEnd, $prSeq, $pr_r, $pr_a, $pr_rl, $pr_al );
+
+    if ( $prBegin != $ref_sta or $prEnd != $ref_sto ) {
+        $prVar = BedAnno::Var->new( "nouse", ( $ref_sta - 1 ),
+            $ref_sto, $renew_prRef, $renew_prAlt );
+    }
+
+    return $prVar;
+}
+
 =head2 trWalker
 
     About   : walk around the variant position to find possible
@@ -3625,30 +3663,46 @@ sub trWalker {
 
     my $qtid = $tid;
     $qtid =~ s/\-\d+$//;
-    my $trdb = $self->{trInfodb}->{$qtid};
-    my $trSeq = $trdb->{seq};
-    my $trLen = $trdb->{len};
-    
-    my $ref_sta = $trBegin;
-    my $ref_sto = $trEnd;
+    my $trSeq = $self->{trInfodb}->{$qtid}->{seq};
+    my ( $ref_sta, $ref_sto, $trRef, $trAlt ) =
+      walker( $trBegin, $trEnd, $trSeq, $real_r, $real_a, $real_rl, $real_al );
+
+    if (   $ref_sta ne $trBegin
+	or $ref_sto ne $trEnd )
+    {
+	$trBegin = $ref_sta;
+	$trEnd   = $ref_sto;
+
+	$real_var = BedAnno::Var->new( $tid, 0, length($trRef), $trRef, $trAlt);
+	@Unified  = $real_var->getUnifiedVar('+');
+    }
+
+    return ($trBegin, $trEnd, $real_var, \@Unified);
+}
+
+sub walker {
+    my ($ref_sta, $ref_sto, $whole_seq, $ref, $alt, $reflen, $altlen) = @_;
+    my $seqlen = length($whole_seq);
+
     my $ori_walker;
     my $track_opt;
-    if ($real_rl < $real_al) {
+
+    if ($reflen < $altlen) {
 	$ref_sta = $ref_sto + 1;
-	$ori_walker = substr($real_a, $real_rl);
-	$track_opt = 0; # walk on the alt
+	$ori_walker = substr( $alt, $reflen );
+	$track_opt = 0; # walk on alt
     }
     else {
-	$ref_sta += $real_al;
-	$ori_walker = substr($real_r, $real_al);
-	$track_opt = 1; # walk on the ref
+	$ref_sta += $altlen;
+	$ori_walker = substr( $ref, $altlen );
+	$track_opt = 1; # walk on ref
     }
 
     # walk to 3' most
     my @cur_walker = split(//, $ori_walker);
     my $walk_forward_step = 0;
-    for (my $p = $ref_sto; $p < $trLen; $p++) {
-	if (substr($trSeq, $p, 1) eq $cur_walker[0]) {
+    for (my $p = $ref_sto; $p < $seqlen; $p++) {
+	if (substr($whole_seq, $p, 1) eq $cur_walker[0]) {
 	    push (@cur_walker, shift(@cur_walker));
 	}
 	else {
@@ -3662,13 +3716,13 @@ sub trWalker {
     # use the 3' most element as the final matched difference
     my $match_target = join( "", @cur_walker );
 
-    my $forward_footprint = substr($trSeq, $ref_sta-1, $walk_forward_step);
+    my $forward_footprint = substr($whole_seq, $ref_sta-1, $walk_forward_step);
 
     # walk to 5' most
     @cur_walker = split(//, $ori_walker);
     my $walk_back_step = 0;
     for ( my $q = $ref_sta - 1; $q > 0; $q -- ) {
-	if (substr($trSeq, $q-1, 1) eq $cur_walker[-1]) {
+	if (substr($whole_seq, $q-1, 1) eq $cur_walker[-1]) {
 	    unshift( @cur_walker, pop(@cur_walker) );
 	}
 	else {
@@ -3679,34 +3733,24 @@ sub trWalker {
 
     my $back_most = $ref_sta - $walk_back_step;
     my $backward_footprint =
-      substr( $trSeq, $ref_sta - $walk_back_step - 1, $walk_back_step );
+      substr( $whole_seq, $ref_sta - $walk_back_step - 1, $walk_back_step );
     
     my $cur_short_track = $backward_footprint . $forward_footprint;
     my $cur_long_track = $cur_short_track . $match_target;
     my $target_sta = index($cur_long_track, $match_target);
     $ref_sta = $back_most + $target_sta;
-
-    if (   $ref_sta ne $trBegin
-	or $ref_sto ne $trEnd )
-    {
-	$trBegin = $ref_sta;
-	$trEnd   = $ref_sto;
-	my ($trRef, $trAlt);
-
-	if ($track_opt) {
-	    $trRef = substr( $cur_long_track,  $target_sta );
-	    $trAlt = substr( $cur_short_track, $target_sta );
-	}
-	else {
-	    $trRef = substr( $cur_short_track, $target_sta );
-	    $trAlt = substr( $cur_long_track,  $target_sta );
-	}
-
-	$real_var = BedAnno::Var->new( $tid, 0, length($trRef), $trRef, $trAlt);
-	@Unified  = $real_var->getUnifiedVar('+');
+    
+    my ($renew_ref, $renew_alt);
+    if ($track_opt) {
+	$renew_ref = substr( $cur_long_track,  $target_sta );
+	$renew_alt = substr( $cur_short_track, $target_sta );
+    }
+    else {
+	$renew_ref = substr( $cur_short_track, $target_sta );
+	$renew_alt = substr( $cur_long_track,  $target_sta );
     }
 
-    return ($trBegin, $trEnd, $real_var, \@Unified);
+    return ( $ref_sta, $ref_sto, $renew_ref, $renew_alt );
 }
 
 =head2 cmpPos
@@ -5273,6 +5317,66 @@ sub reformatAnno {
     }
     return $crawler_need;
 }
+
+
+sub gen_alt_hgvs {
+    my $rep_hgvs = shift;
+    if ($rep_hgvs =~ /^([cgmn]\.)(\d+)([ACGTN]+)\[(\d+)>(\d+)\]$/) {
+	my ($sym, $anchor, $rep, $ref_cn, $alt_cn) = ($1, $2, $3, $4, $5);
+	my $replen = length($rep);
+	if ($alt_cn - $ref_cn == 1) { # convert to dup
+            if ( $replen == 1 ) {
+                return $sym . ( $anchor + $ref_cn - 1 ) . 'dup' . $rep;
+            }
+            else {
+                return   $sym
+                      . ( $anchor + ( $ref_cn - 1 ) * $replen ) . '_'
+                      . ( $anchor + $ref_cn * $replen - 1 ) . 'dup'
+                      . $rep ;
+            }
+	}
+	else {
+            return $sym . $anchor . $rep . '[' . $alt_cn . ']';
+	}
+    }
+    elsif ($rep_hgvs =~ /^p\.(\D)(\d+)((_\D)(\d+))?\[(\d+)>(\d+)\]$/) {
+	my ($anchor1_char, $anchor1) = ($1, $2);
+	my ($anchor2_char, $anchor2) = ($4, $5);
+	$anchor2_char ||= "";
+	$anchor2 ||= "";
+	my ($ref_cn,       $alt_cn ) = ($6, $7);
+	if ($alt_cn - $ref_cn == 1) {
+	    if (!defined $3 or $3 eq '') {
+                return
+                    'p.'
+                  . $anchor1_char
+                  . ( $anchor1 + $ref_cn - 1 ) . 'dup';
+	    }
+	    else {
+		my $replen = $anchor2 - $anchor1 + 1;
+                return
+                    'p.'
+                  . $anchor1_char
+                  . ( $anchor1 + ( $ref_cn - 1 ) * $replen )
+                  . $anchor2_char
+                  . ( $anchor1 + $ref_cn * $replen - 1 ) . 'dup';
+	    }
+	}
+	else {
+            return
+                "p."
+              . $anchor1_char
+              . $anchor1
+              . $anchor2_char
+              . $anchor2 . '['
+              . $alt_cn . ']';
+	}
+    }
+    else {
+	return $rep_hgvs;
+    }
+}
+
 
 =head2 getTrPosition
 
