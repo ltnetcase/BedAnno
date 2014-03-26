@@ -139,3 +139,7 @@
 	  It'll allow tandom protein seq repeat to be called following the 3'most rule,
           and only will be difference to previous notation when there exists a tandom
 	  repeat protein sequence which its nucleotide sequence is not tandom repeat.
+
+0.50  Wed Mar 26 19:55:00
+	- uniform HGVS notation by add standard_xHGVS for repeats, original alt_xHGVS
+	  has changed to del/ins format notation

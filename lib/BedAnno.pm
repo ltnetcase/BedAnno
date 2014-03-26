@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.49';
+our $VERSION = '0.50';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.49
+=head2 VERSION v0.50
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -2004,6 +2004,10 @@ sub varanno {
     $var->{varTypeSO} = $Name2SO{$var->{guess}};
     $var->{refbuild}  = $self->{refbuild};
     $var->get_gHGVS();
+    if ($var->{gHGVS} =~ /\]$/) {
+        $var->{standard_gHGVS} = gen_standard_gphgvs( $var->{gHGVS} );
+	$var->{alt_gHGVS} = gen_alt_ghgvs( $var->{gHGVS} );
+    }
 
     # Due to the bed format database, 
     # add flank left and right 1bp to query the database
@@ -2341,6 +2345,12 @@ sub finaliseAnno {
 		}
             }
 
+            $trAnnoEnt->{standard_pHGVS} =
+              gen_standard_gphgvs( $trAnnoEnt->{pHGVS} )
+              if (  exists $trAnnoEnt->{pHGVS}
+                and defined $trAnnoEnt->{pHGVS}
+                and $trAnnoEnt->{pHGVS} =~ /\]$/ );
+
 	    $trAnnoEnt->{trVarName} = _getTrVarName($tid, $trAnnoEnt);
 	}
     }
@@ -2349,6 +2359,103 @@ sub finaliseAnno {
 
     return $annoEnt;
 }
+
+# The standard gHGVS and pHGVS can be generated directly from
+# original HGVS string, but cHGVS need more specification
+sub gen_standard_gphgvs {
+    my $rep_hgvs = shift;
+    if ($rep_hgvs =~ /^([gm]\.)(\d+)([ACGTN]+)\[(\d+)>(\d+)\]$/) {
+	my ($sym, $anchor, $rep, $ref_cn, $alt_cn) = ($1, $2, $3, $4, $5);
+	my $replen = length($rep);
+	if ($alt_cn - $ref_cn == 1) { # convert to dup
+            if ( $replen == 1 ) {
+                return $sym . ( $anchor + $ref_cn - 1 ) . 'dup' . $rep;
+            }
+            else {
+                return   $sym
+                      . ( $anchor + ( $ref_cn - 1 ) * $replen ) . '_'
+                      . ( $anchor + $ref_cn * $replen - 1 ) . 'dup'
+                      . $rep ;
+            }
+	}
+	else {
+            return $sym . $anchor . $rep . '[' . $alt_cn . ']';
+	}
+    }
+    elsif ($rep_hgvs =~ /^p\.(\D)(\d+)((_\D)(\d+))?\[(\d+)>(\d+)\]$/) {
+	my ($anchor1_char, $anchor1) = ($1, $2);
+	my ($anchor2_char, $anchor2) = ($4, $5);
+	my ($ref_cn,       $alt_cn ) = ($6, $7);
+	$anchor2_char ||= "";
+	$anchor2 ||= "";
+
+	if ($alt_cn - $ref_cn == 1) {
+	    if (!defined $3 or $3 eq '') {
+                return
+                    'p.'
+                  . $anchor1_char
+                  . ( $anchor1 + $ref_cn - 1 ) . 'dup';
+	    }
+	    else {
+		my $replen = $anchor2 - $anchor1 + 1;
+                return
+                    'p.'
+                  . $anchor1_char
+                  . ( $anchor1 + ( $ref_cn - 1 ) * $replen )
+                  . $anchor2_char
+                  . ( $anchor1 + $ref_cn * $replen - 1 ) . 'dup';
+	    }
+	}
+	else {
+            return
+                "p."
+              . $anchor1_char
+              . $anchor1
+              . $anchor2_char
+              . $anchor2 . '['
+              . $alt_cn . ']';
+	}
+    }
+    else {
+	return $rep_hgvs;
+    }
+}
+
+# only ghgvs can generate alt HGVS directly from repeat format string
+sub gen_alt_ghgvs {
+    my $rep_hgvs = shift;
+
+    if ($rep_hgvs =~ /^([gm]\.)(\d+)([ACGTN]+)\[(\d+)>(\d+)\]$/) {
+	my ($sym, $anchor, $rep, $ref_cn, $alt_cn) = ($1, $2, $3, $4, $5);
+	my $replen = length($rep);
+
+	if ($ref_cn > $alt_cn) { # deletion
+            if ( $ref_cn - $alt_cn == 1 and $replen == 1 ) {
+                return
+                    $sym
+                  . ( $anchor + $ref_cn * $replen - 1 ) . 'del'
+                  . $rep;
+            }
+            else {
+                return
+                    $sym
+                  . ( $anchor + $alt_cn * $replen ) . '_'
+                  . ( $anchor + $ref_cn * $replen - 1 ) . 'del'
+                  . ( $rep x ( $ref_cn - $alt_cn ) );
+            }
+	}
+	else { # insertion
+            return
+                $sym
+              . ( $anchor + $ref_cn * $replen - 1 ) . '_'
+              . ( $anchor + $ref_cn * $replen ) . 'ins'
+              . ( $rep x ( $alt_cn - $ref_cn ) );
+	}
+    }
+
+    return $rep_hgvs;
+}
+
 
 =head2 decide_major
 
@@ -2391,8 +2498,9 @@ sub decide_major {
         or 0 == scalar keys %{ $annoEnt->{trInfo} }
         or exists $annoEnt->{trInfo}->{""} )
     {
+	my $gHGVS = (exists $annoEnt->{var}->{standard_gHGVS}) ? $annoEnt->{var}->{standard_gHGVS} : $annoEnt->{var}->{gHGVS};
         my $intergenic =
-          $annoEnt->{var}->{chr} . ": " . $annoEnt->{var}->{gHGVS};
+          $annoEnt->{var}->{chr} . ": " . $gHGVS;
         $intergenic = "chr" . $intergenic if ( $intergenic =~ /^[\dXYM]/ );
         $intergenic .= " (intergenic)";    # for only intergenic
 
@@ -2449,15 +2557,20 @@ sub get_first_tr {
 sub _getTrVarName {
     my ($trID, $rTrEnt) = @_;
     my $trhit;
+
+
     if ( $rTrEnt->{func} eq 'annotation-fail' ) {
 	$trhit = $trID . "(" . $rTrEnt->{geneSym} . "): annotation-fail";
     }
     else {
-	$trhit  = $trID . "(" . $rTrEnt->{geneSym} . "): " . $rTrEnt->{c};
+	my $cHGVS = (exists $rTrEnt->{standard_cHGVS}) ? $rTrEnt->{standard_cHGVS} : $rTrEnt->{c};
+	$trhit  = $trID . "(" . $rTrEnt->{geneSym} . "): " . $cHGVS;
     }
 
-    $trhit .= " (" . $rTrEnt->{p} . ")"
-      if ( exists $rTrEnt->{p} and $rTrEnt->{p} ne "" );
+    if ( exists $rTrEnt->{p} and $rTrEnt->{p} ne "" ) {
+	my $pHGVS = (exists $rTrEnt->{standard_pHGVS}) ? $rTrEnt->{standard_pHGVS} : $rTrEnt->{p};
+	$trhit .= " (" . $pHGVS . ")" ;
+    }
     return $trhit;
 }
 
@@ -2682,35 +2795,58 @@ sub getTrChange {
                   . $real_var->{alt_cn} . ']';
             }
 
+	    # 0.4.9
 	    # add a new key: alt_cHGVS, using for query database which 
 	    # do not have current standard cHGVS string, especially
 	    # for repeat case
+	    # 
+	    # 0.5.0
+	    # generate standard_cHGVS for this kind of variants
+	    # prior to alt_cHGVS, change alt_cHGVS to only ins/del 
+	    # format notation
+
+	    # give this opt to indicate whether to give standard_cHGVS
+	    # a duplication format notation
+	    my $dupopt =
+	      (       $real_var->{ref_cn} > 1
+		  and $real_var->{alt_cn} - $real_var->{ref_cn} == 1 )
+	      ? 1
+	      : 0;
 
             if (   $real_var->{ref_cn} > $real_var->{alt_cn}
-                or $real_var->{ref_cn} >
-                ( $real_var->{alt_cn} - $real_var->{ref_cn} ) )
-            { # deletion or duplication in previous definition
-                my $changed_cn =
-                  abs( $real_var->{ref_cn} - $real_var->{alt_cn} );
-                my $changed_type =
-                  ( $real_var->{ref_cn} > $real_var->{alt_cn} ) ? 'del' : 'dup';
-                my $changed_cont = $trRep x $changed_cn;
+                or $dupopt )
+            {    # deletion and duplication
+		if (!$dupopt) {
+		    $trannoEnt->{standard_cHGVS} = 
+		      $f . $chgvs_5 . $trRep . '[' . $real_var->{alt_cn} . ']';
+		}
 
+                my $changed_cn   = abs($real_var->{ref_cn} - $real_var->{alt_cn});
+                my $changed_type = ($dupopt) ? 'dup' : 'del';
+                my $changed_cont = $trRep x $changed_cn;
+		my $changed_len  = length($changed_cont);
                 if ( $changed_cn == 1 and $real_var->{replen} == 1 ) {
-                    $trannoEnt->{alt_cHGVS} = $f . $chgvs_3 . $changed_type . $trRep;
+		    my $single_change = $f . $chgvs_3 . $changed_type . $trRep;
+		    if ($dupopt) {
+			$trannoEnt->{standard_cHGVS} = $single_change;
+		    }
+		    else {
+			$trannoEnt->{alt_cHGVS} = $single_change;
+		    }
                 }
                 else {
-                    my $changed_cont = $trRep x $changed_cn;
                     my $renew_offset =
-                      $real_var->{replen} *
-                      ( ( $real_var->{ref_cn} > $real_var->{alt_cn} )
-                        ? $real_var->{alt_cn}
-                        : ( $real_var->{ref_cn} * 2 - $real_var->{alt_cn} ) );
+                        ($dupopt)
+                      ? ( $real_var->{replen} * ( $real_var->{ref_cn} - 1 ) )
+                      : ( $real_var->{replen} * $real_var->{alt_cn} );
+		    
+		    my $renew_cHGVS;
                     if ( $chgvs_5 =~ /^\d+$/ ) {    # cds / ncRNA exon
-                        $trannoEnt->{alt_cHGVS} =
+                        $renew_cHGVS =
                             $f
                           . ( $chgvs_5 + $renew_offset ) . '_'
-                          . $chgvs_3 . $changed_type
+                          . $chgvs_3
+                          . $changed_type
                           . $changed_cont;
                     }
                     elsif ( $chgvs_5 =~ /^([\*\+]?)(\-?\d+)$/ ) {
@@ -2718,19 +2854,21 @@ sub getTrChange {
                         # utr region / ncRNA promoter 3'd region
                         my $sig       = $1;
                         my $start_pos = $2;
-                        if ( $sig eq '' ) {         # 5 utr
-                            $trannoEnt->{alt_cHGVS} =
+                        if ( $sig eq '' ) {    # 5 utr
+                            $renew_cHGVS =
                                 $f
                               . ( $start_pos + $renew_offset ) . '_'
-                              . $chgvs_3 . $changed_type
+                              . $chgvs_3
+                              . $changed_type
                               . $changed_cont;
                         }
-                        else {                      # 3 utr
-                            $trannoEnt->{alt_cHGVS} =
+                        else {                 # 3 utr
+                            $renew_cHGVS =
                                 $f
                               . $sig
                               . ( $start_pos + $renew_offset ) . '_'
-                              . $chgvs_3 . $changed_type
+                              . $chgvs_3
+                              . $changed_type
                               . $changed_cont;
                         }
                     }
@@ -2757,12 +2895,13 @@ sub getTrChange {
                             if ( $anchor3 eq $anchor5 and $sig5 eq $sig3 ) {
                                 my $anc_5 = $offset5 + $renew_offset;
                                 $anc_5 =~ s/^-/-u/ if ($u5_opt);
-                                $trannoEnt->{alt_cHGVS} =
+                                $renew_cHGVS =
                                     $f
                                   . $anchor5
                                   . $sig5
                                   . $anc_5 . '_'
-                                  . $chgvs_3 . $changed_type
+                                  . $chgvs_3
+                                  . $changed_type
                                   . $changed_cont;
                             }
                             elsif ( $anchor3 ne $anchor5
@@ -2773,22 +2912,21 @@ sub getTrChange {
                                   ( $real_rl - ( $offset5 + $offset3 ) ) / 2;
 
                                 if ( $renew_offset < $half_offset ) {
-                                    $trannoEnt->{alt_cHGVS} =
+                                    $renew_cHGVS =
                                         $f
                                       . $anchor5
                                       . $sig5
                                       . ( $offset5 + $renew_offset ) . '_'
-                                      . $chgvs_3 . $changed_type
+                                      . $chgvs_3
+                                      . $changed_type
                                       . $changed_cont;
                                 }
                                 else {
-                                    $trannoEnt->{alt_cHGVS} =
+                                    $renew_cHGVS =
                                         $f
                                       . $anchor3
                                       . $sig3
-                                      . ( $offset3 -
-                                          ( $real_var->{replen} * $changed_cn )
-                                          + 1 )
+                                      . ( $offset3 - $changed_len + 1 )
                                       . '_'
                                       . $chgvs_3
                                       . $changed_type
@@ -2811,69 +2949,109 @@ sub getTrChange {
                     }
                     else {
                         $self->warn(
-			    "Warning: Unknown chgvs5 while ",
-			    "parsing alt_cHGVS : $tid: $chgvs_5"
+                            "Warning: Unknown chgvs5 while ",
+                            "parsing alt_cHGVS : $tid: $chgvs_5"
                         ) if ( !exists $self->{quiet} );
                     }
+
+		    if (defined $renew_cHGVS) {
+			if ($dupopt) {
+			    $trannoEnt->{standard_cHGVS} = $renew_cHGVS;
+			}
+			else {
+			    $trannoEnt->{alt_cHGVS} = $renew_cHGVS;
+			}
+		    }
                 }
             }
-	    else { # insertion
-		my $ins_cn = $real_var->{alt_cn} - $real_var->{ref_cn};
-		my $ins_cont = $trRep x $ins_cn;
-		if ($chgvs_3 =~ /^\d+$/) { # cds / ncRNA exon
-		    $trannoEnt->{alt_cHGVS} =
-			$f
-		      . $chgvs_3 . '_'
-		      . ( $chgvs_3 + 1 ) . 'ins'
-		      . $ins_cont;
-		}
-		elsif ($chgvs_3 =~ /^([\*\+]?)(\-?\d+)$/) { # utr or ncRNA ext
-		    my $sig = $1;
-		    my $ins_pos = $2;
-		    if ($ins_pos eq '-1') {
-			$trannoEnt->{alt_cHGVS} = $f . '-1_1ins' . $ins_cont;
-		    }
-		    else {
-			$trannoEnt->{alt_cHGVS} =
-			    $f
-			  . $chgvs_3 . '_'
-			  . $sig
-			  . ( $ins_pos + 1 ) . 'ins'
-			  . $ins_cont;
-		    }
-		}
-		elsif ($chgvs_3 =~ /^(\-?[^\-\+]+)(\+?d?)(\-?u?\d+)$/) { # intron
-		    my $anchor = $1;
-		    my $sig = $2;
-		    my $ofst = $3;
-		    my $u3opt = 0;
-		    if ($ofst =~ /u/) {
-			$u3opt = 1;
-			$ofst =~ s/u//;
-		    }
-		    if ($ofst eq '-1') {
-			$trannoEnt->{alt_cHGVS} =
-			  $f . $chgvs_3 . '_' . $anchor . 'ins' . $ins_cont;
-		    }
-		    else {
-			my $anc3 = $ofst + 1;
-			$anc3 =~ s/^-/-u/ if ($u3opt);
-			$trannoEnt->{alt_cHGVS} =
-			    $f
-			  . $chgvs_3 . '_'
-			  . $anchor
-			  . $sig
-			  . $anc3 . 'ins'
-			  . $ins_cont;
-		    }
-		}
-		else {
-		    $self->warn(
-			"Warning: Unknown chgvs5 while ",
-			"parsing alt_cHGVS : $tid: $chgvs_3"
-		    ) if ( !exists $self->{quiet} );
-		}
-	    }
+
+            if (    $real_var->{ref_cn} < $real_var->{alt_cn}
+                and $real_var->{alt_cn} > 2 )
+            {    # non-duplication insertion
+
+                my $ins_cn   = $real_var->{alt_cn} - $real_var->{ref_cn};
+                my $ins_cont = $trRep x $ins_cn;
+
+                $trannoEnt->{standard_cHGVS} =
+                  $f . $chgvs_5 . $trRep . '[' . $real_var->{alt_cn} . ']'
+                  if ( !$dupopt );
+
+                if ( $chgvs_3 =~ /^\d+$/ ) {    # cds / ncRNA exon
+                    if (
+                        (
+                                $cdsOpt
+                            and $chgvs_3 + 1 <=
+                            ( $trdbEnt->{csto} - $trdbEnt->{csta} )
+                        )
+                        or ( !$cdsOpt and $chgvs_3 + 1 <= $trdbEnt->{len} )
+                      )
+                    {
+                        $trannoEnt->{alt_cHGVS} =
+                            $f
+                          . $chgvs_3 . '_'
+                          . ( $chgvs_3 + 1 ) . 'ins'
+                          . $ins_cont;
+                    }
+                    else {
+                        my $outlatter;
+                        if ($cdsOpt) {
+                            $outlatter = "*1";
+                        }
+                        else {
+                            $outlatter = "+1";
+                        }
+                        $trannoEnt->{alt_cHGVS} =
+                          $f . $chgvs_3 . '_' . $outlatter . 'ins' . $ins_cont;
+                    }
+                }
+                elsif ( $chgvs_3 =~ /^([\*\+]?)(\-?\d+)$/ ) { # utr or ncRNA ext
+                    my $sig     = $1;
+                    my $ins_pos = $2;
+                    if ( $ins_pos eq '-1' ) {
+                        $trannoEnt->{alt_cHGVS} = $f . '-1_1ins' . $ins_cont;
+                    }
+                    else {
+                        $trannoEnt->{alt_cHGVS} =
+                            $f
+                          . $chgvs_3 . '_'
+                          . $sig
+                          . ( $ins_pos + 1 ) . 'ins'
+                          . $ins_cont;
+                    }
+                }
+                elsif ( $chgvs_3 =~ /^(\-?[^\-\+]+)(\+?d?)(\-?u?\d+)$/ )
+                {    # intron
+                    my $anchor = $1;
+                    my $sig    = $2;
+                    my $ofst   = $3;
+                    my $u3opt  = 0;
+                    if ( $ofst =~ /u/ ) {
+                        $u3opt = 1;
+                        $ofst =~ s/u//;
+                    }
+                    if ( $ofst eq '-1' ) {
+                        $trannoEnt->{alt_cHGVS} =
+                          $f . $chgvs_3 . '_' . $anchor . 'ins' . $ins_cont;
+                    }
+                    else {
+                        my $anc3 = $ofst + 1;
+                        $anc3 =~ s/^-/-u/ if ($u3opt);
+                        $trannoEnt->{alt_cHGVS} =
+                            $f
+                          . $chgvs_3 . '_'
+                          . $anchor
+                          . $sig
+                          . $anc3 . 'ins'
+                          . $ins_cont;
+                    }
+                }
+                else {
+                    $self->warn(
+                        "Warning: Unknown chgvs5 while ",
+                        "parsing alt_cHGVS : $tid: $chgvs_3"
+                    ) if ( !exists $self->{quiet} );
+                }
+            }
         }
 	else {
 	    if ( $cmpPos == 0 ) {    # 1 bp
@@ -3450,38 +3628,23 @@ sub getTrChange {
 			my $phgvs_3 = $p_P + ($prVar->{ref_cn} * $prVar->{replen});
 			my $repPrSta = substr( $prVar->{rep}, 0, 1 );
 			my $repPrEnd = substr( $prVar->{rep}, -1, 1 );
-			if (   $prVar->{ref_cn} > $prVar->{alt_cn}
-			    or $prVar->{ref_cn} >
-			    ( $prVar->{alt_cn} - $prVar->{ref_cn} ) )
+			if (   $prVar->{ref_cn} > $prVar->{alt_cn} )
 			{ # deletion or duplication in previous definition
-			    my $changed_cn =
-			      abs( $prVar->{ref_cn} - $prVar->{alt_cn} );
-			    my $changed_type =
-			      ( $prVar->{ref_cn} > $prVar->{alt_cn} ) ? 'del' : 'dup';
-			    my $changed_cont = $prVar->{rep} x $changed_cn;
-
-			    if ( $changed_cn == 1 and $prVar->{replen} == 1 ) {
-                                $trannoEnt->{alt_pHGVS} = 'p.'
-                                  . $prVar->{rep}
-                                  . $phgvs_3
-                                  . $changed_type;
-			    }
-			    else {
-                                my $changed_cont = $prVar->{rep} x $changed_cn;
-                                my $renew_offset = $prVar->{replen} * (
-                                    ( $prVar->{ref_cn} > $prVar->{alt_cn} )
-                                    ? $prVar->{alt_cn}
-                                    : ( $prVar->{ref_cn} * 2 -
-                                          $prVar->{alt_cn} )
-                                );
+                            if ( ( $prVar->{ref_cn} - $prVar->{alt_cn} ) == 1
+                                and $prVar->{replen} == 1 )
+                            {
                                 $trannoEnt->{alt_pHGVS} =
-                                    'p.'
+                                  'p.' . $prVar->{rep} . $phgvs_3 . 'del';
+                            }
+                            else {
+                                $trannoEnt->{alt_pHGVS} = 'p.'
                                   . $repPrSta
-                                  . ( $phgvs_5 + $renew_offset ) . '_'
+                                  . ( $phgvs_5 +
+                                      $prVar->{alt_cn} * $prVar->{replen} )
+                                  . '_'
                                   . $repPrEnd
-                                  . $phgvs_3
-                                  . $changed_type;
-			    }
+                                  . $phgvs_3 . 'del';
+                            }
 			}
 			else { # insertion
 			    my $ins_cn = $prVar->{alt_cn} - $prVar->{ref_cn};
@@ -5091,7 +5254,7 @@ sub reformatAnno {
             varTypeSO         => (( $var->{varTypeSO} =~ /SO:/ ) 
 				    ? $var->{varTypeSO}
 				    : ""),
-            gHGVS             => $var->{gHGVS},
+            gHGVS             => ((exists $var->{standard_gHGVS}) ? $var->{standard_gHGVS} : $var->{gHGVS}),
             VarName           => $var->{varName},
             cytoband          => ( ( exists $var->{cytoBand} ) 
 				    ? $var->{cytoBand} : "" ),
@@ -5285,8 +5448,10 @@ sub reformatAnno {
               : "";
             $trInfo{cHGVS} =
               ( exists $rTr->{c} ) ? $rTr->{c} : "";
+	    $trInfo{cHGVS} = $rTr->{standard_cHGVS} if (exists $rTr->{standard_cHGVS});
             $trInfo{pHGVS} =
               ( exists $rTr->{p} ) ? $rTr->{p} : "";
+	    $trInfo{pHGVS} = $rTr->{standard_pHGVS} if (exists $rTr->{standard_pHGVS});
             $trInfo{CodonChange} =
               ( exists $rTr->{cc} ) ? $rTr->{cc} : "";
             $trInfo{SIFTpred} =
@@ -5316,65 +5481,6 @@ sub reformatAnno {
         }
     }
     return $crawler_need;
-}
-
-
-sub gen_alt_hgvs {
-    my $rep_hgvs = shift;
-    if ($rep_hgvs =~ /^([cgmn]\.)(\d+)([ACGTN]+)\[(\d+)>(\d+)\]$/) {
-	my ($sym, $anchor, $rep, $ref_cn, $alt_cn) = ($1, $2, $3, $4, $5);
-	my $replen = length($rep);
-	if ($alt_cn - $ref_cn == 1) { # convert to dup
-            if ( $replen == 1 ) {
-                return $sym . ( $anchor + $ref_cn - 1 ) . 'dup' . $rep;
-            }
-            else {
-                return   $sym
-                      . ( $anchor + ( $ref_cn - 1 ) * $replen ) . '_'
-                      . ( $anchor + $ref_cn * $replen - 1 ) . 'dup'
-                      . $rep ;
-            }
-	}
-	else {
-            return $sym . $anchor . $rep . '[' . $alt_cn . ']';
-	}
-    }
-    elsif ($rep_hgvs =~ /^p\.(\D)(\d+)((_\D)(\d+))?\[(\d+)>(\d+)\]$/) {
-	my ($anchor1_char, $anchor1) = ($1, $2);
-	my ($anchor2_char, $anchor2) = ($4, $5);
-	$anchor2_char ||= "";
-	$anchor2 ||= "";
-	my ($ref_cn,       $alt_cn ) = ($6, $7);
-	if ($alt_cn - $ref_cn == 1) {
-	    if (!defined $3 or $3 eq '') {
-                return
-                    'p.'
-                  . $anchor1_char
-                  . ( $anchor1 + $ref_cn - 1 ) . 'dup';
-	    }
-	    else {
-		my $replen = $anchor2 - $anchor1 + 1;
-                return
-                    'p.'
-                  . $anchor1_char
-                  . ( $anchor1 + ( $ref_cn - 1 ) * $replen )
-                  . $anchor2_char
-                  . ( $anchor1 + $ref_cn * $replen - 1 ) . 'dup';
-	    }
-	}
-	else {
-            return
-                "p."
-              . $anchor1_char
-              . $anchor1
-              . $anchor2_char
-              . $anchor2 . '['
-              . $alt_cn . ']';
-	}
-    }
-    else {
-	return $rep_hgvs;
-    }
 }
 
 
