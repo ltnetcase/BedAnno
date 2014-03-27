@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.50';
+our $VERSION = '0.51';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.50
+=head2 VERSION v0.51
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -1846,6 +1846,7 @@ sub anno {
                         protEnd       => $End_in_Protein,
                         c             => $cHGVS,
                         p             => $pHGVS,
+			p3	      => $threeletter_pHGVS,
                         cc            => $codon_change,
                         polar         => $polar_change,
                         r             => $imp_funcRegion,
@@ -2077,6 +2078,55 @@ sub varanno {
 
     return ($annoEnt, $AEIndex);
 }
+
+=head2 P1toP3
+
+    About : Change 1 letter format of pHGVS string to 3 letter format
+    Usage : my $p3 = P1toP3($p1);
+
+=cut
+sub P1toP3 {
+    my $p1 = shift;
+    if ( $p1 =~ /^p\.([A-Z\*])(\d+)([A-Z\*])((fs\*.+)?)$/ ) {
+	# missense, frameshift
+	return 'p.'.$C1toC3{$1}.$2.$C1toC3{$3}.$4;
+    }
+    elsif ( $p1 =~ /^p\.([A-Z\*])(\d+)(del|dup|\[.*\])$/ ) {
+	# 1 bp deletion, duplication, repeats
+	return 'p.'.$C1toC3{$1}.$2.$3;
+    }
+    elsif ( $p1 =~ /^p\.([A-Z\*])(\d+)delins([A-Z\*]+)$/ ) {
+	# 1 bp delins
+	my $former = 'p.'.$C1toC3{$1}.$2.'delins';
+	my @singles = split(//, $3);
+	my $latter = join("", (map {$C1toC3{$_}} @singles));
+	return $former.$latter;
+    }
+    elsif ( $p1 =~ /^p\.([A-Z\*])(\d+)_([A-Z\*])(\d+)(del|dup|\[.*\])$/ ) {
+	# long deletion, duplication, repeats
+	return 'p.'.$C1toC3{$1}.$2.'_'.$C1toC3{$3}.$4.$5;
+    }
+    elsif ( $p1 =~ /^p\.([A-Z\*])(\d+)_([A-Z\*])(\d+)((del)?ins)([A-Z\*]+)$/ ) {
+	# insertion, long delins
+	my $former = 'p.'.$C1toC3{$1}.$2.'_'.$C1toC3{$3}.$4.$5;
+	my @singles = split(//, $7);
+	my $latter = join("", (map {$C1toC3{$_}} @singles));
+	return $former.$latter;
+    }
+    elsif ( $p1 =~ /^p\.([A-Z\*])(\d+)((delins)?)\?$/ ) {
+	# 1 base no-call
+	return 'p.'.$C1toC3{$1}.$2.$3.'?';
+    }
+    elsif ( $p1 =~ /^p\.([A-Z\*])(\d+)_([A-Z\*])(\d+)(delins\?)$/ ) {
+	# long no-call
+	return 'p.'.$C1toC3{$1}.$2.'_'.$C1toC3{$3}.$4.$5;
+    }
+    else {
+	return $p1;
+    }
+}
+
+
 
 =head2 finaliseAnno
 
@@ -2346,10 +2396,17 @@ sub finaliseAnno {
             }
 
             $trAnnoEnt->{standard_pHGVS} =
-              gen_standard_gphgvs( $trAnnoEnt->{pHGVS} )
-              if (  exists $trAnnoEnt->{pHGVS}
-                and defined $trAnnoEnt->{pHGVS}
-                and $trAnnoEnt->{pHGVS} =~ /\]$/ );
+              gen_standard_gphgvs( $trAnnoEnt->{p} )
+              if (  exists $trAnnoEnt->{p}
+                and defined $trAnnoEnt->{p}
+                and $trAnnoEnt->{p} =~ /\]$/ );
+	    
+            $trAnnoEnt->{p3} = P1toP3( $trAnnoEnt->{p} )
+              if ( exists $trAnnoEnt->{p} );
+            $trAnnoEnt->{standard_p3} = P1toP3( $trAnnoEnt->{standard_pHGVS} )
+              if ( exists $trAnnoEnt->{standard_pHGVS} );
+            $trAnnoEnt->{alt_p3} = P1toP3( $trAnnoEnt->{alt_pHGVS} )
+              if ( exists $trAnnoEnt->{alt_pHGVS} );
 
 	    $trAnnoEnt->{trVarName} = _getTrVarName($tid, $trAnnoEnt);
 	}
@@ -2498,7 +2555,10 @@ sub decide_major {
         or 0 == scalar keys %{ $annoEnt->{trInfo} }
         or exists $annoEnt->{trInfo}->{""} )
     {
-	my $gHGVS = (exists $annoEnt->{var}->{standard_gHGVS}) ? $annoEnt->{var}->{standard_gHGVS} : $annoEnt->{var}->{gHGVS};
+        my $gHGVS =
+          ( exists $annoEnt->{var}->{standard_gHGVS} )
+          ? $annoEnt->{var}->{standard_gHGVS}
+          : $annoEnt->{var}->{gHGVS};
         my $intergenic =
           $annoEnt->{var}->{chr} . ": " . $gHGVS;
         $intergenic = "chr" . $intergenic if ( $intergenic =~ /^[\dXYM]/ );
@@ -2555,21 +2615,26 @@ sub get_first_tr {
 }
 
 sub _getTrVarName {
-    my ($trID, $rTrEnt) = @_;
+    my ( $trID, $rTrEnt ) = @_;
     my $trhit;
 
-
     if ( $rTrEnt->{func} eq 'annotation-fail' ) {
-	$trhit = $trID . "(" . $rTrEnt->{geneSym} . "): annotation-fail";
+        $trhit = $trID . "(" . $rTrEnt->{geneSym} . "): annotation-fail";
     }
     else {
-	my $cHGVS = (exists $rTrEnt->{standard_cHGVS}) ? $rTrEnt->{standard_cHGVS} : $rTrEnt->{c};
-	$trhit  = $trID . "(" . $rTrEnt->{geneSym} . "): " . $cHGVS;
+        my $cHGVS =
+          ( exists $rTrEnt->{standard_cHGVS} )
+          ? $rTrEnt->{standard_cHGVS}
+          : $rTrEnt->{c};
+        $trhit = $trID . "(" . $rTrEnt->{geneSym} . "): " . $cHGVS;
     }
 
     if ( exists $rTrEnt->{p} and $rTrEnt->{p} ne "" ) {
-	my $pHGVS = (exists $rTrEnt->{standard_pHGVS}) ? $rTrEnt->{standard_pHGVS} : $rTrEnt->{p};
-	$trhit .= " (" . $pHGVS . ")" ;
+        my $pHGVS =
+          ( exists $rTrEnt->{standard_pHGVS} )
+          ? $rTrEnt->{standard_pHGVS}
+          : $rTrEnt->{p};
+        $trhit .= " (" . $pHGVS . ")";
     }
     return $trhit;
 }

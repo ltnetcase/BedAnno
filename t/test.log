@@ -302,6 +302,7 @@ not ok 18 - for [ rep_varanno ]
 #     'al' => 12,
 #     'alt' => 'TAGTAGTAGTAGA',
 #     'alt_cn' => 4,
+#     'alt_gHGVS' => 'g.14413_14414insTAGTAGTAG',
 #     'altlen' => 13,
 #     'cg54' => {},
 #     'chr' => '1',
@@ -326,6 +327,7 @@ not ok 18 - for [ rep_varanno ]
 #     'reptag' => '.',
 #     'rl' => 3,
 #     'sm' => 2,
+#     'standard_gHGVS' => 'g.14411TAG[4]',
 #     'tgp' => {},
 #     'varTypeSO' => 'SO:1000032'
 #   }, 'BedAnno::Var' )
@@ -574,6 +576,7 @@ not ok 22 - for [ cds_rna_delins_anno ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.S472Lfs*2',
+#       'p3' => 'p.Ser472Leufs*2',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'postEnd' => {
@@ -752,6 +755,7 @@ not ok 24 - for [ cds_snv_anno ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.P471H',
+#       'p3' => 'p.Pro471His',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'polar' => 'NP=>P+',
@@ -835,6 +839,7 @@ not ok 25 - for [ cds_del_anno ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.S472Lfs*78',
+#       'p3' => 'p.Ser472Leufs*78',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'postEnd' => {
@@ -860,6 +865,7 @@ not ok 25 - for [ cds_del_anno ]
 #       'r_End' => 'C3',
 #       'rnaBegin' => 1514,
 #       'rnaEnd' => 1514,
+#       'standard_cHGVS' => 'c.1408C[5]',
 #       'strd' => '-',
 #       'trAlt' => '',
 #       'trRef' => 'C',
@@ -899,8 +905,9 @@ not ok 26 - for [ cds_ins_anno ]
 # The anno infomations are: bless( {
 #   'trInfo' => {
 #     'NM_006158.3' => {
-#       'alt_cHGVS' => 'c.1411_1413dupCCC',
-#       'alt_pHGVS' => 'p.P471dup',
+#       'alt_cHGVS' => 'c.1413_1414insCCC',
+#       'alt_p3' => 'p.Pro471_Ser472insPro',
+#       'alt_pHGVS' => 'p.P471_S472insP',
 #       'c' => 'c.1408C[6>9]',
 #       'cdsBegin' => '1412',
 #       'cdsEnd' => '1411',
@@ -918,6 +925,7 @@ not ok 26 - for [ cds_ins_anno ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.P470[2>3]',
+#       'p3' => 'p.Pro470[2>3]',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'postEnd' => {
@@ -943,6 +951,9 @@ not ok 26 - for [ cds_ins_anno ]
 #       'r_End' => 'C3',
 #       'rnaBegin' => 1514,
 #       'rnaEnd' => 1513,
+#       'standard_cHGVS' => 'c.1408C[9]',
+#       'standard_p3' => 'p.Pro471dup',
+#       'standard_pHGVS' => 'p.P471dup',
 #       'strd' => '-',
 #       'trAlt' => 'CCC',
 #       'trRef' => '',
@@ -980,6 +991,7 @@ not ok 27 - for [ cds_rep_anno ]
 #   'trInfo' => {
 #     'NM_000581.2' => {
 #       'alt_cHGVS' => 'c.33_38delGGCGGC',
+#       'alt_p3' => 'p.Ala12_Ala13del',
 #       'alt_pHGVS' => 'p.A12_A13del',
 #       'c' => 'c.21GGC[6>4]',
 #       'cdsBegin' => '21',
@@ -998,6 +1010,7 @@ not ok 27 - for [ cds_rep_anno ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.A7[7>5]',
+#       'p3' => 'p.Ala7[7>5]',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'postEnd' => {
@@ -1023,6 +1036,9 @@ not ok 27 - for [ cds_rep_anno ]
 #       'r_End' => 'C1',
 #       'rnaBegin' => 101,
 #       'rnaEnd' => 118,
+#       'standard_cHGVS' => 'c.21GGC[4]',
+#       'standard_p3' => 'p.Ala7[5]',
+#       'standard_pHGVS' => 'p.A7[5]',
 #       'strd' => '-',
 #       'trAlt' => 'GGCGGCGGCGGC',
 #       'trRef' => 'GGCGGCGGCGGCGGCGGC',
@@ -1032,6 +1048,7 @@ not ok 27 - for [ cds_rep_anno ]
 #     },
 #     'NM_201397.1' => {
 #       'alt_cHGVS' => 'c.33_38delGGCGGC',
+#       'alt_p3' => 'p.Ala12_Ala13del',
 #       'alt_pHGVS' => 'p.A12_A13del',
 #       'c' => 'c.21GGC[6>4]',
 #       'cdsBegin' => '21',
@@ -1050,6 +1067,7 @@ not ok 27 - for [ cds_rep_anno ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.A7[7>5]',
+#       'p3' => 'p.Ala7[7>5]',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'postEnd' => {
@@ -1075,6 +1093,9 @@ not ok 27 - for [ cds_rep_anno ]
 #       'r_End' => 'C1E',
 #       'rnaBegin' => 101,
 #       'rnaEnd' => 118,
+#       'standard_cHGVS' => 'c.21GGC[4]',
+#       'standard_p3' => 'p.Ala7[5]',
+#       'standard_pHGVS' => 'p.A7[5]',
 #       'strd' => '-',
 #       'trAlt' => 'GGCGGCGGCGGC',
 #       'trRef' => 'GGCGGCGGCGGCGGCGGC',
@@ -1102,6 +1123,7 @@ not ok 27 - for [ cds_rep_anno ]
 #     'al' => 12,
 #     'alt' => 'GCCGCCGCCGCC',
 #     'alt_cn' => 4,
+#     'alt_gHGVS' => 'g.49395686_49395691delGCCGCC',
 #     'altlen' => 12,
 #     'cg54' => {},
 #     'chr' => '3',
@@ -1126,6 +1148,7 @@ not ok 27 - for [ cds_rep_anno ]
 #     'reptag' => '.',
 #     'rl' => 18,
 #     'sm' => 2,
+#     'standard_gHGVS' => 'g.49395674GCC[4]',
 #     'tgp' => {},
 #     'varTypeSO' => 'SO:1000032'
 #   }, 'BedAnno::Var' )
@@ -1453,6 +1476,7 @@ not ok 32 - for [ cds_rna_snv1_anno ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.0?',
+#       'p3' => 'p.0?',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'postEnd' => {
@@ -1537,6 +1561,7 @@ not ok 32 - for [ cds_rna_snv1_anno ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.0?',
+#       'p3' => 'p.0?',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'postEnd' => {
@@ -1655,6 +1680,7 @@ not ok 33 - for [ cds_rna_snv2_anno ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.A3S',
+#       'p3' => 'p.Ala3Ser',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'polar' => 'NP=>P0',
@@ -1741,6 +1767,7 @@ not ok 33 - for [ cds_rna_snv2_anno ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.A3S',
+#       'p3' => 'p.Ala3Ser',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'polar' => 'NP=>P0',
@@ -1831,6 +1858,7 @@ not ok 34 - for [ large_del_anno ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.G116_L122del',
+#       'p3' => 'p.Gly116_Leu122del',
 #       'pfamId' => 'PF14699.1;PF14701.1',
 #       'pfamName' => 'N-terminal domain from the human glycogen debranching enzyme;glucanotransferase domain of human glycogen debranching enzyme',
 #       'postEnd' => {
@@ -1882,6 +1910,7 @@ not ok 34 - for [ large_del_anno ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.G116_L122del',
+#       'p3' => 'p.Gly116_Leu122del',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'postEnd' => {
@@ -1932,6 +1961,7 @@ not ok 34 - for [ large_del_anno ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.G116_L122del',
+#       'p3' => 'p.Gly116_Leu122del',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'postEnd' => {
@@ -1983,6 +2013,7 @@ not ok 34 - for [ large_del_anno ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.G116_L122del',
+#       'p3' => 'p.Gly116_Leu122del',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'postEnd' => {
@@ -2034,6 +2065,7 @@ not ok 34 - for [ large_del_anno ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.G99_L105del',
+#       'p3' => 'p.Gly99_Leu105del',
 #       'pfamId' => 'PF14699.1;PF14701.1',
 #       'pfamName' => 'N-terminal domain from the human glycogen debranching enzyme;glucanotransferase domain of human glycogen debranching enzyme',
 #       'postEnd' => {
@@ -2085,6 +2117,7 @@ not ok 34 - for [ large_del_anno ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.G100_L106del',
+#       'p3' => 'p.Gly100_Leu106del',
 #       'pfamId' => 'PF14699.1;PF14701.1',
 #       'pfamName' => 'N-terminal domain from the human glycogen debranching enzyme;glucanotransferase domain of human glycogen debranching enzyme',
 #       'postEnd' => {
@@ -2166,6 +2199,7 @@ not ok 36 - for [ cds_edge_ins_anno ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.V35Gfs*27',
+#       'p3' => 'p.Val35Glyfs*27',
 #       'pfamId' => 'PF01490.13',
 #       'pfamName' => 'Transmembrane amino acid transporter protein',
 #       'postEnd' => {
@@ -2265,6 +2299,7 @@ not ok 37 - for [ cds_edge_ins2_anno ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.E279Vfs*12',
+#       'p3' => 'p.Glu279Valfs*12',
 #       'pfamId' => 'PF02141.16;PF03455.14;PF00400.27',
 #       'pfamName' => 'DENN (AEX-3) domain;dDENN domain;WD domain, G-beta repeat',
 #       'postEnd' => {
@@ -2341,7 +2376,7 @@ not ok 38 - for [ left_edge_mismatch_anno ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_006158.3' => {
-#       'alt_cHGVS' => 'c.1415_1416dupCT',
+#       'alt_cHGVS' => 'c.1416_1417insCT',
 #       'c' => 'c.1413CT[2>3]',
 #       'cdsBegin' => '1414',
 #       'cdsEnd' => '1413',
@@ -2359,6 +2394,7 @@ not ok 38 - for [ left_edge_mismatch_anno ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.E473Lfs*78',
+#       'p3' => 'p.Glu473Leufs*78',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'postEnd' => {
@@ -2384,6 +2420,7 @@ not ok 38 - for [ left_edge_mismatch_anno ]
 #       'r_End' => 'C3',
 #       'rnaBegin' => '1516',
 #       'rnaEnd' => '1515',
+#       'standard_cHGVS' => 'c.1415_1416dupCT',
 #       'strd' => '-',
 #       'trAlt' => 'TC',
 #       'trRef' => '',
@@ -2413,7 +2450,7 @@ not ok 38 - for [ left_edge_mismatch_anno ]
 #     'reptag' => '.',
 #     'sm' => 0,
 #     'tgp' => {},
-#     'varName' => 'NM_006158.3(NEFL): c.1413CT[2>3] (p.E473Lfs*78)',
+#     'varName' => 'NM_006158.3(NEFL): c.1415_1416dupCT (p.E473Lfs*78)',
 #     'varTypeSO' => 'SO:0000667'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -2443,6 +2480,7 @@ not ok 43 - for [ fs1_rep_del ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.C20*',
+#       'p3' => 'p.Cys20*',
 #       'pfamId' => 'PF04193.9;PF04193.9',
 #       'pfamName' => 'PQ loop repeat ;PQ loop repeat ',
 #       'postEnd' => {
@@ -2468,6 +2506,7 @@ not ok 43 - for [ fs1_rep_del ]
 #       'r_End' => 'C1',
 #       'rnaBegin' => 530,
 #       'rnaEnd' => 531,
+#       'standard_cHGVS' => 'c.58TG[1]',
 #       'strd' => '+',
 #       'trAlt' => '',
 #       'trRef' => 'TG',
@@ -2494,6 +2533,7 @@ not ok 43 - for [ fs1_rep_del ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.C20*',
+#       'p3' => 'p.Cys20*',
 #       'pfamId' => 'PF04193.9;PF04193.9',
 #       'pfamName' => 'PQ loop repeat ;PQ loop repeat ',
 #       'postEnd' => {
@@ -2519,13 +2559,14 @@ not ok 43 - for [ fs1_rep_del ]
 #       'r_End' => 'C1',
 #       'rnaBegin' => 653,
 #       'rnaEnd' => 654,
+#       'standard_cHGVS' => 'c.58TG[1]',
 #       'strd' => '+',
 #       'trAlt' => '',
 #       'trRef' => 'TG',
 #       'trRefComp' => {
 #         'EX3' => 2
 #       },
-#       'trVarName' => 'NM_004937.2(CTNS): c.58TG[2>1] (p.C20*)'
+#       'trVarName' => 'NM_004937.2(CTNS): c.58TG[1] (p.C20*)'
 #     },
 #     'NM_013276.2' => {
 #       'c' => 'c.-103-u3945_-103-u3944delCA',
@@ -2598,7 +2639,7 @@ not ok 43 - for [ fs1_rep_del ]
 #     'reptag' => '.',
 #     'sm' => 2,
 #     'tgp' => {},
-#     'varName' => 'NM_001031681.2(CTNS): c.58TG[2>1] (p.C20*)',
+#     'varName' => 'NM_001031681.2(CTNS): c.58TG[1] (p.C20*)',
 #     'varTypeSO' => 'SO:0000159'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
@@ -2623,6 +2664,7 @@ not ok 44 - for [ fs1_del ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.Y173*',
+#       'p3' => 'p.Tyr173*',
 #       'pfamId' => 'PF04193.9;PF04193.9',
 #       'pfamName' => 'PQ loop repeat ;PQ loop repeat ',
 #       'postEnd' => {
@@ -2673,6 +2715,7 @@ not ok 44 - for [ fs1_del ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.Y173*',
+#       'p3' => 'p.Tyr173*',
 #       'pfamId' => 'PF04193.9;PF04193.9',
 #       'pfamName' => 'PQ loop repeat ;PQ loop repeat ',
 #       'postEnd' => {
@@ -3001,6 +3044,7 @@ not ok 47 - for [ MT_altstart ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.(=)',
+#       'p3' => 'p.(=)',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'postEnd' => {
@@ -3869,6 +3913,7 @@ not ok 48 - for [ Mt_init_loss ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.0?',
+#       'p3' => 'p.0?',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'postEnd' => {
@@ -4742,6 +4787,7 @@ not ok 49 - for [ No_call_altstart ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.(=)',
+#       'p3' => 'p.(=)',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'postEnd' => {
@@ -5609,6 +5655,7 @@ not ok 50 - for [ Mt_no_call_initloss ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.M1?',
+#       'p3' => 'p.Met1?',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'polar' => 'NP=>?',
@@ -6474,6 +6521,7 @@ not ok 51 - for [ Mt_nonsense ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.Y43*',
+#       'p3' => 'p.Tyr43*',
 #       'pfamId' => 'PF00146.16',
 #       'pfamName' => 'NADH dehydrogenase',
 #       'polar' => 'P0=>.',
@@ -7344,6 +7392,7 @@ not ok 52 - for [ Mt_missense ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.Y43C',
+#       'p3' => 'p.Tyr43Cys',
 #       'pfamId' => 'PF00146.16',
 #       'pfamName' => 'NADH dehydrogenase',
 #       'polar' => 'P0=>P0',
@@ -8218,6 +8267,7 @@ not ok 53 - for [ Mt_coding_synon ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.(=)',
+#       'p3' => 'p.(=)',
 #       'pfamId' => 'PF00146.16',
 #       'pfamName' => 'NADH dehydrogenase',
 #       'postEnd' => {
@@ -9085,6 +9135,7 @@ not ok 54 - for [ Mt_stop_loss ]
 #       'genepartSO' => 'SO:0000316',
 #       'intronIndex' => '.',
 #       'p' => 'p.*319Wfs*?',
+#       'p3' => 'p.*319Trpfs*?',
 #       'pfamId' => '.',
 #       'pfamName' => '.',
 #       'polar' => '.=>NP',

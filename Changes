@@ -143,3 +143,7 @@
 0.50  Wed Mar 26 19:55:00
 	- uniform HGVS notation by add standard_xHGVS for repeats, original alt_xHGVS
 	  has changed to del/ins format notation
+
+0.51  Thu Mar 27 13:46:23
+	- fix a bug for standard_pHGVS and add 3 letter format pHGVS in hash
+

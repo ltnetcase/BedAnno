@@ -124,15 +124,15 @@
 .\" ========================================================================
 .\"
 .IX Title "BedAnno 3"
-.TH BedAnno 3 "2014-03-26" "perl v5.14.2" "User Contributed Perl Documentation"
+.TH BedAnno 3 "2014-03-27" "perl v5.14.2" "User Contributed Perl Documentation"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
 .nh
 .SH "NAME"
 BedAnno \- Perl module for annotating variation depend on the BED +1 format database.
-.SS "\s-1VERSION\s0 v0.50"
-.IX Subsection "VERSION v0.50"
+.SS "\s-1VERSION\s0 v0.51"
+.IX Subsection "VERSION v0.51"
 From version 0.32 BedAnno will change to support \s-1CG\s0's variant shell list
 and use ncbi annotation release 104 as the annotation database
 with reformatted database format, and won't give any individual
@@ -650,6 +650,7 @@ information is needed, then extra dependencies will be required.
 \&                        protEnd       => $End_in_Protein,
 \&                        c             => $cHGVS,
 \&                        p             => $pHGVS,
+\&                        p3            => $threeletter_pHGVS,
 \&                        cc            => $codon_change,
 \&                        polar         => $polar_change,
 \&                        r             => $imp_funcRegion,
@@ -706,6 +707,12 @@ information is needed, then extra dependencies will be required.
 \&                    ...
 \&                }
 \&            }
+.Ve
+.SS "P1toP3"
+.IX Subsection "P1toP3"
+.Vb 2
+\&    About : Change 1 letter format of pHGVS string to 3 letter format
+\&    Usage : my $p3 = P1toP3($p1);
 .Ve
 .SS "finaliseAnno"
 .IX Subsection "finaliseAnno"
