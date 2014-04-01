@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.51';
+our $VERSION = '0.52';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.51
+=head2 VERSION v0.52
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -2157,7 +2157,14 @@ sub finaliseAnno {
 
 	    # complete informations depend on already assigned values
 	    my $genepartSO;
-            if ( $trAnnoEnt->{r_Begin} eq $trAnnoEnt->{r_End}
+	    if ( $trAnnoEnt->{rnaBegin} eq '?' or $trAnnoEnt->{rnaEnd} eq '?' ) {
+		# do nothing?
+                $genepartSO =
+                  ( $trAnnoEnt->{genepartSO} =~ /^\d+$/ )
+                  ? sprintf( "SO:%07d", $trAnnoEnt->{genepartSO} )
+                  : $trAnnoEnt->{genepartSO};
+	    }
+            elsif ( $trAnnoEnt->{r_Begin} eq $trAnnoEnt->{r_End}
                 or 0 >
                 $self->cmpPos( $trAnnoEnt->{rnaBegin}, $trAnnoEnt->{rnaEnd} ) )
             {
@@ -2233,7 +2240,6 @@ sub finaliseAnno {
                 }
             }
 
-	    $genepartSO = 'abnormal-intron' if ($genepartSO eq 'abnormal-intron');
 	    confess "Error: unknown genepartSO [$genepartSO]."
 	      if ( !exists $SO2Name{$genepartSO} );
 
@@ -4008,6 +4014,7 @@ sub cmpPos {
     if ($p1 =~ /^([\-\+\*]?)(\d+)([\+\-]?[ud]?)(\d*)$/) {
 	$s1 = $1; $anc1 = $2; $int_s1 = $3; $ofst1 = $4;
     }
+
     if ($p2 =~ /^([\-\+\*]?)(\d+)([\+\-]?[ud]?)(\d*)$/) {
 	$s2 = $1; $anc2 = $2; $int_s2 = $3; $ofst2 = $4;
     }
@@ -5520,15 +5527,18 @@ sub reformatAnno {
             $trInfo{CodonChange} =
               ( exists $rTr->{cc} ) ? $rTr->{cc} : "";
             $trInfo{SIFTpred} =
-              ( exists $rTr->{siftPred} ) ? $rTr->{siftPred} : "";
+              ( exists $rTr->{siftPred} ) ? lc($rTr->{siftPred}) : "";
+	    $trInfo{SIFTpred} =~ s/\s+/\-/g;
             $trInfo{SIFTscore} =
               ( exists $rTr->{siftScore} ) ? $rTr->{siftScore} : "";
             $trInfo{Polyphen2HumDivPred} =
-              ( exists $rTr->{pp2divPred} ) ? $rTr->{pp2divPred} : "";
+              ( exists $rTr->{pp2divPred} ) ? lc($rTr->{pp2divPred}) : "";
+	    $trInfo{Polyphen2HumDivPred} =~ s/\s+/\-/g;
             $trInfo{Polyphen2HumDivScore} =
               ( exists $rTr->{pp2divScore} ) ? $rTr->{pp2divScore} : "";
             $trInfo{Polyphen2VarPred} =
-              ( exists $rTr->{pp2varPred} ) ? $rTr->{pp2varPred} : "";
+              ( exists $rTr->{pp2varPred} ) ? lc($rTr->{pp2varPred}) : "";
+	    $trInfo{Polyphen2VarPred} =~ s/\s+/\-/g;
             $trInfo{Polyphen2VarScore} =
               ( exists $rTr->{pp2varScore} ) ? $rTr->{pp2varScore} : "";
             $trInfo{AAPolarityRef} = "";
@@ -6586,11 +6596,6 @@ liutao, E<lt>liutao@genomics.cnE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2013 by liutao
-
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.14.2 or,
-at your option, any later version of Perl 5 you may have available.
-
+Please see LICENSE for detail
 
 =cut

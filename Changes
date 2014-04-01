@@ -147,3 +147,5 @@
 0.51  Thu Mar 27 13:46:23
 	- fix a bug for standard_pHGVS and add 3 letter format pHGVS in hash
 
+0.52  Tue Apr 01 15:45:12
+	- uniform the prediction words for AE
