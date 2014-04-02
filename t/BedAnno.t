@@ -2090,7 +2090,7 @@ my $span_annotation_fail = {
         'nDot' => '?',
         'exin' => '?'
     },
-    'componentIndex' => 0,
+    'componentIndex' => '',
     'ei_End'        => '?',
     'protEnd'       => '',
     'cdsEnd'        => '?',

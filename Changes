@@ -149,3 +149,6 @@
 
 0.52  Tue Apr 01 15:45:12
 	- uniform the prediction words for AE
+
+0.53  Wed Apr 02 16:21:30
+	- change translation seq - protein seq length differ transcript to be annotation-fail

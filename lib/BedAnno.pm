@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.52';
+our $VERSION = '0.53';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.52
+=head2 VERSION v0.53
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -2159,10 +2159,10 @@ sub finaliseAnno {
 	    my $genepartSO;
 	    if ( $trAnnoEnt->{rnaBegin} eq '?' or $trAnnoEnt->{rnaEnd} eq '?' ) {
 		# do nothing?
-                $genepartSO =
-                  ( $trAnnoEnt->{genepartSO} =~ /^\d+$/ )
-                  ? sprintf( "SO:%07d", $trAnnoEnt->{genepartSO} )
-                  : $trAnnoEnt->{genepartSO};
+                $genepartSO = $trAnnoEnt->{genepartSO};
+		$trAnnoEnt->{r} = '?';
+		$trAnnoEnt->{exin} = '?';
+		$trAnnoEnt->{componentIndex} = '';
 	    }
             elsif ( $trAnnoEnt->{r_Begin} eq $trAnnoEnt->{r_End}
                 or 0 >
@@ -3390,6 +3390,21 @@ sub getTrChange {
 			$prEnd = $cInfo3[0];
                     }
 
+		    
+		    if ( ($trdbEnt->{plen} + 1) != length($trdbEnt->{pseq}) ) {
+			$self->warn( "[Critical Warning] : annotation for $tid may not be correct, \n",
+			             "                     due to a mis-translated base in its \n",
+				     "                     cds region, usually a frameshift on \n",
+				     "                     TGA to GAX, please ignore any annotation \n", 
+				     "                     on latter part behind that frameshift.\n", 
+				     "                     protein annotation for $tid will be skipped\n",
+				     "                     and the function of it will be annotation-fail\n",
+				     "                     until the problem is fixed."
+				 ) if (!exists $self->{quiet});
+			$trannoEnt->{func} = 'annotation-fail';
+			next;
+		    }
+
 		    # Make protBegin and protEnd be coordinate to the 
 		    # coordinates of nucl variants, extend the 
 		    # frameshift's effect to the end of protein
@@ -3497,11 +3512,21 @@ sub getTrChange {
 		    # give out the first of single codon to be
 		    my $codon_to_be = substr($codon_alt, 0, 3);
 
-                    $prRef = substr(
-                        $trdbEnt->{pseq},
-                        ( $prBegin - 1 ),
-                        ( $prEnd - $prBegin + 1 )
-                    );
+		    if ( $prBegin - 1 == $trdbEnt->{plen} and $prEnd == $prBegin ) {
+			$prRef = '*';
+		    }
+		    elsif ( $prBegin - 1 < $trdbEnt->{plen} ) {
+			$prRef = substr(
+			    $trdbEnt->{pseq},
+			    ( $prBegin - 1 ),
+			    ( $prEnd - $prBegin + 1 )
+			);
+		    }
+		    else {
+			$self->throw("Error: Cannot get prRef from $tid, [$trdbEnt->{plen}, $prBegin, $prEnd]\n",
+			    "      Var: [$annoEnt->{var}->{chr}, $annoEnt->{var}->{pos}, $annoEnt->{var}->{end},",
+			    "$annoEnt->{var}->{ref}, $annoEnt->{var}->{alt}]");
+		    }
 
 		    # we can not allow inseq stop codon in altered sequence
 		    # due to frameshift and ambiguity.
