@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.53';
+our $VERSION = '0.54';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.53
+=head2 VERSION v0.54
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -1207,24 +1207,31 @@ sub write_using {
     my ($self, $file, $type) = @_;
     open (F, ">", $file) or $self->throw("$file: $!");
 
-    my %open_args;
-    if ( exists $self->{region} ) {
-        $open_args{region} = $self->{region};
+    my $annodb_load;
+    if (exists $self->{annodb}) {
+	$annodb_load = $self->{annodb};
     }
-    if ( !exists $self->{region} and exists $self->{regbed} ) {
-        $open_args{regbed} = $self->{regbed};
+    else {
+	my %open_args;
+	if ( exists $self->{region} ) {
+	    $open_args{region} = $self->{region};
+	}
+	if ( !exists $self->{region} and exists $self->{regbed} ) {
+	    $open_args{regbed} = $self->{regbed};
+	}
+	if ( exists $self->{genes} ) {
+	    $open_args{genes} = $self->{genes};
+	}
+	if ( exists $self->{trans} and exists $self->{clean_trans}) {
+	    $open_args{trans} = $self->{trans};
+	    $open_args{clean_trans} = $self->{clean_trans};
+	}
+	if ( exists $self->{mmap} ) {
+	    $open_args{mmap} = $self->{mmap};
+	}
+	$annodb_load = $self->load_anno(%open_args);
     }
-    if ( exists $self->{genes} ) {
-	$open_args{genes} = $self->{genes};
-    }
-    if ( exists $self->{trans} and exists $self->{clean_trans}) {
-	$open_args{trans} = $self->{trans};
-        $open_args{clean_trans} = $self->{clean_trans};
-    }
-    if ( exists $self->{mmap} ) {
-        $open_args{mmap} = $self->{mmap};
-    }
-    my $annodb_load = $self->load_anno(%open_args);
+
     my (%genes, %trans, @beds, %anno, @complete) = ();
     foreach my $chr (sort keys %$annodb_load) {
 	foreach my $bedent (@{$annodb_load->{$chr}}) {
@@ -1245,12 +1252,12 @@ sub write_using {
 		    $trans{$info[0]} = 1;
 		}
 		elsif ($type eq 'b') {
-		    $exOpt = 1 if ($info[4] =~ /^EX/);
+		    $exOpt = 1 if ($info[6] =~ /^EX/);
 		}
 		elsif ($type eq 'a') {
-		    if ( $info[4] =~ /^EX/) {
+		    if ( $info[6] =~ /^EX/) {
 			if (   !exists( $anno{ $info[0] } )
-			    or !exists( $anno{ $info[0] }{ $info[4] } ) )
+			    or !exists( $anno{ $info[0] }{ $info[6] } ) )
 			{
 			    $anno{ $info[0] }{ $info[6] }{chr} = $chr;
 			    $anno{ $info[0] }{ $info[6] }{sta} = $$bedent{sta};
@@ -1350,6 +1357,111 @@ sub exsort {
 	$bnum <=> $anum;
     }
 }
+
+=head2 get_cover_batch
+
+    About   : get covered region in batch mode
+    Usage   : my $cover_href = $beda->get_cover_batch( $chr, \@stasto );
+    Args    : a chromosome id, and an array ref of [ [ $start, $stop ], ... ]
+    Returns : a hash ref of:
+		{
+		    "$start-$stop" => [ 
+					[ $tid, $left_cPos, $right_cPos ], ... 
+				      ], ...
+		}
+	      Note: the pos-pair which do not hit any annotation blocks, will
+		    not exist in the returned results.
+
+=cut
+sub get_cover_batch {
+    my ($self, $chr, $stasto_aref) = @_;
+    
+    my $rAnnos;
+    if (!exists $self->{annodb}) {
+	my %open_args;
+	if ( exists $self->{region} ) {
+	    $open_args{region} = $self->{region};
+	}
+	if ( !exists $self->{region} and exists $self->{regbed} ) {
+	    $open_args{regbed} = $self->{regbed};
+	}
+	if ( exists $self->{genes} ) {
+	    $open_args{genes} = $self->{genes};
+	}
+	if ( exists $self->{trans} and exists $self->{clean_trans}) {
+	    $open_args{trans} = $self->{trans};
+	    $open_args{clean_trans} = $self->{clean_trans};
+	}
+	if ( exists $self->{mmap} ) {
+	    $open_args{mmap} = $self->{mmap};
+	}
+	my $rwhole = $self->load_anno(%open_args);
+	$rAnnos = $rwhole->{$chr};
+    }
+    else {
+	$rAnnos = $self->{annodb}->{$chr};
+    }
+
+    my @sorted_stasto = sort pairsort @$stasto_aref;
+    return {} if (0 == @sorted_stasto);
+
+    my %ret_cov = ();
+
+    my $cur_blkId = 0;
+    foreach my $rgn (@sorted_stasto) {
+
+        my $pseudo_var =
+          BedAnno::Var->new( $chr, $rgn->[0], $rgn->[1], "=", "?" );
+	
+	$cur_blkId = $pseudo_var->getTrPosition( $rAnnos, $cur_blkId );
+
+	my @hitted_blks = ();
+	# hit the annotation blks
+	if (exists $pseudo_var->{trInfo}) {
+	    foreach my $tid (sort keys %{$pseudo_var->{trInfo}}) {
+		if (exists $pseudo_var->{trInfo}->{$tid}->{cdsBegin} 
+			and $pseudo_var->{trInfo}->{$tid}->{cdsBegin} ne ''
+			and $pseudo_var->{trInfo}->{$tid}->{cdsBegin} ne '?'
+			and $pseudo_var->{trInfo}->{$tid}->{cdsEnd} ne '?'
+	    	) {
+                    push(
+                        @hitted_blks,
+                        [
+                            $tid,
+                            $pseudo_var->{trInfo}->{$tid}->{cdsBegin},
+                            $pseudo_var->{trInfo}->{$tid}->{cdsEnd}
+                        ]
+                    );
+		}
+		elsif (exists $pseudo_var->{trInfo}->{$tid}->{rnaBegin}
+			and $pseudo_var->{trInfo}->{$tid}->{rnaBegin} ne ''
+			and $pseudo_var->{trInfo}->{$tid}->{rnaBegin} ne '?' 
+			and $pseudo_var->{trInfo}->{$tid}->{rnaEnd} ne '?'
+		) {
+		    push(
+                        @hitted_blks,
+                        [
+                            $tid,
+                            $pseudo_var->{trInfo}->{$tid}->{rnaBegin},
+                            $pseudo_var->{trInfo}->{$tid}->{rnaEnd}
+                        ]
+		    );
+		}
+	    }
+	}
+	
+	if ( 0 < @hitted_blks ) {
+	    my $pospair = join( "-", @$rgn );
+	    $ret_cov{$pospair} = [@hitted_blks];
+	}
+    }
+    return \%ret_cov;
+}
+
+sub pairsort {
+    $$a[0] <=> $$b[0] or $$a[1] <=> $$b[1]
+}
+
 
 =head2 readtr
 

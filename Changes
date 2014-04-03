@@ -152,3 +152,6 @@
 
 0.53  Wed Apr 02 16:21:30
 	- change translation seq - protein seq length differ transcript to be annotation-fail
+
+0.54  Thu Apr 03 19:41:20
+	- add get_cover_batch to generate region information for given regions
