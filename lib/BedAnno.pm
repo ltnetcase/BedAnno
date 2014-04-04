@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.54';
+our $VERSION = '0.55';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.54
+=head2 VERSION v0.55
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -1268,7 +1268,7 @@ sub write_using {
 			    $anno{ $info[0] }{ $info[6] }{sto} = $$bedent{sto};
 			}
 			else {
-			    $self->throw("Error: bad db, non-departed beds, or no-sort!");
+			    next;
 			}
 		    }
 		}
@@ -1376,6 +1376,10 @@ sub exsort {
 sub get_cover_batch {
     my ($self, $chr, $stasto_aref) = @_;
     
+    $chr =~ s/^chr//i;
+    if ($chr =~ /^M/i) {
+	$chr = 'MT';
+    }
     my $rAnnos;
     if (!exists $self->{annodb}) {
 	my %open_args;
@@ -1411,42 +1415,52 @@ sub get_cover_batch {
     foreach my $rgn (@sorted_stasto) {
 
         my $pseudo_var =
-          BedAnno::Var->new( $chr, $rgn->[0], $rgn->[1], "=", "?" );
+          BedAnno::Var->new( $chr, ($rgn->[0] - 1), $rgn->[1], "=", "?" );
+	my $anno_var = BedAnno::Anno->new($pseudo_var);
 	
-	$cur_blkId = $pseudo_var->getTrPosition( $rAnnos, $cur_blkId );
+	$cur_blkId = $anno_var->getTrPosition( $rAnnos, $cur_blkId );
 
 	my @hitted_blks = ();
 	# hit the annotation blks
-	if (exists $pseudo_var->{trInfo}) {
-	    foreach my $tid (sort keys %{$pseudo_var->{trInfo}}) {
-		if (exists $pseudo_var->{trInfo}->{$tid}->{cdsBegin} 
-			and $pseudo_var->{trInfo}->{$tid}->{cdsBegin} ne ''
-			and $pseudo_var->{trInfo}->{$tid}->{cdsBegin} ne '?'
-			and $pseudo_var->{trInfo}->{$tid}->{cdsEnd} ne '?'
-	    	) {
-                    push(
-                        @hitted_blks,
-                        [
-                            $tid,
-                            $pseudo_var->{trInfo}->{$tid}->{cdsBegin},
-                            $pseudo_var->{trInfo}->{$tid}->{cdsEnd}
-                        ]
-                    );
-		}
-		elsif (exists $pseudo_var->{trInfo}->{$tid}->{rnaBegin}
-			and $pseudo_var->{trInfo}->{$tid}->{rnaBegin} ne ''
-			and $pseudo_var->{trInfo}->{$tid}->{rnaBegin} ne '?' 
-			and $pseudo_var->{trInfo}->{$tid}->{rnaEnd} ne '?'
-		) {
-		    push(
-                        @hitted_blks,
-                        [
-                            $tid,
-                            $pseudo_var->{trInfo}->{$tid}->{rnaBegin},
-                            $pseudo_var->{trInfo}->{$tid}->{rnaEnd}
-                        ]
-		    );
-		}
+	if (exists $anno_var->{trInfo}) {
+	    foreach my $tid (sort keys %{$anno_var->{trInfo}}) {
+
+                if (    $anno_var->{trInfo}->{$tid}->{rnaBegin} ne '?'
+                    and $anno_var->{trInfo}->{$tid}->{rnaEnd} ne '?' )
+                {
+		    my ($begin_hash, $end_hash);
+		    $begin_hash = {
+			gsym => $anno_var->{trInfo}->{$tid}->{geneSym},
+			reg  => $anno_var->{trInfo}->{$tid}->{r_Begin},
+			exin => $anno_var->{trInfo}->{$tid}->{ei_Begin},
+			strd => $anno_var->{trInfo}->{$tid}->{strd},
+			cpos => 'n.'.$anno_var->{trInfo}->{$tid}->{rnaBegin}
+		    };
+		    $end_hash = {
+			gsym => $anno_var->{trInfo}->{$tid}->{geneSym},
+			reg  => $anno_var->{trInfo}->{$tid}->{r_End},
+			exin => $anno_var->{trInfo}->{$tid}->{ei_End},
+			strd => $anno_var->{trInfo}->{$tid}->{strd},
+			cpos => 'n.'.$anno_var->{trInfo}->{$tid}->{rnaEnd}
+		    };
+
+                    if ( exists $anno_var->{trInfo}->{$tid}->{cdsBegin}
+                        and $anno_var->{trInfo}->{$tid}->{cdsBegin} ne '' )
+                    {
+                        $begin_hash->{cpos} =
+                          'c.' . $anno_var->{trInfo}->{$tid}->{cdsBegin};
+                        $end_hash->{cpos} =
+                          'c.' . $anno_var->{trInfo}->{$tid}->{cdsEnd};
+                    }
+
+                    if ( $begin_hash->{strd} eq '+' ) {
+                        push( @hitted_blks, [ $tid, $begin_hash, $end_hash ] );
+                    }
+                    else {
+                        push( @hitted_blks, [ $tid, $end_hash, $begin_hash ] );
+                    }
+                }
+
 	    }
 	}
 	
@@ -1633,6 +1647,10 @@ sub load_anno {
 	    chomp;
 	    my @beditm = split(/\t/);
 	    $self->throw("Error: bed format error.") if (3 > @beditm);
+	    $beditm[0] =~ s/^chr//i;
+	    if ($beditm[0] =~ /^M/i) {
+		$beditm[0] = "MT";
+	    }
 	    push (@query_region, [ @beditm[0, 1, 2] ]);
 	}
 	close BED;

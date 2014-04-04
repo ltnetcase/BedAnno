@@ -155,3 +155,6 @@
 
 0.54  Thu Apr 03 19:41:20
 	- add get_cover_batch to generate region information for given regions
+
+0.55  Fri Apr 04 13:00:05
+	- change get_cover_batch to backward compatible to BedAnno v0.32
