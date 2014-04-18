@@ -3776,6 +3776,9 @@ sub getTrChange {
 				$trannoEnt->{p} .= '?';
 			    }
 			}
+			else {
+			    $trannoEnt->{func} = 'nonsense';
+			}
 			$trannoEnt->{protBegin} += $prSimpleSame;
 			next;
 		    }
