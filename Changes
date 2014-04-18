@@ -158,3 +158,6 @@
 
 0.55  Fri Apr 04 13:00:05
 	- change get_cover_batch to backward compatible to BedAnno v0.32
+
+0.56  Fri Apr 18 10:02:01
+	- fix a problem for some special codon '?'

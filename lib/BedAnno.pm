@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.55';
+our $VERSION = '0.56';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.55
+=head2 VERSION v0.56
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -113,6 +113,8 @@ foreach my $threebase (sort keys %C1) {
 
 $AAcount = scalar keys %C1toC3;
 @AAnumber{sort keys %C1toC3} = (1 .. $AAcount);
+$AAnumber{'?'} = $AAcount + 1;
+$AAnumber{'.'} = $AAcount + 2;
 
 %Polar = (
     Ala => "NP", Asn => "P0", Arg => "P+", Asp => "P-",
