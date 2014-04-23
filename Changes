@@ -162,3 +162,7 @@
 0.56  Fri Apr 18 10:02:01
 	- fix a problem for some special codon '?'
 	- fix function code of fs*1 frameshift to nonsense
+
+0.57  Wed Apr 23 20:05:12
+	- add support custom frequency db
+	  multiple dbs will require similar multiple options
