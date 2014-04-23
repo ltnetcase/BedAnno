@@ -67,6 +67,9 @@ if ( -e $extradb and -r $extradb ) {
     if ( -e "$extradb/cosmic/Cosmic_v67_241013.bed.gz" ) {
 	$opts{cosmic} = "$extradb/cosmic/Cosmic_v67_241013.bed.gz";
     }
+    if ( -e "$extradb/panelDB/PrePreg12_V1.0.HIGHQ.bed.gz" ) {
+	$opts{customdb_PP12} = "$extradb/panelDB/PrePreg12_V1.0.HIGHQ.bed.gz";
+    }
 }
 
 $opts{quiet} = 1;

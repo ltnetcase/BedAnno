@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.56';
+our $VERSION = '0.57';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.56
+=head2 VERSION v0.57
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -31,11 +31,16 @@ be supported.
 
 =head1 DESCRIPTION
 
-This module need bgzipped BED+1 format database, combined with tabix index,
-tabix is require for fast extract anno infomation randomly.
-The fasta sequences are indexed by samtools faidx, sequence splicing also requires
-samtools. If allele frequency information, prediction information or cytoBand 
-information is needed, then extra dependencies will be required.
+By using this module, we can get variants from whole-genome or exome-capture 
+NGS genotyping result annotated. The information contains various possible 
+HGVS string together with a most recent strandard HGVS mutation name. 
+It can not annotate ambiguous variants (transition, transvertion, or unknown 
+break point large deletion and duplication).
+
+This module need bgzipped BED+1 format database, combined with tabix index.
+tabix perl module is required to be installed. If allele frequency information, 
+prediction information or cytoBand information etc. are needed, then extra 
+resource dependencies will be required.
 
 =head1 Methods
 
@@ -48,6 +53,7 @@ our ( %C3, %C1, %SO2Name, %func2SO,  %Name2SO,
 );
 
 our $CURRENT_MT = 'NC_012920.1';
+my $load_opt_vcfaf = 0;
 
 %C3 = (
     TTT=>"Phe",	CTT=>"Leu", ATT=>"Ile",	GTT=>"Val",
@@ -450,6 +456,15 @@ our $REF_BUILD = 'GRCh37';
 
 =back
 
+=item I<customdb_XX> [custom db in the same format with esp6500's]
+
+=over
+
+=item add customdb XX frequency infomation, XX is the ID. (multiple db will require multiple customdb option)
+
+
+=back
+
 =item I<quiet>
 
 =over
@@ -634,6 +649,13 @@ sub new {
 
     if (exists $self->{esp6500}) {
 	$self->set_esp6500($self->{esp6500});
+    }
+
+    foreach my $dbk (sort keys %$self) {
+	if ($dbk =~ /^customdb_(\S+)/) {
+	    my $dbID = $1;
+	    $self->set_customdb($self->{$dbk}, $dbID);
+	}
     }
 
     if (exists $self->{cg54}) {
@@ -1029,7 +1051,8 @@ sub set_tgp {
     my $self = shift;
     my $tgpdb = shift;
     $self->{tgp} = $tgpdb;
-    require GetVcfAF if (!exists $self->{tgp_h} and !exists $self->{esp6500_h});
+    require GetVcfAF if (!$load_opt_vcfaf);
+    $load_opt_vcfaf = 1;
     my %common_opts = ();
     $common_opts{quiet} = 1 if (exists $self->{quiet});
     my $tgp_h = GetVcfAF->new( db => $tgpdb, %common_opts );
@@ -1053,7 +1076,8 @@ sub set_esp6500 {
     my $self = shift;
     my $esp6500db = shift;
     $self->{esp6500} = $esp6500db;
-    require GetVcfAF if (!exists $self->{tgp_h} and !exists $self->{esp6500_h});
+    require GetVcfAF if (!$load_opt_vcfaf);
+    $load_opt_vcfaf = 1;
     my %common_opts = ();
     $common_opts{quiet} = 1 if (exists $self->{quiet});
     my $esp6500_h = GetVcfAF->new( db => $esp6500db, %common_opts );
@@ -1065,6 +1089,18 @@ sub get_esp6500 {
     my $self = shift;
     return $self->{esp6500} if (exists $self->{esp6500});
     return undef;
+}
+
+sub set_customdb {
+    my $self = shift;
+    my ($cusdb, $dbID) = @_;
+    require GetVcfAF if (!$load_opt_vcfaf);
+    $load_opt_vcfaf = 1;
+    my %common_opts = ();
+    $common_opts{quiet} = 1 if (exists $self->{quiet});
+    my $cusdb_h = GetVcfAF->new( db => $cusdb, %common_opts );
+    $self->{"cusdb_".$dbID."_h"} = $cusdb_h;
+    return $self;
 }
 
 sub get_esp6500_h {
@@ -1184,6 +1220,14 @@ sub DESTROY {
 	$self->{wellderly_h}->DESTROY() if ($self->{wellderly_h}->can('DESTROY'));
 	delete $self->{wellderly_h};
     }
+
+    foreach my $dbhk (sort keys %$self) {
+	if ($dbhk =~ /^cusdb_\S+_h/ and defined $self->{$dbhk}) {
+	    $self->{$dbhk}->DESTROY() if ($self->{$dbhk}->can('DESTROY'));
+	    delete $self->{$dbhk};
+	}
+    }
+
     return;
 }
 
@@ -1962,6 +2006,13 @@ sub anno {
                         AN => $esp6500_total_allele_count,
                         AF => $esp6500_alt_allele_frequency,
                     },
+
+		    cusdb_XX => {
+			AN => $custom_db_allele_count,
+			AF => $custom_db_allele_frequency,
+		    },
+		    ...
+
                 },
                 trInfo => {
                     $tid => {
@@ -2113,6 +2164,13 @@ sub varanno {
 
     if (exists $self->{esp6500}) {
 	$var->{esp6500} = $self->{esp6500_h}->getAF(@$var{qw(chr pos end ref alt)});
+    }
+
+    foreach my $dbhk (sort keys %$self) {
+	if ($dbhk =~ /^cusdb_(\S+)_h/ and defined $self->{$dbhk}) {
+	    my $dbID = $1;
+	    $var->{"cusdb_$dbID"} = $self->{$dbhk}->getAF(@$var{qw(chr pos end ref alt)});
+	}
     }
 
     if (exists $self->{cg54}) {
@@ -5516,6 +5574,16 @@ sub reformatAnno {
         },
     };
 
+    foreach my $kinvar (sort keys %$var) {
+	if ($kinvar =~ /^cusdb_(\S+)/) {
+	    my $dbID = $1;
+	    $crawler_need->{var}->{"LocalDB_".$dbID."_AN"} = 
+              ( exists $var->{$kinvar}->{AN} ) ? $var->{$kinvar}->{AN} : "";
+	    $crawler_need->{var}->{"LocalDB_".$dbID."_AF"} = 
+              ( exists $var->{$kinvar}->{AF} ) ? $var->{$kinvar}->{AF} : "";
+	}
+    }
+
     if ( !exists $anno->{trInfo} ) {
 	my @trTags = qw(GeneID GeneSym ProteinAccession 
 	  TranscriptOrientation TranscriptBegin TranscriptEnd 
@@ -6752,7 +6820,7 @@ The Format of annotation database is listed as following:
 
 =head1 AUTHOR
 
-liutao, E<lt>liutao@genomics.cnE<gt>
+liutao E<lt>liutao@genomics.cnE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 

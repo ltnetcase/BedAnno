@@ -124,15 +124,15 @@
 .\" ========================================================================
 .\"
 .IX Title "BedAnno 3"
-.TH BedAnno 3 "2014-04-18" "perl v5.14.2" "User Contributed Perl Documentation"
+.TH BedAnno 3 "2014-04-23" "perl v5.14.2" "User Contributed Perl Documentation"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
 .nh
 .SH "NAME"
 BedAnno \- Perl module for annotating variation depend on the BED +1 format database.
-.SS "\s-1VERSION\s0 v0.56"
-.IX Subsection "VERSION v0.56"
+.SS "\s-1VERSION\s0 v0.57"
+.IX Subsection "VERSION v0.57"
 From version 0.32 BedAnno will change to support \s-1CG\s0's variant shell list
 and use ncbi annotation release 104 as the annotation database
 with reformatted database format, and won't give any individual
@@ -148,11 +148,16 @@ be supported.
 .Ve
 .SH "DESCRIPTION"
 .IX Header "DESCRIPTION"
-This module need bgzipped \s-1BED+1\s0 format database, combined with tabix index,
-tabix is require for fast extract anno infomation randomly.
-The fasta sequences are indexed by samtools faidx, sequence splicing also requires
-samtools. If allele frequency information, prediction information or cytoBand 
-information is needed, then extra dependencies will be required.
+By using this module, we can get variants from whole-genome or exome-capture 
+\&\s-1NGS\s0 genotyping result annotated. The information contains various possible 
+\&\s-1HGVS\s0 string together with a most recent strandard \s-1HGVS\s0 mutation name. 
+It can not annotate ambiguous variants (transition, transvertion, or unknown 
+break point large deletion and duplication).
+.PP
+This module need bgzipped \s-1BED+1\s0 format database, combined with tabix index.
+tabix perl module is required to be installed. If allele frequency information, 
+prediction information or cytoBand information etc. are needed, then extra 
+resource dependencies will be required.
 .SH "Methods"
 .IX Header "Methods"
 .SS "new"
@@ -310,6 +315,14 @@ information is needed, then extra dependencies will be required.
 .RS 4
 .IP "add \s-1ESP6500\s0 allele frequency information from \s-1NHLBI\s0" 4
 .IX Item "add ESP6500 allele frequency information from NHLBI"
+.RE
+.RS 4
+.RE
+.IP "\fIcustomdb_XX\fR [custom db in the same format with esp6500's]" 4
+.IX Item "customdb_XX [custom db in the same format with esp6500's]"
+.RS 4
+.IP "add customdb \s-1XX\s0 frequency infomation, \s-1XX\s0 is the \s-1ID\s0. (multiple db will require multiple customdb option)" 4
+.IX Item "add customdb XX frequency infomation, XX is the ID. (multiple db will require multiple customdb option)"
 .RE
 .RS 4
 .RE
@@ -649,6 +662,13 @@ information is needed, then extra dependencies will be required.
 \&                        AN => $esp6500_total_allele_count,
 \&                        AF => $esp6500_alt_allele_frequency,
 \&                    },
+\&
+\&                    cusdb_XX => {
+\&                        AN => $custom_db_allele_count,
+\&                        AF => $custom_db_allele_frequency,
+\&                    },
+\&                    ...
+\&
 \&                },
 \&                trInfo => {
 \&                    $tid => {
@@ -1288,7 +1308,7 @@ The Format of annotation database is listed as following:
 .Ve
 .SH "AUTHOR"
 .IX Header "AUTHOR"
-liutao, <liutao@genomics.cn>
+liutao <liutao@genomics.cn>
 .SH "COPYRIGHT AND LICENSE"
 .IX Header "COPYRIGHT AND LICENSE"
-Please see \s-1LICENSE\s0 for detail
+Please check \s-1LICENSE\s0 file for detail
