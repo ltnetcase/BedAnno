@@ -61,9 +61,6 @@ if ( -e $extradb and -r $extradb ) {
     if ( -e "$config/Condel" and -d "$config/Condel" ) {
 	$opts{condel} = "$config/Condel";
     }
-    if ( -e "$extradb/dbnsfp/dbNSFPv2.1_var.tsv.gz" ) {
-	$opts{dbnsfp} = "$extradb/dbnsfp/dbNSFPv2.1_var.tsv.gz";
-    }
     if ( -e "$extradb/cosmic/Cosmic_v67_241013.bed.gz" ) {
 	$opts{cosmic} = "$extradb/cosmic/Cosmic_v67_241013.bed.gz";
     }
