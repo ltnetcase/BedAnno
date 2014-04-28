@@ -166,3 +166,6 @@
 0.57  Wed Apr 23 20:05:12
 	- add support custom frequency db
 	  multiple dbs will require similar multiple options
+
+0.58  Mon Apr 28 09:20:12
+	- remove unavailable resource
