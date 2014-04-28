@@ -58,9 +58,6 @@ if ( -e $extradb and -r $extradb ) {
         $opts{phyloP} =
           "$extradb/phyloP/phyloP_all3class_combin_2013-09-25.bed.gz";
     }
-    if ( -e "$config/Condel" and -d "$config/Condel" ) {
-	$opts{condel} = "$config/Condel";
-    }
     if ( -e "$extradb/cosmic/Cosmic_v67_241013.bed.gz" ) {
 	$opts{cosmic} = "$extradb/cosmic/Cosmic_v67_241013.bed.gz";
     }
