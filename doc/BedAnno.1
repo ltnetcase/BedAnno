@@ -124,15 +124,15 @@
 .\" ========================================================================
 .\"
 .IX Title "BedAnno 3"
-.TH BedAnno 3 "2014-04-23" "perl v5.14.2" "User Contributed Perl Documentation"
+.TH BedAnno 3 "2014-05-09" "perl v5.14.2" "User Contributed Perl Documentation"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
 .nh
 .SH "NAME"
 BedAnno \- Perl module for annotating variation depend on the BED +1 format database.
-.SS "\s-1VERSION\s0 v0.57"
-.IX Subsection "VERSION v0.57"
+.SS "\s-1VERSION\s0 v0.59"
+.IX Subsection "VERSION v0.59"
 From version 0.32 BedAnno will change to support \s-1CG\s0's variant shell list
 and use ncbi annotation release 104 as the annotation database
 with reformatted database format, and won't give any individual
@@ -251,14 +251,6 @@ resource dependencies will be required.
 .RS 4
 .IP "compute condel scores and prediction based on sift and polyphen2 HumVar prediction" 4
 .IX Item "compute condel scores and prediction based on sift and polyphen2 HumVar prediction"
-.RE
-.RS 4
-.RE
-.IP "\fIdbnsfp\fR [dbNSFPv2.1_var.tsv.gz]" 4
-.IX Item "dbnsfp [dbNSFPv2.1_var.tsv.gz]"
-.RS 4
-.IP "add dbnsfp annotation information" 4
-.IX Item "add dbnsfp annotation information"
 .RE
 .RS 4
 .RE
@@ -445,8 +437,6 @@ resource dependencies will be required.
 \&    prediction_h        o            x
 \&    phyloP              o            o
 \&    phyloP_h            o            x
-\&    dbnsfp              o            o
-\&    dbnsfp_h            o            x
 \&    cosmic              o            o
 \&    cosmic_h            o            x
 \&    dbSNP               o            o
@@ -736,7 +726,6 @@ resource dependencies will be required.
 \&                        pp2varScore => $Polyphen2HumVarScore,
 \&                        condelPred  => $Condelpred,
 \&                        condelScore => $Condelscore,
-\&                        dbnsfp      => $ref_dbnsfp_ret,
 \&
 \&                    },
 \&                    ...

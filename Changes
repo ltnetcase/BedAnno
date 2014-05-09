@@ -169,3 +169,6 @@
 
 0.58  Mon Apr 28 09:20:12
 	- remove unavailable resource
+
+0.59  Fri May 09 16:14:23
+	- add alternative pHGVS string for synonymous variant.

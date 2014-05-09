@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.58';
+our $VERSION = '0.59';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.58
+=head2 VERSION v0.59
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -3729,7 +3729,6 @@ sub getTrChange {
                             # do nothing
                         }
 			elsif ($hit_stop_flag) {
-
 			    # need this special assertion?
 			    $trannoEnt->{func} = 'stop-retained';
 			}
@@ -3737,6 +3736,11 @@ sub getTrChange {
 			    $trannoEnt->{func} = 'coding-synon';
 			}
 			$trannoEnt->{p}    = 'p.(=)';
+
+			if (1 == length($prRef)) { # single synonymous var
+			    $trannoEnt->{alt_pHGVS} = 'p.'.$prRef.$no_parsed_pP.$prAlt;
+			}
+
 			next;
 		    }
 
