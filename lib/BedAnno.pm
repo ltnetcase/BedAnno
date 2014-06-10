@@ -1404,14 +1404,18 @@ sub get_cover_batch {
 	    $open_args{mmap} = $self->{mmap};
 	}
 	my $rwhole = $self->load_anno(%open_args);
-	$rAnnos = $rwhole->{$chr};
+	$rAnnos = $rwhole->{$chr} if (exists $rwhole->{$chr});
     }
     else {
-	$rAnnos = $self->{annodb}->{$chr};
+	$rAnnos = $self->{annodb}->{$chr} if (exists $self->{annodb}->{$chr});
     }
 
     my @sorted_stasto = sort pairsort @$stasto_aref;
     return {} if (0 == @sorted_stasto);
+    if (!defined $rAnnos) {
+	$self->warn("Warning: no available annotation items in curdb for $chr") if (!exists $self->{quiet});
+	return {};
+    }
 
     my %ret_cov = ();
 
