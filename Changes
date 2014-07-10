@@ -172,3 +172,6 @@
 
 0.59  Fri May 09 16:14:23
 	- add alternative pHGVS string for synonymous variant.
+
+0.60  Thr Jul 10 09:42:21
+	- fix a bug in getTrChange for 3U span case
