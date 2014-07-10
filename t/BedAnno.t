@@ -2319,6 +2319,56 @@ my $fs1_del = {
     }
 };
 
+my $span_3U = {
+    'protBegin' => 1670,
+    'ei_End'    => 'EX52E',
+    'exin'      => 'EX52E',
+    'prot'      => 'NP_000082.2',
+    'trRefComp' => {
+        'EX52E' => 18
+    },
+    'r_End'    => '3U1E',
+    'c'        => 'c.5010_*14delCTGAAGCTAAAAAAGACA',
+    'rnaBegin' => 5164,
+    'ei_Begin' => 'EX52E',
+    'r'        => 'C52E-3U1E',
+    'cdsBegin' => '5002',
+    'preStart' => {
+        'r'    => 'C52E',
+        'cDot' => '5001',
+        'nDot' => 5163,
+        'exin' => 'EX52E'
+    },
+    'trRef'          => 'AAAAGACACTGAAGCTAA',
+    'protEnd'        => 1671,
+    'cdsEnd'         => '*6',
+    'exonIndex'      => '52',
+    'r_Begin'        => 'C52E',
+    'trAlt'          => '',
+    'intronIndex'    => '.',
+    'strd'           => '+',
+    'componentIndex' => '52',
+    'geneSym'        => 'COL4A3',
+    'postEnd'        => {
+        'r'    => '3U1E',
+        'cDot' => '*7',
+        'nDot' => 5182,
+        'exin' => 'EX52E'
+    },
+    'geneId'     => '1285',
+    'p'          => 'p.H1670Qfs*9',
+    'rnaEnd'     => 5181,
+    'p3'         => 'p.His1670Glnfs*9',
+    'prAlt'      => 'QQNCYFSS*',
+    'genepart'   => 'span',
+    'prRef'      => 'H*',
+    'func'       => 'frameshift',
+    'funcSO'     => 'SO:0001589',
+    'genepartSO' => '',
+    'funcSOname' => 'frameshift_variant',
+    'primaryTag' => 'Y'
+};
+
 my $cds_edge_ins_anno = {
     'protBegin' => 35,
     'ei_End'    => 'IVS2',
@@ -2990,6 +3040,8 @@ test_ok ( "fs1_rep_del", $fs1_rep_del, "NM_001031681.2",
    "chr17", 3543559, 3543561, "TG", "" );
 test_ok ( "fs1_del", $fs1_del, "NM_001031681.2",
    "chr17", 3559837, 3559839, "CA", "" );
+test_ok ( "span_3U", $span_3U, "NM_000091.4",
+   "chr2", 228176574, 228176592, "AAAAGACACTGAAGCTAA", "" ); 
 
 test_ok ( "MT_no_call_ncRNA", $mt_no_call_ncRNA, 'NR_MT-TRNF', 
    "chrMT", 576, 577, "G", "N" );

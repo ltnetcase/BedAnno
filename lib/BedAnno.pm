@@ -6082,6 +6082,10 @@ sub getTrPosition {
 				    "[$cmpStart], cmpEnd [$cmpEnd]";
                             }
 
+                            delete $trinfoEnt->{trRefComp}->{Z999}
+                              if (  exists $trinfoEnt->{trRefComp}
+                                and exists $trinfoEnt->{trRefComp}->{Z999} );
+
                             $trinfoEnt->{trRefComp}->{$tmp_exin} +=
                               $cmpEnd - $cmpStart + 1;
                             if (    $tmp_exin =~ /E$/
@@ -6112,6 +6116,11 @@ sub getTrPosition {
 			if ( $rtidDetail->{blka} =~ /^PROM/ ) {
 			    $tmp_exin = 'P0'; # for sort
 			}
+
+                        delete $trinfoEnt->{trRefComp}->{Z999}
+                          if (  exists $trinfoEnt->{trRefComp}
+                            and exists $trinfoEnt->{trRefComp}->{Z999} );
+
                         if (   !exists $trinfoEnt->{trRefComp}
                             or !exists $trinfoEnt->{trRefComp}
                             ->{$tmp_exin} )

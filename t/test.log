@@ -2208,8 +2208,8 @@ not ok 37 - for [ cds_edge_ins2_anno ]
 #       'intronIndex' => '.',
 #       'p' => 'p.E279Vfs*12',
 #       'p3' => 'p.Glu279Valfs*12',
-#       'pfamId' => 'PF02141.16;PF03455.14;PF00400.27',
-#       'pfamName' => 'DENN (AEX-3) domain;dDENN domain;WD domain, G-beta repeat',
+#       'pfamId' => 'PF00400.27;PF02141.16;PF03455.14',
+#       'pfamName' => 'WD domain, G-beta repeat;DENN (AEX-3) domain;dDENN domain',
 #       'postEnd' => {
 #         'cDot' => '834+1',
 #         'exin' => 'IVS7',
@@ -2391,8 +2391,8 @@ not ok 43 - for [ fs1_rep_del ]
 #       'intronIndex' => '.',
 #       'p' => 'p.C20*',
 #       'p3' => 'p.Cys20*',
-#       'pfamId' => 'PF04193.9;PF04193.9',
-#       'pfamName' => 'PQ loop repeat ;PQ loop repeat ',
+#       'pfamId' => 'PF04193.9',
+#       'pfamName' => 'PQ loop repeat ',
 #       'postEnd' => {
 #         'cDot' => '61+1',
 #         'exin' => 'IVS3',
@@ -2444,8 +2444,8 @@ not ok 43 - for [ fs1_rep_del ]
 #       'intronIndex' => '.',
 #       'p' => 'p.C20*',
 #       'p3' => 'p.Cys20*',
-#       'pfamId' => 'PF04193.9;PF04193.9',
-#       'pfamName' => 'PQ loop repeat ;PQ loop repeat ',
+#       'pfamId' => 'PF04193.9',
+#       'pfamName' => 'PQ loop repeat ',
 #       'postEnd' => {
 #         'cDot' => '61+1',
 #         'exin' => 'IVS3',
@@ -2576,8 +2576,8 @@ not ok 44 - for [ fs1_del ]
 #       'intronIndex' => '.',
 #       'p' => 'p.Y173*',
 #       'p3' => 'p.Tyr173*',
-#       'pfamId' => 'PF04193.9;PF04193.9',
-#       'pfamName' => 'PQ loop repeat ;PQ loop repeat ',
+#       'pfamId' => 'PF04193.9',
+#       'pfamName' => 'PQ loop repeat ',
 #       'postEnd' => {
 #         'cDot' => '521',
 #         'exin' => 'EX8',
@@ -2627,8 +2627,8 @@ not ok 44 - for [ fs1_del ]
 #       'intronIndex' => '.',
 #       'p' => 'p.Y173*',
 #       'p3' => 'p.Tyr173*',
-#       'pfamId' => 'PF04193.9;PF04193.9',
-#       'pfamName' => 'PQ loop repeat ;PQ loop repeat ',
+#       'pfamId' => 'PF04193.9',
+#       'pfamName' => 'PQ loop repeat ',
 #       'postEnd' => {
 #         'cDot' => '521',
 #         'exin' => 'EX8',
@@ -2938,6 +2938,8 @@ not ok 47 - for [ MT_altstart ]
 #       'trVarName' => 'NM_MT-COX3(MT-COX3): c.1-u5898A>T'
 #     },
 #     'NM_MT-ND1' => {
+#       'alt_p3' => 'p.Met1Met',
+#       'alt_pHGVS' => 'p.M1M',
 #       'c' => 'c.3A>T',
 #       'cc' => 'ATA=>ATT',
 #       'cdsBegin' => '3',
@@ -4681,6 +4683,8 @@ not ok 49 - for [ No_call_altstart ]
 #       'trVarName' => 'NM_MT-COX3(MT-COX3): c.1-u5898A>N'
 #     },
 #     'NM_MT-ND1' => {
+#       'alt_p3' => 'p.Met1Met',
+#       'alt_pHGVS' => 'p.M1M',
 #       'c' => 'c.3A>N',
 #       'cc' => 'ATA=>ATN',
 #       'cdsBegin' => '3',
@@ -8163,6 +8167,8 @@ not ok 53 - for [ Mt_coding_synon ]
 #       'trVarName' => 'NM_MT-COX3(MT-COX3): c.1-u5772C>T'
 #     },
 #     'NM_MT-ND1' => {
+#       'alt_p3' => 'p.Tyr43Tyr',
+#       'alt_pHGVS' => 'p.Y43Y',
 #       'c' => 'c.129C>T',
 #       'cc' => 'TAC=>TAT',
 #       'cdsBegin' => '129',
