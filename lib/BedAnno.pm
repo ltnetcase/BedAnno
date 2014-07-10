@@ -5774,8 +5774,16 @@ sub getTrPosition {
 	    last;
 	}
 	else { # covered by var
-	    $new_aeIndex = $k if ($$rannodb[$k]{sta} <= $var->{pos}
-		and $var->{pos} <= $$rannodb[$k]{sto} );
+
+	    
+	    if ($$rannodb[$k]{sta} <= $var->{pos}
+		and $var->{pos} <= $$rannodb[$k]{sto} ) {
+		$new_aeIndex = $k;
+
+		# for edge hit case fetch backward one block.
+		$new_aeIndex -= 1 if ($new_aeIndex > 0 and $$rannodb[$k]{sta} == $var->{pos});
+	    }
+
 	    if (!exists $$rannodb[$k]{detail}) { # parse anno db
 		$$rannodb[$k] = BedAnno->assign_detail($$rannodb[$k]);
 	    }

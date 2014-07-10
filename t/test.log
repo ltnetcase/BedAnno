@@ -2687,9 +2687,90 @@ not ok 44 - for [ fs1_del ]
 #     'varTypeSO' => 'SO:0000159'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-ok 45 - for [ MT_no_call_ncRNA ]
-ok 46 - for [ MT_span_no_call ]
-not ok 47 - for [ MT_altstart ]
+not ok 45 - for [ span_3U ]
+# The anno infor are: bless( {
+#   'trInfo' => {
+#     'NM_000091.4' => {
+#       'c' => 'c.5010_*14delCTGAAGCTAAAAAAGACA',
+#       'cdsBegin' => '5002',
+#       'cdsEnd' => '*6',
+#       'componentIndex' => '52',
+#       'ei_Begin' => 'EX52E',
+#       'ei_End' => 'EX52E',
+#       'exin' => 'EX52E',
+#       'exonIndex' => '52',
+#       'func' => 'frameshift',
+#       'funcSO' => 'SO:0001589',
+#       'funcSOname' => 'frameshift_variant',
+#       'geneId' => '1285',
+#       'geneSym' => 'COL4A3',
+#       'genepart' => 'span',
+#       'genepartSO' => '',
+#       'intronIndex' => '.',
+#       'p' => 'p.H1670Qfs*9',
+#       'p3' => 'p.His1670Glnfs*9',
+#       'pfamId' => '.',
+#       'pfamName' => '.',
+#       'postEnd' => {
+#         'cDot' => '*7',
+#         'exin' => 'EX52E',
+#         'nDot' => 5182,
+#         'r' => '3U1E'
+#       },
+#       'prAlt' => 'QQNCYFSS*',
+#       'prRef' => 'H*',
+#       'preStart' => {
+#         'cDot' => '5001',
+#         'exin' => 'EX52E',
+#         'nDot' => 5163,
+#         'r' => 'C52E'
+#       },
+#       'primaryTag' => 'Y',
+#       'prot' => 'NP_000082.2',
+#       'protBegin' => 1670,
+#       'protEnd' => 1671,
+#       'r' => 'C52E-3U1E',
+#       'r_Begin' => 'C52E',
+#       'r_End' => '3U1E',
+#       'rnaBegin' => 5164,
+#       'rnaEnd' => 5181,
+#       'strd' => '+',
+#       'trAlt' => '',
+#       'trRef' => 'AAAAGACACTGAAGCTAA',
+#       'trRefComp' => {
+#         'EX52E' => 18
+#       }
+#     }
+#   },
+#   'var' => bless( {
+#     'alt' => '',
+#     'altlen' => 0,
+#     'cg54' => {},
+#     'chr' => '2',
+#     'cosmic' => {},
+#     'cusdb_PP12' => {},
+#     'cytoBand' => '2q36.3',
+#     'dbsnp' => {},
+#     'end' => 228176592,
+#     'esp6500' => {},
+#     'gHGVS' => 'g.228176575_228176592delAAAAGACACTGAAGCTAA',
+#     'guess' => 'del',
+#     'gwas' => {},
+#     'imp' => 'del',
+#     'pos' => 228176574,
+#     'ref' => 'AAAAGACACTGAAGCTAA',
+#     'refbuild' => 'GRCh37',
+#     'reflen' => 18,
+#     'reptag' => '.',
+#     'sm' => 2,
+#     'tgp' => {},
+#     'varName' => 'NM_000091.4(COL4A3): c.5010_*14delCTGAAGCTAAAAAAGACA (p.H1670Qfs*9)',
+#     'varTypeSO' => 'SO:0000159'
+#   }, 'BedAnno::Var' )
+# }, 'BedAnno::Anno' )
+ok 46 - for [ MT_no_call_ncRNA ]
+ok 47 - for [ MT_span_no_call ]
+not ok 48 - for [ MT_altstart ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -3560,7 +3641,7 @@ not ok 47 - for [ MT_altstart ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 48 - for [ Mt_init_loss ]
+not ok 49 - for [ Mt_init_loss ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -4434,7 +4515,7 @@ not ok 48 - for [ Mt_init_loss ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 49 - for [ No_call_altstart ]
+not ok 50 - for [ No_call_altstart ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -5305,7 +5386,7 @@ not ok 49 - for [ No_call_altstart ]
 #     'varTypeSO' => 'no-call'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 50 - for [ Mt_no_call_initloss ]
+not ok 51 - for [ Mt_no_call_initloss ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -6172,7 +6253,7 @@ not ok 50 - for [ Mt_no_call_initloss ]
 #     'varTypeSO' => 'no-call'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 51 - for [ Mt_nonsense ]
+not ok 52 - for [ Mt_nonsense ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -7042,7 +7123,7 @@ not ok 51 - for [ Mt_nonsense ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 52 - for [ Mt_missense ]
+not ok 53 - for [ Mt_missense ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -7918,7 +7999,7 @@ not ok 52 - for [ Mt_missense ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 53 - for [ Mt_coding_synon ]
+not ok 54 - for [ Mt_coding_synon ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -8789,7 +8870,7 @@ not ok 53 - for [ Mt_coding_synon ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 54 - for [ Mt_stop_loss ]
+not ok 55 - for [ Mt_stop_loss ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -9653,4 +9734,4 @@ not ok 54 - for [ Mt_stop_loss ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-1..54
+1..55
