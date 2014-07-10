@@ -175,3 +175,4 @@
 
 0.60  Thr Jul 10 09:42:21
 	- fix a bug in getTrChange for 3U span case
+	- fix a problem for batched process when multiple same start blocks hit one same edge position
