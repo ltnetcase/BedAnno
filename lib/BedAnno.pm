@@ -6091,7 +6091,7 @@ sub getTrPosition {
                             }
 
                             delete $trinfoEnt->{trRefComp}->{Z999}
-                              if (  exists $trinfoEnt->{trRefComp}
+                              if (  $strd and exists $trinfoEnt->{trRefComp}
                                 and exists $trinfoEnt->{trRefComp}->{Z999} );
 
                             $trinfoEnt->{trRefComp}->{$tmp_exin} +=
@@ -6126,7 +6126,7 @@ sub getTrPosition {
 			}
 
                         delete $trinfoEnt->{trRefComp}->{Z999}
-                          if (  exists $trinfoEnt->{trRefComp}
+                          if (  $strd and exists $trinfoEnt->{trRefComp}
                             and exists $trinfoEnt->{trRefComp}->{Z999} );
 
                         if (   !exists $trinfoEnt->{trRefComp}
