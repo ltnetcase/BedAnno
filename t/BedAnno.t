@@ -2369,6 +2369,57 @@ my $span_3U = {
     'primaryTag' => 'Y'
 };
 
+my $ins_stop = {
+    'protBegin' => 32,
+    'ei_End'    => 'EX1',
+    'exin'      => 'EX1',
+    'prot'      => 'NP_671729.2',
+    'trRefComp' => {
+        'IVS1' => [ 0 ],
+        'EX1'  => 0
+    },
+    'r_End'    => 'C1',
+    'c'        => 'c.93_93+1insCCCTCGTAG',
+    'rnaBegin' => '248+1',
+    'ei_Begin' => 'IVS1',
+    'r'        => 'C1',
+    'cdsBegin' => '93+1',
+    'preStart' => {
+        'r'    => 'C1',
+        'cDot' => '93',
+        'nDot' => 248,
+        'exin' => 'EX1'
+    },
+    'trRef'          => '',
+    'protEnd'        => 31,
+    'cdsEnd'         => '93',
+    'exonIndex'      => '1',
+    'r_Begin'        => 'DC1',
+    'trAlt'          => 'CCCTCGTAG',
+    'intronIndex'    => '.',
+    'strd'           => '+',
+    'componentIndex' => '1',
+    'geneSym'        => 'TMIE',
+    'postEnd'        => {
+        'r'    => 'DC1',
+        'cDot' => '93+1',
+        'nDot' => '248+1',
+        'exin' => 'IVS1'
+    },
+    'geneId'     => '259236',
+    'p'          => 'p.T34_K156del',
+    'rnaEnd'     => 248,
+    'p3'         => 'p.Thr34_Lys156del',
+    'prAlt'      => 'PS*',
+    'genepart'   => 'CDS',
+    'prRef'      => '',
+    'func'       => 'stop-gain',
+    'funcSO'     => 'SO:0001587',
+    'genepartSO' => 'SO:0000316',
+    'funcSOname' => 'stop_gained',
+    'primaryTag' => 'Y'
+};
+
 my $cds_edge_ins_anno = {
     'protBegin' => 35,
     'ei_End'    => 'IVS2',
@@ -3042,6 +3093,8 @@ test_ok ( "fs1_del", $fs1_del, "NM_001031681.2",
    "chr17", 3559837, 3559839, "CA", "" );
 test_ok ( "span_3U", $span_3U, "NM_000091.4",
    "chr2", 228176574, 228176592, "AAAAGACACTGAAGCTAA", "" ); 
+test_ok ( "ins_stop", $ins_stop, "NM_147196.2",
+   "chr3", 46743070, 46743070, "", "CCCTCGTAG" );
 
 test_ok ( "MT_no_call_ncRNA", $mt_no_call_ncRNA, 'NR_MT-TRNF', 
    "chrMT", 576, 577, "G", "N" );

@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.60';
+our $VERSION = '0.61';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.60
+=head2 VERSION v0.61
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -3771,6 +3771,18 @@ sub getTrChange {
 			next;
 		    }
 
+		    my $ins_stop_tag = 0;
+                    if ( $prRef !~ /\*/ and $prAlt ne '*' and $prAlt =~ /\*$/ ) {    # stop gain
+                        $prEnd = $trdbEnt->{plen}; # extent to the end of prot
+                        $prRef = substr(
+                            $trdbEnt->{pseq},
+                            ( $prBegin - 1 ),
+                            ( $prEnd - $prBegin + 1 )
+                        );
+                        $prAlt =~ s/\*$//;
+			$ins_stop_tag = 1;
+                    }
+
 		    # parse the protein variants
 		    # to recognize the repeat and adjust to correct position
                     my $prVar =
@@ -3879,6 +3891,13 @@ sub getTrChange {
 			next;
 		    }
 
+		    # when inserted bases contains stop codon but not framshift
+		    if ($p_a =~ /^\*$/) { # prAlt is only a stop codon
+			$trannoEnt->{p} = 'p.' . $prStart . ($p_P + 1) . '*';
+			$trannoEnt->{func} = 'stop-gain';
+			next;
+		    }
+
 		    # insertion
 		    if ( $prVar->{sm} == 0 ) {
 			# insert into the 5'edge of start codon
@@ -3902,7 +3921,7 @@ sub getTrChange {
 			    $trannoEnt->{func} = 'stop-retained';
 			}
 			else {
-			    $trannoEnt->{func} = 'cds-ins';
+			    $trannoEnt->{func} = ($ins_stop_tag) ? 'stop-gain' : 'cds-ins';
 			}
 
                         $trannoEnt->{p} = 'p.'
@@ -3921,11 +3940,11 @@ sub getTrChange {
                         elsif ($hit_stop_flag) {
                             $trannoEnt->{func} = 'stop-retained';
                         }
+			elsif ($ins_stop_tag) {
+			    $trannoEnt->{func} = 'stop-gain';
+			}
                         elsif ( $pal == 0 ) {
                             $trannoEnt->{func} = 'cds-del';
-                        }
-                        elsif ( $p_a =~ /\*/ ) {
-                            $trannoEnt->{func} = 'stop-gain';
                         }
                         elsif ( $pal == $prl ) {
                             $trannoEnt->{func} = 'missense';
