@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.61';
+our $VERSION = '0.62';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.61
+=head2 VERSION v0.62
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -3805,6 +3805,9 @@ sub getTrChange {
 			elsif ( $p_r eq '.' ) { # N in refseq transcript
 			    $trannoEnt->{func} = 'unknown';
 			}
+			elsif ( $p_a eq '?' ) { # substitution with N 
+			    $trannoEnt->{func} = 'unknown-no-call';
+			}
 			elsif ( $p_r eq '*' ) {
 			    $trannoEnt->{func} = 'stop-loss';
 			}
@@ -3904,7 +3907,10 @@ sub getTrChange {
 			# this may caused by a insertion or delins
 			# around init-codon to recreat a new init-codon
 			# in the altered sequence
-			if ($p_P == 0) {
+			if ( $p_a eq '?' ) { # substitution with N 
+			    $trannoEnt->{func} = 'unknown-no-call';
+			}
+			elsif ($p_P == 0) {
 			    # altstart don't fix this
 			    # use pHGVS to indicate 
 			    # altstart here
@@ -3934,7 +3940,10 @@ sub getTrChange {
 		    }
 
                     if ( $prVar->{sm} >= 1 ) {
-                        if ( $p_r =~ /\*/ ) {
+			if ( $p_a eq '?' ) { # substitution with N 
+			    $trannoEnt->{func} = 'unknown-no-call';
+			}
+                        elsif ( $p_r =~ /\*/ ) {
                             $trannoEnt->{func} = 'stop-loss';
                         }
                         elsif ($hit_stop_flag) {
@@ -3991,7 +4000,7 @@ sub prWalker {
       BedAnno::Var->new( "nouse", ( $prBegin - 1 ), $prEnd, $prRef, $prAlt );
     my ($pr_P, $pr_r, $pr_a, $pr_rl, $pr_al) = $prVar->getUnifiedVar('+');
 
-    if ( $pr_rl == $pr_al
+    if ( ( defined $pr_al and $pr_rl == $pr_al )
         or ( 0 != index( $pr_r, $pr_a ) and 0 != index( $pr_a, $pr_r ) ) )
     {
         return $prVar;

@@ -2420,6 +2420,60 @@ my $ins_stop = {
     'primaryTag' => 'Y'
 };
 
+
+my $ncall = {
+    'protBegin' => 132,
+    'cc'        => 'GAC=>NAC',
+    'ei_End'    => 'EX4E',
+    'exin'      => 'EX4E',
+    'prot'      => 'NP_671729.2',
+    'trRefComp' => {
+        'EX4E' => 1
+    },
+    'r_End'    => 'C4E',
+    'c'        => 'c.394G>N',
+    'rnaBegin' => 549,
+    'ei_Begin' => 'EX4E',
+    'r'        => 'C4E',
+    'cdsBegin' => '394',
+    'preStart' => {
+        'r'    => 'C4E',
+        'cDot' => '393',
+        'nDot' => 548,
+        'exin' => 'EX4E'
+    },
+    'trRef'          => 'G',
+    'protEnd'        => 132,
+    'cdsEnd'         => '394',
+    'exonIndex'      => '4',
+    'r_Begin'        => 'C4E',
+    'trAlt'          => 'N',
+    'intronIndex'    => '.',
+    'strd'           => '+',
+    'componentIndex' => '4',
+    'geneSym'        => 'TMIE',
+    'postEnd'        => {
+        'r'    => 'C4E',
+        'cDot' => '395',
+        'nDot' => 550,
+        'exin' => 'EX4E'
+    },
+    'geneId'     => '259236',
+    'p'          => 'p.D132?',
+    'rnaEnd'     => 549,
+    'p3'         => 'p.Asp132?',
+    'prAlt'      => '?',
+    'genepart'   => 'CDS',
+    'prRef'      => 'D',
+    'func'       => 'unknown-no-call',
+    'funcSO'     => '',
+    'genepartSO' => 'SO:0000316',
+    'polar'      => 'P-=>?',
+    'funcSOname' => 'unknown-no-call',
+    'primaryTag' => 'Y'
+};
+
+
 my $cds_edge_ins_anno = {
     'protBegin' => 35,
     'ei_End'    => 'IVS2',
@@ -3095,6 +3149,8 @@ test_ok ( "span_3U", $span_3U, "NM_000091.4",
    "chr2", 228176574, 228176592, "AAAAGACACTGAAGCTAA", "" ); 
 test_ok ( "ins_stop", $ins_stop, "NM_147196.2",
    "chr3", 46743070, 46743070, "", "CCCTCGTAG" );
+test_ok ( "ncall", $ncall, "NM_147196.2",
+   "chr3", 46751100, 46751101, "G", "N" );
 
 test_ok ( "MT_no_call_ncRNA", $mt_no_call_ncRNA, 'NR_MT-TRNF', 
    "chrMT", 576, 577, "G", "N" );

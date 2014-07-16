@@ -179,3 +179,6 @@
 
 0.61  Tue Jul 15 17:53:30
 	- fix a problem for insertion of stop codon.
+
+0.62  Wed Jul 16 09:12:31
+	- fix a problem for N-called no call variant.
