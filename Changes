@@ -182,3 +182,4 @@
 
 0.62  Wed Jul 16 09:12:31
 	- fix a problem for N-called no call variant.
+	- fix a bug for trWalker and prWalker for walking to the ends.

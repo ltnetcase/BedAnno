@@ -2473,6 +2473,51 @@ my $ncall = {
     'primaryTag' => 'Y'
 };
 
+my $walk_to_end = {
+    'protBegin' => '',
+    'ei_End'    => 'EX2E',
+    'exin'      => 'EX2E',
+    'prot'      => 'NP_000006.2',
+    'trRefComp' => {
+        'EX2E' => 0
+    },
+    'r_End'    => '3U1E',
+    'c'        => 'c.*337_*338insAG',
+    'rnaBegin' => 1317,
+    'ei_Begin' => 'EX2E',
+    'r'        => '3U1E',
+    'cdsBegin' => '*337',
+    'preStart' => {
+        'r'    => '3U1E',
+        'cDot' => '*336',
+        'nDot' => 1316,
+        'exin' => 'EX2E'
+    },
+    'trRef'          => '',
+    'protEnd'        => '',
+    'cdsEnd'         => '*336',
+    'exonIndex'      => '2',
+    'r_Begin'        => '3U1E',
+    'trAlt'          => 'GA',
+    'intronIndex'    => '.',
+    'strd'           => '+',
+    'componentIndex' => '2',
+    'geneSym'        => 'NAT2',
+    'postEnd'        => {
+        'r'    => '3U1E',
+        'cDot' => '*337',
+        'nDot' => 1317,
+        'exin' => 'EX2E'
+    },
+    'geneId'     => '10',
+    'rnaEnd'     => 1316,
+    'genepart'   => 'three_prime_UTR',
+    'func'       => 'utr-3',
+    'genepartSO' => 'SO:0000205',
+    'funcSO'     => '',
+    'primaryTag' => 'Y',
+    'funcSOname' => 'unknown'
+};
 
 my $cds_edge_ins_anno = {
     'protBegin' => 35,
@@ -3151,6 +3196,8 @@ test_ok ( "ins_stop", $ins_stop, "NM_147196.2",
    "chr3", 46743070, 46743070, "", "CCCTCGTAG" );
 test_ok ( "ncall", $ncall, "NM_147196.2",
    "chr3", 46751100, 46751101, "G", "N" );
+test_ok ( "walk_to_end", $walk_to_end, "NM_000015.2",
+   "chr8", 18258722, 18258722, "", "GA" );
 
 test_ok ( "MT_no_call_ncRNA", $mt_no_call_ncRNA, 'NR_MT-TRNF', 
    "chrMT", 576, 577, "G", "N" );

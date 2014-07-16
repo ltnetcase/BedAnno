@@ -4114,6 +4114,10 @@ sub walker {
     for (my $p = $ref_sto; $p < $seqlen; $p++) {
 	if (substr($whole_seq, $p, 1) eq $cur_walker[0]) {
 	    push (@cur_walker, shift(@cur_walker));
+	    if ($p == $seqlen - 1) {
+		$walk_forward_step = $seqlen - $ref_sto;
+		last;
+	    }
 	}
 	else {
 	    $walk_forward_step = $p - $ref_sto;
@@ -4134,6 +4138,10 @@ sub walker {
     for ( my $q = $ref_sta - 1; $q > 0; $q -- ) {
 	if (substr($whole_seq, $q-1, 1) eq $cur_walker[-1]) {
 	    unshift( @cur_walker, pop(@cur_walker) );
+	    if ($q == 1) {
+		$walk_back_step = $ref_sta - 1;
+		last;
+	    }
 	}
 	else {
 	    $walk_back_step = $ref_sta - $q - 1;

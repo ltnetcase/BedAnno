@@ -2852,9 +2852,96 @@ not ok 46 - for [ ins_stop ]
 #     'varTypeSO' => 'SO:0000667'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-ok 47 - for [ MT_no_call_ncRNA ]
-ok 48 - for [ MT_span_no_call ]
-not ok 49 - for [ MT_altstart ]
+not ok 47 - for [ ncall ]
+# The anno infor are: bless( {
+#   'trInfo' => {
+#     'NM_147196.2' => {
+#       'c' => 'c.394G>N',
+#       'cc' => 'GAC=>NAC',
+#       'cdsBegin' => '394',
+#       'cdsEnd' => '394',
+#       'componentIndex' => '4',
+#       'ei_Begin' => 'EX4E',
+#       'ei_End' => 'EX4E',
+#       'exin' => 'EX4E',
+#       'exonIndex' => '4',
+#       'func' => 'unknown-no-call',
+#       'funcSO' => '',
+#       'funcSOname' => 'unknown-no-call',
+#       'geneId' => '259236',
+#       'geneSym' => 'TMIE',
+#       'genepart' => 'CDS',
+#       'genepartSO' => 'SO:0000316',
+#       'intronIndex' => '.',
+#       'p' => 'p.D132?',
+#       'p3' => 'p.Asp132?',
+#       'pfamId' => '.',
+#       'pfamName' => '.',
+#       'polar' => 'P-=>?',
+#       'postEnd' => {
+#         'cDot' => '395',
+#         'exin' => 'EX4E',
+#         'nDot' => 550,
+#         'r' => 'C4E'
+#       },
+#       'prAlt' => '?',
+#       'prRef' => 'D',
+#       'preStart' => {
+#         'cDot' => '393',
+#         'exin' => 'EX4E',
+#         'nDot' => 548,
+#         'r' => 'C4E'
+#       },
+#       'primaryTag' => 'Y',
+#       'prot' => 'NP_671729.2',
+#       'protBegin' => 132,
+#       'protEnd' => 132,
+#       'r' => 'C4E',
+#       'r_Begin' => 'C4E',
+#       'r_End' => 'C4E',
+#       'rnaBegin' => 549,
+#       'rnaEnd' => 549,
+#       'strd' => '+',
+#       'trAlt' => 'N',
+#       'trRef' => 'G',
+#       'trRefComp' => {
+#         'EX4E' => 1
+#       }
+#     }
+#   },
+#   'var' => bless( {
+#     'alt' => 'N',
+#     'altlen' => 1,
+#     'cg54' => {},
+#     'chr' => '3',
+#     'cosmic' => {},
+#     'cusdb_PP12' => {},
+#     'cytoBand' => '3p21.31',
+#     'dbsnp' => {},
+#     'end' => 46751101,
+#     'esp6500' => {},
+#     'gHGVS' => 'g.46751100G>N',
+#     'guess' => 'no-call',
+#     'gwas' => {},
+#     'imp' => 'snv',
+#     'phyloPpm' => '2.455',
+#     'phyloPpr' => '0.655',
+#     'phyloPve' => '1.727',
+#     'pos' => 46751100,
+#     'ref' => 'G',
+#     'refbuild' => 'GRCh37',
+#     'reflen' => 1,
+#     'reptag' => '.',
+#     'sm' => 1,
+#     'tgp' => {},
+#     'varName' => 'NM_147196.2(TMIE): c.394G>N (p.D132?)',
+#     'varTypeSO' => 'no-call'
+#   }, 'BedAnno::Var' )
+# }, 'BedAnno::Anno' )
+ok 48 - for [ walk_to_end ]
+ok 49 - for [ MT_no_call_ncRNA ]
+ok 50 - for [ MT_span_no_call ]
+not ok 51 - for [ MT_altstart ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -3725,7 +3812,7 @@ not ok 49 - for [ MT_altstart ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 50 - for [ Mt_init_loss ]
+not ok 52 - for [ Mt_init_loss ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -4599,7 +4686,7 @@ not ok 50 - for [ Mt_init_loss ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 51 - for [ No_call_altstart ]
+not ok 53 - for [ No_call_altstart ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -5470,7 +5557,7 @@ not ok 51 - for [ No_call_altstart ]
 #     'varTypeSO' => 'no-call'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 52 - for [ Mt_no_call_initloss ]
+not ok 54 - for [ Mt_no_call_initloss ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -6337,7 +6424,7 @@ not ok 52 - for [ Mt_no_call_initloss ]
 #     'varTypeSO' => 'no-call'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 53 - for [ Mt_nonsense ]
+not ok 55 - for [ Mt_nonsense ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -7207,7 +7294,7 @@ not ok 53 - for [ Mt_nonsense ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 54 - for [ Mt_missense ]
+not ok 56 - for [ Mt_missense ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -8083,7 +8170,7 @@ not ok 54 - for [ Mt_missense ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 55 - for [ Mt_coding_synon ]
+not ok 57 - for [ Mt_coding_synon ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -8954,7 +9041,7 @@ not ok 55 - for [ Mt_coding_synon ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 56 - for [ Mt_stop_loss ]
+not ok 58 - for [ Mt_stop_loss ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -9818,4 +9905,4 @@ not ok 56 - for [ Mt_stop_loss ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-1..56
+1..58
