@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.62';
+our $VERSION = '0.70';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.62
+=head2 VERSION v0.70
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -1439,6 +1439,7 @@ sub get_cover_batch {
 		    my ($begin_hash, $end_hash);
 		    $begin_hash = {
 			gsym => $anno_var->{trInfo}->{$tid}->{geneSym},
+			gid  => $anno_var->{trInfo}->{$tid}->{geneId},
 			reg  => $anno_var->{trInfo}->{$tid}->{r_Begin},
 			exin => $anno_var->{trInfo}->{$tid}->{ei_Begin},
 			strd => $anno_var->{trInfo}->{$tid}->{strd},
@@ -1446,6 +1447,7 @@ sub get_cover_batch {
 		    };
 		    $end_hash = {
 			gsym => $anno_var->{trInfo}->{$tid}->{geneSym},
+			gid  => $anno_var->{trInfo}->{$tid}->{geneId},
 			reg  => $anno_var->{trInfo}->{$tid}->{r_End},
 			exin => $anno_var->{trInfo}->{$tid}->{ei_End},
 			strd => $anno_var->{trInfo}->{$tid}->{strd},
@@ -1468,7 +1470,6 @@ sub get_cover_batch {
                         push( @hitted_blks, [ $tid, $end_hash, $begin_hash ] );
                     }
                 }
-
 	    }
 	}
 	
@@ -2406,11 +2407,7 @@ sub finaliseAnno {
 
 	    # change annotation-fail 's other value to empty?
 
-	    # uniform rnaBegin end and protBegin end
-	    $trAnnoEnt->{rnaBegin} =
-	      ( $trAnnoEnt->{rnaBegin} =~ /^\+/ ) ? "" : $trAnnoEnt->{rnaBegin};
-	    $trAnnoEnt->{rnaEnd} =
-	      ( $trAnnoEnt->{rnaEnd} =~ /^\+/ ) ? "" : $trAnnoEnt->{rnaEnd};
+	    # uniform protBegin end
 	    $trAnnoEnt->{protBegin} =
 	      ( !exists $trAnnoEnt->{protBegin} or $trAnnoEnt->{protBegin} eq '0' ) ? "" : $trAnnoEnt->{protBegin};
 	    $trAnnoEnt->{protEnd} =
@@ -2805,7 +2802,7 @@ sub getTrChange {
         my $trSeq = $trdbEnt->{seq};
 
 
-	my $cdsOpt = (exists $trdbEnt->{prot} and $trdbEnt->{prot} ne ".") ? 1 : 0;
+	my $cdsOpt = (exists $trdbEnt->{prot} and $trdbEnt->{prot} ne "." and $trannoEnt->{cdsBegin} ne '') ? 1 : 0;
 	my $strd   = ($trannoEnt->{strd} eq '+') ? 1 : 0;
 
 	# fix the trRefComp when ended in 3'downstream
@@ -2816,11 +2813,9 @@ sub getTrChange {
         my $trRef = getTrRef( $trannoEnt, $unify_r, $trSeq, $strd );
 	$trannoEnt->{trRef} = $trRef;
 
-
-
 	my $trAlt = $trannoEnt->{trAlt};
 
-	$trannoEnt->{prot} = $trdbEnt->{prot} if ($cdsOpt);
+	$trannoEnt->{prot} = $trdbEnt->{prot} if (exists $trdbEnt->{prot} and $trdbEnt->{prot} ne ".");
 	my $f = ($cdsOpt) ? 'c.' : 'n.';
 	my $chgvs_5 = ($cdsOpt) ? $trannoEnt->{cdsBegin} : $trannoEnt->{rnaBegin};
 	my $chgvs_3 = ($cdsOpt) ? $trannoEnt->{cdsEnd}   : $trannoEnt->{rnaEnd};
@@ -4712,7 +4707,6 @@ sub warn {
 
 =cut
 package BedAnno::Var;
-use base qw(BedAnno);
 use strict;
 use warnings;
 use Data::Dumper;
@@ -5399,7 +5393,6 @@ sub get_gHGVS {
 =cut
 
 package BedAnno::Anno;
-use base qw(BedAnno BedAnno::Var);
 use strict;
 use warnings;
 
@@ -5585,6 +5578,8 @@ sub reformatAnno {
               ( exists $rTr->{rnaBegin} ) ? $rTr->{rnaBegin} : "";
             $trInfo{TranscriptEnd} =
               ( exists $rTr->{rnaEnd} ) ? $rTr->{rnaEnd} : "";
+	    $trInfo{TranscriptBegin} = "" if ( $trInfo{TranscriptBegin} =~ /^\+/ );
+	    $trInfo{TranscriptEnd} = "" if ( $trInfo{TranscriptEnd} =~ /^\+/ );
 
             $trInfo{TranscriptBegin} = ""
               if ( $trInfo{TranscriptBegin} eq '?' );
@@ -6223,6 +6218,9 @@ sub getTrPosition {
 	     {
 		 delete $annoEnt->{trInfo}->{$t};
 	     }
+	     elsif ( exists $tinfo->{cdsEnd} and $tinfo->{cdsEnd} eq '' ) { # Downstream annotation fail
+		 $tinfo->{cdsBegin} = '';
+	     }
 	}
 	if ( 0 == scalar keys %{ $annoEnt->{trInfo} } ) {
 	     delete $annoEnt->{trInfo};
@@ -6348,7 +6346,6 @@ sub cal_hgvs_pos {
     my ( $ofst, $tid, $rtidDetail, $lr ) =
       @cal_args{qw(offset tid tidDetail LR)};
     my ( $nDot, $cDot ) = ( '', '' );
-    my ( $lr_pair_nDot, $lr_pair_cDot ) = ( '', '' );
     my $strd = ($$rtidDetail{strd} eq '+') ? 1 : 0;
     my $trAlt = $annoEnt->{trInfo}->{$tid}->{trAlt} if (!exists $cal_args{noassign});
 
@@ -6373,6 +6370,7 @@ sub cal_hgvs_pos {
 		if ($$rtidDetail{csta} =~ /^\*?\d+$/) {
                     $cDot = $$rtidDetail{csta} . '+d' . ( 0 - $lofst );
 		}
+
 		$exin = '.';
 		$blka = '3D';
 		$gpSO = '605';
@@ -6733,6 +6731,275 @@ sub cal_hgvs_pos {
     return 1;
 }
 
+
+=head1 BedAnno::CNV
+
+    BedAnno::CNV sub package
+
+=cut
+
+package BedAnno::CNV;
+use base qw(BedAnno);
+use strict;
+use warnings;
+
+use Data::Dumper;
+use Carp;
+use Tabix;
+
+=head1 METHOD
+
+=head2 new
+
+    About   : Create BedAnno::CNV object
+    Usage   : my $cnva = BedAnno::CNV->new( db => $annodb, tr => $trdb, dgv => $dgvdb, cnvPub => $cnvPubdb );
+    Args    : required args: db, tr, cytoBand
+              Specific args:
+                - dgv     DGV tabix index file (dgvMerged from ucsc) as Controls
+                - cnvPub  Well formatted tabix index file as a collection of Cases
+              Same args in BedAnno method 'new':
+                - db, tr, genes, trans, region, regbed, mmap, batch, cytoBand
+    Returns : BedAnno::CNV object
+
+=cut
+sub new {
+    my ($class, %args) = @_;
+    my $self;
+    $self = $class->SUPER::new(%args);
+    bless $self, ref($class) || $class;
+
+    if (!exists $args{cytoBand}) {
+	$self->throw("Error: no cytoBand info available\n");
+    }
+
+    if (exists $args{dgv}) {
+	$self->set_dgv( $args{dgv} );
+    }
+
+    if (exists $args{cnvPub}) {
+	$self->set_cnvPub( $args{cnvPub} );
+    }
+
+    return $self;
+}
+
+sub set_dgv {
+    my $self = shift;
+    my $dgvdb = shift;
+    $self->{dgv} = $dgvdb;
+    require GetDGV if (!exists $self->{dgv_h});
+    my %common_opts = ();
+    $common_opts{quiet} = 1 if (exists $self->{quiet});
+    $common_opts{trans} = $self->{trans} if (exists $self->{trans});
+    $common_opts{genes} = $self->{genes} if (exists $self->{trans});
+    my $dgv_h = GetDGV->new( db => $dgvdb, %common_opts );
+    $self->{dgv_h} = $dgv_h;
+    return $self;
+}
+
+sub set_cnvPub {
+    my $self = shift;
+    my $cnvPubdb = shift;
+    $self->{cnvPub} = $cnvPubdb;
+    require GetCNVPub if (!exists $self->{cnvPub_h});
+    my %common_opts = ();
+    $common_opts{quiet} = 1 if (exists $self->{quiet});
+    $common_opts{trans} = $self->{trans} if (exists $self->{trans});
+    $common_opts{genes} = $self->{genes} if (exists $self->{trans});
+    my $cnvPub_h = GetCNVPub->new( db => $cnvPubdb, %common_opts );
+    $self->{cnvPub_h} = $cnvPub_h;
+    return $self;
+}
+
+
+
+=head2 batch_annoCNV
+
+    About   : Annotate CNV variants in batch mode
+    Usage   : my $rcnvAnnos = $cnva->batch_annoCNV( $ref_hash_AllCNV );
+    Args    : A hash ref of all cnv annotation in the following structure
+		{
+		    $chr => {
+			"$start-$stop" => $copy_number,
+			...
+		      },
+		      ...
+		}
+    Returns : A hash ref of annotated cnv variants in the following structure
+                {
+                    $chr => {
+                        "$start-$stop" => {
+                           cytoBand  => $cytoBand_info,
+                           cnva_type => $cnv_anno_type,
+                           
+                           # if hit on transcript
+                           anno => {
+                             $tid => {
+                               gsym => $gene_symbol,
+                               gid  => $gene_id,
+                               strd => $strand,
+                               cpos => $hgvs_position,
+                               exin => $exon_intron_number,
+                               regcod => $code_of_region,
+                               regtyp => $type_of_region,
+                             },
+                             ...
+                           },
+
+                           # available when resource ok
+                           dgv => $dgv_sql_rst,
+                           cnvPub => $cnvPub_sql_rst,
+                        },
+                        ...
+                      },
+                      ...
+                }
+
+=cut
+sub batch_annoCNV {
+    my $self = shift;
+    my $rCNVvars = shift;
+    my %cnvAnnos = ();
+    foreach my $chr (sort keys %$rCNVvars) {
+	my @PosPairs = map {[split(/\-/)]} keys %{$rCNVvars->{$chr}};
+	my $rh_cnva = $self->get_cover_batch( $chr, \@PosPairs );
+	$cnvAnnos{$chr} = $self->parse_cnva( $chr, $rh_cnva, $rCNVvars->{$chr} );
+    }
+    return \%cnvAnnos;
+}
+
+sub parse_cnva {
+    my $self = shift;
+    my ( $chr, $rChrCNVAnnos, $rChrCNs ) = @_;
+    my %chrAnnos = ();
+    foreach my $pos_pair (sort keys %$rChrCNVAnnos) {
+	
+	my %cur_anno = ();
+	my $cur_CN = $rChrCNs->{$pos_pair};
+	$cur_anno{cur_CN} = $cur_CN;
+	my ($start, $stop) = split(/-/, $pos_pair);
+
+        $cur_anno{dgv} = $self->{dgv_h}->getDGV( $chr, $start, $stop, $cur_CN )
+          if ( defined $self->{dgv_h} );
+        $cur_anno{cnvPub} =
+          $self->{cnvPub_h}->getCNVpub( $chr, $start, $stop, $cur_CN )
+          if ( defined $self->{cnvPub_h} );
+	$cur_anno{cytoband} = $self->{cytoBand_h}->getCB( $chr, $start, $stop );
+
+	my $cnv_anno_type;
+	foreach my $rTid (@{$rChrCNVAnnos->{$pos_pair}}) {
+	    my ($tid, $rleft, $rright) = @$rTid;
+	    my $ref_tida = {};
+	    $ref_tida = get_region( $rleft, $rright );
+
+	    if (exists $ref_tida->{regtyp}) {
+		if (!defined $cnv_anno_type) {
+		    $cnv_anno_type = $ref_tida->{regtyp};
+		}
+		elsif ($cnv_anno_type ne $ref_tida->{regtyp}) {
+		    $cnv_anno_type = "Multiple";
+		}
+	    }
+	    else {
+		$self->throw("Error: fail to get region type for $tid\n");
+	    }
+
+	    @$ref_tida{qw(gsym gid strd)} = @$rleft{qw(gsym gid strd)};
+	    $cur_anno{anno}{$tid} = $ref_tida;
+	}
+
+        $cur_anno{cnva_type} =
+          ( defined $cnv_anno_type ) ? $cnv_anno_type : "unknown";
+	$chrAnnos{$pos_pair} = \%cur_anno;
+    }
+    return \%chrAnnos;
+}
+
+sub get_region {
+    my ($rl, $rr) = @_;
+
+    confess "Unknown invoking error, no cpos.\n"
+      if ( !exists $rl->{cpos} or !exists $rr->{cpos} );
+
+    my %region_anno = ();
+    if ($rl->{cpos} eq '?' or $rr->{cpos} eq '?') {
+	$region_anno{cpos} = '?';
+	$region_anno{exin} = 'unknown';
+	$region_anno{regcod} = 'unknown';
+	$region_anno{regtyp} = 'unknown';
+	return \%region_anno;
+    }
+
+    my $cmp_stat = BedAnno->cmpPos( substr($rl->{cpos},2), substr($rr->{cpos},2) );
+
+    if ( $cmp_stat == 0 ) {
+        $region_anno{cpos} = $rl->{cpos};
+    }
+    elsif ( $cmp_stat > 0 ) {
+        my $latter_part = substr( $rr->{cpos}, 2 );
+        $region_anno{cpos} = $rl->{cpos} . '_' . $latter_part;
+    }
+    else {
+        my $latter_part = substr( $rl->{cpos}, 2 );
+        $region_anno{cpos} = $rr->{cpos} . '_' . $latter_part;
+    }
+
+    if ( $rl->{reg} eq $rr->{reg} ) {
+        $region_anno{regcod} = $rl->{reg};
+        $region_anno{exin}   = ($rl->{reg} eq 'PROM') ? "Promoter" : $rl->{exin};
+        if ( $region_anno{regcod} =~ /^I|^5U|^3U|^PROM/i ) {
+            $region_anno{regtyp} = "LowRisk";
+        }
+        else {
+            $region_anno{regtyp} = "Segmental";
+        }
+    }
+    else {
+        my ( $r5, $r3 ) = ( $rl, $rr );
+        if ( $cmp_stat < 0 ) {
+            $r5 = $rr;
+            $r3 = $rl;
+        }
+
+        $region_anno{regcod} = $r5->{reg} . '-' . $r3->{reg};
+
+        my $formor_exin = ( $r5->{reg} eq "PROM" ) ? "Promoter" : $r5->{exin};
+        if ( $r3->{reg} eq '3D' ) {
+            $region_anno{exin} = $formor_exin . "-DownStream";
+        }
+        elsif ( $r3->{exin} eq $r5->{exin} ) {    # UTR:CDS or SPLICE:INTRON
+            $region_anno{exin} = $r5->{exin};
+        }
+        else {
+            $region_anno{exin} = $formor_exin . '-' . $r3->{exin};
+        }
+
+        if ( $r5->{reg} eq 'PROM' and $r3->{reg} eq '3D' ) {
+            $region_anno{regtyp} = 'Whole-gene';
+        }
+        elsif ( ( $r5->{reg} =~ /5U/ or $r5->{reg} eq 'PROM' )
+            and ( $r3->{reg} =~ /3U/ or $r3->{reg} eq '3D' ) )
+        {
+            $region_anno{regtyp} = 'Whole-cds';
+        }
+        else {
+            $region_anno{regtyp} = "Segmental";
+        }
+    }
+
+    return \%region_anno;
+}
+
+sub DESTROY {
+    my $self = shift;
+    foreach my $key (keys %$self) {
+	next if ($key !~ /_h$/);
+	$self->{$key}->DESTROY()
+	  if ( defined $self->{$key} and $self->{$key}->can('DESTROY') );
+	delete $self->{$key};
+    }
+    return;
+}
 
 1;
 __END__

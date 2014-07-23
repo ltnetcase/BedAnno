@@ -124,15 +124,15 @@
 .\" ========================================================================
 .\"
 .IX Title "BedAnno 3"
-.TH BedAnno 3 "2014-07-15" "perl v5.14.2" "User Contributed Perl Documentation"
+.TH BedAnno 3 "2014-07-22" "perl v5.14.2" "User Contributed Perl Documentation"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
 .nh
 .SH "NAME"
 BedAnno \- Perl module for annotating variation depend on the BED +1 format database.
-.SS "\s-1VERSION\s0 v0.61"
-.IX Subsection "VERSION v0.61"
+.SS "\s-1VERSION\s0 v0.70"
+.IX Subsection "VERSION v0.70"
 From version 0.32 BedAnno will change to support \s-1CG\s0's variant shell list
 and use ncbi annotation release 104 as the annotation database
 with reformatted database format, and won't give any individual
@@ -1226,6 +1226,64 @@ resource dependencies will be required.
 \&                          },
 \&                        ...
 \&                    }
+\&                }
+.Ve
+.SH "BedAnno::CNV"
+.IX Header "BedAnno::CNV"
+.Vb 1
+\&    BedAnno::CNV sub package
+.Ve
+.SH "METHOD"
+.IX Header "METHOD"
+.SS "new"
+.IX Subsection "new"
+.Vb 8
+\&    About   : Create BedAnno::CNV object
+\&    Usage   : my $cnva = BedAnno::CNV\->new( db => $annodb, tr => $trdb, dgv => $dgvdb, cnvPub => $cnvPubdb );
+\&    Args    : Specific args:
+\&                \- dgv     DGV tabix index file (dgvMerged from ucsc) as Controls
+\&                \- cnvPub  Well formatted tabix index file as a collection of Cases
+\&              Same args in BedAnno method \*(Aqnew\*(Aq:
+\&                \- db, tr, genes, trans, region, regbed, mmap, batch, cytoBand,
+\&    Returns : BedAnno::CNV object
+.Ve
+.SS "batch_annoCNV"
+.IX Subsection "batch_annoCNV"
+.Vb 10
+\&    About   : Annotate CNV variants in batch mode
+\&    Usage   : my $rcnvAnnos = $cnva\->batch_annoCNV( $ref_hash_AllCNV );
+\&    Args    : A hash ref of all cnv annotation in the following structure
+\&                {
+\&                    $chr => {
+\&                        "$start\-$stop" => $copy_number,
+\&                        ...
+\&                      },
+\&                      ...
+\&                }
+\&    Returns : A hash ref of annotated cnv variants in the following structure
+\&                {
+\&                    $chr => {
+\&                        "$start\-$stop" => {
+\&                           anno => {
+\&                             $tid => {
+\&                               gsym => $gene_symbol,
+\&                               gid  => $gene_id,
+\&                               strd => $strand,
+\&                               cpos => $hgvs_position,
+\&                               exin => $exon_intron_number,
+\&                               regcod => $code_of_region,
+\&                               regtyp => $type_of_region,
+\&                             },
+\&                             ...
+\&                           },
+\&
+\&                           # available when resource ok
+\&                           dgv => $dgv_sql_rst,
+\&                           cnvPub => $cnvPub_sql_rst,
+\&                        },
+\&                        ...
+\&                      },
+\&                      ...
 \&                }
 .Ve
 .SH "DATABASE FORMAT"
