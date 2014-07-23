@@ -1473,10 +1473,8 @@ sub get_cover_batch {
 	    }
 	}
 	
-	if ( 0 < @hitted_blks ) {
-	    my $pospair = join( "-", @$rgn );
-	    $ret_cov{$pospair} = [@hitted_blks];
-	}
+	my $pospair = join( "-", @$rgn );
+	$ret_cov{$pospair} = [@hitted_blks];
     }
     return \%ret_cov;
 }
