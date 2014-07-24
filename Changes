@@ -186,3 +186,6 @@
 
 0.70  Tue Jul 22 17:28:21
 	- add BedAnno::CNV child module to annotate CNV in batch mode.
+
+0.71  Wed Jul 23 11:38:22
+	- add single cnv var anno method annoCNV()
