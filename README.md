@@ -63,7 +63,7 @@ TRANSCRIPT FASTA DATABASE FORMAT
    ----------------------------
    Header format is: ( separate by " ", with "." for unavailable value )
 
-       >rnaAcc.ver rnaLen gene protAcc.ver protLen cdsSta,cdsEnd tags [altStartCodons]
+       >rnaAcc.ver rnaLen gene protAcc.ver protLen cdsSta,cdsEnd tags [altStartCodons] [frameshiftSite]
 
    "tags" are a string of multiple properties separated by "|", which are:
 

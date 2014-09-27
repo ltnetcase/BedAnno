@@ -1175,7 +1175,7 @@ my $cds_rna_delins_anno = bless(
                     'nDot' => 1514,
                     'r'    => 'C3'
                 },
-		'primaryTag'=> 'N',
+		'primaryTag'=> 'Y',
                 'prot'      => 'NP_006149.2',
                 'protBegin' => 472,
                 'protEnd'   => 544,
@@ -1245,7 +1245,7 @@ my $cds_no_change_anno = bless(
                     'nDot' => 1515,
                     'r'    => 'C3'
                 },
-		'primaryTag'=> 'N',
+		'primaryTag'=> 'Y',
                 'prot'      => 'NP_006149.2',
                 'protBegin' => '',
                 'protEnd'   => '',
@@ -1320,7 +1320,7 @@ my $cds_snv_anno = bless(
                     'nDot' => 1513,
                     'r'    => 'C3'
                 },
-		'primaryTag'=> 'N',
+		'primaryTag'=> 'Y',
 		'prAlt'	    => 'H',
 		'prRef'	    => 'P',
                 'prot'      => 'NP_006149.2',
@@ -1398,7 +1398,7 @@ my $cds_del_anno = bless(
                 },
 		'prAlt' => 'PPLKEKPRRRRRTRKRPRKRRQLKRKKLPRKSLKKQKKKKKEVKVKKERKPKKLKRRRRKLKVLGRNKQLRRKIEPPFP*',
 		'prRef' => 'PPSEGEAEEEEKDKEEAEEEEAAEEEEAAKEESEEAKEEEEGGEGEEGEETKEAEEEEKKVEGAGEEQAAKKKD*',
-		'primaryTag'=> 'N',
+		'primaryTag'=> 'Y',
                 'prot'      => 'NP_006149.2',
                 'protBegin' => 472,
                 'protEnd'   => 544,
@@ -1527,7 +1527,7 @@ my $cds_ins_anno = bless(
                     'nDot' => 1513,
                     'r'    => 'C3'
                 },
-		'primaryTag'=> 'N',
+		'primaryTag'=> 'Y',
 		'prAlt'	    => 'PPP',
 		'prRef'	    => 'PP',
                 'prot'      => 'NP_006149.2',
@@ -2073,7 +2073,7 @@ my $left_edge_mismatch_anno = {
     'funcSO'     => 'SO:0001589',
     'genepartSO' => 'SO:0000316',
     'funcSOname' => 'frameshift_variant',
-    'primaryTag' => 'N'
+    'primaryTag' => 'Y'
 };
 
 my $downstream_no_call = undef;
@@ -2621,6 +2621,605 @@ my $cds_edge_ins2_anno = {
     'funcSOname' => 'frameshift_variant',
     'primaryTag' => 'Y'
 };
+
+my $badmap_correction_ref = {
+    'alt_cHGVS'      => 'c.1577_1579delCTC',
+    'c'              => 'c.1574CTC[2>1]',
+    'cdsBegin'       => '1572',
+    'cdsEnd'         => '1576',
+    'componentIndex' => '8',
+    'ei_Begin'       => 'EX8',
+    'ei_End'         => 'EX8',
+    'exin'           => 'EX8',
+    'exonIndex'      => '8',
+    'func'           => 'cds-del',
+    'funcSO'         => 'SO:0001822',
+    'funcSOname'     => 'inframe_deletion',
+    'geneId'         => '7840',
+    'geneSym'        => 'ALMS1',
+    'genepart'       => 'CDS',
+    'genepartSO'     => 'SO:0000316',
+    'intronIndex'    => '.',
+    'p'              => 'p.P526del',
+    'p3'             => 'p.Pro526del',
+    'postEnd'        => {
+        'cDot' => '1577',
+        'exin' => 'EX8',
+        'nDot' => 1688,
+        'r'    => 'C8'
+    },
+    'prAlt'    => 'SL',
+    'prRef'    => 'SPL',
+    'preStart' => {
+        'cDot' => '1576',
+        'exin' => 'EX8',
+        'nDot' => '1687',
+        'r'    => 'C8'
+    },
+    'primaryTag'     => 'Y',
+    'prot'           => 'NP_055935.4',
+    'protBegin'      => 525,
+    'protEnd'        => 527,
+    'r'              => 'C8',
+    'r_Begin'        => 'C8',
+    'r_End'          => 'C8',
+    'rnaBegin'       => '1683',
+    'rnaEnd'         => '1687',
+    'standard_cHGVS' => 'c.1574CTC[1]',
+    'strd'           => '+',
+    'trAlt'          => 'TT',
+    'trRef'          => 'TTCTC',
+    'trRefComp'      => {
+        'EX8' => 5
+    }
+};
+
+my $badmap_correction_ins = {
+    'c'              => 'c.=',
+    'cdsBegin'       => '1572',
+    'cdsEnd'         => '1576',
+    'componentIndex' => '8',
+    'ei_Begin'       => 'EX8',
+    'ei_End'         => 'EX8',
+    'exin'           => 'EX8',
+    'exonIndex'      => '8',
+    'func'           => 'no-change',
+    'funcSO'         => '',
+    'funcSOname'     => 'no-change',
+    'geneId'         => '7840',
+    'geneSym'        => 'ALMS1',
+    'genepart'       => 'CDS',
+    'genepartSO'     => 'SO:0000316',
+    'intronIndex'    => '.',
+    'postEnd'        => {
+        'cDot' => '1577',
+        'exin' => 'EX8',
+        'nDot' => 1688,
+        'r'    => 'C8'
+    },
+    'preStart' => {
+        'cDot' => '1576',
+        'exin' => 'EX8',
+        'nDot' => '1687',
+        'r'    => 'C8'
+    },
+    'primaryTag' => 'Y',
+    'prot'       => 'NP_055935.4',
+    'protBegin'  => '',
+    'protEnd'    => '',
+    'r'          => 'C8',
+    'r_Begin'    => 'C8',
+    'r_End'      => 'C8',
+    'rnaBegin'   => '1683',
+    'rnaEnd'     => '1687',
+    'strd'       => '+',
+    'trAlt'      => 'TTCTC',
+    'trRef'      => 'TTCTC',
+    'trRefComp'  => {
+        'EX8' => 5
+    }
+};
+
+my $delete_deleted_frame = {
+    'c'              => 'c.229delT',
+    'cdsBegin'       => '229',
+    'cdsEnd'         => '229',
+    'componentIndex' => '2',
+    'ei_Begin'       => 'EX2',
+    'ei_End'         => 'EX2',
+    'exin'           => 'EX2',
+    'exonIndex'      => '2',
+    'func'           => 'no-change',
+    'funcSO'         => '',
+    'funcSOname'     => 'no-change',
+    'geneId'         => '51686',
+    'geneSym'        => 'OAZ3',
+    'genepart'       => 'CDS',
+    'genepartSO'     => 'SO:0000316',
+    'intronIndex'    => '.',
+    'postEnd'        => {
+        'cDot' => '230',
+        'exin' => 'EX2',
+        'nDot' => 297,
+        'r'    => 'C2'
+    },
+    'preStart' => {
+        'cDot' => '228',
+        'exin' => 'EX2',
+        'nDot' => 295,
+        'r'    => 'C2'
+    },
+    'primaryTag' => 'Y',
+    'prot'       => 'NP_057262.2',
+    'protBegin'  => 77,
+    'protEnd'    => 76,
+    'r'          => 'C2',
+    'r_Begin'    => 'C2',
+    'r_End'      => 'C2',
+    'rnaBegin'   => 296,
+    'rnaEnd'     => 296,
+    'strd'       => '+',
+    'trAlt'      => '',
+    'trRef'      => 'T',
+    'trRefComp'  => {
+        'EX2' => 1
+    }
+};
+
+my $change_deleted_frame = {
+    'c'              => 'c.229T>C',
+    'cdsBegin'       => '229',
+    'cdsEnd'         => '229',
+    'componentIndex' => '2',
+    'ei_Begin'       => 'EX2',
+    'ei_End'         => 'EX2',
+    'exin'           => 'EX2',
+    'exonIndex'      => '2',
+    'func'           => 'abnormal-fs-site',
+    'funcSO'         => '',
+    'funcSOname'     => 'abnormal-fs-site',
+    'geneId'         => '51686',
+    'geneSym'        => 'OAZ3',
+    'genepart'       => 'CDS',
+    'genepartSO'     => 'SO:0000316',
+    'intronIndex'    => '.',
+    'postEnd'        => {
+        'cDot' => '230',
+        'exin' => 'EX2',
+        'nDot' => 297,
+        'r'    => 'C2'
+    },
+    'preStart' => {
+        'cDot' => '228',
+        'exin' => 'EX2',
+        'nDot' => 295,
+        'r'    => 'C2'
+    },
+    'primaryTag' => 'Y',
+    'prot'       => 'NP_057262.2',
+    'protBegin'  => 77,
+    'protEnd'    => 76,
+    'r'          => 'C2',
+    'r_Begin'    => 'C2',
+    'r_End'      => 'C2',
+    'rnaBegin'   => 296,
+    'rnaEnd'     => 296,
+    'strd'       => '+',
+    'trAlt'      => 'C',
+    'trRef'      => 'T',
+    'trRefComp'  => {
+        'EX2' => 1
+    }
+};
+
+my $cdsdel_deleted_frame = {
+    'c'              => 'c.228_231delCTGA',
+    'cdsBegin'       => '228',
+    'cdsEnd'         => '231',
+    'componentIndex' => '2',
+    'ei_Begin'       => 'EX2',
+    'ei_End'         => 'EX2',
+    'exin'           => 'EX2',
+    'exonIndex'      => '2',
+    'func'           => 'cds-del',
+    'funcSO'         => 'SO:0001822',
+    'funcSOname'     => 'inframe_deletion',
+    'geneId'         => '51686',
+    'geneSym'        => 'OAZ3',
+    'genepart'       => 'CDS',
+    'genepartSO'     => 'SO:0000316',
+    'intronIndex'    => '.',
+    'p'              => 'p.E77del',
+    'p3'             => 'p.Glu77del',
+    'postEnd'        => {
+        'cDot' => '232',
+        'exin' => 'EX2',
+        'nDot' => 299,
+        'r'    => 'C2'
+    },
+    'prAlt'    => 'S',
+    'prRef'    => 'SE',
+    'preStart' => {
+        'cDot' => '227',
+        'exin' => 'EX2',
+        'nDot' => 294,
+        'r'    => 'C2'
+    },
+    'primaryTag' => 'Y',
+    'prot'       => 'NP_057262.2',
+    'protBegin'  => 76,
+    'protEnd'    => 77,
+    'r'          => 'C2',
+    'r_Begin'    => 'C2',
+    'r_End'      => 'C2',
+    'rnaBegin'   => 295,
+    'rnaEnd'     => 298,
+    'strd'       => '+',
+    'trAlt'      => '',
+    'trRef'      => 'CTGA',
+    'trRefComp'  => {
+        'EX2' => 4
+    }
+};
+
+my $frameshift_deleted_frame = {
+    'c'              => 'c.228_230delCTG',
+    'cdsBegin'       => '228',
+    'cdsEnd'         => '230',
+    'componentIndex' => '2',
+    'ei_Begin'       => 'EX2',
+    'ei_End'         => 'EX2',
+    'exin'           => 'EX2',
+    'exonIndex'      => '2',
+    'func'           => 'frameshift',
+    'funcSO'         => 'SO:0001589',
+    'funcSOname'     => 'frameshift_variant',
+    'geneId'         => '51686',
+    'geneSym'        => 'OAZ3',
+    'genepart'       => 'CDS',
+    'genepartSO'     => 'SO:0000316',
+    'intronIndex'    => '.',
+    'p'              => 'p.E77Vfs*15',
+    'p3'             => 'p.Glu77Valfs*15',
+    'postEnd'        => {
+        'cDot' => '231',
+        'exin' => 'EX2',
+        'nDot' => 298,
+        'r'    => 'C2'
+    },
+    'prAlt' => 'SVPSRPPGGQKHRAG*',
+    'prRef' =>
+'SESLVGLQEGKSTEQGNHDQLKELYSAGNLTVLATDPLLHQDPVQLDFHFRLTSQTSAHWHGLLCDRRLFLDIPYQALDQGNRESLTATLEYVEEKTNVDSVFVNFQNDRNDRGALLRAFSYMGFEVVRPDHPALPPLDNVIFMVYPLERDVGHLPSEPP*',
+    'preStart' => {
+        'cDot' => '227',
+        'exin' => 'EX2',
+        'nDot' => 294,
+        'r'    => 'C2'
+    },
+    'primaryTag' => 'Y',
+    'prot'       => 'NP_057262.2',
+    'protBegin'  => 77,
+    'protEnd'    => 236,
+    'r'          => 'C2',
+    'r_Begin'    => 'C2',
+    'r_End'      => 'C2',
+    'rnaBegin'   => 295,
+    'rnaEnd'     => 297,
+    'strd'       => '+',
+    'trAlt'      => '',
+    'trRef'      => 'CTG',
+    'trRefComp'  => {
+        'EX2' => 3
+    }
+};
+
+my $fs_before_deleted_frame = {
+    'c'              => 'c.169dupA',
+    'cdsBegin'       => '170',
+    'cdsEnd'         => '169',
+    'componentIndex' => '2',
+    'ei_Begin'       => 'EX2',
+    'ei_End'         => 'EX2',
+    'exin'           => 'EX2',
+    'exonIndex'      => '2',
+    'func'           => 'frameshift',
+    'funcSO'         => 'SO:0001589',
+    'funcSOname'     => 'frameshift_variant',
+    'geneId'         => '51686',
+    'geneSym'        => 'OAZ3',
+    'genepart'       => 'CDS',
+    'genepartSO'     => 'SO:0000316',
+    'intronIndex'    => '.',
+    'p'              => 'p.I57Nfs*4',
+    'p3'             => 'p.Ile57Asnfs*4',
+    'postEnd'        => {
+        'cDot' => '170',
+        'exin' => 'EX2',
+        'nDot' => 237,
+        'r'    => 'C2'
+    },
+    'prAlt' => 'NHL*',
+    'prRef' =>
+'ITYKEEEDLTLQPRSCLQCSESLVGLQEGKSTEQGNHDQLKELYSAGNLTVLATDPLLHQDPVQLDFHFRLTSQTSAHWHGLLCDRRLFLDIPYQALDQGNRESLTATLEYVEEKTNVDSVFVNFQNDRNDRGALLRAFSYMGFEVVRPDHPALPPLDNVIFMVYPLERDVGHLPSEPP*',
+    'preStart' => {
+        'cDot' => '169',
+        'exin' => 'EX2',
+        'nDot' => 236,
+        'r'    => 'C2'
+    },
+    'primaryTag' => 'Y',
+    'prot'       => 'NP_057262.2',
+    'protBegin'  => 57,
+    'protEnd'    => 236,
+    'r'          => 'C2',
+    'r_Begin'    => 'C2',
+    'r_End'      => 'C2',
+    'rnaBegin'   => 237,
+    'rnaEnd'     => 236,
+    'strd'       => '+',
+    'trAlt'      => 'A',
+    'trRef'      => '',
+    'trRefComp'  => {
+        'EX2' => 0
+    }
+};
+
+my $change_dup_frame = {
+    'c'              => 'c.957A>T',
+    'cdsBegin'       => '957',
+    'cdsEnd'         => '957',
+    'componentIndex' => '2',
+    'ei_Begin'       => 'EX2E',
+    'ei_End'         => 'EX2E',
+    'exin'           => 'EX2E',
+    'exonIndex'      => '2',
+    'func'           => 'abnormal-fs-site',
+    'funcSO'         => '',
+    'funcSOname'     => 'abnormal-fs-site',
+    'geneId'         => '23089',
+    'geneSym'        => 'PEG10',
+    'genepart'       => 'CDS',
+    'genepartSO'     => 'SO:0000316',
+    'intronIndex'    => '.',
+    'postEnd'        => {
+        'cDot' => '958',
+        'exin' => 'EX2E',
+        'nDot' => 1437,
+        'r'    => 'C1E'
+    },
+    'preStart' => {
+        'cDot' => '956',
+        'exin' => 'EX2E',
+        'nDot' => 1435,
+        'r'    => 'C1E'
+    },
+    'primaryTag' => 'Y',
+    'prot'       => 'NP_055883.2',
+    'protBegin'  => 319,
+    'protEnd'    => 320,
+    'r'          => 'C1E',
+    'r_Begin'    => 'C1E',
+    'r_End'      => 'C1E',
+    'rnaBegin'   => 1436,
+    'rnaEnd'     => 1436,
+    'strd'       => '+',
+    'trAlt'      => 'T',
+    'trRef'      => 'A',
+    'trRefComp'  => {
+        'EX2E' => 1
+    }
+};
+
+my $synon_dup_frame = {
+    'alt_cHGVS'      => 'c.959_960insA',
+    'c'              => 'c.957A[3>4]',
+    'cdsBegin'       => '957',
+    'cdsEnd'         => '956',
+    'componentIndex' => '2',
+    'ei_Begin'       => 'EX2E',
+    'ei_End'         => 'EX2E',
+    'exin'           => 'EX2E',
+    'exonIndex'      => '2',
+    'func'           => 'coding-synon',
+    'funcSO'         => 'SO:0001819',
+    'funcSOname'     => 'synonymous_variant',
+    'geneId'         => '23089',
+    'geneSym'        => 'PEG10',
+    'genepart'       => 'CDS',
+    'genepartSO'     => 'SO:0000316',
+    'intronIndex'    => '.',
+    'p'              => 'p.(=)',
+    'p3'             => 'p.(=)',
+    'postEnd'        => {
+        'cDot' => '957',
+        'exin' => 'EX2E',
+        'nDot' => 1436,
+        'r'    => 'C1E'
+    },
+    'prAlt'    => 'GK',
+    'prRef'    => 'GK',
+    'preStart' => {
+        'cDot' => '956',
+        'exin' => 'EX2E',
+        'nDot' => 1435,
+        'r'    => 'C1E'
+    },
+    'primaryTag'     => 'Y',
+    'prot'           => 'NP_055883.2',
+    'protBegin'      => 319,
+    'protEnd'        => 320,
+    'r'              => 'C1E',
+    'r_Begin'        => 'C1E',
+    'r_End'          => 'C1E',
+    'rnaBegin'       => 1436,
+    'rnaEnd'         => 1435,
+    'standard_cHGVS' => 'c.959dupA',
+    'strd'           => '+',
+    'trAlt'          => 'A',
+    'trRef'          => '',
+    'trRefComp'      => {
+        'EX2E' => 0
+    }
+};
+
+my $frameshift_dup_frame = {
+    'c'              => 'c.957_959delAAA',
+    'cdsBegin'       => '957',
+    'cdsEnd'         => '959',
+    'componentIndex' => '2',
+    'ei_Begin'       => 'EX2E',
+    'ei_End'         => 'EX2E',
+    'exin'           => 'EX2E',
+    'exonIndex'      => '2',
+    'func'           => 'frameshift',
+    'funcSO'         => 'SO:0001589',
+    'funcSOname'     => 'frameshift_variant',
+    'geneId'         => '23089',
+    'geneSym'        => 'PEG10',
+    'genepart'       => 'CDS',
+    'genepartSO'     => 'SO:0000316',
+    'intronIndex'    => '.',
+    'p'              => 'p.K320Sfs*6',
+    'p3'             => 'p.Lys320Serfs*6',
+    'postEnd'        => {
+        'cDot' => '960',
+        'exin' => 'EX2E',
+        'nDot' => 1439,
+        'r'    => 'C1E'
+    },
+    'prAlt' => 'GSPAPL*',
+    'prRef' =>
+'GKLPGPAVEGPSATGPEIIRSPQDDASSPHLQVMLQIHLPGRHTLFVRAMIDSGASGNFIDHEYVAQNGIPLRIKDWPILVEAIDGRPIASGPVVHETHDLIVDLGDHREVLSFDVTQSPFFPVVLGVRWLSTHDPNITWSTRSIVFDSEYCRYHCRMYSPIPPSLPPPAPQPPLYYPVDGYRVYQPVRYYYVQNVYTPVDEHVYPDHRLVDPHIEMIPGAHSIPSGHVYSLSEPEMAALRDFVARNVKDGLITPTIAPNGAQVLQVKRGWKLQVSYDCRAPNNFTIQNQYPRLSIPNLEDQAHLATYTEFVPQIPGYQTYPTYAAYPTYPVGFAWYPVGRDGQGRSLYVPVMITWNPHWYRQPPVPQYPPPQPPPPPPPPPPPPSYSTL*',
+    'preStart' => {
+        'cDot' => '956',
+        'exin' => 'EX2E',
+        'nDot' => 1435,
+        'r'    => 'C1E'
+    },
+    'primaryTag' => 'Y',
+    'prot'       => 'NP_055883.2',
+    'protBegin'  => 320,
+    'protEnd'    => 709,
+    'r'          => 'C1E',
+    'r_Begin'    => 'C1E',
+    'r_End'      => 'C1E',
+    'rnaBegin'   => 1436,
+    'rnaEnd'     => 1438,
+    'strd'       => '+',
+    'trAlt'      => '',
+    'trRef'      => 'AAA',
+    'trRefComp'  => {
+        'EX2E' => 3
+    }
+};
+
+my $cdsdel_dup_frame = {
+    'alt_cHGVS'      => 'c.958_959delAA',
+    'c'              => 'c.957A[3>1]',
+    'cdsBegin'       => '957',
+    'cdsEnd'         => '958',
+    'componentIndex' => '2',
+    'ei_Begin'       => 'EX2E',
+    'ei_End'         => 'EX2E',
+    'exin'           => 'EX2E',
+    'exonIndex'      => '2',
+    'func'           => 'cds-del',
+    'funcSO'         => 'SO:0001822',
+    'funcSOname'     => 'inframe_deletion',
+    'geneId'         => '23089',
+    'geneSym'        => 'PEG10',
+    'genepart'       => 'CDS',
+    'genepartSO'     => 'SO:0000316',
+    'intronIndex'    => '.',
+    'p'              => 'p.K320del',
+    'p3'             => 'p.Lys320del',
+    'postEnd'        => {
+        'cDot' => '959',
+        'exin' => 'EX2E',
+        'nDot' => 1438,
+        'r'    => 'C1E'
+    },
+    'prAlt'    => 'G',
+    'prRef'    => 'GK',
+    'preStart' => {
+        'cDot' => '956',
+        'exin' => 'EX2E',
+        'nDot' => 1435,
+        'r'    => 'C1E'
+    },
+    'primaryTag'     => 'Y',
+    'prot'           => 'NP_055883.2',
+    'protBegin'      => 319,
+    'protEnd'        => 320,
+    'r'              => 'C1E',
+    'r_Begin'        => 'C1E',
+    'r_End'          => 'C1E',
+    'rnaBegin'       => 1436,
+    'rnaEnd'         => 1437,
+    'standard_cHGVS' => 'c.957A[1]',
+    'strd'           => '+',
+    'trAlt'          => '',
+    'trRef'          => 'AA',
+    'trRefComp'      => {
+        'EX2E' => 2
+    }
+};
+
+my $fs_before_dup_frame = {
+    'alt_cHGVS'      => 'c.656_657insTC',
+    'c'              => 'c.653TC[2>3]',
+    'cdsBegin'       => '653',
+    'cdsEnd'         => '652',
+    'componentIndex' => '2',
+    'ei_Begin'       => 'EX2E',
+    'ei_End'         => 'EX2E',
+    'exin'           => 'EX2E',
+    'exonIndex'      => '2',
+    'func'           => 'frameshift',
+    'funcSO'         => 'SO:0001589',
+    'funcSOname'     => 'frameshift_variant',
+    'geneId'         => '23089',
+    'geneSym'        => 'PEG10',
+    'genepart'       => 'CDS',
+    'genepartSO'     => 'SO:0000316',
+    'intronIndex'    => '.',
+    'p'              => 'p.H220Pfs*12',
+    'p3'             => 'p.His220Profs*12',
+    'postEnd'        => {
+        'cDot' => '653',
+        'exin' => 'EX2E',
+        'nDot' => 1132,
+        'r'    => 'C1E'
+    },
+    'prAlt' => 'LSPTSRSPSRCLL*',
+    'prRef' =>
+'LSHLEVAKSLSALIGQCIHIERRLARAAAARKPRSPPRALVLPHIASHHQVDPTEPVGGARMRLTQEEKERRRKLNLCLYCGTGGHYADNCPAKASKSSPAGKLPGPAVEGPSATGPEIIRSPQDDASSPHLQVMLQIHLPGRHTLFVRAMIDSGASGNFIDHEYVAQNGIPLRIKDWPILVEAIDGRPIASGPVVHETHDLIVDLGDHREVLSFDVTQSPFFPVVLGVRWLSTHDPNITWSTRSIVFDSEYCRYHCRMYSPIPPSLPPPAPQPPLYYPVDGYRVYQPVRYYYVQNVYTPVDEHVYPDHRLVDPHIEMIPGAHSIPSGHVYSLSEPEMAALRDFVARNVKDGLITPTIAPNGAQVLQVKRGWKLQVSYDCRAPNNFTIQNQYPRLSIPNLEDQAHLATYTEFVPQIPGYQTYPTYAAYPTYPVGFAWYPVGRDGQGRSLYVPVMITWNPHWYRQPPVPQYPPPQPPPPPPPPPPPPSYSTL*',
+    'preStart' => {
+        'cDot' => '652',
+        'exin' => 'EX2E',
+        'nDot' => 1131,
+        'r'    => 'C1E'
+    },
+    'primaryTag'     => 'Y',
+    'prot'           => 'NP_055883.2',
+    'protBegin'      => 220,
+    'protEnd'        => 709,
+    'r'              => 'C1E',
+    'r_Begin'        => 'C1E',
+    'r_End'          => 'C1E',
+    'rnaBegin'       => 1132,
+    'rnaEnd'         => 1131,
+    'standard_cHGVS' => 'c.655_656dupTC',
+    'strd'           => '+',
+    'trAlt'          => 'TC',
+    'trRef'          => '',
+    'trRefComp'      => {
+        'EX2E' => 0
+    }
+};
+
+my $prtc_anno = $beda->anno( "chr17", 41056042, 41056043, "G", "A" );
+my $prTag_correction = $prtc_anno->{var}->{varName};
 
 my $mt_no_call_ncRNA = {
     'r'         => 'R1E',
@@ -3198,6 +3797,34 @@ test_ok ( "ncall", $ncall, "NM_147196.2",
    "chr3", 46751100, 46751101, "G", "N" );
 test_ok ( "walk_to_end", $walk_to_end, "NM_000015.2",
    "chr8", 18258722, 18258722, "", "GA" );
+
+test_ok ( "badmap_correction_ref", $badmap_correction_ref, "NM_015120.4",
+   "chr2", 73675226, 73675227, "T", "T" );
+test_ok ( "badmap_correction_ins", $badmap_correction_ins, "NM_015120.4",
+   "chr2", 73675227, 73675227, "", "CTC" );
+test_ok ( "delete_deleted_frame",  $delete_deleted_frame, "NM_016178.2",
+   "chr1", 151739699, 151739700, "T", "" );
+test_ok ( "change_deleted_frame",  $change_deleted_frame, "NM_016178.2",
+   "chr1", 151739699, 151739700, "T", "C" );
+test_ok ( "cdsdel_deleted_frame",  $cdsdel_deleted_frame, "NM_016178.2",
+   "chr1", 151739698, 151739702, "CTGA", "" );
+test_ok ( "frameshift_deleted_frame", $frameshift_deleted_frame, "NM_016178.2",
+   "chr1", 151739698, 151739701, "CTG", "" );
+test_ok ( "fs_before_deleted_frame", $fs_before_deleted_frame, "NM_016178.2",
+   "chr1", 151739640, 151739640, "", "A" );
+test_ok ( "change_dup_frame", $change_dup_frame, "NM_015068.3",
+   "chr7", 94293824, 94293825, "A", "T" );
+test_ok ( "synon_dup_frame", $synon_dup_frame, "NM_015068.3",
+   "chr7", 94293824, 94293824, "", "A" );
+test_ok ( "frameshift_dup_frame", $frameshift_dup_frame, "NM_015068.3",
+   "chr7", 94293824, 94293827, "AAA", "" );
+test_ok ( "cdsdel_dup_frame", $cdsdel_dup_frame, "NM_015068.3",
+   "chr7", 94293824, 94293826, "AA", "" );
+test_ok ( "fs_before_dup_frame", $fs_before_dup_frame, "NM_015068.3",
+   "chr7", 94293520, 94293520, "", "TC" );
+ok ( $prTag_correction eq "NM_000151.3(G6PC): c.326G>A (p.C109Y)", "for [ primary tag correction ]" );
+
+
 
 test_ok ( "MT_no_call_ncRNA", $mt_no_call_ncRNA, 'NR_MT-TRNF', 
    "chrMT", 576, 577, "G", "N" );

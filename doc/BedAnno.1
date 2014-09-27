@@ -124,15 +124,15 @@
 .\" ========================================================================
 .\"
 .IX Title "BedAnno 3"
-.TH BedAnno 3 "2014-07-24" "perl v5.14.2" "User Contributed Perl Documentation"
+.TH BedAnno 3 "2014-09-27" "perl v5.14.2" "User Contributed Perl Documentation"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
 .nh
 .SH "NAME"
 BedAnno \- Perl module for annotating variation depend on the BED +1 format database.
-.SS "\s-1VERSION\s0 v0.71"
-.IX Subsection "VERSION v0.71"
+.SS "\s-1VERSION\s0 v0.72"
+.IX Subsection "VERSION v0.72"
 From version 0.32 BedAnno will change to support \s-1CG\s0's variant shell list
 and use ncbi annotation release 104 as the annotation database
 with reformatted database format, and won't give any individual
@@ -507,6 +507,8 @@ resource dependencies will be required.
 \&                    csto     => $cds_end_on_trSeq,   # 1 based
 \&                    seq      => $tr_sequence,
 \&                    
+\&                    nfs      => { $fslead => $fsbase, ... },
+\&                    cfs      => { $cfslead => $fsbase, ... },
 \&                    X        => 1,                   # inseqStop
 \&                    U        => 1,                   # selenocysteine
 \&                    A        => 1,                   # polyATail
@@ -515,6 +517,11 @@ resource dependencies will be required.
 \&                        $startCodons2 => 1,
 \&                        ...
 \&                    },
+\&
+\&                    # the following two keys will be assigned
+\&                    # to mRNA when needed
+\&                    cseq     => $codonSequence,
+\&                    pseq     => $proteinSequence,
 \&                },
 \&                ...
 \&              }
@@ -832,29 +839,64 @@ resource dependencies will be required.
 \&    Args    : hgvs positio p1 and p2, with out \*(Aqc.\*(Aq or \*(Aqn.\*(Aq flag
 \&    Return  : 0 for same, 1 for normal order, \-1 for reversed order.
 .Ve
-.SS "getCodon_by_cdsPos"
-.IX Subsection "getCodon_by_cdsPos"
+.SS "_getCPosFrame_by_cdsPos"
+.IX Subsection "_getCPosFrame_by_cdsPos"
+.Vb 8
+\&    About   : calculate codon position and frame info by
+\&              involving frameshift case in consideration.
+\&    Usage   : my @cPosFrame = _getCPosFrame_by_cdsPos( $trdbEnt, $cds_p );
+\&    Args    : cds_p is relative position to the first bp in start codon on trans
+\&    Returns : an array in the format of:
+\&              ( $stat, $ra_posrefs1, $ra_posrefs2 )
+\&              ra_posrefs* is an array ref for the following array
+\&              [ $codonPos, $frame ]
+\&
+\&              for non\-cds region case stat is \-1, without ra_posrefs.
+\&              for normal case stat is 1, 
+\&                  ra_posrefs1 is the information of input position,
+\&                  without ra_posrefs2 specified.
+\&              for deleted frame case stat is 0,
+\&                  ra_posrefs1 is the information of position on 5\*(Aq 
+\&                  side next to the deleted frame, and ra_posrefs2
+\&                  is on 3\*(Aq side.
+\&              for duplicated frame case stat is 2,
+\&                  ra_posrefs1 is the 5\*(Aq most hit of input position,
+\&                  ra_posrefs2 is the corresponding position on the 
+\&                  3\*(Aq duplicated region.
+.Ve
+.SS "_cdsubstr"
+.IX Subsection "_cdsubstr"
+.Vb 9
+\&    About   : substr from transcript seqeunce involving frameshift changing.
+\&    Usage   : my $codonStr = _cdsubstr( $trdbEnt, $start, $length, $replace );
+\&    Args    : trdbEnt is a sub hash in trInfodb which contains csta, csto.
+\&              start is 0 based start position of sub string on transcript seq.
+\&              length is the length of target region on transcript seq.
+\&              replace is the alternative.
+\&    Returns : A substring cut from the transcript sequence, with frameshift involved.
+\&              Behave like function "substr", but for replace mode, 
+\&              it returns the whole transcript seq after replacement.
+.Ve
+.SS "_getPairedCodon"
+.IX Subsection "_getPairedCodon"
 .Vb 10
 \&    About   : get codon position, codon string, aa string, and frame info
-\&              for one single cds position
-\&    Usage   : my ($pP, $codon, $aa, $polar, $frame) = getCodon_by_cdsPos($trdbEnt, $trSeq, $p);
+\&              for a pair of transcript position
+\&    Usage   : my ($rcinfo5, $rcinfo3) = _getPairedCodon( $trdbEnt, $p5, $p3 );
 \&    Args    : trdbEnt is a sub hash in trInfodb which contains csta, csto
-\&              for cds start/end position
-\&              trSeq is transcript sequence
-\&              p is cds position
-\&    Returns : AA position  \- 0 for not in cds region
-\&              codon string \- codon string, e.g. "ATA"
-\&              aa char      \- AA code, 1 bp mode, e.g. "E"
-\&              polar        \- Polar properties, e.g. "P+"
-\&              frame        \- current position\*(Aqs frame info,
-\&                             \-1 for not available.
-.Ve
-.SS "getCodonPos"
-.IX Subsection "getCodonPos"
-.Vb 3
-\&    About   : get codon position, codon string, aa string, and frame info
-\&              for one single transcript position
-\&              See getCodon_by_cdsPos()
+\&              for cds start/end position, besides many other feature tags.
+\&              p5 and p3 is a pair of positions which give a region or single
+\&              position or maybe an insertion anchor.
+\&    Returns : codon info array ref for p5 and p3. The array ref:
+\&              [
+\&                  AA position  \- 0 for not in cds region.
+\&                  codon string \- codon string, e.g. "ATA".
+\&                  aa char      \- AA code, 1 bp mode, e.g. "E".
+\&                  polar        \- Polar properties, e.g. "P+".
+\&                  frame        \- current position\*(Aqs frame info,
+\&                                 \-1 for not available or in fs\-site.
+\&                  [frame\-alt]  \- frame info around fs\-site.
+\&              ]
 .Ve
 .SS "translate"
 .IX Subsection "translate"
@@ -1360,7 +1402,14 @@ The Format of annotation database is listed as following:
 \&   ============================
 \&   Header format is: ( separate by " ", with "." for unavailable value )
 \&
-\&       >rnaAcc.ver rnaLen gene protAcc.ver protLen cdsSta,cdsEnd tags
+\&       >rnaAcc.ver rnaLen gene protAcc.ver protLen cdsSta,cdsEnd tags [altStartCodons] [frameshiftSite]
+\&   
+\&    "tags" are a string of multiple properties separated by "|", which are:
+\&
+\&        <alignStat>[|altstart][|selenocysteine][|inseqStop][|polyATail]
+\&
+\&    when "tags" contain "altstart", alternative start codons will be list in 
+\&    "altStartCodons", separated by ";"
 .Ve
 .SS "\s-1PRIMARY\s0 \s-1TAG\s0 \s-1ASSIGNMENT\s0"
 .IX Subsection "PRIMARY TAG ASSIGNMENT"

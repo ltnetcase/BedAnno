@@ -1,0 +1,1414 @@
+<?xml version="1.0" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>BedAnno - Perl module for annotating variation depend on the BED +1 format database.</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:rurban@x-ray.at" />
+</head>
+
+<body style="background-color: white">
+
+
+<!-- INDEX BEGIN -->
+<div name="index">
+<p><a name="__index__"></a></p>
+
+<ul>
+
+	<li><a href="#name">NAME</a></li>
+	<ul>
+
+		<li><a href="#version_v0_72">VERSION v0.72</a></li>
+	</ul>
+
+	<li><a href="#synopsis">SYNOPSIS</a></li>
+	<li><a href="#description">DESCRIPTION</a></li>
+	<li><a href="#methods">Methods</a></li>
+	<ul>
+
+		<li><a href="#new">new</a></li>
+		<li><a href="#set_get_methods_for_properties">set/get methods for properties</a></li>
+		<li><a href="#write_using">write_using</a></li>
+		<li><a href="#get_cover_batch">get_cover_batch</a></li>
+		<li><a href="#readtr">readtr</a></li>
+		<li><a href="#load_anno">load_anno</a></li>
+		<li><a href="#region_merge">region_merge</a></li>
+		<li><a href="#anno">anno</a></li>
+		<li><a href="#varanno">varanno</a></li>
+		<li><a href="#p1top3">P1toP3</a></li>
+		<li><a href="#finaliseanno">finaliseAnno</a></li>
+		<li><a href="#decide_major">decide_major</a></li>
+		<li><a href="#gettrchange">getTrChange</a></li>
+		<li><a href="#prwalker">prWalker</a></li>
+		<li><a href="#trwalker">trWalker</a></li>
+		<li><a href="#cmppos">cmpPos</a></li>
+		<li><a href="#_getcposframe_by_cdspos">_getCPosFrame_by_cdsPos</a></li>
+		<li><a href="#_cdsubstr">_cdsubstr</a></li>
+		<li><a href="#_getpairedcodon">_getPairedCodon</a></li>
+		<li><a href="#translate">translate</a></li>
+		<li><a href="#gettrref">getTrRef</a></li>
+		<li><a href="#batch_anno">batch_anno</a></li>
+	</ul>
+
+	<li><a href="#bedanno__var">BedAnno::Var</a></li>
+	<li><a href="#method">METHOD</a></li>
+	<ul>
+
+		<li><a href="#new">new</a></li>
+		<li><a href="#getunifiedvar">getUnifiedVar</a></li>
+		<li><a href="#parse_complex">parse_complex</a></li>
+		<li><a href="#guess_type">guess_type</a></li>
+		<li><a href="#get_internal">get_internal</a></li>
+		<li><a href="#get_ghgvs">get_gHGVS</a></li>
+	</ul>
+
+	<li><a href="#bedanno__anno">BedAnno::Anno</a></li>
+	<li><a href="#method">METHOD</a></li>
+	<ul>
+
+		<li><a href="#new">new</a></li>
+		<li><a href="#reformatanno">reformatAnno</a></li>
+		<li><a href="#gettrposition">getTrPosition</a></li>
+		<li><a href="#cal_hgvs_pos">cal_hgvs_pos</a></li>
+	</ul>
+
+	<li><a href="#bedanno__cnv">BedAnno::CNV</a></li>
+	<li><a href="#method">METHOD</a></li>
+	<ul>
+
+		<li><a href="#new">new</a></li>
+		<li><a href="#annocnv">annoCNV</a></li>
+		<li><a href="#batch_annocnv">batch_annoCNV</a></li>
+	</ul>
+
+	<li><a href="#database_format">DATABASE FORMAT</a></li>
+	<ul>
+
+		<li><a href="#bed_1_format_database">BED+1 FORMAT DATABASE</a></li>
+		<li><a href="#transcript_fasta_database">TRANSCRIPT FASTA DATABASE</a></li>
+		<li><a href="#primary_tag_assignment">PRIMARY TAG ASSIGNMENT</a></li>
+	</ul>
+
+	<li><a href="#see_also">SEE ALSO</a></li>
+	<li><a href="#author">AUTHOR</a></li>
+	<li><a href="#copyright_and_license">COPYRIGHT AND LICENSE</a></li>
+</ul>
+
+<hr name="index" />
+</div>
+<!-- INDEX END -->
+
+<p>
+</p>
+<h1><a name="name">NAME</a></h1>
+<p>BedAnno - Perl module for annotating variation depend on the BED +1 format database.</p>
+<p>
+</p>
+<h2><a name="version_v0_72">VERSION v0.72</a></h2>
+<p>From version 0.32 BedAnno will change to support CG's variant shell list
+and use ncbi annotation release 104 as the annotation database
+with reformatted database format, and won't give any individual
+annotation, so the <code>individual_anno()</code> is no longer available.
+VCF4.1 format variant description (chr, pos, ref, alt) will also
+be supported.</p>
+<p>
+</p>
+<hr />
+<h1><a name="synopsis">SYNOPSIS</a></h1>
+<pre>
+  use BedAnno;
+  my $beda = BedAnno-&gt;new( db =&gt; &quot;in.bed.gz&quot;, tr =&gt; 'in.trans.fas.gz' );
+  my $anno = $beda-&gt;anno( 'chr20', 1234567, 1234569, 'AG', 'TGGG' );</pre>
+<p>
+</p>
+<hr />
+<h1><a name="description">DESCRIPTION</a></h1>
+<p>By using this module, we can get variants from whole-genome or exome-capture 
+NGS genotyping result annotated. The information contains various possible 
+HGVS string together with a most recent strandard HGVS mutation name. 
+It can not annotate ambiguous variants (transition, transvertion, or unknown 
+break point large deletion and duplication).</p>
+<p>This module need bgzipped BED+1 format database, combined with tabix index.
+tabix perl module is required to be installed. If allele frequency information, 
+prediction information or cytoBand information etc. are needed, then extra 
+resource dependencies will be required.</p>
+<p>
+</p>
+<hr />
+<h1><a name="methods">Methods</a></h1>
+<p>
+</p>
+<h2><a name="new">new</a></h2>
+<dl>
+<dt><strong><a name="about_creat_a_new_annotation_entry" class="item">About : Creat a new annotation entry</a></strong></dt>
+
+<dt><strong><a name="usage" class="item">Usage :</a></strong></dt>
+
+<dd>
+<pre>
+    my $beda = BedAnno-&gt;new( db =&gt; &quot;in.bed.gz&quot;, tr =&gt; 'in.trans.fas.gz', batch =&gt; 1 );</pre>
+</dd>
+<dt><strong><a name="args_all_database_files_should_be_tabix_indexed" class="item">Args    - (all database files should be tabix indexed)</a></strong></dt>
+
+<dl>
+<dt><strong><a name="essential_args" class="item">Essential Args:</a></strong></dt>
+
+<dl>
+<dt><strong><a name="db_in_bed_gz" class="item"><em>db</em> &lt;in.bed.gz&gt;</a></strong></dt>
+
+<dl>
+<dt><strong><a name="annotation_database_file" class="item">annotation database file.</a></strong></dt>
+
+</dl>
+</dd>
+<dt><strong><a name="tr_in_trans_fas_gz" class="item"><em>tr</em> &lt;in.trans.fas.gz&gt;</a></strong></dt>
+
+<dl>
+<dt><strong><a name="transcript_sequence_fasta_file" class="item">transcript sequence fasta file</a></strong></dt>
+
+</dl>
+</dd>
+<dt><strong><a name="see_database_format_for_more_infomation" class="item">See <a href="#database_format">DATABASE FORMAT</a> for more infomation.</a></strong></dt>
+
+</dl>
+</dd>
+<dt><strong><a name="optional_args" class="item">Optional Args :</a></strong></dt>
+
+<dl>
+<dt><strong><a name="common_options" class="item">Common options :</a></strong></dt>
+
+<dl>
+<dt><strong><a name="cytoband_cytoband_bed_gz" class="item"><em>cytoBand</em> [cytoBand.bed.gz]</a></strong></dt>
+
+<dl>
+<dt><strong><a name="add_cytoband_information" class="item">add cytoBand information</a></strong></dt>
+
+</dl>
+</dd>
+<dt><strong><a name="rmsk_rmsk_bed_gz" class="item"><em>rmsk</em> [rmsk.bed.gz]</a></strong></dt>
+
+<dl>
+<dt><strong><a name="add_repeat_tag_information" class="item">add repeat tag information</a></strong></dt>
+
+</dl>
+</dd>
+<dt><strong><a name="gwas_gwascatalog_snp137_bed_gz" class="item"><em>gwas</em> [gwasCatalog_snp137.bed.gz]</a></strong></dt>
+
+<dl>
+<dt><strong><a name="add_gwas_information_depend_on_only_position" class="item">add gwas information depend on only position</a></strong></dt>
+
+</dl>
+</dd>
+<dt><strong><a name="pfam_pfam_tsv_gz" class="item"><em>pfam</em> [pfam.tsv.gz]</a></strong></dt>
+
+<dl>
+<dt><strong><a name="add_pfam_information" class="item">add pfam information</a></strong></dt>
+
+</dl>
+</dd>
+<dt><strong><a name="prediction_ensembl_prediction_db_tsv_gz" class="item"><em>prediction</em> [ensembl_prediction_db.tsv.gz]</a></strong></dt>
+
+<dl>
+<dt><strong><a name="add_sift_polyphen2_prediction_and_scores" class="item">add sift, polyphen2 prediction and scores</a></strong></dt>
+
+</dl>
+</dd>
+<dt><strong><a name="condel_condel_config_path" class="item"><em>condel</em> [condel config path]</a></strong></dt>
+
+<dl>
+<dt><strong><a name="compute_condel_scores_and_prediction_based_on_sift_and_polyphen2_humvar_prediction" class="item">compute condel scores and prediction based on sift and polyphen2 HumVar prediction</a></strong></dt>
+
+</dl>
+</dd>
+<dt><strong><a name="cosmic_cosmic_v67_241013_bed_gz" class="item"><em>cosmic</em> [Cosmic_v67_241013.bed.gz]</a></strong></dt>
+
+<dl>
+<dt><strong><a name="add_cosmic_annotation_information" class="item">add cosmic annotation information</a></strong></dt>
+
+</dl>
+</dd>
+<dt><strong><a name="phylop_phylop_scores_tsv_gz" class="item"><em>phyloP</em> [phyloP_scores.tsv.gz]</a></strong></dt>
+
+<dl>
+<dt><strong><a name="add_phylop_scores_of_all_3_datasets" class="item">add phyloP scores of all 3 datasets.</a></strong></dt>
+
+</dl>
+</dd>
+<dt><strong><a name="dbsnp_snp137_bed_gz" class="item"><em>dbSNP</em> [snp137.bed.gz]</a></strong></dt>
+
+<dl>
+<dt><strong><a name="add_rsid_and_dbsnp_frequency_information" class="item">add rsID and dbSNP frequency information</a></strong></dt>
+
+</dl>
+</dd>
+<dt><strong><a name="tgp_tgp_phasei_v3_bed_gz" class="item"><em>tgp</em> [tgp_phaseI_v3.bed.gz]</a></strong></dt>
+
+<dl>
+<dt><strong><a name="add_1000_genomes_allele_frequency_information" class="item">add 1000 genomes allele frequency information</a></strong></dt>
+
+</dl>
+</dd>
+<dt><strong><a name="cg54_cg54_bed_gz" class="item"><em>cg54</em> [CG54.bed.gz]</a></strong></dt>
+
+<dl>
+<dt><strong><a name="add_54_whole_genomes_allele_frequency_information_from_completegenomics" class="item">add 54 whole genomes allele frequency information from CompleteGenomics.</a></strong></dt>
+
+</dl>
+</dd>
+<dt><strong><a name="wellderly_wellderly_bed_gz" class="item"><em>wellderly</em> [wellderly.bed.gz]</a></strong></dt>
+
+<dl>
+<dt><strong><a name="add_wellderly_s_allele_frequency_information_from_completegenomics" class="item">add wellderly's allele frequency information from CompleteGenomics.</a></strong></dt>
+
+</dl>
+</dd>
+<dt><strong><a name="esp6500_esp6500_bed_gz" class="item"><em>esp6500</em> [ESP6500.bed.gz]</a></strong></dt>
+
+<dl>
+<dt><strong><a name="add_esp6500_allele_frequency_information_from_nhlbi" class="item">add ESP6500 allele frequency information from NHLBI</a></strong></dt>
+
+</dl>
+</dd>
+<dt><strong><a name="customdb_xx_custom_db_in_the_same_format_with_esp6500_s" class="item"><em>customdb_XX</em> [custom db in the same format with esp6500's]</a></strong></dt>
+
+<dl>
+<dt><strong><a name="add_customdb_xx_frequency_infomation_xx_is_the_id_multiple_db_will_require_multiple_customdb_option" class="item">add customdb XX frequency infomation, XX is the ID. (multiple db will require multiple customdb option)</a></strong></dt>
+
+</dl>
+</dd>
+<dt><strong><a name="quiet" class="item"><em>quiet</em></a></strong></dt>
+
+<dl>
+<dt><strong><a name="suppress_warning_messege_to_output" class="item">Suppress warning messege to output.</a></strong></dt>
+
+</dl>
+</dd>
+<dt><strong><a name="batch_boolean" class="item"><em>batch</em> [boolean]</a></strong></dt>
+
+<dl>
+<dt><strong><a name="use_batch_mode_annotation_default_in_daemon_mode_as_an_annotation_engine" class="item">use batch mode annotation, default in daemon mode as an annotation engine.</a></strong></dt>
+
+</dl>
+</dd>
+<dt><strong><a name="genes_genes_list_rh_geneslist" class="item"><em>genes</em> [ &quot;genes.list&quot; | $rh_geneslist ]</a></strong></dt>
+
+<dl>
+<dt><strong><a name="annotate_transcripts_for_genes_e_g_abc_1_def_1_or_genes_list" class="item">annotate transcripts for <em>genes</em>. e.g. {&quot;ABC&quot; =&gt; 1, &quot;DEF&quot; =&gt; 1} or &quot;genes.list&quot;</a></strong></dt>
+
+</dl>
+</dd>
+<dt><strong><a name="trans_trans_list_rh_translist" class="item"><em>trans</em> [ &quot;trans.list&quot; | $rh_translist ]</a></strong></dt>
+
+<dl>
+<dt><strong><a name="annotate_transcripts_in_trans_e_g_nm_0012_1_1_nm_0034_2_1_or_trans_list" class="item">annotate transcripts in <em>trans</em>. e.g. {&quot;NM_0012.1&quot; =&gt; 1, &quot;NM_0034.2&quot; =&gt; 1} or &quot;trans.list&quot;</a></strong></dt>
+
+</dl>
+</dd>
+<dt><strong><a name="mmap_boolean" class="item"><em>mmap</em> [boolean]</a></strong></dt>
+
+<dl>
+<dt><strong><a name="allow_annotating_all_other_non_best_multiple_mapping_records_boolen_option_default_not_allowed_e_g_nm_0123_1_have_3_mapping_location_or_alternate_splicing_default_only_the_best_one_will_be_annotated_see_database_format_for_the_best_definition" class="item">allow annotating all other non &quot;BEST&quot; multiple-mapping records, boolen option, default not allowed.
+      e.g. NM_0123.1 have 3 mapping location or alternate splicing, default only the &quot;BEST&quot; one will be 
+      annotated. See <a href="#database_format">DATABASE FORMAT</a> for the &quot;BEST&quot; definition.</a></strong></dt>
+
+</dl>
+</dd>
+</dl>
+</dd>
+<dt><strong><a name="batch_mode_options" class="item">Batch mode options :</a></strong></dt>
+
+<dl>
+<dt><strong><a name="region_region_string" class="item"><em>region</em> [region_string]</a></strong></dt>
+
+<dl>
+<dt><strong><a name="limit_to_only_annotate_transcript_in_region_e_g_chr20_1234567_1234568_prior_to_regbed" class="item">limit to only annotate transcript in <em>region</em>. e.g. &quot;chr20:1234567-1234568&quot;, prior to <em>regbed</em>.</a></strong></dt>
+
+</dl>
+<pre>
+
+=item I&lt;regbed&gt; [BED format file]</pre>
+<dl>
+<dt><strong><a name="similar_to_region_with_allowing_multiple_regions_e_g_in_region_bed" class="item">similar to <em>region</em>, with allowing multiple regions. e.g. &quot;in.region.bed&quot;.</a></strong></dt>
+
+</dl>
+</dd>
+</dl>
+</dd>
+<dt><strong><a name="notes" class="item">Notes</a></strong></dt>
+
+<dl>
+<dt><strong><a name="batch_mode_is_designed_for_annotation_of_a_complete_list_of_variants_on_same_chromosome_read_all_information_of_the_chr_into_memory_and_annotate_all_variants_together_in_the_order_of_chr_coordinates_this_mode_can_avoid_frequent_io_brought_by_tabix_searching_but_need_huge_memory_cost" class="item">Batch mode is designed for annotation of a complete list of variants 
+      on same chromosome, read all information of the chr into memory, 
+      and annotate all variants together in the order of chr coordinates.
+      This mode can avoid frequent IO, brought by tabix searching, but need
+      huge memory cost.</a></strong></dt>
+
+</dl>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd>
+<dt><strong><a name="returns" class="item">Returns</a></strong></dt>
+
+<dl>
+<dt><strong><a name="annotation_engine_object_entry_please_see_load_anno_for_more_information" class="item">Annotation Engine object entry, please see <a href="#load_anno">load_anno</a> for more information.</a></strong></dt>
+
+</dl>
+</dd>
+</dl>
+<p>
+</p>
+<h2><a name="set_get_methods_for_properties">set/get methods for properties</a></h2>
+<pre>
+    List of Properties:
+                        get          set
+    db                  o            o
+    tr                  o            o
+    refbuild            o            o
+    tidb                o            x
+    annodb              o            x
+    trInfodb            o            x
+    cytoBand            o            o
+    cytoBand_h          o            x
+    rmsk                o            o
+    rmsk_h              o            x
+    gwas                o            o
+    gwas_h              o            x
+    pfam                o            o
+    pfam_h              o            x
+    prediction          o            o
+    prediction_h        o            x
+    phyloP              o            o
+    phyloP_h            o            x
+    cosmic              o            o
+    cosmic_h            o            x
+    dbSNP               o            o
+    dbSNP_h             o            x
+    tgp                 o            o
+    tgp_h               o            x
+    esp6500             o            o
+    esp6500_h           o            x
+    cg54                o            o
+    cg54_h              o            x
+    wellderly           o            o
+    wellderly_h         o            x</pre>
+<pre>
+    e.g.    : $beda-&gt;set_refbuild($refbuild);
+              my $refbuild = $beda-&gt;get_refbuild();</pre>
+<p>
+</p>
+<h2><a name="write_using">write_using</a></h2>
+<pre>
+    About   : write the current using database information to files
+    Usage   : $beda-&gt;write_using( $file, $type );
+    Args    : file gives the filename to output, and type is one of the following:
+                g:  gene symbol list
+                t:  transcript acc.ver list
+                c:  the complete annotation region, in bed format,
+                    which can be used as the variation calling region.
+                b:  standard bed format of only exon region
+                a:  BED +1 format, exon region with '+1' annotation, 
+                    oneline per one exon for one transcript, this
+                    format allow redundancy exists, and not sorted by
+                    chromosomal coordinates, but by the transcript acc.ver
+                    and the exon number, this file is mainly for 
+                    transcript originated statistics for only exon.</pre>
+<p>
+</p>
+<h2><a name="get_cover_batch">get_cover_batch</a></h2>
+<pre>
+    About   : get covered region in batch mode
+    Usage   : my $cover_href = $beda-&gt;get_cover_batch( $chr, \@stasto );
+    Args    : a chromosome id, and an array ref of [ [ $start, $stop ], ... ]
+    Returns : a hash ref of:
+                {
+                    &quot;$start-$stop&quot; =&gt; [ 
+                                        [ $tid, $left_cPos, $right_cPos ], ... 
+                                      ], ...
+                }
+              Note: the pos-pair which do not hit any annotation blocks, will
+                    not exist in the returned results.</pre>
+<p>
+</p>
+<h2><a name="readtr">readtr</a></h2>
+<pre>
+    About   : Read transcript information, and even sequences if in batch mode.
+    Usage   : my $rtrSeqs = $beda-&gt;readtr( genes =&gt; $rh_NewGenes, trans =&gt; $rh_NewTrans );
+    Args    : Optional args &quot;genes&quot; and &quot;trans&quot; only accept hash ref values.
+              if no args specified, it will load information based on the
+              configuration of BedAnno entry.
+    Returns : A hash ref of trSeqs:
+              {
+                $tr_acc =&gt; {
+                    len      =&gt; $tr_len,
+                    gene     =&gt; $gene_sym,</pre>
+<pre>
+                    # optional tags:
+                    prot     =&gt; $prot_acc,
+                    plen     =&gt; $prot_len,
+                    csta     =&gt; $cds_start_on_trSeq, # 0 based
+                    csto     =&gt; $cds_end_on_trSeq,   # 1 based
+                    seq      =&gt; $tr_sequence,
+                    
+                    nfs      =&gt; { $fslead =&gt; $fsbase, ... },
+                    cfs      =&gt; { $cfslead =&gt; $fsbase, ... },
+                    X        =&gt; 1,                   # inseqStop
+                    U        =&gt; 1,                   # selenocysteine
+                    A        =&gt; 1,                   # polyATail
+                    altstart =&gt; {                    # altstart codons
+                        $startCodons1 =&gt; 1,
+                        $startCodons2 =&gt; 1,
+                        ...
+                    },</pre>
+<pre>
+                    # the following two keys will be assigned
+                    # to mRNA when needed
+                    cseq     =&gt; $codonSequence,
+                    pseq     =&gt; $proteinSequence,
+                },
+                ...
+              }</pre>
+<p>
+</p>
+<h2><a name="load_anno">load_anno</a></h2>
+<pre>
+    About   : load all needed annotation infomation into memory for multi-process annotation
+    Usage   : my $ranndb = $beda-&gt;load_anno( region =&gt; &quot;chr20:1234567-1234568&quot;, trans =&gt; \%trans );
+    Args    : Using %args to override class's properties: region, regbed, genes, trans
+              if no args, use the the class's properties as default.
+    Returns : a localized merged anno db, The returned annotation database is a hash ref.
+        {
+            $chr =&gt; [
+                {
+                    sta   =&gt; $start, (0 based)
+                    sto   =&gt; $stop,  (1 based)
+                    annos =&gt; {
+                        $anno_string =&gt; $offset, ...
+                    }</pre>
+<pre>
+                    detail =&gt; {
+                        $tid =&gt; {
+                            gsym =&gt; $gsym,    (gene symbol)
+                            gid  =&gt; $gid,     (Entrez gene id)
+                            gpSO =&gt; $gpSO,    (GeneParts SO)
+                            blka =&gt; $blka,    (block attribute)
+                            exin =&gt; $exin,    (exon intron number)
+                            nsta =&gt; $nsta,    (n./r. left  of whole block)
+                            nsto =&gt; $nsto,    (n./r. right of whole block)
+                            csta =&gt; $csta,    (c.    left  of whole block)
+                            csto =&gt; $csto,    (c.    right of whole block)
+                            wlen =&gt; $wlen,    (length of whole block)
+                            pr   =&gt; $pr,      (primary tag)
+                            strd =&gt; $strd,    (strand)
+                            offset =&gt; $offset,(offset of current block to whole block)
+                            mismatch =&gt; $mismatch (non-equal length block descripter)
+                        }, ...
+                    }
+                }, ... 
+            ], ...
+        }
+      Note: when variation hit one of the annotation entry, the anno_string will be parsed.
+      and the &quot;detail&quot; tag will be added then.</pre>
+<p>
+</p>
+<h2><a name="region_merge">region_merge</a></h2>
+<pre>
+    About   : merge consecutive same-entries regions
+    Usage   : my $rannodb = region_merge($loaded_db);
+    Args    : A hash ref of loaded_db.
+    Returns : A hash ref of merged db.</pre>
+<p>
+</p>
+<h2><a name="anno">anno</a></h2>
+<pre>
+    About   : Annotate single short variation by annotation db.
+    Usage   : my $anno_ent = $beda-&gt;anno( 'chr20', 1234567, 1234569, 'AG', 'TGGG' );
+              or $anno_ent = $beda-&gt;anno( 'chr20', 1234568, 'AG', 'AGGG' );
+    Args    : for CG's shell variants, need 5 args in UCSC coordinates
+              (0-based start), they are:
+                chr id, chr start, chr end, reference, alternative.
+              for variants in VCF, need 4 args, which is lack of 
+                chr end, and &quot;chr start&quot; is in 1-based coordinates.
+              for crawler: a input object with keys: 
+                chr,begin,referenceSequence,variantSequence,[end].
+                if end is specified, then use 0-based coordinates,
+                otherwise 1-based (VCF) coordinates will be used.
+    Returns : a hash ref of annotation informations, see varanno().</pre>
+<p>
+</p>
+<h2><a name="varanno">varanno</a></h2>
+<pre>
+    About   : implicitly create a new BedAnno::Anno entry, and 
+              assign all the needed annotation for to it.
+    Usage   : ($rAnnoRst, $AEIndex) = $beda-&gt;varanno($var, $AEIndex);
+    Args    : The BedAnno entry, BedAnno::Var entry and current dbidx, 
+              current dbidx should be always 0, if used for non-batch mode.
+    Returns : A BedAnno::Anno entry and current dbidx for nex query in batch.
+            {
+                var =&gt; {</pre>
+<pre>
+                    # the first part is from var parsing result.
+                    # please see &quot;BedAnno::Var new()&quot;.
+                    # import all the keys from original parsed var entry
+                    # and add the following keys by this method.</pre>
+<pre>
+                    varName =&gt; $var_mutation_name,</pre>
+<pre>
+                    # information
+                    varTypeSO =&gt; $varTypeSO,
+                    gHGVS     =&gt; $gHGVS,
+                    refbuild  =&gt; $referenceBuild,</pre>
+<pre>
+                    # Here's some optional parts which may be generated
+                    # when extra resource is available:</pre>
+<pre>
+                    cytoBand  =&gt; $cytoBand,
+                    reptag    =&gt; $repeatTag,
+                    gwas      =&gt; $ref_gwas_ret,</pre>
+<pre>
+                    # For single position for now
+                    phyloPpm    =&gt; $PhyloPscorePlacentalMammals,
+                    phyloPpr    =&gt; $PhyloPscorePrimates,
+                    phyloPve    =&gt; $PhyloPscoreVetebrates,</pre>
+<pre>
+                    reptag      =&gt; $RepeatMaskerTag,</pre>
+<pre>
+                    dbsnp =&gt; {
+                        $rsID =&gt; {
+                            AN =&gt; $dbsnp_total_allele_count,
+                            AF =&gt; $dbsnp_alt_allele_frequency,  # though ref
+                        },
+                        ...
+                    },</pre>
+<pre>
+                    cosmic =&gt; $ref_cosmic_return,</pre>
+<pre>
+                    tgp =&gt; {
+                        AN =&gt; $tgp_total_allele_count,
+                        AF =&gt; $tgp_alt_allele_frequency,
+                    },</pre>
+<pre>
+                    cg54 =&gt; {
+                        AN =&gt; $cg54_total_allele_count,
+                        AF =&gt; $cg54_alt_allele_frequency,
+                    },</pre>
+<pre>
+                    wellderly =&gt; {
+                        AN =&gt; $wellderly_total_allele_count,
+                        AF =&gt; $wellderly_alt_allele_frequency,
+                    },</pre>
+<pre>
+                    esp6500 =&gt; {
+                        AN =&gt; $esp6500_total_allele_count,
+                        AF =&gt; $esp6500_alt_allele_frequency,
+                    },</pre>
+<pre>
+                    cusdb_XX =&gt; {
+                        AN =&gt; $custom_db_allele_count,
+                        AF =&gt; $custom_db_allele_frequency,
+                    },
+                    ...</pre>
+<pre>
+                },
+                trInfo =&gt; {
+                    $tid =&gt; {
+                        trVarName     =&gt; $transcriptVariantName,
+                        geneId        =&gt; $Entrez_Gene_ID,
+                        geneSym       =&gt; $Gene_Symbol,
+                        prot          =&gt; $Protein_Acc_Ver,
+                        strd          =&gt; $strand,
+                        rnaBegin      =&gt; $Begin_in_RNA_transcript,
+                        rnaEnd        =&gt; $End_in_RNA_transcript,
+                        cdsBegin      =&gt; $Begin_in_CDS,            # cDot format
+                        cdsEnd        =&gt; $End_in_CDS,              # cDot format
+                        protBegin     =&gt; $Begin_in_Protein,
+                        protEnd       =&gt; $End_in_Protein,
+                        c             =&gt; $cHGVS,
+                        p             =&gt; $pHGVS,
+                        p3            =&gt; $threeletter_pHGVS,
+                        cc            =&gt; $codon_change,
+                        polar         =&gt; $polar_change,
+                        r             =&gt; $imp_funcRegion,
+                        r_Begin       =&gt; $imp_beginfuncRegion,
+                        r_End         =&gt; $imp_endfuncRegion,
+                        func          =&gt; $imp_funcCode,
+                        exin          =&gt; $exIntr_number,
+                        ei_Begin      =&gt; $imp_Begin_exIntr_number,
+                        ei_End        =&gt; $imp_End_exIntr_number,
+                        genepart      =&gt; $GenePart,
+                        genepartSO    =&gt; $GenePartSO,
+                        componentIndex =&gt; $componentIndex,
+                        exonIndex     =&gt; $exonIndex,               # '.' for N/A
+                        intronIndex   =&gt; $intronIndex,             # '.' for N/A
+                        funcSOname    =&gt; $FunctionImpact,
+                        funcSO        =&gt; $FunctionImpactSO,
+                        trAlt         =&gt; $alt_string_on_transcript,
+                        trRef         =&gt; $ref_string_on_transcript,
+                        prAlt         =&gt; $protein_alt_sequence,
+                        prRef         =&gt; $protein_ref_sequence,
+                        primaryTag    =&gt; $refstandard_primary_or_not,   # Y/N
+                        preStart =&gt; {    # the position before the start of var
+                            nDot =&gt; $rna_hgvs_pos,
+                            cDot =&gt; $cds_hgvs_pos,
+                            r    =&gt; $func_region,
+                            exin =&gt; $exon_intron_number,
+                        },
+                        postEnd =&gt; {     # the position after the end of var
+                            nDot =&gt; $rna_hgvs_pos,
+                            cDot =&gt; $cds_hgvs_pos,
+                            r    =&gt; $func_region,
+                            exin =&gt; $exon_intron_number,
+                        },
+                        trRefComp =&gt; {</pre>
+<pre>
+                            # some trRef components
+                        },</pre>
+<pre>
+                        # The following parts will be exists if extra resource
+                        # is available.
+                        pfamId      =&gt; $PFAM_ID,
+                        pfamName    =&gt; $PFAM_NAME,
+                        siftPred    =&gt; $SIFTpred,
+                        siftScore   =&gt; $SIFTscore,
+                        pp2divPred  =&gt; $Polyphen2HumDivPred,
+                        pp2divScore =&gt; $Polyphen2HumDivScore,
+                        pp2varPred  =&gt; $Polyphen2HumVarPred,
+                        pp2varScore =&gt; $Polyphen2HumVarScore,
+                        condelPred  =&gt; $Condelpred,
+                        condelScore =&gt; $Condelscore,</pre>
+<pre>
+                    },
+                    ...
+                }
+            }</pre>
+<p>
+</p>
+<h2><a name="p1top3">P1toP3</a></h2>
+<pre>
+    About : Change 1 letter format of pHGVS string to 3 letter format
+    Usage : my $p3 = P1toP3($p1);</pre>
+<p>
+</p>
+<h2><a name="finaliseanno">finaliseAnno</a></h2>
+<pre>
+    About   : finalise the BedAnno::Anno entry by check all tag values,
+              and uniform them for AE output usage, query transcript
+              oringinated additional resources and add them into the data
+              frame.
+    Usage   : $beda-&gt;finaliseAnno($annEnt);
+    Args    : BedAnno entry and a BedAnno::Anno entry
+    Returns : A finalised BedAnno::Anno entry</pre>
+<p>
+</p>
+<h2><a name="decide_major">decide_major</a></h2>
+<pre>
+    About   : In finalise step, decide a major transcript to report for a var.
+    Usage   : my $majorTranscriptVarName = decide_major($annoEnt);
+    Returns : A string in the following format:
+              If the transcript has a pName: 
+                  mrnaAcc(geneSymbol): cName (pName), 
+                  e.g. NM_145651.2(SCGB1C1): c.13C&gt;T (p.R5C)
+              If the transcript does not have a pName: 
+                  mrnaAcc(geneSymbol): cName
+              If only intergenic
+                  chr: gName (intergenic)
+                  e.g. chrX: g.220025A&gt;T (intergenic)
+    Note    : use the primaryTag to find reference standard or primary transcript,
+              if only one have the primaryTag &quot;Y&quot;, then use it,
+              otherwise, sort by GenePart: 
+                1.  CDS
+                2.  span
+                3.  five_prime_cis_splice_site
+                4.  three_prime_cis_splice_site
+                5.  ncRNA
+                6.  five_prime_UTR
+                7.  three_prime_UTR
+                8.  interior_intron
+                9.  five_prime_UTR_intron
+                10. three_prime_UTR_intron
+                11. abnormal-intron
+                12. promoter
+                13. annotation-fail
+                14. intergenic_region
+              and choose the first one, if more than one transcript have the 
+              same reference standard and same GenePart, then choose the first
+              one which prior in name sorting.</pre>
+<p>
+</p>
+<h2><a name="gettrchange">getTrChange</a></h2>
+<pre>
+    About   : Calculate the transcript changes, based on TrPostition
+    Usage   : $beda-&gt;getTrChange($annoEnt);
+    Returns : assign the following tags in annoEnt
+                trRef, prot, c, p, cc, polar, func
+                prRef, prAlt</pre>
+<p>
+</p>
+<h2><a name="prwalker">prWalker</a></h2>
+<pre>
+    About   : act as trWalker, but on protein sequence
+    Usage   : $prVar = $beda-&gt;prWalker( $prSeq,  $prBegin, $prEnd, $prRef, $prAlt );
+    Args    : prSeq   - whole protein sequence
+              prBegin - protein variant Begin position (1 based)
+              prEnd   - protein variant End position (1 based)
+              prRef   - protein variant reference sequence
+              prAlt   - protein variant alt sequence</pre>
+<p>
+</p>
+<h2><a name="trwalker">trWalker</a></h2>
+<pre>
+    About   : walk around the variant position to find possible
+              repeat start/end, and return the recalculated
+              trBegin and trEnd, together with the real
+              transcript originated variants and unified property
+              Current implementation won't walk around in the following
+              cases:
+              1. no-call
+              2. annotation-fail
+              3. snv or mnp
+              4. non-exon region
+              5. span case or any edge case
+              6. delins without repeat.
+    Usage   : ($trBegin, $trEnd, $real_var) = 
+              $beda-&gt;trWalker($tid, $rtrinfo);
+    Args    : trAcc and hash ref of trInfo annotation for trAcc,</pre>
+<p>
+</p>
+<h2><a name="cmppos">cmpPos</a></h2>
+<pre>
+    About   : judge the order for p1 and p2, because the insertion
+              will have a reverted order of left &amp; right position
+    Usage   : my $cmpRst = BedAnno-&gt;cmpPos($p1, $p2);
+    Args    : hgvs positio p1 and p2, with out 'c.' or 'n.' flag
+    Return  : 0 for same, 1 for normal order, -1 for reversed order.</pre>
+<p>
+</p>
+<h2><a name="_getcposframe_by_cdspos">_getCPosFrame_by_cdsPos</a></h2>
+<pre>
+    About   : calculate codon position and frame info by
+              involving frameshift case in consideration.
+    Usage   : my @cPosFrame = _getCPosFrame_by_cdsPos( $trdbEnt, $cds_p );
+    Args    : cds_p is relative position to the first bp in start codon on trans
+    Returns : an array in the format of:
+              ( $stat, $ra_posrefs1, $ra_posrefs2 )
+              ra_posrefs* is an array ref for the following array
+              [ $codonPos, $frame ]</pre>
+<pre>
+              for non-cds region case stat is -1, without ra_posrefs.
+              for normal case stat is 1, 
+                  ra_posrefs1 is the information of input position,
+                  without ra_posrefs2 specified.
+              for deleted frame case stat is 0,
+                  ra_posrefs1 is the information of position on 5' 
+                  side next to the deleted frame, and ra_posrefs2
+                  is on 3' side.
+              for duplicated frame case stat is 2,
+                  ra_posrefs1 is the 5' most hit of input position,
+                  ra_posrefs2 is the corresponding position on the 
+                  3' duplicated region.</pre>
+<p>
+</p>
+<h2><a name="_cdsubstr">_cdsubstr</a></h2>
+<pre>
+    About   : substr from transcript seqeunce involving frameshift changing.
+    Usage   : my $codonStr = _cdsubstr( $trdbEnt, $start, $length, $replace );
+    Args    : trdbEnt is a sub hash in trInfodb which contains csta, csto.
+              start is 0 based start position of sub string on transcript seq.
+              length is the length of target region on transcript seq.
+              replace is the alternative.
+    Returns : A substring cut from the transcript sequence, with frameshift involved.
+              Behave like function &quot;substr&quot;, but for replace mode, 
+              it returns the whole transcript seq after replacement.</pre>
+<p>
+</p>
+<h2><a name="_getpairedcodon">_getPairedCodon</a></h2>
+<pre>
+    About   : get codon position, codon string, aa string, and frame info
+              for a pair of transcript position
+    Usage   : my ($rcinfo5, $rcinfo3) = _getPairedCodon( $trdbEnt, $p5, $p3 );
+    Args    : trdbEnt is a sub hash in trInfodb which contains csta, csto
+              for cds start/end position, besides many other feature tags.
+              p5 and p3 is a pair of positions which give a region or single
+              position or maybe an insertion anchor.
+    Returns : codon info array ref for p5 and p3. The array ref:
+              [
+                  AA position  - 0 for not in cds region.
+                  codon string - codon string, e.g. &quot;ATA&quot;.
+                  aa char      - AA code, 1 bp mode, e.g. &quot;E&quot;.
+                  polar        - Polar properties, e.g. &quot;P+&quot;.
+                  frame        - current position's frame info,
+                                 -1 for not available or in fs-site.
+                  [frame-alt]  - frame info around fs-site.
+              ]</pre>
+<p>
+</p>
+<h2><a name="translate">translate</a></h2>
+<pre>
+    About   : Translate nucleotides to aa seqs
+    Usage   : my ($aa_seq, $next_frame) = translate( $nucl, { mito =&gt; 1, polyA =&gt; 1 } );
+    Args    : first args should be the nucleotide seq to be translated,
+              the second args is a hash ref of optional args (all boolean):
+              mito   : indicate it is for mDNA (mitochondrion)
+              nostop : indicate there's no stop codon in aa seq,
+                       translate 'UGA' to 'U', and other stop codon to 'X'
+              polyA  : indicate extra A should be added to 3'end of codon,
+                       to help encode a stop codon (usually used with mito).
+    Returns : $aa_seq is the aa sequence, 
+              $next_frame gives the next base's frame to the 3'end of sequence.</pre>
+<p>
+</p>
+<h2><a name="gettrref">getTrRef</a></h2>
+<pre>
+    About   : generate concatenated transcript originated reference
+    Usage   : my $trRef = getTrRef( $trannoEnt, $refgenome, $trSeq, $strd );
+    Args    : trannoEnt - BedAnno::Anno-&gt;{trInfo}-&gt;{$tid}
+              refgenome - Unified reference in BedAnno::Var
+              trSeq     - whole transcript
+              strd      - strand of transcript.
+    Returns : transcript originated reference
+    Notes   : Using sequence from transcript as the exon part,
+              and using the sequence from reference genome
+              as the intron part. and concatenate them.</pre>
+<p>
+</p>
+<h2><a name="batch_anno">batch_anno</a></h2>
+<pre>
+    About   : The fastest way to annotate multiple snv and 1bp deletion variations,
+              indel and other types also can be annotated, but no faster than annotated
+              one by one.
+    Usage   : $beda = BedAnno-&gt;new( db =&gt; 'in.bed.gz', tr =&gt; 'in.trans.fas', batch =&gt; 1);
+              $rAnnoRst = $beda-&gt;batch_anno($rVars);
+    Args    : an array ref of BedAnno::Var entries.
+    Returns : an array ref of BedAnno::Anno entries, see varanno().</pre>
+<p>
+</p>
+<hr />
+<h1><a name="bedanno__var">BedAnno::Var</a></h1>
+<pre>
+    BedAnno::Var sub module</pre>
+<p>
+</p>
+<hr />
+<h1><a name="method">METHOD</a></h1>
+<p>
+</p>
+<h2><a name="new">new</a></h2>
+<pre>
+    About   : Create a new object class entry, BedAnno::Var,
+              parse the variation directly by the ref and alt string.
+    Usage   : my $var = BedAnno::Var-&gt;new( $chr, $start, $end, $ref, $alt );
+           or my $var = BedAnno::Var-&gt;new( $chr, $pos, $ref, $alt );
+           or my $var = BedAnno::Var-&gt;new( $varInput );
+    Args    : Input can be variable format
+              1. 5 parameters format: CG shell list format: chr,start,end,ref,alt
+              2. 4 parameters format: VCF format: chr,pos,ref,alt
+              3. Crawler input object: A hash ref with nessesary keys: 
+                 chr,begin,referenceSequence,variantSequence,  
+                 optional key is &quot;end&quot;, if end specified,
+                 coordinates are treat as 0-based, otherwise, use 1-based (VCF)
+    Returns : a new BedAnno::Var entry :
+            {
+                chr    =&gt; $chr,
+                pos    =&gt; $start,          # 0-based start
+                end    =&gt; $end,
+                ref    =&gt; $ref,
+                alt    =&gt; $alt,
+                reflen =&gt; $ref_len,
+                altlen =&gt; $alt_len,        # not exists if no-call
+                guess  =&gt; $varType,        # the output varType
+                imp    =&gt; $imp_varType,    # the implicit varType
+                sm     =&gt; $sm,             # single/multiple base indicator
+                                           # equal/non-equal length indicator</pre>
+<pre>
+                # for hgvs naming convinient, reparse delins(guess),
+                # in forward and reverse strand separately,
+                # If the result are the same, then only
+                # give the following optional
+                # rescaled strand-same description group
+                bp  =&gt; $bc_pos,       # backward compatible pos, 0-based
+                br  =&gt; $bc_ref,       # backward compatible ref string
+                ba  =&gt; $bc_alt,       # backward compatible alt string
+                brl =&gt; $bc_reflen,    # backward compatible ref length
+                bal =&gt; $bc_altlen,    # backward compatible alt length</pre>
+<pre>
+                # otherwise, the following '+', '-',
+                # structure will be generated to reflect
+                # the difference. they are all optional</pre>
+<pre>
+                '+' =&gt; {</pre>
+<pre>
+                  # This group simplely trim off the leading same chars
+                  # on forward strand, and then trim the same tail
+                  bp  =&gt; $backward_fpos,
+                  br  =&gt; $backward_fref,
+                  ba  =&gt; $backward_falt,
+                  brl =&gt; $backward_freflen,
+                  bal =&gt; $backward_faltlen,</pre>
+<pre>
+                },</pre>
+<pre>
+                '-' =&gt; { 
+                  # similar to '+', but for reverse strand 
+                },</pre>
+<pre>
+                # this group gives ref/alt string based on the rule
+                # with 'rep' annotation available
+                p      =&gt; $rep_left_pos,         # repeat pos, 0-based
+                r      =&gt; $rep_ref,              # repeat ref string
+                a      =&gt; $rep_alt,              # repeat alt string
+                rl     =&gt; $rep_reflen,           # repeat ref length
+                al     =&gt; $rep_altlen,           # repeat alt length
+                rep    =&gt; $repeat_element,
+                replen =&gt; $repeat_element_length,
+                ref_cn =&gt; $copy_number_in_ref,
+                alt_cn =&gt; $copy_number_in_alt,</pre>
+<pre>
+                # for equal length long substitution
+                # record the separated snvs positions
+                # all positions are 1 based.
+                sep_snvs =&gt; [ $snv_pos1, $snv_pos2, ... ],
+            }</pre>
+<p>
+</p>
+<h2><a name="getunifiedvar">getUnifiedVar</a></h2>
+<pre>
+    About   : uniform the pos and ref/alt pair selection,
+              after new(), give info for HGVS naming.
+    Usage   : my @unified_desc = $var-&gt;getUnifiedVar($strd);
+    Args    : BedAnno::Var entry and current strand for annotation.
+    Returns : an array of ( 
+                $pos,  # 0-based start pos
+                $ref,  # reference bases
+                $alt,  # called bases
+                $reflen, # reference len
+                $altlen )# called len, undef if no-call</pre>
+<p>
+</p>
+<h2><a name="parse_complex">parse_complex</a></h2>
+<pre>
+    About   : parse complex delins variants to recognize 
+              repeat and differ strand-pos var.
+    Usage   : my $var = $var-&gt;parse_complex();
+    Args    : variantion entry, which have been uniform to 
+              CG's shell list format, with its 'guess':delins.
+    Returns : see BedAnno::Var-&gt;new()</pre>
+<p>
+</p>
+<h2><a name="guess_type">guess_type</a></h2>
+<pre>
+    About   : guess the varType directly from the input information.
+    Usage   : my ($guess, $implicit_varType, $sm) = guess_type($len_ref, $ref, $alt);
+    Args    : 1. length of reference (derived from end - start)
+              2. reference sequence ('.' or empty for ins )
+              3. called sequence ( '?' for no-call, '.' or empty for del )
+    Returns : $guess is varType in output (ref,snv,ins,del,delins,no-call)
+              $implicit_varType (ref,snv,ins,del,delins,rep)
+              $sm is single/multiple/equal/non-equal-len indicator
+                0 - ins case
+                1 - single base ref case
+                2 - multiple base, different length case
+                3 - multiple base, equal length case</pre>
+<p>
+</p>
+<h2><a name="get_internal">get_internal</a></h2>
+<pre>
+    About   : recalculate ref alt for delins and mutiple sample caused ref-alt pair.
+              depend on different strand of the to-annotated gene or transcript, 
+              the offset may be different for the same ref and alt,
+              because of the 3'end nearest annotation rules.
+    Usage   : my $rephase = get_internal( $ref, $reflen, $alt, $altlen );
+    Returns : a hash ref of : 
+                {
+                    '+' =&gt; $f_lofs,
+                    '-' =&gt; $r_lofs,
+                    'r' =&gt; $new_ref_len, 
+                    'a' =&gt; $new_alt_len
+                }</pre>
+<p>
+</p>
+<h2><a name="get_ghgvs">get_gHGVS</a></h2>
+<pre>
+    About   : get genomic (chromosomal) HGVS string of variation
+    Usage   : my $gHGVS = $var-&gt;get_gHGVS();
+    Args    : variation entry, after BedAnno::Var-&gt;new().
+    Returns : chromosomal HGVS string.</pre>
+<p>
+</p>
+<hr />
+<h1><a name="bedanno__anno">BedAnno::Anno</a></h1>
+<pre>
+    BedAnno::Anno sub package</pre>
+<p>
+</p>
+<hr />
+<h1><a name="method">METHOD</a></h1>
+<p>
+</p>
+<h2><a name="new">new</a></h2>
+<pre>
+    About   : Create BedAnno::Anno object
+    Usage   : my $annoEnt = BedAnno::Anno-&gt;new($var);
+    Args    : BedAnno::Var entry
+    Returns : BedAnno::Anno entry</pre>
+<p>
+</p>
+<h2><a name="reformatanno">reformatAnno</a></h2>
+<pre>
+    About   : reformat the BedAnno::Anno entry to fit the need of crawler
+    Usage   : my $crawler_need = $anno-&gt;reformatAnno();
+    Note    : ID mapping changes are list the following:
+              var group:
+              refbuild -&gt; referenceBuild
+              chr -&gt; chr
+              pos -&gt; begin
+              end -&gt; end
+              ref -&gt; referenceSequence
+              alt -&gt; variantSequence
+              guess -&gt; varType
+              varTypeSO -&gt; varTypeSO
+              cytoBand -&gt; cytoband
+              dbsnp =&gt; {rsID1,rsID2 ... } -&gt; dbsnpIds
+              cg54 =&gt; AF -&gt; CG54_AF
+              cg54 =&gt; AN -&gt; CG54_AN
+              tgp =&gt; AF -&gt; 1000G_AF
+              tgp =&gt; AN -&gt; 1000G_AN
+              wellderly =&gt; AF -&gt; Wellderly_AF
+              wellderly =&gt; AN -&gt; Wellderly_AN
+              esp6500 =&gt; AF -&gt; ESP6500_AF
+              esp6500 =&gt; AN -&gt; ESP6500_AN
+              phyloPpm -&gt; PhyloPscorePlacentalMammals
+              phyloPpr -&gt; PhyloPscorePrimates
+              phyloPve -&gt; PhyloPscoreVetebrates
+              gHGVS -&gt; gHGVS
+              varName -&gt; VarName</pre>
+<pre>
+              trInfo group:
+              geneId -&gt; GeneID
+              geneSym -&gt; GeneSym
+              prot -&gt; ProteinAccession
+              strd -&gt; TranscriptOrientation
+              trVarName -&gt; TranscriptVarName
+              rnaBegin -&gt; TranscriptBegin
+              rnaEnd -&gt; TranscriptEnd
+              protBegin -&gt; ProteinBegin
+              protEnd -&gt; ProteinEnd
+              pfamId -&gt; PFAM_ID
+              pfamName -&gt; PFAM_NAME
+              genepart -&gt; GenePart
+              genepartSO -&gt; GenePartSO
+              Indexofgenepart -&gt; GenePartIndex
+              componentIndex -&gt; ComponentIndex
+              exonIndex -&gt; ExonNumber
+              intronIndex -&gt; IntronNumer
+              funcSOname -&gt; FunctionImpact
+              IndexofFuncSOname -&gt; ImpactIndex
+              funcSO -&gt; FunctionImpactSO
+              c -&gt; cHGVS
+              p -&gt; pHGVS
+              cc -&gt; CodonChange
+              polar -&gt; AAPolarityRef + AAPolarityVar
+              siftPred -&gt; SIFTpred
+              siftScore -&gt; SIFTscore
+              pp2divPred -&gt; Polyphen2HumDivPred
+              pp2divScore -&gt; Polyphen2HumDivScore
+              pp2varPred -&gt; Polyphen2VarPred
+              pp2varScore -&gt; Polyphen2VarScore</pre>
+<p>
+</p>
+<h2><a name="gettrposition">getTrPosition</a></h2>
+<pre>
+    About   : Assign the BedAnno::Anno obj's trInfo with affected regions
+    Usage   : my $AEIndex = $annoEnt-&gt;getTrPosition($rannodb, $AEIndex);
+    Args    : $rannodb is a BedAnno::Anno object created by varanno(),
+              $AEIndex is the current index for annodb searching.
+    Returns : A new AEIndex for next query.
+    Notes   : $AEIndex is used for same chr batch mode.
+              assign the following tag to $annoEnt
+              {
+                trInfo =&gt; {
+                    $tid =&gt; {
+                        geneId,   geneSym, strd, primaryTag,
+                        trAlt =&gt; $stranded_alt_string_with_ext_at_mismatches,</pre>
+<pre>
+                        preStart =&gt; {
+                            nDot, cDot, exin, r
+                        },</pre>
+<pre>
+                        postEnd =&gt; {
+                            nDot, cDot, exin, r
+                        },</pre>
+<pre>
+                        trRefComp =&gt; {
+                            $exon_number   =&gt; $transcript_exon_length,
+                            $intron_number =&gt; [
+                                $start_in_non_stranded_reference,
+                                $stop_in_non_stranded_reference
+                              ],
+                            ...
+                        },
+                    },
+                    ...
+                }
+              }</pre>
+<p>
+</p>
+<h2><a name="cal_hgvs_pos">cal_hgvs_pos</a></h2>
+<pre>
+    About   : calculate nDot, cDot HGVS position, depend on given offset,
+              assign trAlt string and nDot HGVS and cDot HGVS positions.
+    Usage   : $annoEnt-&gt;cal_hgvs_pos(
+                    offset =&gt; $offset, 
+                    tid    =&gt; $tid,
+                    LR     =&gt; $lr,
+                    tidDetail =&gt; $rh_tidDetail,
+              );
+    Args    : ofst is total offset to the start(left) of currunt annoblk,
+              tid is the transcript id for the detail entry
+              tidDetail is the currunt annoblk detail
+              LR indicate this offset is left or right pos,
+                1 for left and assign sta group,
+                0 for right and assign end group.
+              &quot;noassign&quot; to indicate whether to assign those information
+              to annoEnt, it's used return the useful information only,
+              without change the annoEnt. 
+    Returns : if noassign is used, then return a hash ref, which contains
+                { nDot, cDot, exin, r } if successful.
+              otherwise, 0 for no assigned status, 1 for successful assigned.
+             
+    Notes   : For position mirror on transcript, there are 2 other cases 
+              than normal case:
+              1. annotation fail, which can not be annotated in the region
+                 of it except for its promoter region.
+              2. block with length changing mismatches, or long substitution
+                 mismatch, which contain the following three cases:
+                 
+                 a. insertion (I) on refSeq</pre>
+<pre>
+                        +-------+---+--------+  refgenome
+                         \       \ /        /
+                          +-------+--------+    refSeq</pre>
+<pre>
+                 b. deletion (D) on refSeq</pre>
+<pre>
+                          +-------+--------+    refgenome
+                         /       / \        \
+                        +-------+---+--------+  refSeq</pre>
+<pre>
+                 c. delins (DI) on refSeq (equal/non-equal length)</pre>
+<pre>
+                        +-------+---+--------+  refgenome
+                        |       |  /        /
+                        +-------+-+--------+    refSeq</pre>
+<pre>
+                 Insertion will have an reversed start/end position on refSeq,
+                 due to the 1-based position description system.
+                 
+                 Any position located in a non-zero length refgenome mismatch
+                 block have to extend to total region of mismatched block,
+                 and alternate &quot;trAlt&quot; value in annotation entry for this tid.</pre>
+<pre>
+              This method assign the following tag to $annoEnt
+                {
+                    trInfo =&gt; {
+                        $tid =&gt; {
+                            rnaBegin, rnaEnd,  cdsBegin, cdsEnd,
+                            ei_Begin, ei_End,  r_Begin,  r_End,
+                            genepartSO, trAlt,
+                          },
+                        ...
+                    }
+                }</pre>
+<p>
+</p>
+<hr />
+<h1><a name="bedanno__cnv">BedAnno::CNV</a></h1>
+<pre>
+    BedAnno::CNV sub package</pre>
+<p>
+</p>
+<hr />
+<h1><a name="method">METHOD</a></h1>
+<p>
+</p>
+<h2><a name="new">new</a></h2>
+<pre>
+    About   : Create BedAnno::CNV object
+    Usage   : my $cnva = BedAnno::CNV-&gt;new( db =&gt; $annodb, tr =&gt; $trdb, dgv =&gt; $dgvdb, cnvPub =&gt; $cnvPubdb );
+    Args    : required args: db, tr
+              Specific args:
+                - dgv     DGV tabix index file (dgvMerged from ucsc) as Controls
+                - cnvPub  Well formatted tabix index file as a collection of Cases
+              Same args in BedAnno method 'new':
+                - db, tr, genes, trans, region, regbed, mmap, batch, cytoBand
+    Returns : BedAnno::CNV object</pre>
+<p>
+</p>
+<h2><a name="annocnv">annoCNV</a></h2>
+<pre>
+    About   : Annotate single CNV variants
+    Usage   : my $rcnvAnno = $cnva-&gt;annoCNV( $chr, $start, $end, $copy_number );
+    Args    : $chr   - chromosome number
+              $start - 0 based start position
+              $end   - 1 based end position
+              $copy_number - estimated copy number
+    Returns : A hash ref of cnv annotation in the following structure
+                {
+                    cnva_type =&gt; $cnv_anno_type,</pre>
+<pre>
+                    # if hit on transcript
+                    anno =&gt; {
+                        $tid =&gt; {
+                            gsym   =&gt; $gene_symbol,
+                            gid    =&gt; $gene_id,
+                            strd   =&gt; $strand,
+                            cpos   =&gt; $hgvs_position,
+                            exin   =&gt; $exon_intron_number,
+                            regcod =&gt; $code_of_region,
+                            regtyp =&gt; $type_of_region,
+                        },
+                        ...
+                    },</pre>
+<pre>
+                    # available when resource ok
+                    cytoBand  =&gt; $cytoBand_info,
+                    dgv    =&gt; $dgv_sql_rst,
+                    cnvPub =&gt; $cnvPub_sql_rst,
+                }</pre>
+<p>
+</p>
+<h2><a name="batch_annocnv">batch_annoCNV</a></h2>
+<pre>
+    About   : Annotate CNV variants in batch mode
+    Usage   : my $rcnvAnnos = $cnva-&gt;batch_annoCNV( $ref_hash_AllCNV );
+    Args    : A hash ref of all cnv annotation in the following structure
+                {
+                    $chr =&gt; {
+                        &quot;$start-$stop&quot; =&gt; $copy_number,
+                        ...
+                      },
+                      ...
+                }
+    Returns : A hash ref of annotated cnv variants in the following structure
+                {
+                    $chr =&gt; {
+                        &quot;$start-$stop&quot; =&gt; {
+                           cnva_type =&gt; $cnv_anno_type,
+                           
+                           # if hit on transcript
+                           anno =&gt; {
+                             $tid =&gt; {
+                               gsym =&gt; $gene_symbol,
+                               gid  =&gt; $gene_id,
+                               strd =&gt; $strand,
+                               cpos =&gt; $hgvs_position,
+                               exin =&gt; $exon_intron_number,
+                               regcod =&gt; $code_of_region,
+                               regtyp =&gt; $type_of_region,
+                             },
+                             ...
+                           },</pre>
+<pre>
+                           # available when resource ok
+                           cytoBand  =&gt; $cytoBand_info,
+                           dgv =&gt; $dgv_sql_rst,
+                           cnvPub =&gt; $cnvPub_sql_rst,
+                        },
+                        ...
+                      },
+                      ...
+                }</pre>
+<p>
+</p>
+<hr />
+<h1><a name="database_format">DATABASE FORMAT</a></h1>
+<p>The Format of annotation database is listed as following:</p>
+<p>
+</p>
+<h2><a name="bed_1_format_database">BED+1 FORMAT DATABASE</a></h2>
+<pre>
+   Departed block with tag for annotation, Tag entries are separated by &quot;; &quot;,
+   and Infos items in entry are separated by &quot;|&quot;.</pre>
+<pre>
+   Each entry contains the follwing infomation:</pre>
+<pre>
+   1. Acc.Ver
+   2. GeneID
+   3. Gene Symbol
+   4. Strand
+                 5'=====|&gt;&gt;&gt;|[=============]|&gt;&gt;&gt;&gt;&gt;&gt;|[==========]|&gt;&gt;&gt;&gt;&gt;&gt;|[=============]|&gt;&gt;&gt;&gt;|==3'
+   5. BlockAttr  : PROM 5U2E D5U1 I5U1 A5U1 5U1 C1  DC1 IC1 AC1 C2E 3U1 D3U1 I3U1 A3U1 3U2E
+   6. GenePartsSO: 167  204  163  447  164  204 316 163 191 164 316 205 163  448  164  448
+   7. ExIn Num   :    . |EX1|      IVS1     |  EX2 |    IVS2    |  EX3 |    IVS3       |EX4E|
+   8. nHGVS start for block before departing
+   9. nHGVS end for block before departing
+   10.cHGVS start for block before departing
+   11.cHGVS end for block before departing
+   12.Length for block before departing
+   13.MismatchBlock :  $type,$gstart,$gstop,$gseq
+                       ($gseq is in the strand of refseq, '.' for deletion)
+   14.Primary Tag : Please see &quot;PRIMARY TAG ASSIGNMENT&quot;
+   15.Offset to leftmost of non departing block.</pre>
+<p>
+</p>
+<h2><a name="transcript_fasta_database">TRANSCRIPT FASTA DATABASE</a></h2>
+<pre>
+   One-line sequence fasta file
+   ============================
+   Header format is: ( separate by &quot; &quot;, with &quot;.&quot; for unavailable value )</pre>
+<pre>
+       &gt;rnaAcc.ver rnaLen gene protAcc.ver protLen cdsSta,cdsEnd tags [altStartCodons] [frameshiftSite]
+   
+    &quot;tags&quot; are a string of multiple properties separated by &quot;|&quot;, which are:</pre>
+<pre>
+        &lt;alignStat&gt;[|altstart][|selenocysteine][|inseqStop][|polyATail]</pre>
+<pre>
+    when &quot;tags&quot; contain &quot;altstart&quot;, alternative start codons will be list in 
+    &quot;altStartCodons&quot;, separated by &quot;;&quot;</pre>
+<p>
+</p>
+<h2><a name="primary_tag_assignment">PRIMARY TAG ASSIGNMENT</a></h2>
+<pre>
+    Our database need to sort the refSeq record with same Acc, 
+    or with same gene by the following rules:</pre>
+<pre>
+    1. whether the transcript is on the primary assembly.
+    2. whether the CDS is 3-codons (badcds will be put to the tail)
+    3. concatenated CDS is longer
+    4. concatenated Exon is longer
+    5. union Exon with flank region is longer
+    6. Chromosome ID number is smaller
+    7. Position number on forward strand-chromosome is smaller</pre>
+<pre>
+    if LRG_RefSeqGene file is used, then the primary tag &quot;Y&quot; will
+    only assign to the reference standard transcripts's first 
+    mapping entry. But for non-RefSeqGene gene/transcript,
+    assign primary tag &quot;Y&quot; to the first record for same genes' all
+    transcripts, which is the same with no LRG_RefSeqGene file case.</pre>
+<pre>
+    For multiple-mapping of a same transcript, add postfix &quot;-N&quot; 
+    (1..n-1) to the other records in the order of sort.</pre>
+<p>
+</p>
+<hr />
+<h1><a name="see_also">SEE ALSO</a></h1>
+<pre>
+    HGVS     :  <a href="http://www.hgvs.org/mutnomen/recs.html">http://www.hgvs.org/mutnomen/recs.html</a>
+    Mutalyzer:  https://mutalyzer.nl
+
+</pre>
+<p>
+</p>
+<hr />
+<h1><a name="author">AUTHOR</a></h1>
+<p>liutao &lt;<a href="mailto:liutao@genomics.cn">liutao@genomics.cn</a>&gt;</p>
+<p>
+</p>
+<hr />
+<h1><a name="copyright_and_license">COPYRIGHT AND LICENSE</a></h1>
+<p>Please check LICENSE file for detail</p>
+
+</body>
+
+</html>

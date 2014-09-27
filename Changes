@@ -20,11 +20,13 @@
 
 0.15  Sun Jul 14 22:04:01 2013
 	- support character 'N' in the variation string
-	- add a exported method individual_anno() to combinate two variation in one individual.
+	- add a exported method individual_anno() to combinate 
+	  two variation in one individual.
 
 0.16  Sun Jul 16 16:17:01 2013
 	- fix bugs in write_using()
-	- add a method get_cover_batch() to fetch cPos information of region in batch mode
+	- add a method get_cover_batch() to fetch cPos information 
+	  of region in batch mode
 	- add comments for annodb format.
 
 0.17  Thu Jul 18 19:58:02 2013
@@ -44,33 +46,36 @@
 	- add various test cases
 
 0.30  Thu Aug 21 11:43:07 2013
-	- change the structure of return value for pairanno(), move the strd information
-	  out of the flanks infomations as an outer key.
+	- change the structure of return value for pairanno(), 
+	  move the strd information out of the flanks infomations 
+	  as an outer key.
 	- change function of 'altstart' to 'misstart'
 
 0.31  Thu Aug 24 09:06:08 2013
-	- change to support short peptide code annotation by add a new parameter: "short",
-	  in the 'new' method. e.g.
+	- change to support short peptide code annotation by add a new 
+	  parameter: "short", in the 'new' method. e.g.
 
 0.32  Tue Oct 08 16:43:01 2013
-	- change internal tech and db format to support CG's shell list and VCF, also
-	  will change to annotate on real refSeq sequence, not the cut from refgenome
-	  pseudo ones.
-	  my $beda = BedAnno->new(  db => "in.bed.gz", regbed => 'in.region.bed', codon => 'in.coding.fa', trans => \%trans, short => 1 );
+	- change internal tech and db format to support CG's shell list and VCF,
+	  also will change to annotate on real refSeq sequence, not the cut 
+	  from refgenome pseudo ones.
 
 0.33  Tue Oct 22 17:26:30 2013
 	- fix some bugs and release a new revision version for future test-cases.
 
 0.34  Mon Oct 28 22:38:06 2013
-	- add a method decide_major for crawler to generate TranscriptVarName from major transcript
-	- The reformatAnno() will have a new key "TranscriptVarName" in "var" to give the value
-	  please use "man doc/BedAnno.1" to check the detail in "decide_major" method description
+	- add a method decide_major for crawler to generate 
+	  TranscriptVarName from major transcript
+	- The reformatAnno() will have a new key "TranscriptVarName" in 
+	  "var" to give the value please use "man doc/BedAnno.1" to 
+	  check the detail in "decide_major" method description
 
 0.35  Sat Nov 02 18:43:05 2013
 	- change to use Tabix Perl API instead of system call cmd: tabix
 
 0.36  Wed Nov 06 14:44:04 2013
-	- get rid of fetchseq by samtools faidx, hash all transcript sequences at the very beginning.
+	- get rid of fetchseq by samtools faidx, hash all transcript 
+	  sequences at the very beginning.
 
 0.37  Fri Nov 15 20:13:43 2013
 	- fix bugs for many different special variants position or sequence states
@@ -80,17 +85,21 @@
 
 0.39  Wed Dec 04 19:39:05 2013
 	- fix some minor bugs
-	- add trWalker method to uniform the cHGVS string to give 3-END most variation
-	  and recognize whole repeat region case in transcripts.
+	- add trWalker method to uniform the cHGVS string to give 
+	  3-END most variation and recognize whole repeat region 
+	  case in transcripts.
 
 0.40  Wed Dec 11 22:30:06 2013
-	- add condel score and prediction, based on the VEP_plugins/Condel.pm version 2.4
-	  The scores seem a little different from the VEP version 2.6's result, though 
-          the prediction are the same. from checking one of example var.
-	- add an option 'quiet' to suppress warning information for extra database query.
+	- add condel score and prediction, based on the 
+	  VEP_plugins/Condel.pm version 2.4
+	  The scores seem a little different from the VEP version 2.6's result, 
+	  though the prediction are the same from checking one of example var.
+	- add an option 'quiet' to suppress warning information for 
+	  extra database query.
 	- change master branch to not to use threads::shared
 	- add repeat tag extradb and api.
-	- allow remaining extra information in the BedAnno::Var entry by using hash ref input.
+	- allow remaining extra information in the BedAnno::Var entry 
+	  by using hash ref input.
 	- fix BedAnno::Var->new for VCF reference variant parsing.
 	- reformatAnno() is changed to give uniform begin/end position
 
@@ -136,13 +145,14 @@
 
 0.49  Tue Mar 25 22:04:00
 	- enhance pDot name to add prWalker to allow protein variant walk around
-	  It'll allow tandom protein seq repeat to be called following the 3'most rule,
-          and only will be difference to previous notation when there exists a tandom
-	  repeat protein sequence which its nucleotide sequence is not tandom repeat.
+	  It'll allow tandom protein seq repeat to be called following the 3'most 
+	  rule, and only will be difference to previous notation when there 
+	  exists a tandom repeat protein sequence which its nucleotide 
+	  sequence is not tandom repeat.
 
 0.50  Wed Mar 26 19:55:00
-	- uniform HGVS notation by add standard_xHGVS for repeats, original alt_xHGVS
-	  has changed to del/ins format notation
+	- uniform HGVS notation by add standard_xHGVS for repeats, 
+	  original alt_xHGVS has changed to del/ins format notation
 
 0.51  Thu Mar 27 13:46:23
 	- fix a bug for standard_pHGVS and add 3 letter format pHGVS in hash
@@ -151,7 +161,8 @@
 	- uniform the prediction words for AE
 
 0.53  Wed Apr 02 16:21:30
-	- change translation seq - protein seq length differ transcript to be annotation-fail
+	- change translation seq - protein seq length differ 
+	  transcript to be annotation-fail
 
 0.54  Thu Apr 03 19:41:20
 	- add get_cover_batch to generate region information for given regions
@@ -175,7 +186,8 @@
 
 0.60  Thr Jul 10 09:42:21
 	- fix a bug in getTrChange for 3U span case
-	- fix a problem for batched process when multiple same start blocks hit one same edge position
+	- fix a problem for batched process when multiple same start 
+	  blocks hit one same edge position
 
 0.61  Tue Jul 15 17:53:30
 	- fix a problem for insertion of stop codon.
@@ -189,3 +201,12 @@
 
 0.71  Wed Jul 23 11:38:22
 	- add single cnv var anno method annoCNV()
+
+0.72  Sat Sep 27 13:49:13
+	- fix bug in BedAnno for mismatch block edge insertion variant
+	- fix problem for primary tag assignment when using LRG_refGene, 
+	  without reference standard transcript. (db changed)
+	- fix problem for 3bp ranged neighbor ins/del/delins mismatch 
+	  caused curious annotation by merging to large delins. (db changed)
+	- fix to support annotation for transcript with originally 
+	  containing frameshift-site. (db and module changed)
