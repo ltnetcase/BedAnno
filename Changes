@@ -210,3 +210,7 @@
 	  caused curious annotation by merging to large delins. (db changed)
 	- fix to support annotation for transcript with originally 
 	  containing frameshift-site. (db and module changed)
+
+0.73  Tue Oct 21 10:42:23
+	- add support to annotate edge span case transcript (db and module changed)
+

@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.72';
+our $VERSION = '0.73';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.72
+=head2 VERSION v0.73
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -2358,13 +2358,16 @@ sub finaliseAnno {
 
 	    # complete informations depend on already assigned values
 	    my $genepartSO;
-	    if ( $trAnnoEnt->{rnaBegin} eq '?' or $trAnnoEnt->{rnaEnd} eq '?' ) {
-		# do nothing?
-                $genepartSO = $trAnnoEnt->{genepartSO};
-		$trAnnoEnt->{r} = '?';
-		$trAnnoEnt->{exin} = '?';
-		$trAnnoEnt->{componentIndex} = '';
-	    }
+            if (   $trAnnoEnt->{rnaBegin} eq '?'
+                or $trAnnoEnt->{rnaEnd} eq '?'
+                or $trAnnoEnt->{genepartSO} eq "annotation-fail" )
+            {
+                # do nothing?
+                $genepartSO                  = $trAnnoEnt->{genepartSO};
+                $trAnnoEnt->{r}              = '?';
+                $trAnnoEnt->{exin}           = '?';
+                $trAnnoEnt->{componentIndex} = '';
+            }
             elsif ( $trAnnoEnt->{r_Begin} eq $trAnnoEnt->{r_End}
                 or 0 >
                 $self->cmpPos( $trAnnoEnt->{rnaBegin}, $trAnnoEnt->{rnaEnd} ) )
@@ -6650,7 +6653,7 @@ sub getTrPosition {
                         }
 
                     }
-		    elsif ($rtidDetail->{blka} eq '?') {
+		    elsif ($rtidDetail->{blka} eq '?') { # problem for trRef assign for new version
 			my ($af_sta, $af_sto);
                         $af_sta =
                           ( $$rannodb[$k]{sta} < $unify_p )
@@ -6753,7 +6756,10 @@ sub getTrPosition {
 
 sub getSOfromR {
     my $r = shift;
-    if ($r eq 'PROM') {
+    if ($r eq '?') {
+	return 'annotation-fail';
+    }
+    elsif ($r eq 'PROM') {
 	return '167';
     }
     elsif ($r =~ /^5U/) {
@@ -6815,7 +6821,7 @@ sub getSOfromR {
     Notes   : For position mirror on transcript, there are 2 other cases 
               than normal case:
               1. annotation fail, which can not be annotated in the region
-                 of it except for its promoter region.
+                 of it, the bad alignment string start with 'E'.
               2. block with length changing mismatches, or long substitution
                  mismatch, which contain the following three cases:
                  
@@ -6831,7 +6837,7 @@ sub getSOfromR {
                          /       / \        \
                         +-------+---+--------+  refSeq
 
-                 c. delins (DI) on refSeq (equal/non-equal length)
+                 c. delins (S/DI) on refSeq (equal/non-equal length)
 
                         +-------+---+--------+  refgenome
                         |       |  /        /
@@ -6924,6 +6930,10 @@ sub cal_hgvs_pos {
                     my ( $mType, $mStart, $mEnd, $strand_ref ) =
                       split( /,/, $rtidDetail->{mismatch} );
 		    
+		    if ( $mType eq 'E' ) { # edge cross alignment
+			$trAlt = '?';
+		    }
+
 		    if ($strd) { # cut left
 			$trAlt = substr($strand_ref, 0, $lofst).$trAlt if ($trAlt ne '?');
 		    }
@@ -6941,8 +6951,8 @@ sub cal_hgvs_pos {
 		return 0;
 	    }
 	    # 3. check if annotation-fail
-	    elsif ($gpSO eq 'annotation-fail') {
-		( $nDot, $cDot ) = ( '?', '?' );
+	    elsif ($gpSO eq 'annotation-fail') { # may not exist from 0.73
+#		( $nDot, $cDot ) = ( '?', '?' );
 	    }
 	    # 4. check if a promoter
 	    elsif ($blka eq 'PROM') {
@@ -7101,6 +7111,10 @@ sub cal_hgvs_pos {
                     my ( $mType, $mStart, $mEnd, $strand_ref ) =
                       split( /,/, $rtidDetail->{mismatch} );
 		    
+		    if ( $mType eq 'E' ) { # edge cross alignment
+			$trAlt = '?';
+		    }
+
 		    my $cut_len = $rtidDetail->{wlen} - $lofst;
 		    if ($strd) { # cut right
 			$trAlt .= substr($strand_ref, -$cut_len, $cut_len) if ($trAlt ne '?');
@@ -7114,9 +7128,9 @@ sub cal_hgvs_pos {
 	    elsif ($lofst == 0) {
 		return 0;
 	    }
-	    # 3. check if annotation-fail
+#	    # 3. check if annotation-fail
 	    elsif ($gpSO eq 'annotation-fail') {
-		( $nDot, $cDot ) = ( '?', '?' );
+#		( $nDot, $cDot ) = ( '?', '?' );
 	    }
 	    # 4. check if a promoter
 	    elsif ($blka =~ /^PROM/) {
@@ -7227,17 +7241,26 @@ sub cal_hgvs_pos {
 	    }
 	    $annoEnt->{trInfo}->{$tid}->{trAlt} = $trAlt;
 	    
-	    if (    exists $annoEnt->{trInfo}->{$tid}->{genepartSO}
-		and $annoEnt->{trInfo}->{$tid}->{genepartSO} ne "span"
-		and $rtidDetail->{gpSO} ne $annoEnt->{trInfo}->{$tid}->{genepartSO}
-	      )
-	    {
-		$annoEnt->{trInfo}->{$tid}->{genepartSO} = "span";
-	    }
-	    elsif (!exists $annoEnt->{trInfo}->{$tid}->{genepartSO}) {
-		carp "Warning: no genepartSO specified in left?";
-		$annoEnt->{trInfo}->{$tid}->{genepartSO} = $gpSO;
-	    }
+            if (
+                $rtidDetail->{gpSO} eq 'annotation-fail'
+                or ( exists $annoEnt->{trInfo}->{$tid}->{genepartSO}
+                    and $annoEnt->{trInfo}->{$tid}->{genepartSO} eq
+                    'annotation-fail' )
+              )
+            {
+                $annoEnt->{trInfo}->{$tid}->{genepartSO} = 'annotation-fail';
+            }
+            elsif ( exists $annoEnt->{trInfo}->{$tid}->{genepartSO}
+                and $annoEnt->{trInfo}->{$tid}->{genepartSO} ne "span"
+                and $rtidDetail->{gpSO} ne
+                $annoEnt->{trInfo}->{$tid}->{genepartSO} )
+            {
+                $annoEnt->{trInfo}->{$tid}->{genepartSO} = "span";
+            }
+            elsif ( !exists $annoEnt->{trInfo}->{$tid}->{genepartSO} ) {
+                carp "Warning: no genepartSO specified in left?";
+                $annoEnt->{trInfo}->{$tid}->{genepartSO} = $gpSO;
+            }
 	}
     }
 

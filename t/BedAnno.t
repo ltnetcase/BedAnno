@@ -2077,49 +2077,6 @@ my $left_edge_mismatch_anno = {
 };
 
 my $downstream_no_call = undef;
-my $span_annotation_fail = {
-    'r'         => '?',
-    'protBegin' => '',
-    'cdsBegin'  => '?',
-    'preStart'  => {
-        'r'    => '?',
-        'cDot' => '?',
-        'nDot' => '?',
-        'exin' => '?'
-    },
-    'componentIndex' => '',
-    'ei_End'        => '?',
-    'protEnd'       => '',
-    'cdsEnd'        => '?',
-    'exonIndex'     => '.',
-    'trAlt'         => '?',
-    'r_Begin'       => '?',
-    'intronIndex'   => '.',
-    'exin'          => '?',
-    'prot'          => 'NP_001036223.1',
-    'strd'          => '+',
-    'trRefComp'     => {
-        'Q1' => 20
-    },
-    'postEnd' => {
-        'r'    => '?',
-        'cDot' => '?',
-        'nDot' => '?',
-        'exin' => '?'
-    },
-    'geneSym'    => 'SRGAP2',
-    'r_End'      => '?',
-    'geneId'     => '23380',
-    'rnaEnd'     => '?',
-    'genepart'   => 'annotation-fail',
-    'func'       => 'annotation-fail',
-    'rnaBegin'   => '?',
-    'funcSO'     => '',
-    'ei_Begin'   => '?',
-    'genepartSO' => '',
-    'funcSOname' => 'annotation-fail',
-    'primaryTag' => 'N'
-};
 
 my $rep_span_cds_utr3 = {
     'protBegin' => '',
@@ -2517,6 +2474,51 @@ my $walk_to_end = {
     'funcSO'     => '',
     'primaryTag' => 'Y',
     'funcSOname' => 'unknown'
+};
+
+my $span_annotation_fail = {
+    'cdsBegin'       => '391',
+    'cdsEnd'         => '904',
+    'componentIndex' => '',
+    'ei_Begin'       => 'EX4',
+    'ei_End'         => 'EX4',
+    'exin'           => '?',
+    'exonIndex'      => '.',
+    'func'           => 'annotation-fail',
+    'funcSO'         => '',
+    'funcSOname'     => 'annotation-fail',
+    'geneId'         => '374462',
+    'geneSym'        => 'PTPRQ',
+    'genepart'       => 'annotation-fail',
+    'genepartSO'     => '',
+    'intronIndex'    => '.',
+    'postEnd'        => {
+        'cDot' => '393',
+        'exin' => 'EX4',
+        'nDot' => '393',
+        'r'    => '?'
+    },
+    'preStart' => {
+        'cDot' => '391-1',
+        'exin' => 'IVS3',
+        'nDot' => '391-1',
+        'r'    => 'AC3'
+    },
+    'primaryTag' => 'Y',
+    'prot'       => 'NP_001138498.1',
+    'protBegin'  => '',
+    'protEnd'    => '',
+    'r'          => '?',
+    'r_Begin'    => 'C4',
+    'r_End'      => '?',
+    'rnaBegin'   => 391,
+    'rnaEnd'     => '904',
+    'strd'       => '+',
+    'trAlt'      => '?',
+    'trRefComp'  => {
+        'EX4' => 514
+      }
+
 };
 
 my $cds_edge_ins_anno = {
@@ -3779,8 +3781,6 @@ test_ok ( "left_edge_mismatch_anno", $left_edge_mismatch_anno, 'NM_006158.3',
    "chr8", 24811065, 24811065, "", "A" );
 test_ok ( "downstream_no_call", $downstream_no_call, "NR_037481.1",
    "chr1", 26232848, 26232852, "=", "?" );
-test_ok ( "span_annotation_fail", $span_annotation_fail, "NM_001042758.1",
-   "chr1", 206538994, 206539014, "=", "?" );
 test_ok ( "rep_span_cds_utr3", $rep_span_cds_utr3, "NM_007115.3",
    "chr2", 152236045, 152236046, "A", "" );
 test_ok ( "middle_intron", $middle_intron, "NM_001715.2",
@@ -3797,6 +3797,9 @@ test_ok ( "ncall", $ncall, "NM_147196.2",
    "chr3", 46751100, 46751101, "G", "N" );
 test_ok ( "walk_to_end", $walk_to_end, "NM_000015.2",
    "chr8", 18258722, 18258722, "", "GA" );
+
+test_ok ( "span_annotation_fail", $span_annotation_fail, "NM_001145026.1",
+   "chr12", 80840806, 80840809, "GTG", "A" );
 
 test_ok ( "badmap_correction_ref", $badmap_correction_ref, "NM_015120.4",
    "chr2", 73675226, 73675227, "T", "T" );

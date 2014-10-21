@@ -2365,10 +2365,9 @@ not ok 38 - for [ left_edge_mismatch_anno ]
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
 ok 39 - for [ downstream_no_call ]
-ok 40 - for [ span_annotation_fail ]
-ok 41 - for [ rep_span_cds_utr3 ]
-ok 42 - for [ middle_intron ]
-not ok 43 - for [ fs1_rep_del ]
+ok 40 - for [ rep_span_cds_utr3 ]
+ok 41 - for [ middle_intron ]
+not ok 42 - for [ fs1_rep_del ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_001031681.2' => {
@@ -2554,7 +2553,7 @@ not ok 43 - for [ fs1_rep_del ]
 #     'varTypeSO' => 'SO:0000159'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 44 - for [ fs1_del ]
+not ok 43 - for [ fs1_del ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_001031681.2' => {
@@ -2687,7 +2686,7 @@ not ok 44 - for [ fs1_del ]
 #     'varTypeSO' => 'SO:0000159'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 45 - for [ span_3U ]
+not ok 44 - for [ span_3U ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_000091.4' => {
@@ -2768,7 +2767,7 @@ not ok 45 - for [ span_3U ]
 #     'varTypeSO' => 'SO:0000159'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 46 - for [ ins_stop ]
+not ok 45 - for [ ins_stop ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_147196.2' => {
@@ -2852,7 +2851,7 @@ not ok 46 - for [ ins_stop ]
 #     'varTypeSO' => 'SO:0000667'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 47 - for [ ncall ]
+not ok 46 - for [ ncall ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_147196.2' => {
@@ -2938,7 +2937,8 @@ not ok 47 - for [ ncall ]
 #     'varTypeSO' => 'no-call'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-ok 48 - for [ walk_to_end ]
+ok 47 - for [ walk_to_end ]
+ok 48 - for [ span_annotation_fail ]
 not ok 49 - for [ badmap_correction_ref ]
 # The anno infor are: bless( {
 #   'trInfo' => {
