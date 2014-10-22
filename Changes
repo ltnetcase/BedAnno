@@ -214,3 +214,9 @@
 0.73  Tue Oct 21 10:42:23
 	- add support to annotate edge span case transcript (db and module changed)
 
+0.74  Wed Oct 22 10:03:45
+	- change genepart of splice/intron span case to splice site genepart
+	- change edge insertion case genepart to span
+	- change to show componentIndex of promoter-5'utr, 3'utr-3'downstream span case.
+	- assign the 5' start position's componentIndex as the one of span case
+

@@ -1931,7 +1931,7 @@ my $no_call_edge_ins_parse = bless(
 );
 
 my $no_call_edge_ins_trinfo = {
-    'r'         => '5U1E',
+    'r'         => 'C1-5U1E',
     'protBegin' => '',
     'cdsBegin'  => '1',
     'preStart'  => {
@@ -1966,11 +1966,11 @@ my $no_call_edge_ins_trinfo = {
     'c'          => 'c.-1_1ins?',
     'geneId'     => '8718',
     'rnaEnd'     => 88,
-    'genepart'   => 'five_prime_UTR',
+    'genepart'   => 'span',
     'func'       => 'unknown-no-call',
     'rnaBegin'   => 89,
     'funcSO'     => '',
-    'genepartSO' => 'SO:0000204',
+    'genepartSO' => '',
     'ei_Begin'   => 'EX1',
     'funcSOname' => 'unknown-no-call',
     'primaryTag' => 'Y'
@@ -2329,7 +2329,7 @@ my $span_3U = {
 my $ins_stop = {
     'protBegin' => 32,
     'ei_End'    => 'EX1',
-    'exin'      => 'EX1',
+    'exin'      => 'IVS1-EX1',
     'prot'      => 'NP_671729.2',
     'trRefComp' => {
         'IVS1' => [ 0 ],
@@ -2339,7 +2339,7 @@ my $ins_stop = {
     'c'        => 'c.93_93+1insCCCTCGTAG',
     'rnaBegin' => '248+1',
     'ei_Begin' => 'IVS1',
-    'r'        => 'C1',
+    'r'        => 'DC1-C1',
     'cdsBegin' => '93+1',
     'preStart' => {
         'r'    => 'C1',
@@ -2353,7 +2353,7 @@ my $ins_stop = {
     'exonIndex'      => '1',
     'r_Begin'        => 'DC1',
     'trAlt'          => 'CCCTCGTAG',
-    'intronIndex'    => '.',
+    'intronIndex'    => '1',
     'strd'           => '+',
     'componentIndex' => '1',
     'geneSym'        => 'TMIE',
@@ -2368,11 +2368,11 @@ my $ins_stop = {
     'rnaEnd'     => 248,
     'p3'         => 'p.Thr34_Lys156del',
     'prAlt'      => 'PS*',
-    'genepart'   => 'CDS',
+    'genepart'   => 'span',
     'prRef'      => '',
     'func'       => 'stop-gain',
     'funcSO'     => 'SO:0001587',
-    'genepartSO' => 'SO:0000316',
+    'genepartSO' => '',
     'funcSOname' => 'stop_gained',
     'primaryTag' => 'Y'
 };
@@ -2483,7 +2483,7 @@ my $span_annotation_fail = {
     'ei_Begin'       => 'EX4',
     'ei_End'         => 'EX4',
     'exin'           => '?',
-    'exonIndex'      => '.',
+    'exonIndex'      => '4',
     'func'           => 'annotation-fail',
     'funcSO'         => '',
     'funcSOname'     => 'annotation-fail',
@@ -2524,7 +2524,7 @@ my $span_annotation_fail = {
 my $cds_edge_ins_anno = {
     'protBegin' => 35,
     'ei_End'    => 'IVS2',
-    'exin'      => 'EX3',
+    'exin'      => 'EX3-IVS2',
     'prot'      => 'NP_006832.1',
     'trRefComp' => {
         'EX3' => 0
@@ -2533,7 +2533,7 @@ my $cds_edge_ins_anno = {
     'c'        => 'c.102-1_102insG',
     'rnaBegin' => 243,
     'ei_Begin' => 'EX3',
-    'r'        => 'C2',
+    'r'        => 'C2-AC1',
     'cdsBegin' => '102',
     'preStart' => {
         'r'    => 'AC1',
@@ -2547,7 +2547,7 @@ my $cds_edge_ins_anno = {
     'exonIndex'      => '3',
     'r_Begin'        => 'C2',
     'trAlt'          => 'G',
-    'intronIndex'    => '.',
+    'intronIndex'    => '2',
     'strd'           => '+',
     'componentIndex' => '3',
     'geneSym'        => 'SLC38A3',
@@ -2562,12 +2562,12 @@ my $cds_edge_ins_anno = {
     'p3' => 'p.Val35Glyfs*27',
     'rnaEnd'   => '243-1',
     'prAlt'    => 'RGRGPCTELYGGQELPTEKSQQGATLH*',
-    'genepart' => 'CDS',
+    'genepart' => 'span',
     'prRef' =>
 'RVEDPARSCMEGKSFLQKSPSKEPHFTDFEGKTSFGMSVFNLSNAIMGSGILGLAYAMANTGIILFLFLLTAVALLSSYSIHLLLKSSGVVGIRAYEQLGYRAFGTPGKLAAALAITLQNIGAMSSYLYIIKSELPLVIQTFLNLEEKTSDWYMNGNYLVILVSVTIILPLALMRQLGYLGYSSGFSLSCMVFFLIAVIYKKFHVPCPLPPNFNNTTGNFSHVEIVKEKVQLQVEPEASAFCTPSYFTLNSQTAYTIPIMAFAFVCHPEVLPIYTELKDPSKKKMQHISNLSIAVMYIMYFLAALFGYLTFYNGVESELLHTYSKVDPFDVLILCVRVAVLTAVTLTVPIVLFPVRRAIQQMLFPNQEFSWLRHVLIAVGLLTCINLLVIFAPNILGIFGVIGATSAPFLIFIFPAIFYFRIMPTEKEPARSTPKILALCFAMLGFLLMTMSLSFIIIDWASGTSRHGGNH*',
     'func'       => 'frameshift',
     'funcSO'     => 'SO:0001589',
-    'genepartSO' => 'SO:0000316',
+    'genepartSO' => '',
     'funcSOname' => 'frameshift_variant',
     'primaryTag' => 'Y'
   };
@@ -2575,7 +2575,7 @@ my $cds_edge_ins_anno = {
 my $cds_edge_ins2_anno = {
     'protBegin' => 279,
     'ei_End'    => 'EX7',
-    'exin'      => 'EX7',
+    'exin'      => 'IVS7-EX7',
     'prot'      => 'NP_055772.2',
     'trRefComp' => {
         'IVS7' => [ 0 ],
@@ -2585,7 +2585,7 @@ my $cds_edge_ins2_anno = {
     'c'        => 'c.834_834+1insGTTA',
     'rnaBegin' => '1112+1',
     'ei_Begin' => 'IVS7',
-    'r'        => 'C6',
+    'r'        => 'DC6-C6',
     'cdsBegin' => '834+1',
     'preStart' => {
         'r'    => 'C6',
@@ -2599,7 +2599,7 @@ my $cds_edge_ins2_anno = {
     'exonIndex' => '7',
     'r_Begin'   => 'DC6',
     'trAlt'     => 'GTTA',
-    'intronIndex'    => '.',
+    'intronIndex'    => '7',
     'strd'           => '+',
     'componentIndex' => '7',
     'geneSym'        => 'DENND3',
@@ -2614,12 +2614,12 @@ my $cds_edge_ins2_anno = {
     'p3' => 'p.Glu279Valfs*12',
     'rnaEnd'   => 1112,
     'prAlt'    => 'VRSRRFSSDKY*',
-    'genepart' => 'CDS',
+    'genepart' => 'span',
     'prRef' =>
 'EADGLVLINIDHGSITYSKSTDDNVDIPDVPLLAAQTFIQRVQSLQLHHELHAAHLLSSTDLKEGRAHRRSWQQKLNCQIQQTTLQLLVSIFRDVKNHLNYEHRVFNSEEFLKTRAPGDHQFYKQVLDTYMFHSFLKARLNRRMDAFAQMDLDTQSEEDRINGMLLSPRRPTVEKRASRKSSHLHVTHRRMVVSMPNLQDIAMPELAPRNSSLRLTDTAGCRGSSAVLNVTPKSPYTFKIPEIHFPLESKCVQAYHAHFVSMLSEAMCFLAPDNSLLLARYLYLRGLVYLMQGQLLNALLDFQNLYKTDIRIFPTDLVKRTVESMSAPEWEGAEQAPELMRLISEILDKPHEASKLDDHVKKFKLPKKHMQLGDFMKRVQESGIVKDASIIHRLFEALTVGQEKQIDPETFKDFYNCWKETEAEAQEVSLPWLVMEHLDKNECVCKLSSSVKTNLGVGKIAMTQKRLFLLTEGRPGYLEISTFRNIEEVRRTTTTFLLRRIPTLKIRVASKKEVFEANLKTECDLWHLMVKEMWAGKKLADDHKDPHYVQQALTNVLLMDAVVGTLQSPGAIYAASKLSYFDKMSNEMPMTLPETTLETLKHKINPSAGEAFPQAVDVLLYTPGHLDPAEKVEDAHPKLWCALSEGKVTVFNASSWTIHQHSFKVGTAKVNCMVMADQNQVWVGSEDSVIYIINVHSMSCNKQLTAHCSSVTDLIVQDGQEAPSNVYSCSMDGMVLVWNVSTLQVTSRFQLPRGGLTSIRLHGGRLWCCTGNSIMVMKMNGSLHQELKIEENFKDTSTSFLAFQLLPEEEQLWAACAGRSEVYIWSLKDLAQPPQRVPLEDCSEINCMIRVKKQVWVGSRGLGQGTPKGKIYVIDAERKTVEKELVAHMDTVRTLCSAEDRYVLSGSGREEGKVAIWKGE*',
     'func'       => 'frameshift',
     'funcSO'     => 'SO:0001589',
-    'genepartSO' => 'SO:0000316',
+    'genepartSO' => '',
     'funcSOname' => 'frameshift_variant',
     'primaryTag' => 'Y'
 };
@@ -3222,6 +3222,8 @@ my $fs_before_dup_frame = {
 
 my $prtc_anno = $beda->anno( "chr17", 41056042, 41056043, "G", "A" );
 my $prTag_correction = $prtc_anno->{var}->{varName};
+my $ss5_anno = $beda->anno( "chr1", 113636187, 113636191, "=", "?" );
+my $span_splice5 = $ss5_anno->{trInfo}->{"NM_014813.1"}->{genepart};
 
 my $mt_no_call_ncRNA = {
     'r'         => 'R1E',
@@ -3279,7 +3281,7 @@ my $mt_span_no_call = {
         'nDot' => -8,
         'exin' => '.'
     },
-    'componentIndex' => '.',
+    'componentIndex' => '',
     'ei_End'        => 'EX1E',
     'trRef'         => 'CCCCACAGTTTATGTA',
     'protEnd'       => '',
@@ -3826,7 +3828,7 @@ test_ok ( "cdsdel_dup_frame", $cdsdel_dup_frame, "NM_015068.3",
 test_ok ( "fs_before_dup_frame", $fs_before_dup_frame, "NM_015068.3",
    "chr7", 94293520, 94293520, "", "TC" );
 ok ( $prTag_correction eq "NM_000151.3(G6PC): c.326G>A (p.C109Y)", "for [ primary tag correction ]" );
-
+ok ( $span_splice5 eq "five_prime_cis_splice_site", "for [ span splice5 and intron ]" );
 
 
 test_ok ( "MT_no_call_ncRNA", $mt_no_call_ncRNA, 'NR_MT-TRNF', 

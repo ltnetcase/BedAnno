@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.73';
+our $VERSION = '0.74';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.73
+=head2 VERSION v0.74
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -2367,10 +2367,12 @@ sub finaliseAnno {
                 $trAnnoEnt->{r}              = '?';
                 $trAnnoEnt->{exin}           = '?';
                 $trAnnoEnt->{componentIndex} = '';
+		$trAnnoEnt->{exonIndex} = $1
+		  if ( $trAnnoEnt->{ei_Begin} =~ /EX(\d+)/ );
+		$trAnnoEnt->{intronIndex} = $1
+		  if ( $trAnnoEnt->{ei_Begin} =~ /IVS(\d+)/ );
             }
-            elsif ( $trAnnoEnt->{r_Begin} eq $trAnnoEnt->{r_End}
-                or 0 >
-                $self->cmpPos( $trAnnoEnt->{rnaBegin}, $trAnnoEnt->{rnaEnd} ) )
+            elsif ( $trAnnoEnt->{r_Begin} eq $trAnnoEnt->{r_End} )
             {
                 $genepartSO =
                   ( $trAnnoEnt->{genepartSO} =~ /^\d+$/ )
@@ -2390,59 +2392,64 @@ sub finaliseAnno {
                     $trAnnoEnt->{componentIndex} = $1;
                     $trAnnoEnt->{intronIndex}   = $1;
                 }
-                else {
+                else { # PROM
                     $trAnnoEnt->{componentIndex} = 0;
                 }
             }
-            elsif ($trAnnoEnt->{rnaBegin} =~ /^\+/
-                or $trAnnoEnt->{rnaEnd} =~ /^\+/ )
-            {
-                $genepartSO = 'span';    # 3'downstream span
-                $trAnnoEnt->{r} =
-                  ($strd)
-                  ? $trAnnoEnt->{r_Begin} . '-' . $trAnnoEnt->{r_End}
-                  : $trAnnoEnt->{r_End} . '-' . $trAnnoEnt->{r_Begin};
-                $trAnnoEnt->{exin} =
-                  ($strd)
-                  ? $trAnnoEnt->{ei_Begin}
-                  : $trAnnoEnt->{ei_End};
-            }
-            elsif ( $trAnnoEnt->{ei_Begin} =~ /^IVS/
-                and $trAnnoEnt->{ei_Begin} eq $trAnnoEnt->{ei_End} )
-            {                            # span splice or interior intron
-                $genepartSO = 'span'; # need to discuss? whether to use interior
-                $trAnnoEnt->{r} =
-                  ($strd)
-                  ? $trAnnoEnt->{r_Begin} . '-' . $trAnnoEnt->{r_End}
-                  : $trAnnoEnt->{r_End} . '-' . $trAnnoEnt->{r_Begin};
-                $trAnnoEnt->{exin}          = $trAnnoEnt->{ei_Begin};
-                $trAnnoEnt->{componentIndex} = $1
-                  if ( $trAnnoEnt->{ei_Begin} =~ /(\d+)/ );
-                $trAnnoEnt->{intronIndex} = $trAnnoEnt->{componentIndex};
-            }
-            else {    # non-equal exon intron number or UTR/CDS span
-                $genepartSO = 'span';
-                $trAnnoEnt->{r} =
-                  ($strd)
-                  ? $trAnnoEnt->{r_Begin} . '-' . $trAnnoEnt->{r_End}
-                  : $trAnnoEnt->{r_End} . '-' . $trAnnoEnt->{r_Begin};
-                if ( $trAnnoEnt->{ei_Begin} eq $trAnnoEnt->{ei_End} ) {
-                    $trAnnoEnt->{exin}          = $trAnnoEnt->{ei_Begin};
-                    $trAnnoEnt->{componentIndex} = $1
-                      if ( $trAnnoEnt->{ei_Begin} =~ /EX(\d+)/ );
-                    $trAnnoEnt->{exonIndex} = $trAnnoEnt->{componentIndex};
-                }
-                else {    # for same index exon intron give this index
-                    $trAnnoEnt->{exin} =
-                      ($strd)
-                      ? $trAnnoEnt->{ei_Begin} . '-' . $trAnnoEnt->{ei_End}
-                      : $trAnnoEnt->{ei_End} . '-' . $trAnnoEnt->{ei_Begin};
+	    elsif ( $trAnnoEnt->{ei_Begin} =~ /^IVS/
+		and $trAnnoEnt->{ei_Begin} eq $trAnnoEnt->{ei_End} )
+	    {                            # span splice or interior intron
+		if (
+			    $trAnnoEnt->{r_Begin} =~ /^D/
+			and $trAnnoEnt->{r_End} =~ /^A/
+		  )
+		{
+		    $genepartSO = 'span';
+		}
+		elsif ( $trAnnoEnt->{r_Begin} =~ /^D/ ) {
+		    $genepartSO = "SO:0000163"; # 5'
+		}
+		elsif ( $trAnnoEnt->{r_ent} =~ /^A/ ) {
+		    $genepartSO = "SO:0000164"; # 3'
+		}
 
-                    if ( $trAnnoEnt->{exin} =~ /(\d+)\D+(\d+)/ and $1 eq $2 ) {
-                        $trAnnoEnt->{componentIndex} = $1;
-                    }
+		$trAnnoEnt->{r} = $trAnnoEnt->{r_Begin} . '-' . $trAnnoEnt->{r_End};
+		$trAnnoEnt->{exin}          = $trAnnoEnt->{ei_Begin};
+		$trAnnoEnt->{componentIndex} = $1
+		  if ( $trAnnoEnt->{ei_Begin} =~ /(\d+)/ );
+		$trAnnoEnt->{intronIndex} = $trAnnoEnt->{componentIndex};
+	    }
+	    else {
+                $genepartSO = 'span';
+		$trAnnoEnt->{componentIndex} = '';
+		$trAnnoEnt->{componentIndex} = $1 
+		  if ( $trAnnoEnt->{ei_Begin} =~ /(\d+)/ ); # index the begin part
+                $trAnnoEnt->{r} =
+                  $trAnnoEnt->{r_Begin} . '-' . $trAnnoEnt->{r_End};
+                if ( $trAnnoEnt->{ei_Begin} eq $trAnnoEnt->{ei_End} ) {
+                    $trAnnoEnt->{exin} = $trAnnoEnt->{ei_Begin};
+		    $trAnnoEnt->{exonIndex} = $trAnnoEnt->{componentIndex} if ($trAnnoEnt->{componentIndex} ne '');
                 }
-            }
+                else {
+                    $trAnnoEnt->{exin} =
+                      $trAnnoEnt->{ei_Begin} . '-' . $trAnnoEnt->{ei_End};
+                    $trAnnoEnt->{exonIndex} = $1
+                      if ( $trAnnoEnt->{ei_Begin} =~ /EX(\d+)/ );
+                    $trAnnoEnt->{intronIndex} = $1
+                      if ( $trAnnoEnt->{ei_Begin} =~ /IVS(\d+)/ );
+		    if ( $trAnnoEnt->{r_Begin} eq 'PROM'
+			and $trAnnoEnt->{r_End} =~ /^5U/ )
+		    {
+			$trAnnoEnt->{componentIndex} = 0;
+		    }
+		    else {    # non-equal exon intron number or UTR/CDS span
+			if ($trAnnoEnt->{trRef} eq '') { # edge insertion case
+			    $trAnnoEnt->{exonIndex} = $1 if ($trAnnoEnt->{exin} =~ /EX(\d+)/);
+			    $trAnnoEnt->{intronIndex} = $1 if ($trAnnoEnt->{exin} =~ /IVS(\d+)/);
+			}
+		    }
+                }
+	    }
 
 	    confess "Error: unknown genepartSO [$genepartSO]."
 	      if ( !exists $SO2Name{$genepartSO} );
@@ -2451,7 +2458,7 @@ sub finaliseAnno {
 	    $trAnnoEnt->{r} = '.' if (!exists $trAnnoEnt->{r});
 	    $trAnnoEnt->{genepart} = $SO2Name{$genepartSO};
 	    $trAnnoEnt->{genepartSO} = ( $genepartSO =~ /^SO:/ ) ? $genepartSO : "";
-	    $trAnnoEnt->{componentIndex} = '.'
+	    $trAnnoEnt->{componentIndex} = ''
 	      if ( !exists $trAnnoEnt->{componentIndex} );
 	    $trAnnoEnt->{exonIndex} = '.' if ( !exists $trAnnoEnt->{exonIndex} );
 	    $trAnnoEnt->{intronIndex} = '.'
