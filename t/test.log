@@ -2095,16 +2095,16 @@ not ok 36 - for [ cds_edge_ins_anno ]
 #       'componentIndex' => '3',
 #       'ei_Begin' => 'EX3',
 #       'ei_End' => 'IVS2',
-#       'exin' => 'EX3',
+#       'exin' => 'EX3-IVS2',
 #       'exonIndex' => '3',
 #       'func' => 'frameshift',
 #       'funcSO' => 'SO:0001589',
 #       'funcSOname' => 'frameshift_variant',
 #       'geneId' => '10991',
 #       'geneSym' => 'SLC38A3',
-#       'genepart' => 'CDS',
-#       'genepartSO' => 'SO:0000316',
-#       'intronIndex' => '.',
+#       'genepart' => 'span',
+#       'genepartSO' => '',
+#       'intronIndex' => '2',
 #       'p' => 'p.V35Gfs*27',
 #       'p3' => 'p.Val35Glyfs*27',
 #       'pfamId' => 'PF01490.13',
@@ -2127,7 +2127,7 @@ not ok 36 - for [ cds_edge_ins_anno ]
 #       'prot' => 'NP_006832.1',
 #       'protBegin' => 35,
 #       'protEnd' => 505,
-#       'r' => 'C2',
+#       'r' => 'C2-AC1',
 #       'r_Begin' => 'C2',
 #       'r_End' => 'AC1',
 #       'rnaBegin' => 243,
@@ -2196,16 +2196,16 @@ not ok 37 - for [ cds_edge_ins2_anno ]
 #       'componentIndex' => '7',
 #       'ei_Begin' => 'IVS7',
 #       'ei_End' => 'EX7',
-#       'exin' => 'EX7',
+#       'exin' => 'IVS7-EX7',
 #       'exonIndex' => '7',
 #       'func' => 'frameshift',
 #       'funcSO' => 'SO:0001589',
 #       'funcSOname' => 'frameshift_variant',
 #       'geneId' => '22898',
 #       'geneSym' => 'DENND3',
-#       'genepart' => 'CDS',
-#       'genepartSO' => 'SO:0000316',
-#       'intronIndex' => '.',
+#       'genepart' => 'span',
+#       'genepartSO' => '',
+#       'intronIndex' => '7',
 #       'p' => 'p.E279Vfs*12',
 #       'p3' => 'p.Glu279Valfs*12',
 #       'pfamId' => 'PF00400.27;PF02141.16;PF03455.14',
@@ -2228,7 +2228,7 @@ not ok 37 - for [ cds_edge_ins2_anno ]
 #       'prot' => 'NP_055772.2',
 #       'protBegin' => 279,
 #       'protEnd' => 1199,
-#       'r' => 'C6',
+#       'r' => 'DC6-C6',
 #       'r_Begin' => 'DC6',
 #       'r_End' => 'C6',
 #       'rnaBegin' => '1112+1',
@@ -2777,16 +2777,16 @@ not ok 45 - for [ ins_stop ]
 #       'componentIndex' => '1',
 #       'ei_Begin' => 'IVS1',
 #       'ei_End' => 'EX1',
-#       'exin' => 'EX1',
+#       'exin' => 'IVS1-EX1',
 #       'exonIndex' => '1',
 #       'func' => 'stop-gain',
 #       'funcSO' => 'SO:0001587',
 #       'funcSOname' => 'stop_gained',
 #       'geneId' => '259236',
 #       'geneSym' => 'TMIE',
-#       'genepart' => 'CDS',
-#       'genepartSO' => 'SO:0000316',
-#       'intronIndex' => '.',
+#       'genepart' => 'span',
+#       'genepartSO' => '',
+#       'intronIndex' => '1',
 #       'p' => 'p.T34_K156del',
 #       'p3' => 'p.Thr34_Lys156del',
 #       'pfamId' => '.',
@@ -2809,7 +2809,7 @@ not ok 45 - for [ ins_stop ]
 #       'prot' => 'NP_671729.2',
 #       'protBegin' => 32,
 #       'protEnd' => 31,
-#       'r' => 'C1',
+#       'r' => 'DC1-C1',
 #       'r_Begin' => 'DC1',
 #       'r_End' => 'C1',
 #       'rnaBegin' => '248+1',
@@ -5679,9 +5679,10 @@ not ok 60 - for [ fs_before_dup_frame ]
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
 ok 61 - for [ primary tag correction ]
-ok 62 - for [ MT_no_call_ncRNA ]
-ok 63 - for [ MT_span_no_call ]
-not ok 64 - for [ MT_altstart ]
+ok 62 - for [ span splice5 and intron ]
+ok 63 - for [ MT_no_call_ncRNA ]
+ok 64 - for [ MT_span_no_call ]
+not ok 65 - for [ MT_altstart ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -6552,7 +6553,7 @@ not ok 64 - for [ MT_altstart ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 65 - for [ Mt_init_loss ]
+not ok 66 - for [ Mt_init_loss ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -7426,7 +7427,7 @@ not ok 65 - for [ Mt_init_loss ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 66 - for [ No_call_altstart ]
+not ok 67 - for [ No_call_altstart ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -8297,7 +8298,7 @@ not ok 66 - for [ No_call_altstart ]
 #     'varTypeSO' => 'no-call'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 67 - for [ Mt_no_call_initloss ]
+not ok 68 - for [ Mt_no_call_initloss ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -9164,7 +9165,7 @@ not ok 67 - for [ Mt_no_call_initloss ]
 #     'varTypeSO' => 'no-call'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 68 - for [ Mt_nonsense ]
+not ok 69 - for [ Mt_nonsense ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -10034,7 +10035,7 @@ not ok 68 - for [ Mt_nonsense ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 69 - for [ Mt_missense ]
+not ok 70 - for [ Mt_missense ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -10910,7 +10911,7 @@ not ok 69 - for [ Mt_missense ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 70 - for [ Mt_coding_synon ]
+not ok 71 - for [ Mt_coding_synon ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -11781,7 +11782,7 @@ not ok 70 - for [ Mt_coding_synon ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-not ok 71 - for [ Mt_stop_loss ]
+not ok 72 - for [ Mt_stop_loss ]
 # The anno infor are: bless( {
 #   'trInfo' => {
 #     'NM_MT-ATP6' => {
@@ -12645,4 +12646,4 @@ not ok 71 - for [ Mt_stop_loss ]
 #     'varTypeSO' => 'SO:0001483'
 #   }, 'BedAnno::Var' )
 # }, 'BedAnno::Anno' )
-1..71
+1..72
