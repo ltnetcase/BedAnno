@@ -22,58 +22,14 @@ my %opts = (
     db    => "$data/test_db.bed.gz",
     tr    => "$data/test.fas.gz",
     trans => "$data/trans.list",
-    batch => 1,
     quiet => 1,
 );
-
-if ( -e $extradb and -r $extradb ) {
-    if ( -e "$extradb/cytoBand/cytoBand_hg19_grch37.txt.gz" ) {
-        $opts{cytoBand} = "$extradb/cytoBand/cytoBand_hg19_grch37.txt.gz";
-    }
-    if ( -e "$extradb/RepeatMasker/rmsk.bed.gz" ) {
-	$opts{rmsk} = "$extradb/RepeatMasker/rmsk.bed.gz";
-    }
-    if ( -e "$extradb/gwas/gwasCatalog_snp137.bed.gz" ) {
-	$opts{gwas} = "$extradb/gwas/gwasCatalog_snp137.bed.gz";
-    }
-    if ( -e "$extradb/dbsnp/snp137.bed.gz" ) {
-        $opts{dbSNP} = "$extradb/dbsnp/snp137.bed.gz";
-    }
-    if ( -e "$extradb/tgp/tgp_phaseI_version3_hg19.dbdump.bed.gz" ) {
-        $opts{tgp} = "$extradb/tgp/tgp_phaseI_version3_hg19.dbdump.bed.gz";
-    }
-    if ( -e "$extradb/CG/CG54_20130709_stats_filtered_ct0.tsv.gz" ) {
-        $opts{cg54} = "$extradb/CG/CG54_20130709_stats_filtered_ct0.tsv.gz";
-    }
-    if ( -e "$extradb/NHLBI/ESP6500SI-V2-SSA137.NHLBI.bed.rmanchor.uniq.gz" ) {
-        $opts{esp6500} =
-          "$extradb/NHLBI/ESP6500SI-V2-SSA137.NHLBI.bed.rmanchor.uniq.gz";
-    }
-    if ( -e "$extradb/pfam/Pfam-A-ncbi_2012-12-21.bed.gz" ) {
-        $opts{pfam} = "$extradb/pfam/Pfam-A-ncbi_2012-12-21.bed.gz";
-    }
-    if ( -e "$extradb/predictions/predictDB_for_anno104.tab.gz" ) {
-        $opts{prediction} = "$extradb/predictions/predictDB_for_anno104.tab.gz";
-    }
-    if ( -e "$extradb/phyloP/phyloP_all3class_combin_2013-09-25.bed.gz" ) {
-        $opts{phyloP} =
-          "$extradb/phyloP/phyloP_all3class_combin_2013-09-25.bed.gz";
-    }
-    if ( -e "$extradb/cosmic/Cosmic_v67_241013.bed.gz" ) {
-	$opts{cosmic} = "$extradb/cosmic/Cosmic_v67_241013.bed.gz";
-    }
-    if ( -e "$extradb/panelDB/PrePreg12_V1.0.HIGHQ.bed.gz" ) {
-	$opts{customdb_PP12} = "$extradb/panelDB/PrePreg12_V1.0.HIGHQ.bed.gz";
-    }
-    if ( -e "$extradb/aln_db/hg19/hg19_chM.fa.rz" ) {
-	$opts{genome} = "$extradb/aln_db/hg19/hg19_chM.fa.rz";
-    }
-}
+my %bare_opts = %opts;
 
 use Test::Most;
 BEGIN { use_ok('BedAnno') }
 
-my $beda = BedAnno->new(%opts);
+my $bare_beda = BedAnno->new(%bare_opts);
 
 #explain "The database are:", $beda;
 # ncRNA part
@@ -3222,12 +3178,10 @@ my $fs_before_dup_frame = {
     }
 };
 
-my $prtc_anno = $beda->anno( "chr17", 41056042, 41056043, "G", "A" );
+my $prtc_anno = $bare_beda->anno( "chr17", 41056042, 41056043, "G", "A" );
 my $prTag_correction = $prtc_anno->{var}->{varName};
-my $ss5_anno = $beda->anno( "chr1", 113636187, 113636191, "=", "?" );
+my $ss5_anno = $bare_beda->anno( "chr1", 113636187, 113636191, "=", "?" );
 my $span_splice5 = $ss5_anno->{trInfo}->{"NM_014813.1"}->{genepart};
-my $ss_nochange_anno = $beda->anno( "chr11", 827712, 827713, "A", "T" );
-my $splice_no_change = $ss_nochange_anno->{trInfo}->{"NM_173584.3"}->{func};
 
 my $mt_no_call_ncRNA = {
     'r'         => 'R1E',
@@ -3750,214 +3704,107 @@ test_parse_var( "no_call_edge_parse", $no_call_edge_parse, "chr1", 0, 10000,
 test_parse_var( "no_call_edge_ins_parse", $no_call_edge_ins_parse, "chr1",
     6526167, 6526167, "=", "?" );
 
+test_varanno( "snv_varanno",        $snv_varanno,        $snv_parse );
+test_varanno( "ins_varanno",        $ins_varanno,        $insert_parse );
+test_varanno( "del_varanno",        $del_varanno,        $del_parse );
+test_varanno( "rep_varanno",        $rep_varanno,        $rep_parse );
+test_varanno( "delins_varanno",     $delins_varanno,     $delins_parse );
+test_varanno( "subs_varanno",       $subs_varanno,       $subs_parse );
+test_varanno( "no_call_varanno",    $no_call_varanno,    $no_call_parse );
+test_varanno( "cds_no_change_anno", $cds_no_change_anno, $cds_no_change );
+test_varanno( "cds_rna_delins_anno", $cds_rna_delins_anno,
+    $cds_rna_delins );
+test_varanno( "cds_snv_anno",     $cds_snv_anno,     $cds_snv );
+test_varanno( "cds_del_anno",     $cds_del_anno,     $cds_del );
+test_varanno( "cds_ins_anno",     $cds_ins_anno,     $cds_ins );
+test_varanno( "cds_rep_anno",     $cds_rep_anno,     $cds_rep );
+test_varanno( "cds_delins_anno",  $cds_delins_anno,  $cds_delins );
+test_varanno( "cds_no_call_anno", $cds_no_call_anno, $cds_no_call );
+test_varanno( "no_call_edge_varanno", $no_call_edge_varanno,
+    $no_call_edge_parse );
 
-if ( 5 < scalar keys %opts ) {
-    if ( exists $opts{cytoBand} ) {
-	my ($t1_anno, $n1) = $beda->varanno( $snv_parse );
-        if ( exists $t1_anno->{var}->{cytoBand}
-            and $t1_anno->{var}->{cytoBand} eq '1p36.33' )
-        {
-            pass("for [ cytoBand ]");
-        }
-        else {
-            fail("for [ cytoBand ]");
-        }
-    }
-    if ( exists $opts{phyloP} ) {
-	my ($t2_anno, $n2) = $beda->varanno( $cds_rna_delins );
-        if (exists $t2_anno->{var}->{phyloPpr}
-              and $t2_anno->{var}->{phyloPpr} eq '-0.181') {
-	    pass("for [ phyloP ]");
-	}
-	else {
-	    fail("for [ phyloP ]");
-	}
-    }
+test_ok( "no_call_edge_ins_trinfo", $no_call_edge_ins_trinfo, 'NM_148965.1',
+    "chr1", 6526167, 6526167, "=", "?" );
+test_ok( "cds_rna_snv1_anno", $cds_rna_snv1_anno, 'NM_000581.2',
+    "chr3", 49395708, 49395709, "C", "T" );
+test_ok( "cds_rna_snv2_anno", $cds_rna_snv2_anno, 'NM_000581.2',
+    "chr3", 49395704, 49395705, "C", "A" );
+test_ok( "large_del_anno", $large_del_anno, 'NM_000642.2',
+    "chr1", 100327863, 100327884, "TGGTGCTGATAATCATGTGCT", "" );
+test_ok( "promoter_anno", $promoter_anno, 'NM_033492.1',
+    "chr1", 1590520, 1590521, "G", "A" );
+test_ok( "cds_edge_ins_anno", $cds_edge_ins_anno, 'NM_006841.4',
+    "chr3", 50251833, 50251833, "", "G" );
+test_ok( "cds_edge_ins2_anno", $cds_edge_ins2_anno, 'NM_014957.2',
+    "chr8", 142161936, 142161936, "", "GTTA" );
+test_ok( "left_edge_mismatch_anno", $left_edge_mismatch_anno, 'NM_006158.3',
+    "chr8", 24811065, 24811065, "", "A" );
+test_ok( "downstream_no_call", $downstream_no_call, "NR_037481.1",
+    "chr1", 26232848, 26232852, "=", "?" );
+test_ok( "rep_span_cds_utr3", $rep_span_cds_utr3, "NM_007115.3",
+    "chr2", 152236045, 152236046, "A", "" );
+test_ok( "middle_intron", $middle_intron, "NM_001715.2",
+    "chr8", 11421015, 11421016, "G", "A" );
+test_ok( "fs1_rep_del", $fs1_rep_del, "NM_001031681.2",
+    "chr17", 3543559, 3543561, "TG", "" );
+test_ok( "fs1_del", $fs1_del, "NM_001031681.2",
+    "chr17", 3559837, 3559839, "CA", "" );
+test_ok( "span_3U", $span_3U, "NM_000091.4",
+    "chr2", 228176574, 228176592, "AAAAGACACTGAAGCTAA", "" );
+test_ok( "ins_stop", $ins_stop, "NM_147196.2",
+    "chr3", 46743070, 46743070, "", "CCCTCGTAG" );
+test_ok( "ncall", $ncall, "NM_147196.2",
+    "chr3", 46751100, 46751101, "G", "N" );
+test_ok( "walk_to_end", $walk_to_end, "NM_000015.2",
+    "chr8", 18258722, 18258722, "", "GA" );
 
-    my ($t3_anno, $n3) = $beda->varanno($cds_no_change);
-    if ( exists $opts{cg54} ) {
-        if ( exists $t3_anno->{var}->{cg54}->{AF}
-            and $t3_anno->{var}->{cg54}->{AF} == 1.0 )
-        {
-            pass("for [ cg54 ]");
-        }
-	else {
-            fail("for [ cg54 ]");
-	}
-    }
-    
-    if ( exists $opts{dbSNP} ) {
-	if ( exists $t3_anno->{var}->{dbsnp}->{'rs11300136'} ) {
-	    pass("for [ dbSNP ]" );
-	}
-	else {
-	    fail("for [ dbSNP ]" );
-	}
-    }
+test_ok( "span_annotation_fail", $span_annotation_fail, "NM_001145026.1",
+    "chr12", 80840806, 80840809, "GTG", "A" );
 
-    if ( exists $opts{esp6500} ) {
-        if ( exists $t3_anno->{var}->{esp6500}->{AF}
-            and $t3_anno->{var}->{esp6500}->{AF} eq '0.999742' )
-        {
-            pass("for [ esp6500 ]");
-        }
-        else {
-            fail("for [ esp6500 ]");
-        }
-    }
-
-    if ( exists $opts{tgp} ) {
-        if ( exists $t3_anno->{var}->{tgp}->{AF}
-            and $t3_anno->{var}->{tgp}->{AF} eq '0.990000' )
-        {
-            pass("for [ tgp ]");
-        }
-        else {
-            fail("for [ tgp ]");
-        }
-    }
-
-    if ( exists $opts{pfam} ) {
-        my ($t4_anno, $n4) =
-          $beda->anno( "chr1", 100327863, 100327884, "TGGTGCTGATAATCATGTGCT",
-            "" );
-        if ( exists $t4_anno->{trInfo}->{"NM_000028.2"}
-            and $t4_anno->{trInfo}->{"NM_000028.2"}->{pfamId} eq
-            'PF14699.1;PF14701.1' )
-        {
-            pass("for [ pfam ]");
-        }
-        else {
-            fail("for [ pfam ]");
-        }
-    }
-
-
-    if ( exists $opts{prediction} ) {
-        my ($t5_anno, $n5) = $beda->anno( "chr3", 49395708, 49395709, "C", "T" );
-        if
-            ( exists $t5_anno->{trInfo}
-              and exists $t5_anno->{trInfo}->{'NM_000581.2'}
-              and exists $t5_anno->{trInfo}->{'NM_000581.2'}->{siftPred}
-              and $t5_anno->{trInfo}->{'NM_000581.2'}->{siftPred} eq 'Damaging' ) {
-            pass("for [ prediction ]");
-	}
-	else {
-            fail("for [ prediction ]");
-	}
-    }
-
-    ok( $splice_no_change eq "no-change", "for [ splice change to canonical ]" )
-      if ( exists $opts{genome} );
-}
-else {
-    test_varanno( "snv_varanno",        $snv_varanno,        $snv_parse );
-    test_varanno( "ins_varanno",        $ins_varanno,        $insert_parse );
-    test_varanno( "del_varanno",        $del_varanno,        $del_parse );
-    test_varanno( "rep_varanno",        $rep_varanno,        $rep_parse );
-    test_varanno( "delins_varanno",     $delins_varanno,     $delins_parse );
-    test_varanno( "subs_varanno",       $subs_varanno,       $subs_parse );
-    test_varanno( "no_call_varanno",    $no_call_varanno,    $no_call_parse );
-    test_varanno( "cds_no_change_anno", $cds_no_change_anno, $cds_no_change );
-    test_varanno( "cds_rna_delins_anno", $cds_rna_delins_anno,
-        $cds_rna_delins );
-    test_varanno( "cds_snv_anno",     $cds_snv_anno,     $cds_snv );
-    test_varanno( "cds_del_anno",     $cds_del_anno,     $cds_del );
-    test_varanno( "cds_ins_anno",     $cds_ins_anno,     $cds_ins );
-    test_varanno( "cds_rep_anno",     $cds_rep_anno,     $cds_rep );
-    test_varanno( "cds_delins_anno",  $cds_delins_anno,  $cds_delins );
-    test_varanno( "cds_no_call_anno", $cds_no_call_anno, $cds_no_call );
-    test_varanno( "no_call_edge_varanno", $no_call_edge_varanno,
-        $no_call_edge_parse );
-
-    test_ok( "no_call_edge_ins_trinfo", $no_call_edge_ins_trinfo, 'NM_148965.1',
-        "chr1", 6526167, 6526167, "=", "?" );
-    test_ok( "cds_rna_snv1_anno", $cds_rna_snv1_anno, 'NM_000581.2',
-        "chr3", 49395708, 49395709, "C", "T" );
-    test_ok( "cds_rna_snv2_anno", $cds_rna_snv2_anno, 'NM_000581.2',
-        "chr3", 49395704, 49395705, "C", "A" );
-    test_ok( "large_del_anno", $large_del_anno, 'NM_000642.2',
-        "chr1", 100327863, 100327884, "TGGTGCTGATAATCATGTGCT", "" );
-    test_ok( "promoter_anno", $promoter_anno, 'NM_033492.1',
-        "chr1", 1590520, 1590521, "G", "A" );
-    test_ok( "cds_edge_ins_anno", $cds_edge_ins_anno, 'NM_006841.4',
-        "chr3", 50251833, 50251833, "", "G" );
-    test_ok( "cds_edge_ins2_anno", $cds_edge_ins2_anno, 'NM_014957.2',
-        "chr8", 142161936, 142161936, "", "GTTA" );
-    test_ok( "left_edge_mismatch_anno", $left_edge_mismatch_anno, 'NM_006158.3',
-        "chr8", 24811065, 24811065, "", "A" );
-    test_ok( "downstream_no_call", $downstream_no_call, "NR_037481.1",
-        "chr1", 26232848, 26232852, "=", "?" );
-    test_ok( "rep_span_cds_utr3", $rep_span_cds_utr3, "NM_007115.3",
-        "chr2", 152236045, 152236046, "A", "" );
-    test_ok( "middle_intron", $middle_intron, "NM_001715.2",
-        "chr8", 11421015, 11421016, "G", "A" );
-    test_ok( "fs1_rep_del", $fs1_rep_del, "NM_001031681.2",
-        "chr17", 3543559, 3543561, "TG", "" );
-    test_ok( "fs1_del", $fs1_del, "NM_001031681.2",
-        "chr17", 3559837, 3559839, "CA", "" );
-    test_ok( "span_3U", $span_3U, "NM_000091.4",
-        "chr2", 228176574, 228176592, "AAAAGACACTGAAGCTAA", "" );
-    test_ok( "ins_stop", $ins_stop, "NM_147196.2",
-        "chr3", 46743070, 46743070, "", "CCCTCGTAG" );
-    test_ok( "ncall", $ncall, "NM_147196.2",
-        "chr3", 46751100, 46751101, "G", "N" );
-    test_ok( "walk_to_end", $walk_to_end, "NM_000015.2",
-        "chr8", 18258722, 18258722, "", "GA" );
-
-    test_ok( "span_annotation_fail", $span_annotation_fail, "NM_001145026.1",
-        "chr12", 80840806, 80840809, "GTG", "A" );
-
-    test_ok( "badmap_correction_ref", $badmap_correction_ref, "NM_015120.4",
-        "chr2", 73675226, 73675227, "T", "T" );
-    test_ok( "badmap_correction_ins", $badmap_correction_ins, "NM_015120.4",
-        "chr2", 73675227, 73675227, "", "CTC" );
-    test_ok( "delete_deleted_frame", $delete_deleted_frame, "NM_016178.2",
-        "chr1", 151739699, 151739700, "T", "" );
-    test_ok( "change_deleted_frame", $change_deleted_frame, "NM_016178.2",
-        "chr1", 151739699, 151739700, "T", "C" );
-    test_ok( "cdsdel_deleted_frame", $cdsdel_deleted_frame, "NM_016178.2",
-        "chr1", 151739698, 151739702, "CTGA", "" );
-    test_ok( "frameshift_deleted_frame", $frameshift_deleted_frame,
-        "NM_016178.2", "chr1", 151739698, 151739701, "CTG", "" );
-    test_ok( "fs_before_deleted_frame", $fs_before_deleted_frame, "NM_016178.2",
-        "chr1", 151739640, 151739640, "", "A" );
-    test_ok( "change_dup_frame", $change_dup_frame, "NM_015068.3",
-        "chr7", 94293824, 94293825, "A", "T" );
-    test_ok( "synon_dup_frame", $synon_dup_frame, "NM_015068.3",
-        "chr7", 94293824, 94293824, "", "A" );
-    test_ok( "frameshift_dup_frame", $frameshift_dup_frame, "NM_015068.3",
-        "chr7", 94293824, 94293827, "AAA", "" );
-    test_ok( "cdsdel_dup_frame", $cdsdel_dup_frame, "NM_015068.3",
-        "chr7", 94293824, 94293826, "AA", "" );
-    test_ok( "fs_before_dup_frame", $fs_before_dup_frame, "NM_015068.3",
-        "chr7", 94293520, 94293520, "", "TC" );
-    test_ok( "MT_no_call_ncRNA", $mt_no_call_ncRNA, 'NR_MT-TRNF',
-        "chrMT", 576, 577, "G", "N" );
-    test_ok( "MT_span_no_call", $mt_span_no_call, 'NR_MT-TRNF',
-        "chrMT", 569, 585, "CCCCACAGTTTATGTA", "?" );
-    test_ok( "MT_altstart", $mt_altstart, 'NM_MT-ND1',
-        "chrMT", 3308, 3309, "A", "T" );
-    test_ok( "Mt_init_loss", $mt_init_loss, "NM_MT-ND1",
-        "chrMT", 3306, 3307, "A", "C" );
-    test_ok( "No_call_altstart", $no_call_altstart, "NM_MT-ND1",
-        "chrMT", 3308, 3309, "A", "N" );
-    test_ok( "Mt_no_call_initloss", $mt_no_call_initloss, "NM_MT-ND1",
-        "chrMT", 3306, 3307, "A", "?" );
-    test_ok( "Mt_nonsense", $mt_nonsense, "NM_MT-ND1",
-        "chrMT", 3434, 3435, "C", "A" );
-    test_ok( "Mt_missense", $mt_missense, "NM_MT-ND1",
-        "chrMT", 3433, 3434, "A", "G" );
-    test_ok( "Mt_coding_synon", $mt_coding_synon, "NM_MT-ND1",
-        "chrMT", 3434, 3435, "C", "T" );
-    test_ok( "Mt_stop_loss", $mt_stop_loss, "NM_MT-ND1",
-        "chrMT", 4261, 4262, "A", "G" );
-}
-
-ok ( $prTag_correction eq "NM_000151.3(G6PC): c.326G>A (p.C109Y)", "for [ primary tag correction ]" );
-ok ( $span_splice5 eq "five_prime_cis_splice_site", "for [ span splice5 and intron ]" );
-
-
+test_ok( "badmap_correction_ref", $badmap_correction_ref, "NM_015120.4",
+    "chr2", 73675226, 73675227, "T", "T" );
+test_ok( "badmap_correction_ins", $badmap_correction_ins, "NM_015120.4",
+    "chr2", 73675227, 73675227, "", "CTC" );
+test_ok( "delete_deleted_frame", $delete_deleted_frame, "NM_016178.2",
+    "chr1", 151739699, 151739700, "T", "" );
+test_ok( "change_deleted_frame", $change_deleted_frame, "NM_016178.2",
+    "chr1", 151739699, 151739700, "T", "C" );
+test_ok( "cdsdel_deleted_frame", $cdsdel_deleted_frame, "NM_016178.2",
+    "chr1", 151739698, 151739702, "CTGA", "" );
+test_ok( "frameshift_deleted_frame", $frameshift_deleted_frame,
+    "NM_016178.2", "chr1", 151739698, 151739701, "CTG", "" );
+test_ok( "fs_before_deleted_frame", $fs_before_deleted_frame, "NM_016178.2",
+    "chr1", 151739640, 151739640, "", "A" );
+test_ok( "change_dup_frame", $change_dup_frame, "NM_015068.3",
+    "chr7", 94293824, 94293825, "A", "T" );
+test_ok( "synon_dup_frame", $synon_dup_frame, "NM_015068.3",
+    "chr7", 94293824, 94293824, "", "A" );
+test_ok( "frameshift_dup_frame", $frameshift_dup_frame, "NM_015068.3",
+    "chr7", 94293824, 94293827, "AAA", "" );
+test_ok( "cdsdel_dup_frame", $cdsdel_dup_frame, "NM_015068.3",
+    "chr7", 94293824, 94293826, "AA", "" );
+test_ok( "fs_before_dup_frame", $fs_before_dup_frame, "NM_015068.3",
+    "chr7", 94293520, 94293520, "", "TC" );
+test_ok( "MT_no_call_ncRNA", $mt_no_call_ncRNA, 'NR_MT-TRNF',
+    "chrMT", 576, 577, "G", "N" );
+test_ok( "MT_span_no_call", $mt_span_no_call, 'NR_MT-TRNF',
+    "chrMT", 569, 585, "CCCCACAGTTTATGTA", "?" );
+test_ok( "MT_altstart", $mt_altstart, 'NM_MT-ND1',
+    "chrMT", 3308, 3309, "A", "T" );
+test_ok( "Mt_init_loss", $mt_init_loss, "NM_MT-ND1",
+    "chrMT", 3306, 3307, "A", "C" );
+test_ok( "No_call_altstart", $no_call_altstart, "NM_MT-ND1",
+    "chrMT", 3308, 3309, "A", "N" );
+test_ok( "Mt_no_call_initloss", $mt_no_call_initloss, "NM_MT-ND1",
+    "chrMT", 3306, 3307, "A", "?" );
+test_ok( "Mt_nonsense", $mt_nonsense, "NM_MT-ND1",
+    "chrMT", 3434, 3435, "C", "A" );
+test_ok( "Mt_missense", $mt_missense, "NM_MT-ND1",
+    "chrMT", 3433, 3434, "A", "G" );
+test_ok( "Mt_coding_synon", $mt_coding_synon, "NM_MT-ND1",
+    "chrMT", 3434, 3435, "C", "T" );
+test_ok( "Mt_stop_loss", $mt_stop_loss, "NM_MT-ND1",
+    "chrMT", 4261, 4262, "A", "G" );
 #test_ok ("Mt_stop_retained", $mt_stop_retained, "NM_MT-COX2", 
 #   "chrMT", 8268, 8269, "G", "A" );
 #test_ok ("Mt_altstart_frameshift", $mt_altstart_frameshift, "NM_MT-ND1", 
@@ -4012,14 +3859,173 @@ ok ( $span_splice5 eq "five_prime_cis_splice_site", "for [ span splice5 and intr
 #   "chrMT", 4260, 4261, "T", "AGA" );
 
 
+ok ( $prTag_correction eq "NM_000151.3(G6PC): c.326G>A (p.C109Y)", "for [ primary tag correction ]" );
+ok ( $span_splice5 eq "five_prime_cis_splice_site", "for [ span splice5 and intron ]" );
+
+$bare_beda->DESTROY();
+undef $bare_beda;
+
+if ( -e $extradb and -r $extradb ) {
+    if ( -e "$extradb/cytoBand/cytoBand_hg19_grch37.txt.gz" ) {
+       $opts{cytoBand} = "$extradb/cytoBand/cytoBand_hg19_grch37.txt.gz";
+    }
+    if ( -e "$extradb/RepeatMasker/rmsk.bed.gz" ) {
+	$opts{rmsk} = "$extradb/RepeatMasker/rmsk.bed.gz";
+    }
+    if ( -e "$extradb/gwas/gwasCatalog_snp137.bed.gz" ) {
+	$opts{gwas} = "$extradb/gwas/gwasCatalog_snp137.bed.gz";
+    }
+    if ( -e "$extradb/dbsnp/snp137.bed.gz" ) {
+        $opts{dbSNP} = "$extradb/dbsnp/snp137.bed.gz";
+    }
+    if ( -e "$extradb/tgp/tgp_phaseI_version3_hg19.dbdump.bed.gz" ) {
+        $opts{tgp} = "$extradb/tgp/tgp_phaseI_version3_hg19.dbdump.bed.gz";
+    }
+    if ( -e "$extradb/CG/CG54_20130709_stats_filtered_ct0.tsv.gz" ) {
+        $opts{cg54} = "$extradb/CG/CG54_20130709_stats_filtered_ct0.tsv.gz";
+    }
+    if ( -e "$extradb/NHLBI/ESP6500SI-V2-SSA137.NHLBI.bed.rmanchor.uniq.gz" ) {
+        $opts{esp6500} =
+          "$extradb/NHLBI/ESP6500SI-V2-SSA137.NHLBI.bed.rmanchor.uniq.gz";
+    }
+    if ( -e "$extradb/pfam/Pfam-A-ncbi_2012-12-21.bed.gz" ) {
+        $opts{pfam} = "$extradb/pfam/Pfam-A-ncbi_2012-12-21.bed.gz";
+    }
+    if ( -e "$extradb/predictions/predictDB_for_anno104.tab.gz" ) {
+        $opts{prediction} = "$extradb/predictions/predictDB_for_anno104.tab.gz";
+    }
+    if ( -e "$extradb/phyloP/phyloP_all3class_combin_2013-09-25.bed.gz" ) {
+        $opts{phyloP} =
+          "$extradb/phyloP/phyloP_all3class_combin_2013-09-25.bed.gz";
+    }
+    if ( -e "$extradb/cosmic/Cosmic_v67_241013.bed.gz" ) {
+	$opts{cosmic} = "$extradb/cosmic/Cosmic_v67_241013.bed.gz";
+    }
+    if ( -e "$extradb/panelDB/PrePreg12_V1.0.HIGHQ.bed.gz" ) {
+	$opts{customdb_PP12} = "$extradb/panelDB/PrePreg12_V1.0.HIGHQ.bed.gz";
+    }
+    if ( -e "$extradb/aln_db/hg19/hg19_chM.fa.rz" ) {
+	$opts{genome} = "$extradb/aln_db/hg19/hg19_chM.fa.rz";
+    }
+
+    my $beda = BedAnno->new(%opts);
+    if ( exists $opts{cytoBand} ) {
+	my ($t1_anno, $n1) = $beda->varanno( $snv_parse );
+	if ( exists $t1_anno->{var}->{cytoBand}
+	    and $t1_anno->{var}->{cytoBand} eq '1p36.33' )
+	{
+	    pass("for [ cytoBand ]");
+	}
+	else {
+	    fail("for [ cytoBand ]");
+	}
+    }
+    if ( exists $opts{phyloP} ) {
+	my ($t2_anno, $n2) = $beda->varanno( $cds_rna_delins );
+	if (exists $t2_anno->{var}->{phyloPpr}
+	      and $t2_anno->{var}->{phyloPpr} eq '-0.181') {
+	    pass("for [ phyloP ]");
+	}
+	else {
+	    fail("for [ phyloP ]");
+	}
+    }
+
+    my ($t3_anno, $n3) = $beda->varanno($cds_no_change);
+    if ( exists $opts{cg54} ) {
+	if ( exists $t3_anno->{var}->{cg54}->{AF}
+	    and $t3_anno->{var}->{cg54}->{AF} == 1.0 )
+	{
+	    pass("for [ cg54 ]");
+	}
+	else {
+	    fail("for [ cg54 ]");
+	}
+    }
+
+    if ( exists $opts{dbSNP} ) {
+	if ( exists $t3_anno->{var}->{dbsnp}->{'rs11300136'} ) {
+	    pass("for [ dbSNP ]" );
+	}
+	else {
+	    fail("for [ dbSNP ]" );
+	}
+    }
+
+    if ( exists $opts{esp6500} ) {
+	if ( exists $t3_anno->{var}->{esp6500}->{AF}
+	    and $t3_anno->{var}->{esp6500}->{AF} eq '0.999742' )
+	{
+	    pass("for [ esp6500 ]");
+	}
+	else {
+	    fail("for [ esp6500 ]");
+	}
+    }
+
+    if ( exists $opts{tgp} ) {
+	if ( exists $t3_anno->{var}->{tgp}->{AF}
+	    and $t3_anno->{var}->{tgp}->{AF} eq '0.990000' )
+	{
+	    pass("for [ tgp ]");
+	}
+	else {
+	    fail("for [ tgp ]");
+	}
+    }
+
+    if ( exists $opts{pfam} ) {
+	my $t4_anno =
+	  $beda->anno( "chr1", 100327863, 100327884, "TGGTGCTGATAATCATGTGCT",
+	    "" );
+	if ( exists $t4_anno->{trInfo}->{"NM_000028.2"}
+	    and $t4_anno->{trInfo}->{"NM_000028.2"}->{pfamId} eq
+	    'PF14699.1;PF14701.1' )
+	{
+	    pass("for [ pfam ]");
+	}
+	else {
+	    fail("for [ pfam ]");
+	}
+    }
+
+
+    if ( exists $opts{prediction} ) {
+	my $t5_anno = $beda->anno( "chr3", 49395708, 49395709, "C", "T" );
+	if
+	    ( exists $t5_anno->{trInfo}
+	      and exists $t5_anno->{trInfo}->{'NM_000581.2'}
+	      and exists $t5_anno->{trInfo}->{'NM_000581.2'}->{siftPred}
+	      and $t5_anno->{trInfo}->{'NM_000581.2'}->{siftPred} eq 'Damaging' ) {
+	    pass("for [ prediction ]");
+	}
+	else {
+	    fail("for [ prediction ]");
+	}
+    }
+
+    my $ss_nochange_anno = $beda->anno( "chr11", 827712, 827713, "A", "T" );
+    my $splice_no_change = $ss_nochange_anno->{trInfo}->{"NM_173584.3"}->{func};
+    if ( exists $opts{genome} ) {
+	if ( $splice_no_change eq "no-change" ) {
+	    pass( "for [ splice change to canonical ]" );
+	}
+	else {
+	    fail( "for [ splice change to canonical ]" );
+	}
+    }
+    $beda->DESTROY();
+    undef $beda;
+}
+
+
 done_testing();
 
-$beda->DESTROY();
 exit 0;
 
 sub test_ok {
     my ( $tag, $expect, $tid, @args ) = @_;
-    my $ranno = $beda->anno(@args);
+    my $ranno = $bare_beda->anno(@args);
     if (exists $ranno->{trInfo} and exists $ranno->{trInfo}->{$tid} and exists $ranno->{trInfo}->{$tid}->{trVarName}) {
 	delete $ranno->{trInfo}->{$tid}->{trVarName};
     }
@@ -4041,7 +4047,7 @@ sub test_parse_var {
 
 sub test_varanno {
     my ( $tag, $expect, $vara )   = @_;
-    my ( $vAnno,  $noneed ) = $beda->varanno($vara);
+    my ( $vAnno,  $noneed ) = $bare_beda->varanno($vara);
     if (exists $vAnno->{var} and exists $vAnno->{var}->{varName}) {
 	delete $vAnno->{var}->{varName};
     }

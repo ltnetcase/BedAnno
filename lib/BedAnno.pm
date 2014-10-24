@@ -1164,60 +1164,9 @@ sub DESTROY {
 	$self->{tidb}->DESTROY() if ($self->{tidb}->can('DESTROY'));
 	delete $self->{tidb};
     }
-    if (exists $self->{cytoBand_h} and defined $self->{cytoBand_h}) {
-	$self->{cytoBand_h}->DESTROY() if ($self->{cytoBand_h}->can('DESTROY'));
-	delete $self->{cytoBand_h};
-    }
-    if (exists $self->{genome_h} and defined $self->{genome_h}) {
-	$self->{genome_h}->DESTROY() if ($self->{genome_h}->can('DESTROY'));
-    }
-    if (exists $self->{rmsk_h} and defined $self->{rmsk_h}) {
-	$self->{rmsk_h}->DESTROY() if ($self->{rmsk_h}->can('DESTROY'));
-	delete $self->{rmsk_h};
-    }
-    if (exists $self->{gwas_h} and defined $self->{gwas_h}) {
-	$self->{gwas_h}->DESTROY() if ($self->{gwas_h}->can('DESTROY'));
-	delete $self->{gwas_h};
-    }
-    if (exists $self->{pfam_h} and defined $self->{pfam_h}) {
-	$self->{pfam_h}->DESTROY() if ($self->{pfam_h}->can('DESTROY'));
-	delete $self->{pfam_h};
-    }
-    if (exists $self->{prediction_h} and defined $self->{prediction_h}) {
-	$self->{prediction_h}->DESTROY() if ($self->{prediction_h}->can('DESTROY'));
-	delete $self->{prediction_h};
-    }
-    if (exists $self->{phyloP_h} and defined $self->{phyloP_h}) {
-	$self->{phyloP_h}->DESTROY() if ($self->{phyloP_h}->can('DESTROY'));
-	delete $self->{phyloP_h};
-    }
-    if (exists $self->{dbSNP_h} and defined $self->{dbSNP_h}) {
-	$self->{dbSNP_h}->DESTROY() if ($self->{dbSNP_h}->can('DESTROY'));
-	delete $self->{dbSNP_h};
-    }
-    if (exists $self->{cosmic_h} and defined $self->{cosmic_h}) {
-	$self->{cosmic_h}->DESTROY() if ($self->{cosmic_h}->can('DESTROY'));
-	delete $self->{cosmic_h};
-    }
-    if (exists $self->{tgp_h} and defined $self->{tgp_h}) {
-	$self->{tgp_h}->DESTROY() if ($self->{tgp_h}->can('DESTROY'));
-	delete $self->{tgp_h};
-    }
-    if (exists $self->{esp6500_h} and defined $self->{esp6500_h}) {
-	$self->{esp6500_h}->DESTROY() if ($self->{esp6500_h}->can('DESTROY'));
-	delete $self->{esp6500_h};
-    }
-    if (exists $self->{cg54_h} and defined $self->{cg54_h}) {
-	$self->{cg54_h}->DESTROY() if ($self->{cg54_h}->can('DESTROY'));
-	delete $self->{cg54_h};
-    }
-    if (exists $self->{wellderly_h} and defined $self->{wellderly_h}) {
-	$self->{wellderly_h}->DESTROY() if ($self->{wellderly_h}->can('DESTROY'));
-	delete $self->{wellderly_h};
-    }
 
     foreach my $dbhk (sort keys %$self) {
-	if ($dbhk =~ /^cusdb_\S+_h/ and defined $self->{$dbhk}) {
+	if ($dbhk =~ /\S+_h$/ and defined $self->{$dbhk}) {
 	    $self->{$dbhk}->DESTROY() if ($self->{$dbhk}->can('DESTROY'));
 	    delete $self->{$dbhk};
 	}
