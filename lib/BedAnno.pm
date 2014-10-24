@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.74';
+our $VERSION = '0.75';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.74
+=head2 VERSION v0.75
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -47,7 +47,7 @@ resource dependencies will be required.
 our ( %C3, %C1, %SO2Name, %func2SO,  %Name2SO, 
       %Polar,   %C1toC3,  %AAnumber, $AAcount, 
       %varTypeName2Index, %genepartName2Index, 
-      %funcName2Index,
+      %funcName2Index,    %canonicalSS,
 );
 
 our $CURRENT_MT = 'NC_012920.1';
@@ -288,6 +288,11 @@ $AAnumber{'.'} = $AAcount + 2;
     unknown               => "unknown",
 );
 
+%canonicalSS = (
+    D => "GT",
+    A => "AG",
+);
+
 our %GenePartsOrder;
 @GenePartsOrder{
     (qw(CDS span five_prime_cis_splice_site
@@ -476,6 +481,14 @@ our $REF_BUILD = 'GRCh37';
 
 =back
 
+=item I<genome> [ "refgenome.fa.rz" ]
+
+=over
+
+=item reference genome fasta, razipped and samtools faidxed for use.
+
+=back
+
 =item I<genes> [ "genes.list" | $rh_geneslist ]
 
 =over
@@ -606,6 +619,10 @@ sub new {
     }
 
     $self->set_refbuild($REF_BUILD);
+
+    if ( exists $self->{genome} ) {
+	$self->set_genome( $self->{genome} );
+    }
 
     if ( exists $self->{cytoBand} ) {
 	$self->set_cytoBand($self->{cytoBand});
@@ -798,6 +815,18 @@ sub set_tr {
     $load_opts{genes} = $self->{genes} if (exists $self->{genes});
     $load_opts{trans} = $self->{trans} if (exists $self->{trans});
     $self->{trInfodb} = $self->readtr( %load_opts );
+    return $self;
+}
+
+sub set_genome {
+    my $self = shift;
+    my $genome_rz = shift;
+    if ( ! -e $genome_rz or ! -r $genome_rz ) {
+	$self->throw("Error: cannot read $genome_rz.");
+    }
+    require Faidx if (!exists $self->{genome_h});
+    $self->{genome} = $genome_rz;
+    $self->{genome_h} = Faidx->new($genome_rz);
     return $self;
 }
 
@@ -1138,6 +1167,9 @@ sub DESTROY {
     if (exists $self->{cytoBand_h} and defined $self->{cytoBand_h}) {
 	$self->{cytoBand_h}->DESTROY() if ($self->{cytoBand_h}->can('DESTROY'));
 	delete $self->{cytoBand_h};
+    }
+    if (exists $self->{genome_h} and defined $self->{genome_h}) {
+	$self->{genome_h}->DESTROY() if ($self->{genome_h}->can('DESTROY'));
     }
     if (exists $self->{rmsk_h} and defined $self->{rmsk_h}) {
 	$self->{rmsk_h}->DESTROY() if ($self->{rmsk_h}->can('DESTROY'));
@@ -2848,6 +2880,72 @@ sub _getCodingSeq {
     return $codingSeq;
 }
 
+# let unavailable pr pos to be 0
+sub _getCoveredProd {
+    my ($trdbEnt, $chgvs_5, $chgvs_3) = @_;
+    if (
+        $chgvs_3 =~ /^\-/       # 5'UTR
+        or $chgvs_5 =~ /^\*/     # 3'UTR
+      )
+    {
+        return ( 0, 0 );
+    }
+
+    my ($prb, $pre) = ();
+    my ($prb_anchor, $prb_sig) = ();
+    my ($pre_anchor, $pre_sig) = ();
+
+    if ($chgvs_5 =~ /^(\d+)([\+\-])/) {
+	$prb_anchor = $1;
+	$prb_sig = $2;
+    }
+
+    if ($chgvs_3 =~ /^(\d+)([\+\-])/) {
+	$pre_anchor = $1;
+	$pre_sig = $2;
+    }
+
+    if (    defined $prb_anchor
+        and defined $prb_sig
+        and defined $pre_anchor
+        and defined $pre_sig )
+    {
+        if (
+            $prb_anchor == $pre_anchor # assume no 1 bp exon
+            or (    $prb_anchor == ( $pre_anchor - 1 )
+                and $prb_sig eq '+'
+                and $pre_sig eq '-' )
+          )
+        {
+            return ( 0, 0 );    # single intron
+        }
+    }
+
+    if ($chgvs_5 =~ /^\-/) {
+	$prb = 1;
+    }
+    elsif ($chgvs_5 =~ /^(\d+)/) {
+	my $tmp_cdsp = $1;
+	($prb, $tmp_cdsp) = _calPosFrame($tmp_cdsp);
+    }
+    else {
+	$prb = 0;
+    }
+
+    if ($chgvs_3 =~ /^\*/) {
+	$pre = $trdbEnt->{plen} + 1;
+    }
+    elsif ($chgvs_3 =~ /^(\d+)/) {
+	my $tmp_cdsp2 = $1;
+	($pre, $tmp_cdsp2) = _calPosFrame($tmp_cdsp2);
+    }
+    else {
+	$pre = 0;
+    }
+
+    return ($prb, $pre);
+}
+
 =head2 getTrChange
 
     About   : Calculate the transcript changes, based on TrPostition
@@ -2919,6 +3017,10 @@ sub getTrChange {
         my $chgvs_5 =
           ($cdsOpt) ? $trannoEnt->{cdsBegin} : $trannoEnt->{rnaBegin};
         my $chgvs_3 = ($cdsOpt) ? $trannoEnt->{cdsEnd} : $trannoEnt->{rnaEnd};
+	if ($cdsOpt) {
+            ( $trannoEnt->{protBegin}, $trannoEnt->{protEnd} ) =
+              _getCoveredProd( $trdbEnt, $chgvs_5, $chgvs_3 );
+	}
 
 	# [ aaPos, codon, aa, polar, frame, [framealt] ]
         my ( $rcInfo5, $rcInfo3 ) =
@@ -2950,16 +3052,11 @@ sub getTrChange {
 		  'p.' . $aaOut . $rcInfo5->[0] . '?';
 		$trannoEnt->{cc} = $rcInfo5->[1].'=>?';
 		$trannoEnt->{polar} = $rcInfo5->[3].'=>?';
-		$trannoEnt->{protBegin} = $rcInfo5->[0];
-		$trannoEnt->{protEnd} = $rcInfo5->[0];
 	    }
 	    elsif ($rcInfo3->[0] > 0 and $rcInfo5->[0] > 0) { # multiple codon
 
 		my $aa5 = $rcInfo5->[2].$rcInfo5->[0];
 		my $aa3 = $rcInfo3->[2].$rcInfo3->[0];
-
-		$trannoEnt->{protBegin} = $rcInfo5->[0];
-		$trannoEnt->{protEnd} = $rcInfo3->[0];
 
 		my $diopt = ($rcInfo5->[0] < $rcInfo3->[0]) ? 1 : 0;
 
@@ -3379,23 +3476,89 @@ sub getTrChange {
         if (    $trannoEnt->{ei_Begin} =~ /IVS/
             and $trannoEnt->{ei_Begin} eq $trannoEnt->{ei_End} )
         {
-            if ( $trannoEnt->{genepartSO} eq 'abnormal-intron' ) {
-                $trannoEnt->{func} = 'abnormal-intron';
-            }
-            elsif ( $trannoEnt->{r_Begin} =~ /^D/
-                and $trannoEnt->{r_End} =~ /^A/ )
-            {
-                $trannoEnt->{func} = 'splice';
-            }
-            elsif ( $trannoEnt->{r_Begin} =~ /^D/ ) {
-                $trannoEnt->{func} = 'splice-5';
-            }
-            elsif ( $trannoEnt->{r_End} =~ /^A/ ) {
-                $trannoEnt->{func} = 'splice-3';
-            }
-            else {
-                $trannoEnt->{func} = 'intron';
-            }
+	    if ( $trannoEnt->{genepartSO} eq 'abnormal-intron' ) {
+		$trannoEnt->{func} = 'abnormal-intron';
+	    }
+	    else {
+		if (    exists $self->{genome_h}
+		    and defined $self->{genome_h}
+		    and $trannoEnt->{r_Begin} =~ /^[AD]/
+		    and $trannoEnt->{r_End} eq $trannoEnt->{r_Begin}
+		    and length($trRef) == length($trAlt) )
+		{    # only in splice site substitution, to check if conanical
+		    my $cis_tag = substr( $trannoEnt->{r_Begin}, 0, 1 );
+		    my $ext_len = 2 - length($trRef);
+		    $self->throw("Error length for trRef") if ($ext_len < 0);
+		    my ($Ladded, $Radded) = ("", "");
+		    my ( $gchr, $gstart, $gend ) = (
+			$annoEnt->{var}->{chr},
+			$annoEnt->{var}->{pos},
+			$annoEnt->{var}->{end}
+		    );
+
+		    $gchr = "chr".$gchr if ($gchr !~ /^chr/);
+		    $gchr = "chrM_NC_012920.1" if ($gchr =~ /^chrM/i);
+
+		    if ($ext_len == 1) { # only can be 1
+			if (
+			    (
+				$trannoEnt->{strd} eq '+'
+				and (  $trannoEnt->{rnaBegin} =~ /\+2$/
+				    or $trannoEnt->{rnaBegin} =~ /\-1$/ )
+			    )
+			    or (
+				$trannoEnt->{strd} eq '-'
+				and (  $trannoEnt->{rnaEnd} =~ /\+1$/
+				    or $trannoEnt->{rnaEnd} =~ /\-2$/ )
+			    )
+			  )
+			{
+			    my $extpos = $gstart; # extend 1 bp left
+			    my $rgn_tmp = $gchr.":".$extpos."-".$extpos;
+			    $Ladded = uc($self->{genome_h}->getseq($rgn_tmp));
+			}
+			else {
+			    my $extpos2 = $gend + 1; # extend 1 bp right
+			    my $rgn_tmp2 = "chr".$gchr.":".$extpos2."-".$extpos2;
+			    $Radded = uc($self->{genome_h}->getseq($rgn_tmp2));
+			}
+
+			if ($trannoEnt->{strd} eq '-') { # change to tr strand
+			    my $tmp = $Ladded;
+			    $Ladded = $self->rev_comp($Radded);
+			    $Radded = $self->rev_comp($tmp);
+			}
+		    }
+
+		    my ( $toCheckRef, $toCheckAlt ) = (
+			$Ladded . uc($trRef) . $Radded,
+			$Ladded . uc($trAlt) . $Radded
+		    );
+
+		    if (    $toCheckRef ne $canonicalSS{$cis_tag}
+			and $toCheckAlt eq $canonicalSS{$cis_tag} )
+		    {
+			$trannoEnt->{func} = 'no-change';
+			$trannoEnt->{c}    = 'c.=';
+			next;
+		    }
+		}
+
+		if ( $trannoEnt->{r_Begin} =~ /^D/
+		    and $trannoEnt->{r_End} =~ /^A/ )
+		{
+		    $trannoEnt->{func} = 'splice';
+		}
+		elsif ( $trannoEnt->{r_Begin} =~ /^D/ ) {
+		    $trannoEnt->{func} = 'splice-5';
+		}
+		elsif ( $trannoEnt->{r_End} =~ /^A/ ) {
+		    $trannoEnt->{func} = 'splice-3';
+		}
+		else {
+		    $trannoEnt->{func} = 'intron';
+		}
+	    }
 
             next;
         }

@@ -220,3 +220,8 @@
 	- change to show componentIndex of promoter-5'utr, 3'utr-3'downstream span case.
 	- assign the 5' start position's componentIndex as the one of span case
 
+0.75  Fri Oct 24 09:41:22
+	- change to give affected protein coordinates for all kinds of variants
+        - change to support auto checking canonical splice site for substitution 
+          in splice region
+
