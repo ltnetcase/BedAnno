@@ -3497,7 +3497,7 @@ sub getTrChange {
 			}
 			else {
 			    my $extpos2 = $gend + 1; # extend 1 bp right
-			    my $rgn_tmp2 = "chr".$gchr.":".$extpos2."-".$extpos2;
+			    my $rgn_tmp2 = $gchr.":".$extpos2."-".$extpos2;
 			    my $toAdd2 = $self->{genome_h}->getseq($rgn_tmp2);
 			    if (defined $toAdd2) {
 				$Radded = uc($toAdd2);
