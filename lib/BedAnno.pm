@@ -2939,6 +2939,7 @@ sub getTrChange {
         return $annoEnt;
     }
 
+    my %getseq_cache = ();
     foreach my $tid (sort keys %{$annoEnt->{trInfo}}) {
         my $trannoEnt = $annoEnt->{trInfo}->{$tid};
 	my ( $unify_p, $unify_r, $unify_a, $unify_rl, $unify_al ) =
@@ -3487,23 +3488,35 @@ sub getTrChange {
 			{
 			    my $extpos = $gstart; # extend 1 bp left
 			    my $rgn_tmp = $gchr.":".$extpos."-".$extpos;
-			    my $toAdd1 = $self->{genome_h}->getseq($rgn_tmp);
-			    if (defined $toAdd1) {
-				$Ladded = uc($toAdd1);
+			    if (exists $getseq_cache{$rgn_tmp}) {
+				$Ladded = $getseq_cache{$rgn_tmp};
 			    }
 			    else {
-				$self->warn("Can not get string from genome for $rgn_tmp");
+				my $toAdd1 = $self->{genome_h}->getseq($rgn_tmp);
+				if (defined $toAdd1) {
+				    $Ladded = uc($toAdd1);
+				    $getseq_cache{$rgn_tmp} = $Ladded;
+				}
+				else {
+				    $self->warn("Warning: Can not get string from genome for $rgn_tmp");
+				}
 			    }
 			}
 			else {
 			    my $extpos2 = $gend + 1; # extend 1 bp right
 			    my $rgn_tmp2 = $gchr.":".$extpos2."-".$extpos2;
-			    my $toAdd2 = $self->{genome_h}->getseq($rgn_tmp2);
-			    if (defined $toAdd2) {
-				$Radded = uc($toAdd2);
+			    if (exists $getseq_cache{$rgn_tmp2}) {
+				$Radded = $getseq_cache{$rgn_tmp2};
 			    }
 			    else {
-				$self->warn("Can not get string from genome for $rgn_tmp2");
+				my $toAdd2 = $self->{genome_h}->getseq($rgn_tmp2);
+				if (defined $toAdd2) {
+				    $Radded = uc($toAdd2);
+				    $getseq_cache{$rgn_tmp2} = $Radded;
+				}
+				else {
+				    $self->warn("Warning: Can not get string from genome for $rgn_tmp2");
+				}
 			    }
 			}
 
