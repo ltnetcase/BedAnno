@@ -225,3 +225,6 @@
         - change to support auto checking canonical splice site for substitution 
           in splice region
 
+0.76  Mon Oct 27 15:14:23
+	- fix a bug in intron genepart assignment
+

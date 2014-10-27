@@ -3182,6 +3182,8 @@ my $prtc_anno = $bare_beda->anno( "chr17", 41056042, 41056043, "G", "A" );
 my $prTag_correction = $prtc_anno->{var}->{varName};
 my $ss5_anno = $bare_beda->anno( "chr1", 113636187, 113636191, "=", "?" );
 my $span_splice5 = $ss5_anno->{trInfo}->{"NM_014813.1"}->{genepart};
+my $intron_edge_insanno = $bare_beda->anno( "chr2", 152424933, 152424933, "", "A" );
+my $intron_edge_ins_genepart = $intron_edge_insanno->{trInfo}->{"NM_001271208.1"}->{genepart};
 
 my $mt_no_call_ncRNA = {
     'r'         => 'R1E',
@@ -3861,6 +3863,7 @@ test_ok( "Mt_stop_loss", $mt_stop_loss, "NM_MT-ND1",
 
 ok ( $prTag_correction eq "NM_000151.3(G6PC): c.326G>A (p.C109Y)", "for [ primary tag correction ]" );
 ok ( $span_splice5 eq "five_prime_cis_splice_site", "for [ span splice5 and intron ]" );
+ok ( $intron_edge_ins_genepart eq "interior_intron", "for [ intron edge insertion ]" );
 
 $bare_beda->DESTROY();
 undef $bare_beda;

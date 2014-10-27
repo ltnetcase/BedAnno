@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.75';
+our $VERSION = '0.76';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED +1 format database.
 
-=head2 VERSION v0.75
+=head2 VERSION v0.76
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -2307,6 +2307,21 @@ sub P1toP3 {
     }
 }
 
+sub _intronSO {
+    my $r = shift;
+    if ($r =~ /^I5U/) {
+	return 'SO:0000447';
+    }
+    elsif ($r =~ /^I3U/) {
+	return 'SO:0000448';
+    }
+    elsif ($r =~ /^I/) {
+	return 'SO:0000191';
+    }
+    else {
+	confess "Not intron region tag [$r]";
+    }
+}
 
 
 =head2 finaliseAnno
@@ -2390,8 +2405,17 @@ sub finaliseAnno {
 		elsif ( $trAnnoEnt->{r_Begin} =~ /^D/ ) {
 		    $genepartSO = "SO:0000163"; # 5'
 		}
-		elsif ( $trAnnoEnt->{r_ent} =~ /^A/ ) {
+		elsif ( $trAnnoEnt->{r_End} =~ /^A/ ) {
 		    $genepartSO = "SO:0000164"; # 3'
+		}
+		elsif ( $trAnnoEnt->{r_Begin} =~ /^A/ ) { # insertion on intron edge
+		    $genepartSO = _intronSO($trAnnoEnt->{r_End});
+		}
+		elsif ( $trAnnoEnt->{r_End} =~ /^D/ ) {
+		    $genepartSO = _intronSO($trAnnoEnt->{r_Begin});
+		}
+		else {
+		    $self->confess("Unknown Error in span case intron!");
 		}
 
 		$trAnnoEnt->{r} = $trAnnoEnt->{r_Begin} . '-' . $trAnnoEnt->{r_End};
@@ -3446,7 +3470,6 @@ sub getTrChange {
 		    );
 
 		    $gchr = "chr".$gchr if ($gchr !~ /^chr/);
-		    $gchr = "chrM_NC_012920.1" if ($gchr =~ /^chrM/i);
 
 		    if ($ext_len == 1) { # only can be 1
 			if (
@@ -3464,12 +3487,24 @@ sub getTrChange {
 			{
 			    my $extpos = $gstart; # extend 1 bp left
 			    my $rgn_tmp = $gchr.":".$extpos."-".$extpos;
-			    $Ladded = uc($self->{genome_h}->getseq($rgn_tmp));
+			    my $toAdd1 = $self->{genome_h}->getseq($rgn_tmp);
+			    if (defined $toAdd1) {
+				$Ladded = uc($toAdd1);
+			    }
+			    else {
+				$self->warn("Can not get string from genome for $rgn_tmp");
+			    }
 			}
 			else {
 			    my $extpos2 = $gend + 1; # extend 1 bp right
 			    my $rgn_tmp2 = "chr".$gchr.":".$extpos2."-".$extpos2;
-			    $Radded = uc($self->{genome_h}->getseq($rgn_tmp2));
+			    my $toAdd2 = $self->{genome_h}->getseq($rgn_tmp2);
+			    if (defined $toAdd2) {
+				$Radded = uc($toAdd2);
+			    }
+			    else {
+				$self->warn("Can not get string from genome for $rgn_tmp2");
+			    }
 			}
 
 			if ($trannoEnt->{strd} eq '-') { # change to tr strand
