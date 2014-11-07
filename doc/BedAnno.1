@@ -124,15 +124,15 @@
 .\" ========================================================================
 .\"
 .IX Title "BedAnno 3"
-.TH BedAnno 3 "2014-09-27" "perl v5.14.2" "User Contributed Perl Documentation"
+.TH BedAnno 3 "2014-11-07" "perl v5.14.2" "User Contributed Perl Documentation"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
 .nh
 .SH "NAME"
-BedAnno \- Perl module for annotating variation depend on the BED +1 format database.
-.SS "\s-1VERSION\s0 v0.72"
-.IX Subsection "VERSION v0.72"
+BedAnno \- Perl module for annotating variation depend on the BED format database.
+.SS "\s-1VERSION\s0 v0.77"
+.IX Subsection "VERSION v0.77"
 From version 0.32 BedAnno will change to support \s-1CG\s0's variant shell list
 and use ncbi annotation release 104 as the annotation database
 with reformatted database format, and won't give any individual
@@ -154,7 +154,7 @@ By using this module, we can get variants from whole-genome or exome-capture
 It can not annotate ambiguous variants (transition, transvertion, or unknown 
 break point large deletion and duplication).
 .PP
-This module need bgzipped \s-1BED+1\s0 format database, combined with tabix index.
+This module need bgzipped \s-1BED\s0 format database, combined with tabix index.
 tabix perl module is required to be installed. If allele frequency information, 
 prediction information or cytoBand information etc. are needed, then extra 
 resource dependencies will be required.
@@ -334,6 +334,15 @@ resource dependencies will be required.
 .RE
 .RS 4
 .RE
+.ie n .IP "\fIgenome\fR [ ""refgenome.fa.rz"" ]" 4
+.el .IP "\fIgenome\fR [ ``refgenome.fa.rz'' ]" 4
+.IX Item "genome [ refgenome.fa.rz ]"
+.RS 4
+.IP "reference genome fasta, razipped and samtools faidxed for use." 4
+.IX Item "reference genome fasta, razipped and samtools faidxed for use."
+.RE
+.RS 4
+.RE
 .ie n .IP "\fIgenes\fR [ ""genes.list"" | $rh_geneslist ]" 4
 .el .IP "\fIgenes\fR [ ``genes.list'' | \f(CW$rh_geneslist\fR ]" 4
 .IX Item "genes [ genes.list | $rh_geneslist ]"
@@ -464,7 +473,7 @@ resource dependencies will be required.
 \&                c:  the complete annotation region, in bed format,
 \&                    which can be used as the variation calling region.
 \&                b:  standard bed format of only exon region
-\&                a:  BED +1 format, exon region with \*(Aq+1\*(Aq annotation, 
+\&                a:  BED format, exon region with \*(Aq+1\*(Aq annotation, 
 \&                    oneline per one exon for one transcript, this
 \&                    format allow redundancy exists, and not sorted by
 \&                    chromosomal coordinates, but by the transcript acc.ver
@@ -720,6 +729,12 @@ resource dependencies will be required.
 \&
 \&                            # some trRef components
 \&                        },
+\&
+\&                        # for some of splice variants, there may exists 
+\&                        # the following function information
+\&                        alt_func        => $alternative_func_code,
+\&                        alt_funcSO      => $alternative_variant_SO_id,
+\&                        alt_funcSOname  => $alt_variant_SO_name,
 \&
 \&                        # The following parts will be exists if extra resource
 \&                        # is available.
@@ -1229,7 +1244,7 @@ resource dependencies will be required.
 \&    Notes   : For position mirror on transcript, there are 2 other cases 
 \&              than normal case:
 \&              1. annotation fail, which can not be annotated in the region
-\&                 of it except for its promoter region.
+\&                 of it, the bad alignment string start with \*(AqE\*(Aq.
 \&              2. block with length changing mismatches, or long substitution
 \&                 mismatch, which contain the following three cases:
 \&                 
@@ -1245,7 +1260,7 @@ resource dependencies will be required.
 \&                         /       / \e        \e
 \&                        +\-\-\-\-\-\-\-+\-\-\-+\-\-\-\-\-\-\-\-+  refSeq
 \&
-\&                 c. delins (DI) on refSeq (equal/non\-equal length)
+\&                 c. delins (S/DI) on refSeq (equal/non\-equal length)
 \&
 \&                        +\-\-\-\-\-\-\-+\-\-\-+\-\-\-\-\-\-\-\-+  refgenome
 \&                        |       |  /        /
@@ -1369,8 +1384,8 @@ resource dependencies will be required.
 .SH "DATABASE FORMAT"
 .IX Header "DATABASE FORMAT"
 The Format of annotation database is listed as following:
-.SS "\s-1BED+1\s0 \s-1FORMAT\s0 \s-1DATABASE\s0"
-.IX Subsection "BED+1 FORMAT DATABASE"
+.SS "\s-1BED\s0 \s-1FORMAT\s0 \s-1DATABASE\s0"
+.IX Subsection "BED FORMAT DATABASE"
 .Vb 2
 \&   Departed block with tag for annotation, Tag entries are separated by "; ",
 \&   and Infos items in entry are separated by "|".

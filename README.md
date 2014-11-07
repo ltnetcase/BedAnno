@@ -1,7 +1,7 @@
 BedAnno
 =======
 
-Annotate genomics variations of hg19 by using a BED+1 format database, 
+Annotate genomics variations of hg19 by using a BED format database, 
 which construct from ncbi anno release 104. This module can directly 
 parse the vcf4.1 format ref and single alt string(no commas in it),
 without normalized by vcftools, and can recognize the tandom repeat 
@@ -10,7 +10,7 @@ most of complex cases. Also it will ajust the strand of transcript,
 and follow the 3' nearest rules to annotate. CG's variant shell list
 will also be supported.
 
-BED +1 Format for ncbi annotation rel104
+BED Format for ncbi annotation rel104
 ----------------------------------------
 The start position is in 0 based, stop in 1 based
 Tag parsing rules: Entries are separated by "; ", and for tags in entry are separated by "|"

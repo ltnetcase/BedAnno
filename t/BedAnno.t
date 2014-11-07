@@ -2131,6 +2131,9 @@ my $middle_intron = {
 };
 
 my $fs1_rep_del = {
+    'alt_func'       => 'splice-region',
+    'alt_funcSO'     => 'SO:0001630',
+    'alt_funcSOname' => 'splice_region_variant',
     'alt_cHGVS'      => 'c.60_61delTG',
     'standard_cHGVS' => 'c.58TG[1]',
     'c'              => 'c.58TG[2>1]',
@@ -2285,6 +2288,10 @@ my $span_3U = {
 };
 
 my $ins_stop = {
+    'alt_func' => 'splice-region',
+    'alt_funcSO' => 'SO:0001630',
+    'alt_funcSOname' => 'splice_region_variant',
+
     'protBegin' => 32,
     'ei_End'    => 'EX1',
     'exin'      => 'IVS1-EX1',
@@ -2480,6 +2487,10 @@ my $span_annotation_fail = {
 };
 
 my $cds_edge_ins_anno = {
+    'alt_func' => 'splice-region',
+    'alt_funcSO' => 'SO:0001630',
+    'alt_funcSOname' => 'splice_region_variant',
+
     'protBegin' => 35,
     'ei_End'    => 'IVS2',
     'exin'      => 'EX3-IVS2',
@@ -2531,6 +2542,10 @@ my $cds_edge_ins_anno = {
   };
 
 my $cds_edge_ins2_anno = {
+    'alt_func' => 'splice-region',
+    'alt_funcSO' => 'SO:0001630',
+    'alt_funcSOname' => 'splice_region_variant',
+
     'protBegin' => 279,
     'ei_End'    => 'EX7',
     'exin'      => 'IVS7-EX7',
@@ -2874,6 +2889,9 @@ my $frameshift_deleted_frame = {
 };
 
 my $fs_before_deleted_frame = {
+    'alt_func'       => 'splice-region',
+    'alt_funcSO'     => 'SO:0001630',
+    'alt_funcSOname' => 'splice_region_variant',
     'c'              => 'c.169dupA',
     'cdsBegin'       => '170',
     'cdsEnd'         => '169',
@@ -3178,12 +3196,6 @@ my $fs_before_dup_frame = {
     }
 };
 
-my $prtc_anno = $bare_beda->anno( "chr17", 41056042, 41056043, "G", "A" );
-my $prTag_correction = $prtc_anno->{var}->{varName};
-my $ss5_anno = $bare_beda->anno( "chr1", 113636187, 113636191, "=", "?" );
-my $span_splice5 = $ss5_anno->{trInfo}->{"NM_014813.1"}->{genepart};
-my $intron_edge_insanno = $bare_beda->anno( "chr2", 152424933, 152424933, "", "A" );
-my $intron_edge_ins_genepart = $intron_edge_insanno->{trInfo}->{"NM_001271208.1"}->{genepart};
 
 my $mt_no_call_ncRNA = {
     'r'         => 'R1E',
@@ -3860,10 +3872,28 @@ test_ok( "Mt_stop_loss", $mt_stop_loss, "NM_MT-ND1",
 #test_ok ("Mt_delins_stopretained", $mt_delins_stopretained, "NM_MT-ND1", 
 #   "chrMT", 4260, 4261, "T", "AGA" );
 
+my $prtc_anno = $bare_beda->anno( "chr17", 41056042, 41056043, "G", "A" );
+my $prTag_correction = $prtc_anno->{var}->{varName};
+my $ss5_anno = $bare_beda->anno( "chr1", 113636187, 113636191, "=", "?" );
+my $span_splice5 = $ss5_anno->{trInfo}->{"NM_014813.1"}->{genepart};
+my $intron_edge_insanno = $bare_beda->anno( "chr2", 152424933, 152424933, "", "A" );
+my $intron_edge_ins_genepart = $intron_edge_insanno->{trInfo}->{"NM_001271208.1"}->{genepart};
+my $splice_5_5th_anno = $bare_beda->anno( "chr3", 46743074, 46743075, "G", "" );
+my $splice_5_5th = $splice_5_5th_anno->{trInfo}->{"NM_147196.2"}->{alt_func};
+my $exon_loss_anno = $bare_beda->anno( "chr7", 35841872, 35841874, "CT", "" );
+my $exon_loss = $exon_loss_anno->{trInfo}->{"NM_001011553.3"}->{alt_func};
+my $exon_splice_region_anno = $bare_beda->anno( "chr7", 35841872, 35841873, "C", "A" );
+my $exon_splice_region = $exon_splice_region_anno->{trInfo}->{"NM_001011553.3"}->{alt_func};
+my $extend_intronic_splice_region_anno = $bare_beda->anno( "chr7", 35841863, 35841864, "C", "A" );
+my $extend_intronic_splice_region = $extend_intronic_splice_region_anno->{trInfo}->{"NM_001011553.3"}->{alt_func};
 
-ok ( $prTag_correction eq "NM_000151.3(G6PC): c.326G>A (p.C109Y)", "for [ primary tag correction ]" );
-ok ( $span_splice5 eq "five_prime_cis_splice_site", "for [ span splice5 and intron ]" );
-ok ( $intron_edge_ins_genepart eq "interior_intron", "for [ intron edge insertion ]" );
+ok ( $prTag_correction eq "NM_000151.3(G6PC): c.326G>A (p.C109Y)", "for [ primary tag correction ]" ) or explain "The anno info: ", $prtc_anno;
+ok ( $span_splice5 eq "five_prime_cis_splice_site", "for [ span splice5 and intron ]" ) or explain "The anno info: ", $ss5_anno;
+ok ( $intron_edge_ins_genepart eq "interior_intron", "for [ intron edge insertion ]" ) or explain "The anno info: ", $intron_edge_insanno;
+ok ( $splice_5_5th eq "splice-5-5th", "for [ 5'splice 5th var ]" ) or explain "The anno info: ", $splice_5_5th_anno;
+ok ( $exon_loss eq "exon-loss", "for [ exon loss ]" ) or explain "The anno info: ", $exon_loss_anno;
+ok ( $exon_splice_region eq "splice-region", "for [ exon splice region ]" ) or explain "The anno info: ", $exon_splice_region_anno;
+ok ( $extend_intronic_splice_region eq 'splice-ext', "for [ extend intronic splice region ]" ) or explain "The anno info: ", $extend_intronic_splice_region_anno;
 
 $bare_beda->DESTROY();
 undef $bare_beda;

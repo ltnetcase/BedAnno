@@ -2,7 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>BedAnno - Perl module for annotating variation depend on the BED +1 format database.</title>
+<title>BedAnno - Perl module for annotating variation depend on the BED format database.</title>
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 <link rev="made" href="mailto:rurban@x-ray.at" />
 </head>
@@ -19,7 +19,7 @@
 	<li><a href="#name">NAME</a></li>
 	<ul>
 
-		<li><a href="#version_v0_72">VERSION v0.72</a></li>
+		<li><a href="#version_v0_77">VERSION v0.77</a></li>
 	</ul>
 
 	<li><a href="#synopsis">SYNOPSIS</a></li>
@@ -85,7 +85,7 @@
 	<li><a href="#database_format">DATABASE FORMAT</a></li>
 	<ul>
 
-		<li><a href="#bed_1_format_database">BED+1 FORMAT DATABASE</a></li>
+		<li><a href="#bed_format_database">BED FORMAT DATABASE</a></li>
 		<li><a href="#transcript_fasta_database">TRANSCRIPT FASTA DATABASE</a></li>
 		<li><a href="#primary_tag_assignment">PRIMARY TAG ASSIGNMENT</a></li>
 	</ul>
@@ -102,10 +102,10 @@
 <p>
 </p>
 <h1><a name="name">NAME</a></h1>
-<p>BedAnno - Perl module for annotating variation depend on the BED +1 format database.</p>
+<p>BedAnno - Perl module for annotating variation depend on the BED format database.</p>
 <p>
 </p>
-<h2><a name="version_v0_72">VERSION v0.72</a></h2>
+<h2><a name="version_v0_77">VERSION v0.77</a></h2>
 <p>From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
 with reformatted database format, and won't give any individual
@@ -129,7 +129,7 @@ NGS genotyping result annotated. The information contains various possible
 HGVS string together with a most recent strandard HGVS mutation name. 
 It can not annotate ambiguous variants (transition, transvertion, or unknown 
 break point large deletion and duplication).</p>
-<p>This module need bgzipped BED+1 format database, combined with tabix index.
+<p>This module need bgzipped BED format database, combined with tabix index.
 tabix perl module is required to be installed. If allele frequency information, 
 prediction information or cytoBand information etc. are needed, then extra 
 resource dependencies will be required.</p>
@@ -291,6 +291,13 @@ resource dependencies will be required.</p>
 
 </dl>
 </dd>
+<dt><strong><a name="genome_refgenome_fa_rz" class="item"><em>genome</em> [ &quot;refgenome.fa.rz&quot; ]</a></strong></dt>
+
+<dl>
+<dt><strong><a name="reference_genome_fasta_razipped_and_samtools_faidxed_for_use" class="item">reference genome fasta, razipped and samtools faidxed for use.</a></strong></dt>
+
+</dl>
+</dd>
 <dt><strong><a name="genes_genes_list_rh_geneslist" class="item"><em>genes</em> [ &quot;genes.list&quot; | $rh_geneslist ]</a></strong></dt>
 
 <dl>
@@ -409,7 +416,7 @@ resource dependencies will be required.</p>
                 c:  the complete annotation region, in bed format,
                     which can be used as the variation calling region.
                 b:  standard bed format of only exon region
-                a:  BED +1 format, exon region with '+1' annotation, 
+                a:  BED format, exon region with '+1' annotation, 
                     oneline per one exon for one transcript, this
                     format allow redundancy exists, and not sorted by
                     chromosomal coordinates, but by the transcript acc.ver
@@ -665,6 +672,12 @@ resource dependencies will be required.</p>
 <pre>
                             # some trRef components
                         },</pre>
+<pre>
+                        # for some of splice variants, there may exists 
+                        # the following function information
+                        alt_func        =&gt; $alternative_func_code,
+                        alt_funcSO      =&gt; $alternative_variant_SO_id,
+                        alt_funcSOname  =&gt; $alt_variant_SO_name,</pre>
 <pre>
                         # The following parts will be exists if extra resource
                         # is available.
@@ -1180,7 +1193,7 @@ resource dependencies will be required.</p>
     Notes   : For position mirror on transcript, there are 2 other cases 
               than normal case:
               1. annotation fail, which can not be annotated in the region
-                 of it except for its promoter region.
+                 of it, the bad alignment string start with 'E'.
               2. block with length changing mismatches, or long substitution
                  mismatch, which contain the following three cases:
                  
@@ -1196,7 +1209,7 @@ resource dependencies will be required.</p>
                          /       / \        \
                         +-------+---+--------+  refSeq</pre>
 <pre>
-                 c. delins (DI) on refSeq (equal/non-equal length)</pre>
+                 c. delins (S/DI) on refSeq (equal/non-equal length)</pre>
 <pre>
                         +-------+---+--------+  refgenome
                         |       |  /        /
@@ -1326,7 +1339,7 @@ resource dependencies will be required.</p>
 <p>The Format of annotation database is listed as following:</p>
 <p>
 </p>
-<h2><a name="bed_1_format_database">BED+1 FORMAT DATABASE</a></h2>
+<h2><a name="bed_format_database">BED FORMAT DATABASE</a></h2>
 <pre>
    Departed block with tag for annotation, Tag entries are separated by &quot;; &quot;,
    and Infos items in entry are separated by &quot;|&quot;.</pre>

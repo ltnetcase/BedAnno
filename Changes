@@ -228,3 +228,11 @@
 0.76  Mon Oct 27 15:14:23
 	- fix a bug in intron genepart assignment
 
+0.77  Fri Nov 07 16:13:35
+	- change to add support to 4 alternative splice related function recognise.
+	  with adding 3 new keys: alt_func alt_funcSO and alt_funcSOname to trInfo's subhash.
+	  The priority of these 4 function code is 
+	    "exon-loss | splice-5-5th > splice-region > splice-ext"
+	  They can not be shown at the same time, becase their definition are overlapped with
+          each other.
+

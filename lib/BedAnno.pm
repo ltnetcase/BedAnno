@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.76';
+our $VERSION = '0.77';
 
 =head1 NAME
 
-BedAnno - Perl module for annotating variation depend on the BED +1 format database.
+BedAnno - Perl module for annotating variation depend on the BED format database.
 
-=head2 VERSION v0.76
+=head2 VERSION v0.77
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -37,7 +37,7 @@ HGVS string together with a most recent strandard HGVS mutation name.
 It can not annotate ambiguous variants (transition, transvertion, or unknown 
 break point large deletion and duplication).
 
-This module need bgzipped BED+1 format database, combined with tabix index.
+This module need bgzipped BED format database, combined with tabix index.
 tabix perl module is required to be installed. If allele frequency information, 
 prediction information or cytoBand information etc. are needed, then extra 
 resource dependencies will be required.
@@ -190,6 +190,12 @@ $AAnumber{'.'} = $AAcount + 2;
     # the followings are replaced by 'unknown-likely-deleterious' in Voyager
     "SO:0001575" => 'splice_donor_variant',
     "SO:0001574" => 'splice_acceptor_variant',
+    
+    # newly added Functions in 1.01 for complementary of splicing variants
+    "SO:0001572" => 'exon_loss_variant',
+    "SO:0001787" => 'splice_donor_5th_base_variant',
+    "SO:0001630" => 'splice_region_variant', # exon: 3bp + intron: 8bp
+    "SO:0001995" => 'extended_intronic_splice_region_variant', # intron: 10bp
 
     # the followings are replaced by 'unknown' in Voyager
     "SO:0001623" => '5_prime_UTR_variant',
@@ -286,6 +292,13 @@ $AAnumber{'.'} = $AAcount + 2;
     promoter              => "unknown",
     span                  => "unknown-likely-deleterious",
     unknown               => "unknown",
+
+    # newly added in 1.01 for splicing variants complementary
+    # may exists in alt_func keys, alt_funcSO, alt_funcSOname
+    "exon-loss"           => "SO:0001572",
+    "splice-5-5th"        => "SO:0001787",
+    "splice-region"       => "SO:0001630",
+    "splice-ext"          => "SO:0001995",
 );
 
 %canonicalSS = (
@@ -1185,7 +1198,7 @@ sub DESTROY {
 		c:  the complete annotation region, in bed format,
 		    which can be used as the variation calling region.
 		b:  standard bed format of only exon region
-		a:  BED +1 format, exon region with '+1' annotation, 
+		a:  BED format, exon region with '+1' annotation, 
 		    oneline per one exon for one transcript, this
 		    format allow redundancy exists, and not sorted by
 		    chromosomal coordinates, but by the transcript acc.ver
@@ -2058,6 +2071,12 @@ sub anno {
                             # some trRef components
                         },
 
+			# for some of splice variants, there may exists 
+			# the following function information
+			alt_func        => $alternative_func_code,
+			alt_funcSO      => $alternative_variant_SO_id,
+			alt_funcSOname  => $alt_variant_SO_name,
+
                         # The following parts will be exists if extra resource
                         # is available.
                         pfamId      => $PFAM_ID,
@@ -2323,6 +2342,28 @@ sub _intronSO {
     }
 }
 
+sub _checkDistEdge {
+    my ($tranno, $dbk) = @_;
+    my $edge_pos;
+    if ($dbk->{nsta} =~ /^(\d+)[\+\-]/) {
+	$edge_pos = $1;
+    }
+    
+    if ( defined $edge_pos ) {
+        if (
+            (
+                $tranno->{rnaBegin} =~ /^\d+$/
+                and abs( $tranno->{rnaBegin} - $edge_pos ) < 3
+            )
+            or ( $tranno->{rnaEnd} =~ /^\d+$/
+                and abs( $tranno->{rnaEnd} - $edge_pos ) < 3 )
+          )
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
 
 =head2 finaliseAnno
 
@@ -2340,7 +2381,19 @@ sub finaliseAnno {
     my ($self, $annoEnt) = @_;
     
     if (exists $annoEnt->{trInfo}) {
+
+	# use this extended local db to check if exon variant locates
+	# in the 3bp range of exon-intron edge.
+	my $av = $annoEnt->{var};
+        my $ext_region =
+            $av->{chr} . ':'
+          . ( ( $av->{pos} - 3 > 0 ) ? ( $av->{pos} - 3 ) : 0 ) . '-'
+          . ( $av->{pos} + $av->{reflen} + 3 );
+	my $ext_localdb = $self->load_anno( region => $ext_region );
+	$ext_localdb = $ext_localdb->{$av->{chr}}; # no need to check exists
+
 	foreach my $tid (sort keys %{$annoEnt->{trInfo}}) {
+
 	    my $trAnnoEnt = $annoEnt->{trInfo}->{$tid};
 	    my $qtid = $tid;
 	    $qtid =~ s/\-\d+$//;
@@ -2486,6 +2539,80 @@ sub finaliseAnno {
 	    $trAnnoEnt->{funcSO} =
 	      ( $trAnnoEnt->{funcSO} =~ /^SO:/ ) ? $trAnnoEnt->{funcSO} : "";
 
+            if (
+                exists $trAnnoEnt->{c}
+                and (  $trAnnoEnt->{c} =~ /\d+\+5[ACGT]>[ACGT\?]$/
+                    or $trAnnoEnt->{c} =~ /\d+\+5del[ACGT]?$/ )
+              )
+            {    # only single position
+                $trAnnoEnt->{alt_func} = 'splice-5-5th';
+            }
+            elsif ( $trAnnoEnt->{func} !~ /splice/
+                and $trAnnoEnt->{genepart} ne "annotation-fail"
+                and !exists $trAnnoEnt->{alt_func} )
+            {
+                if (
+                    $trAnnoEnt->{func} eq 'span'
+                    and (
+                           $trAnnoEnt->{ei_Begin} =~ /^IVS/
+                        or $trAnnoEnt->{ei_End} =~ /^IVS/
+                        or (    $trAnnoEnt->{r_Begin} eq 'PROM'
+                            and $trAnnoEnt->{ei_End} !~ /^EX1E?$/ )
+                        or (    $trAnnoEnt->{r_End} eq '3D'
+                            and $trAnnoEnt->{ei_Begin} !~ /^EX(\d+)E$/ )
+                    )
+                  )
+                {
+                    $trAnnoEnt->{alt_func} =
+                      'splice-region';    # or just ommit this?
+                }
+                else {
+                    if ( $trAnnoEnt->{rnaBegin} =~ /\d+[\+\-](\d+)/ ) {
+                        if ( $1 <= 8 ) {
+                            $trAnnoEnt->{alt_func} = 'splice-region';
+                        }
+                        elsif ( $1 <= 10 ) {
+                            $trAnnoEnt->{alt_func} = 'splice-ext';
+                        }
+                    }
+
+                    if ( $trAnnoEnt->{rnaEnd} =~ /\d+[\+\-](\d+)/ ) {
+                        if ( $1 <= 8 ) {
+                            $trAnnoEnt->{alt_func} = 'splice-region';
+                        }
+                        elsif ( $1 <= 10 ) {
+                            $trAnnoEnt->{alt_func} = 'splice-ext'
+                              if ( !exists $trAnnoEnt->{alt_func} );
+                        }
+                    }
+
+                    if ( !exists $trAnnoEnt->{alt_func} )    # on exon region
+                    {
+                        for ( my $k = 0 ; $k < @$ext_localdb ; $k++ ) {
+                            $$ext_localdb[$k] =
+                              $self->assign_detail( $$ext_localdb[$k] )
+                              if ( !exists $$ext_localdb[$k]{detail} );
+
+                            next if ( !exists $$ext_localdb[$k]{detail}{$tid} );
+                            my $rtd = $$ext_localdb[$k]{detail}{$tid};
+                            if ( $rtd->{blka} =~ /^[AD]/ ) {   # hit splice site
+                                    # calculate distance from exon-intron edge
+                                if ( _checkDistEdge( $trAnnoEnt, $rtd ) ) {
+                                    $trAnnoEnt->{alt_func} = 'splice-region';
+                                    last;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+	    if (exists $trAnnoEnt->{alt_func}) {
+		$trAnnoEnt->{alt_funcSO} = $func2SO{ $trAnnoEnt->{alt_func} };
+		$trAnnoEnt->{alt_funcSOname} = $SO2Name{ $trAnnoEnt->{alt_funcSO} };
+		$trAnnoEnt->{alt_funcSO} = 
+		  ( $trAnnoEnt->{alt_funcSO} =~ /^SO:/ ) ? $trAnnoEnt->{alt_funcSO} : "";
+	    }
 	    
 	    # add additional resource
 	    if (exists $trAnnoEnt->{prot} and $trAnnoEnt->{prot} ne "") {
@@ -3420,6 +3547,22 @@ sub getTrChange {
 	    $trannoEnt->{func} = 'unknown';
 	    next;
 	}
+
+        if (
+                exists $trannoEnt->{preStart}
+            and exists $trannoEnt->{postEnd}
+            and $trannoEnt->{preStart}->{exin} ne $trannoEnt->{postEnd}->{exin}
+            and $trannoEnt->{preStart}->{exin} =~ /^IVS|^\./
+            and (  $trannoEnt->{postEnd}->{exin} =~ /^IVS/
+                or $trannoEnt->{postEnd}->{r} =~ /^3D/ )
+          )
+        {
+            $trannoEnt->{alt_func} = 'exon-loss';    # highest priority
+                 # due to the possibility of only delete one exon
+                 # without any intron region, which can be further
+                 # analysis the protein change, so we continue
+                 # without skip the following steps
+        }
 
 	# 4. check if span different exon/intron/promoter/downstream
         if (
@@ -7809,7 +7952,7 @@ __END__
 
 The Format of annotation database is listed as following:
 
-=head2 BED+1 FORMAT DATABASE
+=head2 BED FORMAT DATABASE
 
    Departed block with tag for annotation, Tag entries are separated by "; ",
    and Infos items in entry are separated by "|".
