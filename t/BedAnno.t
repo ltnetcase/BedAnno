@@ -3228,7 +3228,7 @@ my $mt_no_call_ncRNA = {
         'nDot' => 2,
         'exin' => 'EX1E'
     },
-    'geneSym'    => 'MT-TRNF',
+    'geneSym'    => 'TRNF',
     'r_End'      => 'R1E',
     'c'          => 'n.1G>N',
     'geneId'     => '4558',
@@ -3275,7 +3275,7 @@ my $mt_span_no_call = {
         'nDot' => 10,
         'exin' => 'EX1E'
     },
-    'geneSym'    => 'MT-TRNF',
+    'geneSym'    => 'TRNF',
     'r_End'      => 'R1E',
     'c'          => 'n.-7_9delCCCCACAGTTTATGTAins?',
     'geneId'     => '4558',
@@ -3320,7 +3320,7 @@ my $mt_altstart = {
     'trAlt'         => 'T',
     'intronIndex'   => '.',
     'strd'          => '+',
-    'geneSym'       => 'MT-ND1',
+    'geneSym'       => 'ND1',
     'postEnd'       => {
         'r'    => 'C1E',
         'cDot' => '4',
@@ -3372,7 +3372,7 @@ my $mt_init_loss = {
     'trAlt'         => 'C',
     'intronIndex'   => '.',
     'strd'          => '+',
-    'geneSym'       => 'MT-ND1',
+    'geneSym'       => 'ND1',
     'postEnd'       => {
         'r'    => 'C1E',
         'cDot' => '2',
@@ -3423,7 +3423,7 @@ my $no_call_altstart = {
     'trAlt'         => 'N',
     'intronIndex'   => '.',
     'strd'          => '+',
-    'geneSym'       => 'MT-ND1',
+    'geneSym'       => 'ND1',
     'postEnd'       => {
         'r'    => 'C1E',
         'cDot' => '4',
@@ -3476,7 +3476,7 @@ my $mt_no_call_initloss = {
     'trAlt'         => '?',
     'intronIndex'   => '.',
     'strd'          => '+',
-    'geneSym'       => 'MT-ND1',
+    'geneSym'       => 'ND1',
     'postEnd'       => {
         'r'    => 'C1E',
         'cDot' => '2',
@@ -3526,7 +3526,7 @@ my $mt_nonsense = {
     'trAlt'         => 'A',
     'intronIndex'   => '.',
     'strd'          => '+',
-    'geneSym'       => 'MT-ND1',
+    'geneSym'       => 'ND1',
     'postEnd'       => {
         'r'    => 'C1E',
         'cDot' => '130',
@@ -3578,7 +3578,7 @@ my $mt_missense = {
     'trAlt'         => 'G',
     'intronIndex'   => '.',
     'strd'          => '+',
-    'geneSym'       => 'MT-ND1',
+    'geneSym'       => 'ND1',
     'postEnd'       => {
         'r'    => 'C1E',
         'cDot' => '129',
@@ -3630,7 +3630,7 @@ my $mt_coding_synon = {
     'trAlt'         => 'T',
     'intronIndex'   => '.',
     'strd'          => '+',
-    'geneSym'       => 'MT-ND1',
+    'geneSym'       => 'ND1',
     'postEnd'       => {
         'r'    => 'C1E',
         'cDot' => '130',
@@ -3683,7 +3683,7 @@ my $mt_stop_loss = {
     'trAlt'         => 'G',
     'intronIndex'   => '.',
     'strd'          => '+',
-    'geneSym'       => 'MT-ND1',
+    'geneSym'       => 'ND1',
     'geneId'        => '4535',
     'p'             => 'p.*319Wfs*?',
     'p3'             => 'p.*319Trpfs*?',
@@ -3937,6 +3937,9 @@ if ( -e $extradb and -r $extradb ) {
     if ( -e "$extradb/panelDB/PrePreg12_V1.0.HIGHQ.bed.gz" ) {
 	$opts{customdb_PP12} = "$extradb/panelDB/PrePreg12_V1.0.HIGHQ.bed.gz";
     }
+    if ( -e "$extradb/exac/ExAC.r0.2.sites.vep.vcf.gz" ) {
+	$opts{exac} = "$extradb/exac/ExAC.r0.2.sites.vep.vcf.gz";
+    }
     if ( -e "$extradb/aln_db/hg19/hg19_chM.fa.rz" ) {
 	$opts{genome} = "$extradb/aln_db/hg19/hg19_chM.fa.rz";
     }
@@ -3951,6 +3954,7 @@ if ( -e $extradb and -r $extradb ) {
 	}
 	else {
 	    fail("for [ cytoBand ]");
+	    explain "The returned var info:", $t1_anno->{var};
 	}
     }
     if ( exists $opts{phyloP} ) {
@@ -3961,6 +3965,7 @@ if ( -e $extradb and -r $extradb ) {
 	}
 	else {
 	    fail("for [ phyloP ]");
+	    explain "The returned var info:", $t2_anno->{var};
 	}
     }
 
@@ -3973,6 +3978,7 @@ if ( -e $extradb and -r $extradb ) {
 	}
 	else {
 	    fail("for [ cg54 ]");
+	    explain "The returned var info:", $t3_anno->{var};
 	}
     }
 
@@ -3982,6 +3988,7 @@ if ( -e $extradb and -r $extradb ) {
 	}
 	else {
 	    fail("for [ dbSNP ]" );
+	    explain "The returned var info:", $t3_anno->{var};
 	}
     }
 
@@ -3993,6 +4000,7 @@ if ( -e $extradb and -r $extradb ) {
 	}
 	else {
 	    fail("for [ esp6500 ]");
+	    explain "The returned var info:", $t3_anno->{var};
 	}
     }
 
@@ -4004,7 +4012,20 @@ if ( -e $extradb and -r $extradb ) {
 	}
 	else {
 	    fail("for [ tgp ]");
+	    explain "The returned var info:", $t3_anno->{var};
 	}
+    }
+
+    if ( exists $opts{exac} ) {
+        if ( exists $t3_anno->{var}->{exac}->{AF}
+            and $t3_anno->{var}->{exac}->{AF} eq '0.999959' )
+        {
+            pass("for [ exac ]");
+        }
+        else {
+            fail("for [ exac ]");
+	    explain "The returned var info:", $t3_anno->{var};
+        }
     }
 
     if ( exists $opts{pfam} ) {
@@ -4019,6 +4040,7 @@ if ( -e $extradb and -r $extradb ) {
 	}
 	else {
 	    fail("for [ pfam ]");
+	    explain "The returned tr info:", $t4_anno->{trInfo};
 	}
     }
 
@@ -4034,6 +4056,7 @@ if ( -e $extradb and -r $extradb ) {
 	}
 	else {
 	    fail("for [ prediction ]");
+	    explain "The returned tr info:", $t5_anno->{trInfo};
 	}
     }
 
@@ -4045,6 +4068,7 @@ if ( -e $extradb and -r $extradb ) {
 	}
 	else {
 	    fail( "for [ splice change to canonical ]" );
+	    explain "The returned anno info:", $ss_nochange_anno;
 	}
     }
     $beda->DESTROY();

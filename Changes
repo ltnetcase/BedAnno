@@ -236,3 +236,6 @@
 	  They can not be shown at the same time, becase their definition are overlapped with
           each other.
 
+0.78  Tue Nov 18 10:35:12
+	- correct mitochondrial genes symbol to its original format
+	- add support to query ExAC database, depend on new plugin: GetExAC.pm

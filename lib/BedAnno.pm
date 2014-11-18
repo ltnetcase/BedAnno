@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.77';
+our $VERSION = '0.78';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED format database.
 
-=head2 VERSION v0.77
+=head2 VERSION v0.78
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -469,6 +469,14 @@ our $REF_BUILD = 'GRCh37';
 
 =back
 
+=item I<exac> [ExAC.r0.2.sites.vep.vcf.gz]
+
+=over
+
+=item add ExAC allele frequency information from 61,486 unrelated individuals.
+
+=back
+
 =item I<customdb_XX> [custom db in the same format with esp6500's]
 
 =over
@@ -673,6 +681,10 @@ sub new {
 	$self->set_esp6500($self->{esp6500});
     }
 
+    if (exists $self->{exac}) {
+	$self->set_exac($self->{exac});
+    }
+
     foreach my $dbk (sort keys %$self) {
 	if ($dbk =~ /^customdb_(\S+)/) {
 	    my $dbID = $1;
@@ -736,6 +748,8 @@ sub new {
     tgp_h               o            x
     esp6500             o            o
     esp6500_h           o            x
+    exac                o            o
+    exac_h              o            x
     cg54                o            o
     cg54_h              o            x
     wellderly           o            o
@@ -1097,6 +1111,30 @@ sub set_esp6500 {
 sub get_esp6500 {
     my $self = shift;
     return $self->{esp6500} if (exists $self->{esp6500});
+    return undef;
+}
+
+sub set_exac {
+    my $self = shift;
+    my $exac_db = shift;
+    $self->{exac} = $exac_db;
+    require GetExAC if (!exists $self->{exac_h});
+    my %common_opts = ();
+    $common_opts{quiet} = 1 if (exists $self->{quiet});
+    my $exac_h = GetExAC->new( db => $exac_db, %common_opts );
+    $self->{exac_h} = $exac_h;
+    return $self;
+}
+
+sub get_exac {
+    my $self = shift;
+    return $self->{exac} if (exists $self->{exac});
+    return undef;
+}
+
+sub get_exac_h {
+    my $self = shift;
+    return $self->{exac_h} if (exists $self->{exac_h});
     return undef;
 }
 
@@ -2175,6 +2213,10 @@ sub varanno {
 	$var->{esp6500} = $self->{esp6500_h}->getAF(@$var{qw(chr pos end ref alt)});
     }
 
+    if (exists $self->{exac}) {
+	$var->{exac} = $self->{exac_h}->getAF(@$var{qw(chr pos end ref alt)});
+    }
+
     foreach my $dbhk (sort keys %$self) {
 	if ($dbhk =~ /^cusdb_(\S+)_h/ and defined $self->{$dbhk}) {
 	    my $dbID = $1;
@@ -2395,6 +2437,11 @@ sub finaliseAnno {
 	foreach my $tid (sort keys %{$annoEnt->{trInfo}}) {
 
 	    my $trAnnoEnt = $annoEnt->{trInfo}->{$tid};
+	    
+	    if ($tid =~ /^N[MR]_MT-/) {
+		$trAnnoEnt->{geneSym} =~ s/^MT-//;
+	    }
+
 	    my $qtid = $tid;
 	    $qtid =~ s/\-\d+$//;
 	    my $trdbEnt = $self->{trInfodb}->{$qtid};
@@ -2929,15 +2976,22 @@ sub _getTrVarName {
     my ( $trID, $rTrEnt ) = @_;
     my $trhit;
 
+    if ( $trID =~ /N[MR]_MT-/ ) { # mitochondrial mutation
+	$trhit = $rTrEnt->{geneSym};
+    }
+    else {
+	$trhit = $trID . "(" . $rTrEnt->{geneSym} . ")";
+    }
+
     if ( $rTrEnt->{func} eq 'annotation-fail' ) {
-        $trhit = $trID . "(" . $rTrEnt->{geneSym} . "): annotation-fail";
+        $trhit .=": annotation-fail";
     }
     else {
         my $cHGVS =
           ( exists $rTrEnt->{standard_cHGVS} )
           ? $rTrEnt->{standard_cHGVS}
           : $rTrEnt->{c};
-        $trhit = $trID . "(" . $rTrEnt->{geneSym} . "): " . $cHGVS;
+        $trhit .= ": " . $cHGVS;
     }
 
     if ( exists $rTrEnt->{p} and $rTrEnt->{p} ne "" ) {
