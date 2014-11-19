@@ -239,3 +239,6 @@
 0.78  Tue Nov 18 10:35:12
 	- correct mitochondrial genes symbol to its original format
 	- add support to query ExAC database, depend on new plugin: GetExAC.pm
+
+0.79  Wed Now 19 16:28:21
+	- change reformatAnno to group allele frequency together.
