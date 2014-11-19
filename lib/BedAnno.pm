@@ -6368,18 +6368,60 @@ sub reformatAnno {
                 ? join( ";", sort keys %{ $var->{dbsnp} } )
                 : ""
             ),
-            CG54_AF    => ( ( exists $var->{cg54} and exists $var->{cg54}->{AF} ) ? $var->{cg54}->{AF} : "" ),
-            CG54_AN    => ( ( exists $var->{cg54} and exists $var->{cg54}->{AN} ) ? $var->{cg54}->{AN} : "" ),
-            "1000G_AF" => ( ( exists $var->{tgp} and exists $var->{tgp}->{AF} )  ? $var->{tgp}->{AF}  : "" ),
-            "1000G_AN" => ( ( exists $var->{tgp} and exists $var->{tgp}->{AN} )  ? $var->{tgp}->{AN}  : "" ),
-            Wellderly_AF =>
-              ( ( exists $var->{wellderly} and exists $var->{wellderly}->{AF} ) ? $var->{wellderly}->{AF} : "" ),
-            Wellderly_AN =>
-              ( ( exists $var->{wellderly} and exists $var->{wellderly}->{AN} ) ? $var->{wellderly}->{AN} : "" ),
-            ESP6500_AF =>
-              ( ( exists $var->{esp6500} and exists $var->{esp6500}->{AF} ) ? $var->{esp6500}->{AF} : "" ),
-            ESP6500_AN =>
-              ( ( exists $var->{esp6500} and exists $var->{esp6500}->{AN} ) ? $var->{esp6500}->{AN} : "" ),
+            alleleFrequencies => {
+                "CG54" => {
+                    AF => (
+                        ( exists $var->{cg54} and exists $var->{cg54}->{AF} )
+                        ? $var->{cg54}->{AF}
+                        : ""
+                    ),
+                    AN => (
+                        ( exists $var->{cg54} and exists $var->{cg54}->{AN} )
+                        ? $var->{cg54}->{AN}
+                        : ""
+                    ),
+                },
+                "1000G" => {
+                    AF => (
+                        ( exists $var->{tgp} and exists $var->{tgp}->{AF} )
+                        ? $var->{tgp}->{AF}
+                        : ""
+                    ),
+                    AN => (
+                        ( exists $var->{tgp} and exists $var->{tgp}->{AN} )
+                        ? $var->{tgp}->{AN}
+                        : ""
+                    ),
+                },
+                "Wellderly" => {
+                    AF => (
+                        (
+                                  exists $var->{wellderly}
+                              and exists $var->{wellderly}->{AF}
+                        ) ? $var->{wellderly}->{AF} : ""
+                    ),
+                    AN => (
+                        (
+                                  exists $var->{wellderly}
+                              and exists $var->{wellderly}->{AN}
+                        ) ? $var->{wellderly}->{AN} : ""
+                    ),
+                },
+                "ESP6500" => {
+                    AF => (
+                        (
+                                  exists $var->{esp6500}
+                              and exists $var->{esp6500}->{AF}
+                        ) ? $var->{esp6500}->{AF} : ""
+                    ),
+                    AN => (
+                        (
+                                  exists $var->{esp6500}
+                              and exists $var->{esp6500}->{AN}
+                        ) ? $var->{esp6500}->{AN} : ""
+                    ),
+                },
+              },
             PhyloPscorePlacentalMammals =>
               ( ( exists $var->{phyloPpm} ) ? $var->{phyloPpm} : "" ),
             PhyloPscorePrimates =>
@@ -6392,9 +6434,9 @@ sub reformatAnno {
     foreach my $kinvar (sort keys %$var) {
 	if ($kinvar =~ /^cusdb_(\S+)/) {
 	    my $dbID = $1;
-	    $crawler_need->{var}->{"LocalDB_".$dbID."_AN"} = 
+	    $crawler_need->{var}->{alleleFrequencies}->{"LocalDB_".$dbID}->{AN} = 
               ( exists $var->{$kinvar}->{AN} ) ? $var->{$kinvar}->{AN} : "";
-	    $crawler_need->{var}->{"LocalDB_".$dbID."_AF"} = 
+	    $crawler_need->{var}->{alleleFrequencies}->{"LocalDB_".$dbID}->{AF} = 
               ( exists $var->{$kinvar}->{AF} ) ? $var->{$kinvar}->{AF} : "";
 	}
     }

@@ -4018,7 +4018,7 @@ if ( -e $extradb and -r $extradb ) {
 
     if ( exists $opts{exac} ) {
         if ( exists $t3_anno->{var}->{exac}->{AF}
-            and $t3_anno->{var}->{exac}->{AF} eq '0.999959' )
+            and $t3_anno->{var}->{exac}->{AF} eq '0.999984' )
         {
             pass("for [ exac ]");
         }
