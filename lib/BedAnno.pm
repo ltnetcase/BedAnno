@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.79';
+our $VERSION = '0.80';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED format database.
 
-=head2 VERSION v0.79
+=head2 VERSION v0.80
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -1410,6 +1410,7 @@ sub exsort {
 		    "$start-$stop" => [ 
 					[ $tid, $left_cPos, $right_cPos ], ... 
 				      ], ...
+		    # start is 1 based, to coordinate with region string format
 		}
 	      Note: the pos-pair which do not hit any annotation blocks, will
 		    not exist in the returned results.
@@ -7705,8 +7706,11 @@ use Tabix;
     Usage   : my $cnva = BedAnno::CNV->new( db => $annodb, tr => $trdb, dgv => $dgvdb, cnvPub => $cnvPubdb );
     Args    : required args: db, tr
               Specific args:
-                - dgv     DGV tabix index file (dgvMerged from ucsc) as Controls
-                - cnvPub  Well formatted tabix index file as a collection of Cases
+                - ovlp_rate   overlapping region rate while searching for hits
+                - max_uncov   maximum uncovered region length in querys while searching.
+                - dgv         DGV tabix index file as Controls (got from anno_dgv)
+                - sfari       SFARI tabix index file, as a case/control mix resource for autism.
+                - cnvPub      Well formatted tabix index file as a collection of Cases
               Same args in BedAnno method 'new':
                 - db, tr, genes, trans, region, regbed, mmap, batch, cytoBand
     Returns : BedAnno::CNV object
@@ -7723,6 +7727,10 @@ sub new {
 	$self->set_dgv( $args{dgv} );
     }
 
+    if (exists $args{sfari}) {
+	$self->set_sfari( $args{sfari} );
+    }
+
     if (exists $args{cnvPub}) {
 	$self->set_cnvPub( $args{cnvPub} );
     }
@@ -7737,10 +7745,24 @@ sub set_dgv {
     require GetDGV if (!exists $self->{dgv_h});
     my %common_opts = ();
     $common_opts{quiet} = 1 if (exists $self->{quiet});
-    $common_opts{trans} = $self->{trans} if (exists $self->{trans});
-    $common_opts{genes} = $self->{genes} if (exists $self->{trans});
+    $common_opts{ovlp_rate} = $self->{ovlp_rate} if (exists $self->{ovlp_rate});
+    $common_opts{max_uncov} = $self->{max_uncov} if (exists $self->{max_uncov});
     my $dgv_h = GetDGV->new( db => $dgvdb, %common_opts );
     $self->{dgv_h} = $dgv_h;
+    return $self;
+}
+
+sub set_sfari {
+    my $self = shift;
+    my $sfaridb = shift;
+    $self->{sfari} = $sfaridb;
+    require GetSFARI if (!exists $self->{sfari_h});
+    my %common_opts = ();
+    $common_opts{quiet} = 1 if (exists $self->{quiet});
+    $common_opts{ovlp_rate} = $self->{ovlp_rate} if (exists $self->{ovlp_rate});
+    $common_opts{max_uncov} = $self->{max_uncov} if (exists $self->{max_uncov});
+    my $sfari_h = GetSFARI->new( db => $sfaridb, %common_opts );
+    $self->{sfari_h} = $sfari_h;
     return $self;
 }
 
@@ -7751,8 +7773,8 @@ sub set_cnvPub {
     require GetCNVPub if (!exists $self->{cnvPub_h});
     my %common_opts = ();
     $common_opts{quiet} = 1 if (exists $self->{quiet});
-    $common_opts{trans} = $self->{trans} if (exists $self->{trans});
-    $common_opts{genes} = $self->{genes} if (exists $self->{trans});
+    $common_opts{ovlp_rate} = $self->{ovlp_rate} if (exists $self->{ovlp_rate});
+    $common_opts{max_uncov} = $self->{max_uncov} if (exists $self->{max_uncov});
     my $cnvPub_h = GetCNVPub->new( db => $cnvPubdb, %common_opts );
     $self->{cnvPub_h} = $cnvPub_h;
     return $self;
@@ -7805,14 +7827,18 @@ sub annoCNV {
       if ( defined $self->{cytoBand_h} );
     my $dgv = $self->{dgv_h}->getDGV( $chr, $start, $end, $copy_number )
       if ( defined $self->{dgv_h} );
+    my $sfari = $self->{sfari_h}->getSFARI( $chr, $start, $end, $copy_number )
+      if ( defined $self->{sfari_h} );
     my $cnvPub =
       $self->{cnvPub_h}->getCNVpub( $chr, $start, $end, $copy_number )
       if ( defined $self->{cnvPub_h} );
 
     my $rAnnos;
     my %open_args;
-    my $qstart = ($start > 0) ? ($start - 1) : 0;
-    $open_args{region} = $chr.':'.$qstart.'-'.($end + 1); #query with 1 bp flank
+    my ($qstart, $qend) = ($start, $end);
+    $qstart -- if ($qstart > 0);
+    $qend ++;
+    $open_args{region} = $chr.':'.($qstart + 1).'-'.$qend; #query with 1 bp flank
     if ( exists $self->{genes} ) {
 	$open_args{genes} = $self->{genes};
     }
@@ -7830,6 +7856,7 @@ sub annoCNV {
     $cnv_anno{cytoBand} = $cb if (defined $cb);
     $cnv_anno{dgv} = $dgv if (defined $dgv);
     $cnv_anno{cnvPub} = $cnvPub if (defined $cnvPub);
+    $cnv_anno{sfari} = $sfari if (defined $sfari);
 
     if (!defined $rAnnos) {
         $self->warn("Warning: no available annotation items in curdb for $chr")
@@ -7857,7 +7884,8 @@ sub annoCNV {
     Args    : A hash ref of all cnv annotation in the following structure
 		{
 		    $chr => {
-			"$start-$stop" => $copy_number,
+			"$start-$stop" => $copy_number, 
+                        # start is 1 based, to coordinate with region string format
 			...
 		      },
 		      ...
@@ -7908,9 +7936,13 @@ sub batch_annoCNV {
             $cur_anno->{cur_CN} = $cur_CN;
 
             my ( $start, $stop ) = split( /-/, $pos_pair );
+	    $start -= 1; # change 1 based pos pair to 0 based start
             $cur_anno->{dgv} =
               $self->{dgv_h}->getDGV( $chr, $start, $stop, $cur_CN )
               if ( defined $self->{dgv_h} );
+            $cur_anno->{sfari} =
+              $self->{sfari_h}->getSFARI( $chr, $start, $stop, $cur_CN )
+              if ( defined $self->{sfari_h} );
             $cur_anno->{cnvPub} =
               $self->{cnvPub_h}->getCNVpub( $chr, $start, $stop, $cur_CN )
               if ( defined $self->{cnvPub_h} );
@@ -7991,7 +8023,7 @@ sub get_region {
             $region_anno{regtyp} = "LowRisk";
         }
         else {
-            $region_anno{regtyp} = "Segmental";
+            $region_anno{regtyp} = "HighRisk";
         }
     }
     else {
@@ -8023,7 +8055,7 @@ sub get_region {
             $region_anno{regtyp} = 'Whole-cds';
         }
         else {
-            $region_anno{regtyp} = "Segmental";
+            $region_anno{regtyp} = "HighRisk";
         }
     }
 

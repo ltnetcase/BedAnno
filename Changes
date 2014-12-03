@@ -240,5 +240,8 @@
 	- correct mitochondrial genes symbol to its original format
 	- add support to query ExAC database, depend on new plugin: GetExAC.pm
 
-0.79  Wed Now 19 16:28:21
+0.79  Wed Nov 19 16:28:21
 	- change reformatAnno to group allele frequency together.
+
+0.80  Wed Dec 02 16:34:04
+	- change cnv annotation to support sfari database.
