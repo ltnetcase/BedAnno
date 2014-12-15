@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.80';
+our $VERSION = '0.81';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED format database.
 
-=head2 VERSION v0.80
+=head2 VERSION v0.81
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -6873,6 +6873,26 @@ sub getTrPosition {
 
 		# $tid have been added into trInfo in the left end assignment
 		my $trinfoEnt = $annoEnt->{trInfo}->{$tid};
+
+		if ( $var->{pos} == $var->{end} ) { # assume all insertion are on transcript
+		    $trinfoEnt->{staInTr} = 1;
+		    $trinfoEnt->{stoInTr} = 1;
+		}
+
+		# check if hit on transcript region
+                if (    $$rannodb[$k]{sta} < $$rannodb[$k]{sto}
+                    and $var->{pos} >= $$rannodb[$k]{sta}
+                    and $var->{pos} < $$rannodb[$k]{sto} )
+                {
+                    $trinfoEnt->{staInTr} = 1;
+                }
+                if (    $$rannodb[$k]{sta} < $$rannodb[$k]{sto}
+                    and $var->{end} > $$rannodb[$k]{sta}
+                    and $var->{end} <= $$rannodb[$k]{sto} )
+                {
+                    $trinfoEnt->{stoInTr} = 1;
+                }
+
 		# assign right rna positions
                 if (    $total_left_ofst == 0
                     and $total_left_ofst == $total_right_ofst
@@ -7128,30 +7148,46 @@ sub getTrPosition {
 
     # final check and uniform trinfo
     if ( exists $annoEnt->{trInfo} ) {
-	foreach my $t ( keys %{ $annoEnt->{trInfo} } ) {
-	     my $tinfo = $annoEnt->{trInfo}->{$t};
-	     if (
-		 (
-		     $tinfo->{strd} =~ /\+/
-		     and
-		     ( !exists $tinfo->{rnaEnd} or !defined $tinfo->{rnaEnd} )
-		 )
-		 or (
-		     $tinfo->{strd} =~ /\-/
-		     and (  !exists $tinfo->{rnaBegin}
-			 or !defined $tinfo->{rnaBegin} )
-		 )
-	       )
-	     {
-		 delete $annoEnt->{trInfo}->{$t};
-	     }
-	     elsif ( exists $tinfo->{cdsEnd} and $tinfo->{cdsEnd} eq '' ) { # Downstream annotation fail
-		 $tinfo->{cdsBegin} = '';
-	     }
-	}
-	if ( 0 == scalar keys %{ $annoEnt->{trInfo} } ) {
-	     delete $annoEnt->{trInfo};
-	}
+        foreach my $t ( keys %{ $annoEnt->{trInfo} } ) {
+            my $tinfo = $annoEnt->{trInfo}->{$t};
+            if ( exists $tinfo->{staInTr} and exists $tinfo->{stoInTr} ) {
+                delete $tinfo->{staInTr};
+                delete $tinfo->{stoInTr};
+            }
+            elsif ( exists $tinfo->{preStart}
+                and $tinfo->{preStart}->{r} ne 'PROM' )
+            {    # hit 3'downstream only
+                delete $annoEnt->{trInfo}->{$t};
+                next;
+            }
+	    else {
+                delete $tinfo->{staInTr} if (exists $tinfo->{staInTr});
+                delete $tinfo->{stoInTr} if (exists $tinfo->{stoInTr});
+	    }
+
+            if (
+                (
+                    $tinfo->{strd} =~ /\+/
+                    and
+                    ( !exists $tinfo->{rnaEnd} or !defined $tinfo->{rnaEnd} )
+                )
+                or (
+                    $tinfo->{strd} =~ /\-/
+                    and (  !exists $tinfo->{rnaBegin}
+                        or !defined $tinfo->{rnaBegin} )
+                )
+              )
+            {
+                delete $annoEnt->{trInfo}->{$t};
+            }
+            elsif ( exists $tinfo->{cdsEnd} and $tinfo->{cdsEnd} eq '' )
+            {    # Downstream annotation fail
+                $tinfo->{cdsBegin} = '';
+            }
+        }
+        if ( 0 == scalar keys %{ $annoEnt->{trInfo} } ) {
+            delete $annoEnt->{trInfo};
+        }
     }
 
 #    debug

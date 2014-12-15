@@ -245,3 +245,6 @@
 
 0.80  Wed Dec 02 16:34:04
 	- change cnv annotation to support sfari database.
+
+0.81  Mon Dec 15 13:17:05
+	- fix a problem for 3'downstream var next to bad alignment block.
