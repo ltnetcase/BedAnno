@@ -248,3 +248,6 @@
 
 0.81  Mon Dec 15 13:17:05
 	- fix a problem for 3'downstream var next to bad alignment block.
+
+0.82  Wed Dec 25 11:17:08
+	- fix to change indel caused stop_gained to frameshift
