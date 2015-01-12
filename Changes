@@ -251,3 +251,6 @@
 
 0.82  Wed Dec 25 11:17:08
 	- fix to change indel caused stop_gained to frameshift
+
+0.83  Mon Jan 12 16:40:01
+	- fix a bug for ins badaln annotation.

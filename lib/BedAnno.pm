@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.82';
+our $VERSION = '0.83';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED format database.
 
-=head2 VERSION v0.82
+=head2 VERSION v0.83
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -6696,6 +6696,7 @@ sub getTrPosition {
     # debug
 #    print STDERR "DEBUG: getTrPosition for ".Dumper($annoEnt);
     
+    my %hit_badaln_ins = ();
     for (my $k = $aeIndex; $k < @$rannodb; $k ++) {
 	if ($$rannodb[$k]{sto} < $var->{pos}) { # not reach var
 	    $aeIndex ++;
@@ -6734,6 +6735,13 @@ sub getTrPosition {
                   if ( $unify_p > $$rannodb[$k]{sto}
                     or ( $unify_p + $unify_rl ) < $$rannodb[$k]{sta} );
 
+                if (    $unify_p == $$rannodb[$k]{sta}
+                    and $unify_p == $$rannodb[$k]{sto}
+                    and $unify_rl == 0
+                    and $rtidDetail->{mismatch} =~ /^D/ )
+                {
+                    $hit_badaln_ins{$tid} = 1;
+                }
 
                 my $total_left_ofst =
                   $$rtidDetail{offset} + ( $unify_p - $$rannodb[$k]{sta} );
@@ -6895,6 +6903,7 @@ sub getTrPosition {
                     and $total_left_ofst == $total_right_ofst
 		    and $rtidDetail->{wlen} > 0 
 		    and $rtidDetail->{mismatch} eq ""
+		    and !exists $hit_badaln_ins{$tid}
 		)
                 { # here is the part of insertion in edge,
 		  # we don't need to recall cal_hgvs_pos,
