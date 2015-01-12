@@ -6735,9 +6735,8 @@ sub getTrPosition {
                   if ( $unify_p > $$rannodb[$k]{sto}
                     or ( $unify_p + $unify_rl ) < $$rannodb[$k]{sta} );
 
-                if (    $unify_p == $$rannodb[$k]{sta}
-                    and $unify_p == $$rannodb[$k]{sto}
-                    and $unify_rl == 0
+                if (    $$rannodb[$k]{sta} == $$rannodb[$k]{sto}
+                    and $unify_p + $unify_rl == $$rannodb[$k]{sto}
                     and $rtidDetail->{mismatch} =~ /^D/ )
                 {
                     $hit_badaln_ins{$tid} = 1;
