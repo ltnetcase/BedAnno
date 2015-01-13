@@ -254,3 +254,6 @@
 
 0.83  Mon Jan 12 16:40:01
 	- fix a bug for ins badaln annotation.
+
+0.84  Tue Jan 13 16:03:01
+	- add DistanceToExon for crawler.

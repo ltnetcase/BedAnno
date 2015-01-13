@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.83';
+our $VERSION = '0.84';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED format database.
 
-=head2 VERSION v0.83
+=head2 VERSION v0.84
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -51,6 +51,7 @@ our ( %C3, %C1, %SO2Name, %func2SO,  %Name2SO,
 );
 
 our $CURRENT_MT = 'NC_012920.1';
+our $MAXDISTANCE = 10000;
 my $load_opt_vcfaf = 0;
 
 %C3 = (
@@ -6459,6 +6460,7 @@ sub reformatAnno {
 	$crawler_need->{trInfo}->{""}->{GenePartSO} = "SO:0000605";
 	$crawler_need->{trInfo}->{""}->{GenePartIndex} = 13;
 	$crawler_need->{trInfo}->{""}->{TranscriptVarName} = $crawler_need->{var}->{VarName};
+	$crawler_need->{trInfo}->{""}->{DistanceToExon} = $MAXDISTANCE;
     }
     else {
         foreach my $trAcc ( sort keys %{ $anno->{trInfo} } ) {
@@ -6634,6 +6636,22 @@ sub reformatAnno {
                 if ( 2 == @pol ) {
                     $trInfo{AAPolarityRef} = $pol[0];
                     $trInfo{AAPolarityVar} = $pol[1];
+                }
+            }
+
+	    $trInfo{DistanceToExon} = 0;
+            if (   $trInfo{GenePart} eq "promoter"
+                or $trInfo{GenePart} =~ /fail/i )
+            {
+                $trInfo{DistanceToExon} = $MAXDISTANCE;
+            }
+            elsif ( $trInfo{GenePart} ne "span" ) {
+                my $min = $MAXDISTANCE;
+                while ( $trInfo{cHGVS} =~ /\d+[+-](\d+)/g ) {
+                    $min = $1 if ( $1 < $min );
+                }
+                if ( $min < $MAXDISTANCE ) {
+                    $trInfo{DistanceToExon} = $min;
                 }
             }
 
