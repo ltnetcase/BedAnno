@@ -7769,7 +7769,8 @@ use Tabix;
                 - max_uncov   maximum uncovered region length in querys while searching.
                 - dgv         DGV tabix index file as Controls (got from anno_dgv)
                 - sfari       SFARI tabix index file, as a case/control mix resource for autism.
-                - cnvPub      Well formatted tabix index file as a collection of Cases
+                - cnvPub      Well formatted tabix indexed file as a collection of Cases
+                - cnvd        CNVD database tabix indexed file.
               Same args in BedAnno method 'new':
                 - db, tr, genes, trans, region, regbed, mmap, batch, cytoBand
     Returns : BedAnno::CNV object
@@ -7792,6 +7793,10 @@ sub new {
 
     if (exists $args{cnvPub}) {
 	$self->set_cnvPub( $args{cnvPub} );
+    }
+
+    if (exists $args{cnvd}) {
+	$self->set_cnvd( $args{cnvd} );
     }
 
     return $self;
@@ -7839,6 +7844,20 @@ sub set_cnvPub {
     return $self;
 }
 
+sub set_cnvd {
+    my $self = shift;
+    my $cnvdb = shift;
+    $self->{cnvd} = $cnvdb;
+    require GetCNVD if (!exists $self->{cnvd});
+    my %common_opts = ();
+    $common_opts{quiet} = 1 if (exists $self->{quiet});
+    $common_opts{ovlp_rate} = $self->{ovlp_rate} if (exists $self->{ovlp_rate});
+    $common_opts{max_uncov} = $self->{max_uncov} if (exists $self->{max_uncov});
+    my $cnvd_h = GetCNVD->new( db => $cnvdb, %common_opts );
+    $self->{cnvd_h} = $cnvd_h;
+    return $self;
+}
+
 =head2 annoCNV
 
     About   : Annotate single CNV variants
@@ -7868,6 +7887,8 @@ sub set_cnvPub {
                     # available when resource ok
                     cytoBand  => $cytoBand_info,
                     dgv    => $dgv_sql_rst,
+                    sfari  => $sfari_sql_rst,
+                    cnvd   => $cnvd_sql_rst,
                     cnvPub => $cnvPub_sql_rst,
                 }
 
@@ -7891,13 +7912,18 @@ sub annoCNV {
     my $cnvPub =
       $self->{cnvPub_h}->getCNVpub( $chr, $start, $end, $copy_number )
       if ( defined $self->{cnvPub_h} );
+    my $cnvd = 
+      $self->{cnvd_h}->getCNVD( $chr, $start, $end, $copy_number )
+      if ( defined $self->{cnvd_h} );
 
     my $rAnnos;
     my %open_args;
     my ($qstart, $qend) = ($start, $end);
-    $qstart -- if ($qstart > 0);
-    $qend ++;
-    $open_args{region} = $chr.':'.($qstart + 1).'-'.$qend; #query with 1 bp flank
+    if ($start == $end) {  #query with 1 bp flank for ins case
+	$qstart -- if ($qstart > 0);
+	$qend ++;
+    }
+    $open_args{region} = $chr.':'.($qstart + 1).'-'.$qend;
     if ( exists $self->{genes} ) {
 	$open_args{genes} = $self->{genes};
     }
@@ -7916,6 +7942,7 @@ sub annoCNV {
     $cnv_anno{dgv} = $dgv if (defined $dgv);
     $cnv_anno{cnvPub} = $cnvPub if (defined $cnvPub);
     $cnv_anno{sfari} = $sfari if (defined $sfari);
+    $cnv_anno{cnvd} = $cnvd if (defined $cnvd);
 
     if (!defined $rAnnos) {
         $self->warn("Warning: no available annotation items in curdb for $chr")
@@ -8008,6 +8035,9 @@ sub batch_annoCNV {
             $cur_anno->{cytoband} =
               $self->{cytoBand_h}->getCB( $chr, $start, $stop )
 	      if ( defined $self->{cytoBand_h} );
+	    $cur_anno->{cnvd} =
+              $self->{cnvd_h}->getCNVD( $chr, $start, $stop, $cur_CN )
+              if ( defined $self->{cnvd_h} );
             $cnvAnnos{$chr}{$pos_pair} = $cur_anno;
         }
     }
