@@ -257,3 +257,6 @@
 
 0.84  Tue Jan 13 16:03:01
 	- add DistanceToExon for crawler.
+
+0.85  Wed Jan 14 18:00:00
+	- add cnvd for cnv anno
