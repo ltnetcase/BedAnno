@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.85';
+our $VERSION = '0.86';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED format database.
 
-=head2 VERSION v0.85
+=head2 VERSION v0.86
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -3228,8 +3228,16 @@ sub getTrChange {
 	    next;
 	}
 
-	if ($trRef =~ /=/) {
-	    confess "Error: called variant with '=' reference seq is not allowed.\n";
+	if ($trRef =~ /=/) { # reference sequence too long
+	    if ($trannoEnt->{r_Begin} ne $trannoEnt->{r_End}) {
+		$trannoEnt->{func} = 'span';
+	    }
+	    else {
+		$trannoEnt->{func} = 'unknown';
+	    }
+	    $trannoEnt->{c} = $f . $chgvs_5 . '_' . $chgvs_3 . 'del';
+	    $trannoEnt->{c} .= 'ins'.$trAlt if ($trAlt ne "");
+	    next;
 	}
 	if ($trRef eq $trAlt) {
 	    $trannoEnt->{func} = 'no-change';
@@ -5745,7 +5753,7 @@ sub new {
     }
     
     return $var
-      if ( length($ref) > $MAX_COMPLEX_PARSING
+      if ( $len_ref > $MAX_COMPLEX_PARSING
         or length($alt) > $MAX_COMPLEX_PARSING );
     return $var->parse_complex();
 }

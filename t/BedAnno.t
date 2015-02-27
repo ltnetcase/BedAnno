@@ -3897,6 +3897,8 @@ my $down3_anno_next_to_badaln_edge =
 my $down3_anno_varname = $down3_anno_next_to_badaln_edge->{var}->{varName};
 my $ins_nochange_anno = $bare_beda->anno( "chr11", 67765163, 67765163, "", "G" );
 my $ins_nochange_varname = $ins_nochange_anno->{var}->{varName};
+my $long_ref_anno = $bare_beda->anno( "chr2", "27532178", "27533753", "=", "CAGGC" );
+my $long_ref_varname = $long_ref_anno->{var}->{varName};
 
 ok( $prTag_correction eq "NM_000151.3(G6PC): c.326G>A (p.C109Y)",
     "for [ primary tag correction ]" )
@@ -3924,6 +3926,9 @@ ok(
 ok ( $ins_nochange_varname eq "NM_030930.2(UNC93B1): c.=",
     "for [ ins nochange anno ]"
 ) or explain "The anno info: ", $ins_nochange_anno;
+ok ( $long_ref_varname eq "NM_003353.2(UCN): c.-116-u2623_-116-u1049delinsGCCTG",
+    "for [ long reference anno ]"
+) or explain "The anno info: ", $long_ref_anno;
 
 $bare_beda->DESTROY();
 undef $bare_beda;

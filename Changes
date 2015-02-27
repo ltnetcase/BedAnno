@@ -260,3 +260,6 @@
 
 0.85  Wed Jan 14 18:00:00
 	- add cnvd for cnv anno
+
+0.86  Fri Feb 27 16:16:01
+	- fix long reference case to give annotation anyway.
