@@ -3926,7 +3926,7 @@ ok(
 ok ( $ins_nochange_varname eq "NM_030930.2(UNC93B1): c.=",
     "for [ ins nochange anno ]"
 ) or explain "The anno info: ", $ins_nochange_anno;
-ok ( $long_ref_varname eq "NM_003353.2(UCN): c.-116-u2623_-116-u1049delinsGCCTG",
+ok ( $long_ref_varname eq "NM_002437.4(MPV17): c.462-904_*464+d181delinsGCCTG",
     "for [ long reference anno ]"
 ) or explain "The anno info: ", $long_ref_anno;
 

@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.86';
+our $VERSION = '0.87';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED format database.
 
-=head2 VERSION v0.86
+=head2 VERSION v0.87
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -7177,6 +7177,9 @@ sub getTrPosition {
         }
     }
 
+    # debug
+#    print STDERR "Annotations before check and uniform:", Dumper($annoEnt);
+
     # final check and uniform trinfo
     if ( exists $annoEnt->{trInfo} ) {
         foreach my $t ( keys %{ $annoEnt->{trInfo} } ) {
@@ -7185,7 +7188,8 @@ sub getTrPosition {
                 delete $tinfo->{staInTr};
                 delete $tinfo->{stoInTr};
             }
-            elsif ( exists $tinfo->{preStart}
+            elsif ( !exists $tinfo->{staInTr} and !exists $tinfo->{stoInTr}
+		and exists $tinfo->{preStart}
                 and $tinfo->{preStart}->{r} ne 'PROM' )
             {    # hit 3'downstream only
                 delete $annoEnt->{trInfo}->{$t};
