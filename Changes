@@ -263,3 +263,6 @@
 
 0.86  Fri Feb 27 16:16:01
 	- fix long reference case to give annotation anyway.
+
+0.88  Wed Apr 29 15:00:01
+    - remove reformat_anno method from BedAnno

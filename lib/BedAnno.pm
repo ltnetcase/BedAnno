@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.87';
+our $VERSION = '0.88';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED format database.
 
-=head2 VERSION v0.87
+=head2 VERSION v0.88
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -44,98 +44,216 @@ resource dependencies will be required.
 
 =cut
 
-our ( %C3, %C1, %SO2Name, %func2SO,  %Name2SO, 
-      %Polar,   %C1toC3,  %AAnumber, $AAcount, 
-      %varTypeName2Index, %genepartName2Index, 
-      %funcName2Index,    %canonicalSS,
+our (
+    %C3,                %C1,                 %SO2Name,
+    %func2SO,           %Name2SO,            %Polar,
+    %C1toC3,            %AAnumber,           $AAcount,
+    %canonicalSS,
 );
 
-our $CURRENT_MT = 'NC_012920.1';
-our $MAXDISTANCE = 10000;
+our $CURRENT_MT  = 'NC_012920.1';
 my $load_opt_vcfaf = 0;
 
 %C3 = (
-    TTT=>"Phe",	CTT=>"Leu", ATT=>"Ile",	GTT=>"Val",
-    TTC=>"Phe", CTC=>"Leu", ATC=>"Ile", GTC=>"Val",
-    TCT=>"Ser", CCT=>"Pro", ACT=>"Thr", GCT=>"Ala",
-    TCC=>"Ser", CCC=>"Pro", ACC=>"Thr", GCC=>"Ala",
-    TAT=>"Tyr", CAT=>"His", AAT=>"Asn", GAT=>"Asp",
-    TAC=>"Tyr", CAC=>"His", AAC=>"Asn", GAC=>"Asp",
-    TGT=>"Cys", CGT=>"Arg", AGT=>"Ser", GGT=>"Gly",
-    TGC=>"Cys", CGC=>"Arg", AGC=>"Ser", GGC=>"Gly",
-    TTA=>"Leu", CTA=>"Leu", ATA=>"Ile", GTA=>"Val",
-    TCA=>"Ser", CTG=>"Leu", ACA=>"Thr", GTG=>"Val",
-    TAA=>"*",   CCA=>"Pro", AAA=>"Lys", GCA=>"Ala",
-    TGA=>"*",   CCG=>"Pro", AGA=>"Arg", GCG=>"Ala",
-    TTG=>"Leu", CAA=>"Gln", ATG=>"Met", GAA=>"Glu",
-    TCG=>"Ser", CAG=>"Gln", ACG=>"Thr", GAG=>"Glu",
-    TAG=>"*",   CGA=>"Arg", AAG=>"Lys", GGA=>"Gly",
-    TGG=>"Trp", CGG=>"Arg", AGG=>"Arg", GGG=>"Gly",
+    TTT => "Phe",
+    CTT => "Leu",
+    ATT => "Ile",
+    GTT => "Val",
+    TTC => "Phe",
+    CTC => "Leu",
+    ATC => "Ile",
+    GTC => "Val",
+    TCT => "Ser",
+    CCT => "Pro",
+    ACT => "Thr",
+    GCT => "Ala",
+    TCC => "Ser",
+    CCC => "Pro",
+    ACC => "Thr",
+    GCC => "Ala",
+    TAT => "Tyr",
+    CAT => "His",
+    AAT => "Asn",
+    GAT => "Asp",
+    TAC => "Tyr",
+    CAC => "His",
+    AAC => "Asn",
+    GAC => "Asp",
+    TGT => "Cys",
+    CGT => "Arg",
+    AGT => "Ser",
+    GGT => "Gly",
+    TGC => "Cys",
+    CGC => "Arg",
+    AGC => "Ser",
+    GGC => "Gly",
+    TTA => "Leu",
+    CTA => "Leu",
+    ATA => "Ile",
+    GTA => "Val",
+    TCA => "Ser",
+    CTG => "Leu",
+    ACA => "Thr",
+    GTG => "Val",
+    TAA => "*",
+    CCA => "Pro",
+    AAA => "Lys",
+    GCA => "Ala",
+    TGA => "*",
+    CCG => "Pro",
+    AGA => "Arg",
+    GCG => "Ala",
+    TTG => "Leu",
+    CAA => "Gln",
+    ATG => "Met",
+    GAA => "Glu",
+    TCG => "Ser",
+    CAG => "Gln",
+    ACG => "Thr",
+    GAG => "Glu",
+    TAG => "*",
+    CGA => "Arg",
+    AAG => "Lys",
+    GGA => "Gly",
+    TGG => "Trp",
+    CGG => "Arg",
+    AGG => "Arg",
+    GGG => "Gly",
 
-    TCN=>"Ser", CCN=>"Pro", ACN=>"Thr", GTN=>"Val",
-		CTN=>"Leu",		GCN=>"Ala",
-		CGN=>"Arg",		GGN=>"Gly",
-    
+    TCN => "Ser",
+    CCN => "Pro",
+    ACN => "Thr",
+    GTN => "Val",
+    CTN => "Leu",
+    GCN => "Ala",
+    CGN => "Arg",
+    GGN => "Gly",
+
     # inseq stop codon
-    UAA=>"X",   UAG=>"X",
+    UAA => "X", UAG => "X",
 
     # selenocysteine
-    UGA=>"Sec"
+    UGA => "Sec"
 );
 
-
 %C1 = (
-    TTT=>"F", CTT=>"L", ATT=>"I", GTT=>"V",
-    TTC=>"F", CTC=>"L", ATC=>"I", GTC=>"V",
-    TCT=>"S", CCT=>"P", ACT=>"T", GCT=>"A",
-    TCC=>"S", CCC=>"P", ACC=>"T", GCC=>"A",
-    TAT=>"Y", CAT=>"H", AAT=>"N", GAT=>"D",
-    TAC=>"Y", CAC=>"H", AAC=>"N", GAC=>"D",
-    TGT=>"C", CGT=>"R", AGT=>"S", GGT=>"G",
-    TGC=>"C", CGC=>"R", AGC=>"S", GGC=>"G",
-    TTA=>"L", CTA=>"L", ATA=>"I", GTA=>"V",
-    TCA=>"S", CTG=>"L", ACA=>"T", GTG=>"V",
-    TAA=>"*", CCA=>"P", AAA=>"K", GCA=>"A",
-    TGA=>"*", CCG=>"P", AGA=>"R", GCG=>"A",
-    TTG=>"L", CAA=>"Q", ATG=>"M", GAA=>"E",
-    TCG=>"S", CAG=>"Q", ACG=>"T", GAG=>"E",
-    TAG=>"*", CGA=>"R", AAG=>"K", GGA=>"G",
-    TGG=>"W", CGG=>"R", AGG=>"R", GGG=>"G",
+    TTT => "F",
+    CTT => "L",
+    ATT => "I",
+    GTT => "V",
+    TTC => "F",
+    CTC => "L",
+    ATC => "I",
+    GTC => "V",
+    TCT => "S",
+    CCT => "P",
+    ACT => "T",
+    GCT => "A",
+    TCC => "S",
+    CCC => "P",
+    ACC => "T",
+    GCC => "A",
+    TAT => "Y",
+    CAT => "H",
+    AAT => "N",
+    GAT => "D",
+    TAC => "Y",
+    CAC => "H",
+    AAC => "N",
+    GAC => "D",
+    TGT => "C",
+    CGT => "R",
+    AGT => "S",
+    GGT => "G",
+    TGC => "C",
+    CGC => "R",
+    AGC => "S",
+    GGC => "G",
+    TTA => "L",
+    CTA => "L",
+    ATA => "I",
+    GTA => "V",
+    TCA => "S",
+    CTG => "L",
+    ACA => "T",
+    GTG => "V",
+    TAA => "*",
+    CCA => "P",
+    AAA => "K",
+    GCA => "A",
+    TGA => "*",
+    CCG => "P",
+    AGA => "R",
+    GCG => "A",
+    TTG => "L",
+    CAA => "Q",
+    ATG => "M",
+    GAA => "E",
+    TCG => "S",
+    CAG => "Q",
+    ACG => "T",
+    GAG => "E",
+    TAG => "*",
+    CGA => "R",
+    AAG => "K",
+    GGA => "G",
+    TGG => "W",
+    CGG => "R",
+    AGG => "R",
+    GGG => "G",
 
-    TCN=>"S", CCN=>"P", ACN=>"T", GTN=>"V",
-	      CTN=>"L",		  GCN=>"A",
-	      CGN=>"R",		  GGN=>"G",
-    
-    UAA=>"X", UAG=>"X",
+    TCN => "S",
+    CCN => "P",
+    ACN => "T",
+    GTN => "V",
+    CTN => "L",
+    GCN => "A",
+    CGN => "R",
+    GGN => "G",
 
-    UGA=>"U"
+    UAA => "X", UAG => "X",
+
+    UGA => "U"
 );
 
 %C1toC3 = ();
-foreach my $threebase (sort keys %C1) {
-    $C1toC3{$C1{$threebase}} = $C3{$threebase};
+foreach my $threebase ( sort keys %C1 ) {
+    $C1toC3{ $C1{$threebase} } = $C3{$threebase};
 }
 
-$AAcount = scalar keys %C1toC3;
-@AAnumber{sort keys %C1toC3} = (1 .. $AAcount);
-$AAnumber{'?'} = $AAcount + 1;
-$AAnumber{'.'} = $AAcount + 2;
+$AAcount                       = scalar keys %C1toC3;
+@AAnumber{ sort keys %C1toC3 } = ( 1 .. $AAcount );
+$AAnumber{'?'}                 = $AAcount + 1;
+$AAnumber{'.'}                 = $AAcount + 2;
 
 %Polar = (
-    Ala => "NP", Asn => "P0", Arg => "P+", Asp => "P-",
-    Ile => "NP", Cys => "P0", His => "P+", Glu => "P-",
-    Leu => "NP", Gln => "P0", Lys => "P+",
-    Met => "NP", Gly => "P0",
-    Phe => "NP", Ser => "P0",
-    Pro => "NP", Thr => "P0",
-    Trp => "NP", Tyr => "P0",
+    Ala => "NP",
+    Asn => "P0",
+    Arg => "P+",
+    Asp => "P-",
+    Ile => "NP",
+    Cys => "P0",
+    His => "P+",
+    Glu => "P-",
+    Leu => "NP",
+    Gln => "P0",
+    Lys => "P+",
+    Met => "NP",
+    Gly => "P0",
+    Phe => "NP",
+    Ser => "P0",
+    Pro => "NP",
+    Thr => "P0",
+    Trp => "NP",
+    Tyr => "P0",
     Val => "NP",
     Sec => "NP",
 
-    'X' => '.',  '*' => '.'
+    'X' => '.',
+    '*' => '.'
 );
 
-@Polar{@C1{(sort keys %C1)}} = @Polar{@C3{(sort keys %C1)}};
+@Polar{ @C1{ ( sort keys %C1 ) } } = @Polar{ @C3{ ( sort keys %C1 ) } };
 
 %SO2Name = (
 
@@ -191,12 +309,12 @@ $AAnumber{'.'} = $AAcount + 2;
     # the followings are replaced by 'unknown-likely-deleterious' in Voyager
     "SO:0001575" => 'splice_donor_variant',
     "SO:0001574" => 'splice_acceptor_variant',
-    
+
     # newly added Functions in 1.01 for complementary of splicing variants
     "SO:0001572" => 'exon_loss_variant',
     "SO:0001787" => 'splice_donor_5th_base_variant',
-    "SO:0001630" => 'splice_region_variant', # exon: 3bp + intron: 8bp
-    "SO:0001995" => 'extended_intronic_splice_region_variant', # intron: 10bp
+    "SO:0001630" => 'splice_region_variant',           # exon: 3bp + intron: 8bp
+    "SO:0001995" => 'extended_intronic_splice_region_variant',    # intron: 10bp
 
     # the followings are replaced by 'unknown' in Voyager
     "SO:0001623" => '5_prime_UTR_variant',
@@ -210,55 +328,6 @@ $AAnumber{'.'} = $AAcount + 2;
     "abnormal-inseq-stop" => "abnormal-inseq-stop",
 );
 
-%varTypeName2Index = (
-    # varType
-    snv                          => 1,
-    ins                          => 2,
-    del                          => 3,
-    delins                       => 4,
-    'no-call'                    => 5,
-    'ref'                        => 6,
-);
-
-%genepartName2Index = (
-    # genepart
-    CDS                          => 1,
-    span                         => 2,
-    five_prime_cis_splice_site   => 3,
-    three_prime_cis_splice_site  => 4,
-    five_prime_UTR               => 5,
-    three_prime_UTR              => 6,
-    ncRNA                        => 7,
-    promoter                     => 8,
-    five_prime_UTR_intron        => 9,
-    three_prime_UTR_intron       => 10,
-    interior_intron              => 11,
-    intergenic                   => 13,
-    'abnormal-intron'            => 12,
-    'annotation-fail'            => 14,
-);
-
-%funcName2Index = (
-    stop_gained                  => 1,
-    frameshift_variant           => 2,
-    transcript_ablation          => 3,
-    initiator_codon_variant      => 4,
-    "unknown-likely-deleterious" => 5,
-    inframe_insertion            => 6,
-    inframe_deletion             => 7,
-    inframe_delins               => 8,
-    missense_variant             => 9,
-    stop_lost                    => 10,
-    stop_retained_variant        => 11,
-    synonymous_variant           => 12,
-    "no-change"                  => 13,
-    unknown                      => 14,
-    "unknown-no-call"            => 15,
-    "abnormal-intron"            => 16,
-    "abnormal-fs-site"           => 17,
-    "abnormal-inseq-stop"        => 18,
-    "annotation-fail"            => 19,
-);
 
 %Name2SO = reverse(%SO2Name);
 
@@ -296,10 +365,10 @@ $AAnumber{'.'} = $AAcount + 2;
 
     # newly added in 1.01 for splicing variants complementary
     # may exists in alt_func keys, alt_funcSO, alt_funcSOname
-    "exon-loss"           => "SO:0001572",
-    "splice-5-5th"        => "SO:0001787",
-    "splice-region"       => "SO:0001630",
-    "splice-ext"          => "SO:0001995",
+    "exon-loss"     => "SO:0001572",
+    "splice-5-5th"  => "SO:0001787",
+    "splice-region" => "SO:0001630",
+    "splice-ext"    => "SO:0001995",
 );
 
 %canonicalSS = (
@@ -309,11 +378,13 @@ $AAnumber{'.'} = $AAcount + 2;
 
 our %GenePartsOrder;
 @GenePartsOrder{
-    (qw(CDS span five_prime_cis_splice_site
-      three_prime_cis_splice_site ncRNA five_prime_UTR
-      three_prime_UTR interior_intron five_prime_UTR_intron
-      three_prime_UTR_intron abnormal-intron promoter
-      annotation-fail intergenic_region), "")
+    (
+        qw(CDS span five_prime_cis_splice_site
+          three_prime_cis_splice_site ncRNA five_prime_UTR
+          three_prime_UTR interior_intron five_prime_UTR_intron
+          three_prime_UTR_intron abnormal-intron promoter
+          annotation-fail intergenic_region), ""
+    )
 } = ( 1 .. 15 );
 
 our $REF_BUILD = 'GRCh37';
@@ -596,12 +667,12 @@ sub new {
     bless $self, ref($class) || $class;
 
     $self->throw("Error: please at least give 'db' and 'tr' path.")
-	if (!exists $self->{db} or !exists $self->{tr});
+      if ( !exists $self->{db} or !exists $self->{tr} );
 
-    my $debugOpt = (exists $self->{debug}) ? 1 : 0;
+    my $debugOpt = ( exists $self->{debug} ) ? 1 : 0;
     my $t0;
     if ($debugOpt) {
-	$t0 = [ gettimeofday ];
+        $t0 = [gettimeofday];
     }
 
     if ( exists $self->{genes} ) {
@@ -609,7 +680,7 @@ sub new {
             open( GENE, $self->{genes} ) or $self->throw("$self->{genes} : $!");
             my %genes = map { s/\s+//g; $_ => 1 } <GENE>;
             close GENE;
-	    $self->{genes} = \%genes;
+            $self->{genes} = \%genes;
         }
     }
     if ( exists $self->{trans} ) {
@@ -617,107 +688,109 @@ sub new {
             open( TRAN, $self->{trans} ) or $self->throw("$self->{trans} : $!");
             my %trans = map { s/\s+//g; $_ => 1 } <TRAN>;
             close TRAN;
-	    $self->{trans} = \%trans;
+            $self->{trans} = \%trans;
         }
-	my $rclean_trans =
+        my $rclean_trans =
           { map { s/\-\d+$//; $_ => 1 } keys %{ $self->{trans} } };
-	$self->{clean_trans} = $rclean_trans;
+        $self->{clean_trans} = $rclean_trans;
     }
 
-    $self->set_db($self->{db});
+    $self->set_db( $self->{db} );
 
     my $t1;
     if ($debugOpt) {
-	$t1 = [ gettimeofday ];
-	print STDERR "BedAnno->new [db load] ... ".tv_interval( $t0, $t1 )."\n";
-	$t0 = $t1;
+        $t1 = [gettimeofday];
+        print STDERR "BedAnno->new [db load] ... "
+          . tv_interval( $t0, $t1 ) . "\n";
+        $t0 = $t1;
     }
 
-    $self->set_tr($self->{tr});
+    $self->set_tr( $self->{tr} );
     if ($debugOpt) {
-	$t1 = [ gettimeofday ];
-	print STDERR "BedAnno->new [tr load] ... ".tv_interval( $t0, $t1 )."\n";
-	$t0 = $t1;
+        $t1 = [gettimeofday];
+        print STDERR "BedAnno->new [tr load] ... "
+          . tv_interval( $t0, $t1 ) . "\n";
+        $t0 = $t1;
     }
 
     $self->set_refbuild($REF_BUILD);
 
     if ( exists $self->{genome} ) {
-	$self->set_genome( $self->{genome} );
+        $self->set_genome( $self->{genome} );
     }
 
     if ( exists $self->{cytoBand} ) {
-	$self->set_cytoBand($self->{cytoBand});
+        $self->set_cytoBand( $self->{cytoBand} );
     }
 
     if ( exists $self->{pfam} ) {
-	$self->set_pfam($self->{pfam});
+        $self->set_pfam( $self->{pfam} );
     }
 
     if ( exists $self->{prediction} ) {
-	$self->set_prediction($self->{prediction});
+        $self->set_prediction( $self->{prediction} );
     }
 
     if ( exists $self->{condel} ) {
-	$self->set_condel($self->{condel});
+        $self->set_condel( $self->{condel} );
     }
 
     if ( exists $self->{phyloP} ) {
-	$self->set_phyloP($self->{phyloP});
+        $self->set_phyloP( $self->{phyloP} );
     }
 
     if ( exists $self->{cosmic} ) {
-	$self->set_cosmic($self->{cosmic});
+        $self->set_cosmic( $self->{cosmic} );
     }
 
     if ( exists $self->{dbSNP} ) {
-	$self->set_dbSNP($self->{dbSNP});
+        $self->set_dbSNP( $self->{dbSNP} );
     }
 
-    if (exists $self->{tgp}) {
-	$self->set_tgp($self->{tgp});
+    if ( exists $self->{tgp} ) {
+        $self->set_tgp( $self->{tgp} );
     }
 
-    if (exists $self->{esp6500}) {
-	$self->set_esp6500($self->{esp6500});
+    if ( exists $self->{esp6500} ) {
+        $self->set_esp6500( $self->{esp6500} );
     }
 
-    if (exists $self->{exac}) {
-	$self->set_exac($self->{exac});
+    if ( exists $self->{exac} ) {
+        $self->set_exac( $self->{exac} );
     }
 
-    foreach my $dbk (sort keys %$self) {
-	if ($dbk =~ /^customdb_(\S+)/) {
-	    my $dbID = $1;
-	    $self->set_customdb($self->{$dbk}, $dbID);
-	}
+    foreach my $dbk ( sort keys %$self ) {
+        if ( $dbk =~ /^customdb_(\S+)/ ) {
+            my $dbID = $1;
+            $self->set_customdb( $self->{$dbk}, $dbID );
+        }
     }
 
-    if (exists $self->{cg54}) {
-	$self->set_cg54($self->{cg54});
+    if ( exists $self->{cg54} ) {
+        $self->set_cg54( $self->{cg54} );
     }
 
-    if (exists $self->{wellderly}) {
-	$self->set_wellderly($self->{wellderly});
+    if ( exists $self->{wellderly} ) {
+        $self->set_wellderly( $self->{wellderly} );
     }
 
-    if (exists $self->{rmsk}) {
-	$self->set_rmsk($self->{rmsk});
+    if ( exists $self->{rmsk} ) {
+        $self->set_rmsk( $self->{rmsk} );
     }
 
-    if (exists $self->{gwas}) {
-	$self->set_gwas($self->{gwas});
+    if ( exists $self->{gwas} ) {
+        $self->set_gwas( $self->{gwas} );
     }
-    
+
     if ($debugOpt) {
-	$t1 = [ gettimeofday ];
-	print STDERR "BedAnno->new [others load] ... ".tv_interval( $t0, $t1 )."\n";
-	$t0 = $t1;
+        $t1 = [gettimeofday];
+        print STDERR "BedAnno->new [others load] ... "
+          . tv_interval( $t0, $t1 ) . "\n";
+        $t0 = $t1;
     }
 
     return $self;
 }
-
 
 =head2 set/get methods for properties
 
@@ -762,7 +835,7 @@ sub new {
 =cut
 
 sub set_refbuild {
-    my $self = shift;
+    my $self              = shift;
     my $custom_build_info = shift;
     $self->{refbuild} = $custom_build_info;
     return $self;
@@ -775,19 +848,20 @@ sub get_refbuild {
 
 sub set_db {
     my $self = shift;
-    my $db = shift;
-    if ( ! -e $db or ! -r $db ) {
-	$self->throw("Error: cannot read $db.");
+    my $db   = shift;
+    if ( !-e $db or !-r $db ) {
+        $self->throw("Error: cannot read $db.");
     }
 
     $self->{db} = $db;
-    if ( ! -e $db.".tbi" or ! -r $db.".tbi" ) {
-	$self->throw("Error: [$db] index (.tbi) file not found, please build it first.");
+    if ( !-e $db . ".tbi" or !-r $db . ".tbi" ) {
+        $self->throw(
+            "Error: [$db] index (.tbi) file not found, please build it first.");
     }
 
     $self->{tidb} = Tabix->new( -data => $db );
 
-    return $self if (!exists $self->{batch});
+    return $self if ( !exists $self->{batch} );
 
     my %open_args;
     if ( exists $self->{region} ) {
@@ -797,10 +871,10 @@ sub set_db {
         $open_args{regbed} = $self->{regbed};
     }
     if ( exists $self->{genes} ) {
-	$open_args{genes} = $self->{genes};
+        $open_args{genes} = $self->{genes};
     }
-    if ( exists $self->{trans} and exists $self->{clean_trans}) {
-	$open_args{trans} = $self->{trans};
+    if ( exists $self->{trans} and exists $self->{clean_trans} ) {
+        $open_args{trans}       = $self->{trans};
         $open_args{clean_trans} = $self->{clean_trans};
     }
     if ( exists $self->{mmap} ) {
@@ -824,36 +898,36 @@ sub get_tidb {
 
 sub get_annodb {
     my $self = shift;
-    if (exists $self->{annodb}) {
-	return $self->{annodb};
+    if ( exists $self->{annodb} ) {
+        return $self->{annodb};
     }
     else {
-	return undef;
+        return undef;
     }
 }
 
 sub set_tr {
     my $self = shift;
-    my $tr = shift;
-    if ( ! -e $tr or ! -r $tr ) {
-	$self->throw("Error: cannot read $tr.");
+    my $tr   = shift;
+    if ( !-e $tr or !-r $tr ) {
+        $self->throw("Error: cannot read $tr.");
     }
     $self->{tr} = $tr;
     my %load_opts = ();
-    $load_opts{genes} = $self->{genes} if (exists $self->{genes});
-    $load_opts{trans} = $self->{trans} if (exists $self->{trans});
-    $self->{trInfodb} = $self->readtr( %load_opts );
+    $load_opts{genes} = $self->{genes} if ( exists $self->{genes} );
+    $load_opts{trans} = $self->{trans} if ( exists $self->{trans} );
+    $self->{trInfodb} = $self->readtr(%load_opts);
     return $self;
 }
 
 sub set_genome {
-    my $self = shift;
+    my $self      = shift;
     my $genome_rz = shift;
-    if ( ! -e $genome_rz or ! -r $genome_rz ) {
-	$self->throw("Error: cannot read $genome_rz.");
+    if ( !-e $genome_rz or !-r $genome_rz ) {
+        $self->throw("Error: cannot read $genome_rz.");
     }
-    require Faidx if (!exists $self->{genome_h});
-    $self->{genome} = $genome_rz;
+    require Faidx if ( !exists $self->{genome_h} );
+    $self->{genome}   = $genome_rz;
     $self->{genome_h} = Faidx->new($genome_rz);
     return $self;
 }
@@ -869,10 +943,10 @@ sub get_trInfodb {
 }
 
 sub set_cytoBand {
-    my $self = shift;
+    my $self   = shift;
     my $cytodb = shift;
     $self->{cytoBand} = $cytodb;
-    require GetCytoBand if (!exists $self->{cytoBand_h});
+    require GetCytoBand if ( !exists $self->{cytoBand_h} );
     my $cytoBand_h = GetCytoBand->new( db => $cytodb );
     $self->{cytoBand_h} = $cytoBand_h;
     return $self;
@@ -880,21 +954,21 @@ sub set_cytoBand {
 
 sub get_cytoBand {
     my $self = shift;
-    return $self->{cytoBand} if (exists $self->{cytoBand});
+    return $self->{cytoBand} if ( exists $self->{cytoBand} );
     return undef;
 }
 
 sub get_cytoBand_h {
     my $self = shift;
-    return $self->{cytoBand_h} if (exists $self->{cytoBand_h});
+    return $self->{cytoBand_h} if ( exists $self->{cytoBand_h} );
     return undef;
 }
 
 sub set_rmsk {
-    my $self = shift;
+    my $self   = shift;
     my $rmskdb = shift;
-    $self->{rmsk} = $rmskdb if (defined $rmskdb);
-    require GetRepeatTag if (!exists $self->{rmsk_h});
+    $self->{rmsk} = $rmskdb if ( defined $rmskdb );
+    require GetRepeatTag if ( !exists $self->{rmsk_h} );
     my $rmsk_h = GetRepeatTag->new( db => $self->{rmsk} );
     $self->{rmsk_h} = $rmsk_h;
     return $self;
@@ -902,21 +976,21 @@ sub set_rmsk {
 
 sub get_rmsk {
     my $self = shift;
-    return $self->{rmsk} if (exists $self->{rmsk});
+    return $self->{rmsk} if ( exists $self->{rmsk} );
     return undef;
 }
 
 sub get_rmsk_h {
     my $self = shift;
-    return $self->{rmsk_h} if (exists $self->{rmsk_h});
+    return $self->{rmsk_h} if ( exists $self->{rmsk_h} );
     return undef;
 }
 
 sub set_gwas {
-    my $self = shift;
+    my $self   = shift;
     my $gwasdb = shift;
-    $self->{gwas} = $gwasdb if (defined $gwasdb);
-    require GetGWAS if (!exists $self->{gwas_h});
+    $self->{gwas} = $gwasdb if ( defined $gwasdb );
+    require GetGWAS if ( !exists $self->{gwas_h} );
     my $gwas_h = GetGWAS->new( db => $self->{gwas} );
     $self->{gwas_h} = $gwas_h;
     return $self;
@@ -924,21 +998,21 @@ sub set_gwas {
 
 sub get_gwas {
     my $self = shift;
-    return $self->{gwas} if (exists $self->{gwas});
+    return $self->{gwas} if ( exists $self->{gwas} );
     return undef;
 }
 
 sub get_gwas_h {
     my $self = shift;
-    return $self->{gwas_h} if (exists $self->{gwas_h});
+    return $self->{gwas_h} if ( exists $self->{gwas_h} );
     return undef;
 }
 
 sub set_pfam {
-    my $self = shift;
+    my $self   = shift;
     my $pfamdb = shift;
     $self->{pfam} = $pfamdb;
-    require GetPfam if (!exists $self->{pfam_h});
+    require GetPfam if ( !exists $self->{pfam_h} );
     my $pfam_h = GetPfam->new( db => $pfamdb );
     $self->{pfam_h} = $pfam_h;
     return $self;
@@ -946,23 +1020,23 @@ sub set_pfam {
 
 sub get_pfam {
     my $self = shift;
-    return $self->{pfam} if (exists $self->{pfam});
+    return $self->{pfam} if ( exists $self->{pfam} );
     return undef;
 }
 
 sub get_pfam_h {
     my $self = shift;
-    return $self->{pfam_h} if (exists $self->{pfam_h});
+    return $self->{pfam_h} if ( exists $self->{pfam_h} );
     return undef;
 }
 
 sub set_prediction {
-    my $self = shift;
+    my $self         = shift;
     my $predictiondb = shift;
     $self->{prediction} = $predictiondb;
-    require GetPrediction if (!exists $self->{prediction_h});
+    require GetPrediction if ( !exists $self->{prediction_h} );
     my %common_opts = ();
-    $common_opts{quiet} = 1 if (exists $self->{quiet});
+    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
     my $prediction_h = GetPrediction->new( db => $predictiondb, %common_opts );
     $self->{prediction_h} = $prediction_h;
     return $self;
@@ -970,44 +1044,43 @@ sub set_prediction {
 
 sub get_prediction {
     my $self = shift;
-    return $self->{prediction} if (exists $self->{prediction});
+    return $self->{prediction} if ( exists $self->{prediction} );
     return undef;
 }
 
 sub get_prediction_h {
     my $self = shift;
-    return $self->{prediction_h} if (exists $self->{prediction_h});
+    return $self->{prediction_h} if ( exists $self->{prediction_h} );
     return undef;
 }
 
 sub set_condel {
-    my $self = shift;
+    my $self         = shift;
     my $condelConfig = shift;
     $self->{condel} = $condelConfig;
-    require CondelPred if (!exists $self->{condel_h});
-    my $condel_h = CondelPred->new( $condelConfig );
+    require CondelPred if ( !exists $self->{condel_h} );
+    my $condel_h = CondelPred->new($condelConfig);
     $self->{condel_h} = $condel_h;
     return $self;
 }
 
 sub get_condel {
     my $self = shift;
-    return $self->{condel} if (exists $self->{condel});
+    return $self->{condel} if ( exists $self->{condel} );
     return undef;
 }
 
-
 sub get_condel_h {
     my $self = shift;
-    return $self->{condel_h} if (exists $self->{condel_h});
+    return $self->{condel_h} if ( exists $self->{condel_h} );
     return undef;
 }
 
 sub set_phyloP {
-    my $self = shift;
+    my $self     = shift;
     my $phyloPdb = shift;
     $self->{phyloP} = $phyloPdb;
-    require GetPhyloP46wayScore if (!exists $self->{phyloP_h});
+    require GetPhyloP46wayScore if ( !exists $self->{phyloP_h} );
     my $phyloP_h = GetPhyloP46wayScore->new( db => $phyloPdb );
     $self->{phyloP_h} = $phyloP_h;
     return $self;
@@ -1015,21 +1088,21 @@ sub set_phyloP {
 
 sub get_phyloP {
     my $self = shift;
-    return $self->{phyloP} if (exists $self->{phyloP});
+    return $self->{phyloP} if ( exists $self->{phyloP} );
     return undef;
 }
 
 sub get_phyloP_h {
     my $self = shift;
-    return $self->{phyloP_h} if (exists $self->{phyloP_h});
+    return $self->{phyloP_h} if ( exists $self->{phyloP_h} );
     return undef;
 }
 
 sub set_dbSNP {
-    my $self = shift;
+    my $self    = shift;
     my $dbSNPdb = shift;
     $self->{dbSNP} = $dbSNPdb;
-    require GetDBSNP if (!exists $self->{dbSNP_h});
+    require GetDBSNP if ( !exists $self->{dbSNP_h} );
     my $dbSNP_h = GetDBSNP->new( db => $dbSNPdb );
     $self->{dbSNP_h} = $dbSNP_h;
     return $self;
@@ -1037,29 +1110,29 @@ sub set_dbSNP {
 
 sub get_dbSNP {
     my $self = shift;
-    return $self->{dbSNP} if (exists $self->{dbSNP});
+    return $self->{dbSNP} if ( exists $self->{dbSNP} );
     return undef;
 }
 
 sub get_dbSNP_h {
     my $self = shift;
-    return $self->{dbSNP_h} if (exists $self->{dbSNP_h});
+    return $self->{dbSNP_h} if ( exists $self->{dbSNP_h} );
     return undef;
 }
 
 sub get_cosmic {
     my $self = shift;
-    return $self->{cosmic} if (exists $self->{cosmic});
+    return $self->{cosmic} if ( exists $self->{cosmic} );
     return undef;
 }
 
 sub set_cosmic {
-    my $self = shift;
+    my $self      = shift;
     my $cosmic_db = shift;
     $self->{cosmic} = $cosmic_db;
-    require GetCOSMIC if (!exists $self->{cosmic_h});
+    require GetCOSMIC if ( !exists $self->{cosmic_h} );
     my %common_opts = ();
-    $common_opts{quiet} = 1 if (exists $self->{quiet});
+    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
     my $cosmic_h = GetCOSMIC->new( db => $cosmic_db, %common_opts );
     $self->{cosmic_h} = $cosmic_h;
     return $self;
@@ -1067,18 +1140,18 @@ sub set_cosmic {
 
 sub get_cosmic_h {
     my $self = shift;
-    return $self->{cosmic_h} if (exists $self->{cosmic_h});
+    return $self->{cosmic_h} if ( exists $self->{cosmic_h} );
     return undef;
 }
 
 sub set_tgp {
-    my $self = shift;
+    my $self  = shift;
     my $tgpdb = shift;
     $self->{tgp} = $tgpdb;
-    require GetVcfAF if (!$load_opt_vcfaf);
+    require GetVcfAF if ( !$load_opt_vcfaf );
     $load_opt_vcfaf = 1;
     my %common_opts = ();
-    $common_opts{quiet} = 1 if (exists $self->{quiet});
+    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
     my $tgp_h = GetVcfAF->new( db => $tgpdb, %common_opts );
     $self->{tgp_h} = $tgp_h;
     return $self;
@@ -1086,24 +1159,24 @@ sub set_tgp {
 
 sub get_tgp {
     my $self = shift;
-    return $self->{tgp} if (exists $self->{tgp});
+    return $self->{tgp} if ( exists $self->{tgp} );
     return undef;
 }
 
 sub get_tgp_h {
     my $self = shift;
-    return $self->{tgp_h} if (exists $self->{tgp_h});
+    return $self->{tgp_h} if ( exists $self->{tgp_h} );
     return undef;
 }
 
 sub set_esp6500 {
-    my $self = shift;
+    my $self      = shift;
     my $esp6500db = shift;
     $self->{esp6500} = $esp6500db;
-    require GetVcfAF if (!$load_opt_vcfaf);
+    require GetVcfAF if ( !$load_opt_vcfaf );
     $load_opt_vcfaf = 1;
     my %common_opts = ();
-    $common_opts{quiet} = 1 if (exists $self->{quiet});
+    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
     my $esp6500_h = GetVcfAF->new( db => $esp6500db, %common_opts );
     $self->{esp6500_h} = $esp6500_h;
     return $self;
@@ -1111,17 +1184,17 @@ sub set_esp6500 {
 
 sub get_esp6500 {
     my $self = shift;
-    return $self->{esp6500} if (exists $self->{esp6500});
+    return $self->{esp6500} if ( exists $self->{esp6500} );
     return undef;
 }
 
 sub set_exac {
-    my $self = shift;
+    my $self    = shift;
     my $exac_db = shift;
     $self->{exac} = $exac_db;
-    require GetExAC if (!exists $self->{exac_h});
+    require GetExAC if ( !exists $self->{exac_h} );
     my %common_opts = ();
-    $common_opts{quiet} = 1 if (exists $self->{quiet});
+    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
     my $exac_h = GetExAC->new( db => $exac_db, %common_opts );
     $self->{exac_h} = $exac_h;
     return $self;
@@ -1129,41 +1202,42 @@ sub set_exac {
 
 sub get_exac {
     my $self = shift;
-    return $self->{exac} if (exists $self->{exac});
+    return $self->{exac} if ( exists $self->{exac} );
     return undef;
 }
 
 sub get_exac_h {
     my $self = shift;
-    return $self->{exac_h} if (exists $self->{exac_h});
+    return $self->{exac_h} if ( exists $self->{exac_h} );
     return undef;
 }
 
 sub set_customdb {
     my $self = shift;
-    my ($cusdb, $dbID) = @_;
-    require GetVcfAF if (!$load_opt_vcfaf);
+    my ( $cusdb, $dbID ) = @_;
+    require GetVcfAF if ( !$load_opt_vcfaf );
     $load_opt_vcfaf = 1;
     my %common_opts = ();
-    $common_opts{quiet} = 1 if (exists $self->{quiet});
+    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
     my $cusdb_h = GetVcfAF->new( db => $cusdb, %common_opts );
-    $self->{"cusdb_".$dbID."_h"} = $cusdb_h;
+    $self->{ "cusdb_" . $dbID . "_h" } = $cusdb_h;
     return $self;
 }
 
 sub get_esp6500_h {
     my $self = shift;
-    return $self->{esp6500_h} if (exists $self->{esp6500_h});
+    return $self->{esp6500_h} if ( exists $self->{esp6500_h} );
     return undef;
 }
 
 sub set_cg54 {
-    my $self = shift;
+    my $self   = shift;
     my $cg54db = shift;
     $self->{cg54} = $cg54db;
-    require GetCGpub if (!exists $self->{cg54_h} and !exists $self->{wellderly_h});
+    require GetCGpub
+      if ( !exists $self->{cg54_h} and !exists $self->{wellderly_h} );
     my %common_opts = ();
-    $common_opts{quiet} = 1 if (exists $self->{quiet});
+    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
     my $cg54_h = GetCGpub->new( db => $cg54db, %common_opts );
     $self->{cg54_h} = $cg54_h;
     return $self;
@@ -1171,23 +1245,24 @@ sub set_cg54 {
 
 sub get_cg54 {
     my $self = shift;
-    return $self->{cg54} if (exists $self->{cg54});
+    return $self->{cg54} if ( exists $self->{cg54} );
     return undef;
 }
 
 sub get_cg54_h {
     my $self = shift;
-    return $self->{cg54_h} if (exists $self->{cg54_h});
+    return $self->{cg54_h} if ( exists $self->{cg54_h} );
     return undef;
 }
 
 sub set_wellderly {
-    my $self = shift;
+    my $self        = shift;
     my $wellderlydb = shift;
     $self->{wellderly} = $wellderlydb;
-    require GetCGpub if (!exists $self->{cg54_h} and !exists $self->{wellderly_h});
+    require GetCGpub
+      if ( !exists $self->{cg54_h} and !exists $self->{wellderly_h} );
     my %common_opts = ();
-    $common_opts{quiet} = 1 if (exists $self->{quiet});
+    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
     my $wellderly_h = GetCGpub->new( db => $wellderlydb, %common_opts );
     $self->{wellderly_h} = $wellderly_h;
     return $self;
@@ -1195,16 +1270,15 @@ sub set_wellderly {
 
 sub get_wellderly {
     my $self = shift;
-    return $self->{wellderly} if (exists $self->{wellderly});
+    return $self->{wellderly} if ( exists $self->{wellderly} );
     return undef;
 }
 
 sub get_wellderly_h {
     my $self = shift;
-    return $self->{wellderly_h} if (exists $self->{wellderly_h});
+    return $self->{wellderly_h} if ( exists $self->{wellderly_h} );
     return undef;
 }
-
 
 sub TO_JSON {
     return { %{ shift() } };
@@ -1212,16 +1286,16 @@ sub TO_JSON {
 
 sub DESTROY {
     my $self = shift;
-    if (exists $self->{tidb} and defined $self->{tidb}) {
-	$self->{tidb}->DESTROY() if ($self->{tidb}->can('DESTROY'));
-	delete $self->{tidb};
+    if ( exists $self->{tidb} and defined $self->{tidb} ) {
+        $self->{tidb}->DESTROY() if ( $self->{tidb}->can('DESTROY') );
+        delete $self->{tidb};
     }
 
-    foreach my $dbhk (sort keys %$self) {
-	if ($dbhk =~ /\S+_h$/ and defined $self->{$dbhk}) {
-	    $self->{$dbhk}->DESTROY() if ($self->{$dbhk}->can('DESTROY'));
-	    delete $self->{$dbhk};
-	}
+    foreach my $dbhk ( sort keys %$self ) {
+        if ( $dbhk =~ /\S+_h$/ and defined $self->{$dbhk} ) {
+            $self->{$dbhk}->DESTROY() if ( $self->{$dbhk}->can('DESTROY') );
+            delete $self->{$dbhk};
+        }
     }
 
     return;
@@ -1247,135 +1321,143 @@ sub DESTROY {
 =cut
 
 sub write_using {
-    my ($self, $file, $type) = @_;
-    open (F, ">", $file) or $self->throw("$file: $!");
+    my ( $self, $file, $type ) = @_;
+    open( F, ">", $file ) or $self->throw("$file: $!");
 
     my $annodb_load;
-    if (exists $self->{annodb}) {
-	$annodb_load = $self->{annodb};
+    if ( exists $self->{annodb} ) {
+        $annodb_load = $self->{annodb};
     }
     else {
-	my %open_args;
-	if ( exists $self->{region} ) {
-	    $open_args{region} = $self->{region};
-	}
-	if ( !exists $self->{region} and exists $self->{regbed} ) {
-	    $open_args{regbed} = $self->{regbed};
-	}
-	if ( exists $self->{genes} ) {
-	    $open_args{genes} = $self->{genes};
-	}
-	if ( exists $self->{trans} and exists $self->{clean_trans}) {
-	    $open_args{trans} = $self->{trans};
-	    $open_args{clean_trans} = $self->{clean_trans};
-	}
-	if ( exists $self->{mmap} ) {
-	    $open_args{mmap} = $self->{mmap};
-	}
-	$annodb_load = $self->load_anno(%open_args);
+        my %open_args;
+        if ( exists $self->{region} ) {
+            $open_args{region} = $self->{region};
+        }
+        if ( !exists $self->{region} and exists $self->{regbed} ) {
+            $open_args{regbed} = $self->{regbed};
+        }
+        if ( exists $self->{genes} ) {
+            $open_args{genes} = $self->{genes};
+        }
+        if ( exists $self->{trans} and exists $self->{clean_trans} ) {
+            $open_args{trans}       = $self->{trans};
+            $open_args{clean_trans} = $self->{clean_trans};
+        }
+        if ( exists $self->{mmap} ) {
+            $open_args{mmap} = $self->{mmap};
+        }
+        $annodb_load = $self->load_anno(%open_args);
     }
 
-    my (%genes, %trans, @beds, %anno, @complete) = ();
-    foreach my $chr (sort keys %$annodb_load) {
-	foreach my $bedent (@{$annodb_load->{$chr}}) {
-	    if ($type eq 'c') {
-		push (@complete, [ $chr, $$bedent{sta}, $$bedent{sto} ]);
-		next;
-	    }
-	    my $exOpt = 0;
-	    foreach my $annoblk (keys %{$$bedent{annos}}) {
+    my ( %genes, %trans, @beds, %anno, @complete ) = ();
+    foreach my $chr ( sort keys %$annodb_load ) {
+        foreach my $bedent ( @{ $annodb_load->{$chr} } ) {
+            if ( $type eq 'c' ) {
+                push( @complete, [ $chr, $$bedent{sta}, $$bedent{sto} ] );
+                next;
+            }
+            my $exOpt = 0;
+            foreach my $annoblk ( keys %{ $$bedent{annos} } ) {
+
 # tid         gsym  gid strd blka gpgo exin nsta nsto csta csto wlen mismatch    pr
 # NM_015658.3|NOC2L|26155|-|3U1E|205|EX19E|2817|2801|*508|*492|0|D,879582,879582,.|Y
-		my @info = split(/\|/, $annoblk);
+                my @info = split( /\|/, $annoblk );
 
-		if ($type eq 'g') {
-		    $genes{$info[1]} = 1;
-		}
-		elsif ($type eq 't') {
-		    $trans{$info[0]} = 1;
-		}
-		elsif ($type eq 'b') {
-		    $exOpt = 1 if ($info[6] =~ /^EX/);
-		}
-		elsif ($type eq 'a') {
-		    if ( $info[6] =~ /^EX/) {
-			if (   !exists( $anno{ $info[0] } )
-			    or !exists( $anno{ $info[0] }{ $info[6] } ) )
-			{
-			    $anno{ $info[0] }{ $info[6] }{chr} = $chr;
-			    $anno{ $info[0] }{ $info[6] }{sta} = $$bedent{sta};
-			    $anno{ $info[0] }{ $info[6] }{sto} = $$bedent{sto};
-			    $anno{ $info[0] }{ $info[6] }{blk} = $annoblk;
-			}
-			elsif ($$bedent{sto} > $anno{ $info[0] }{ $info[6] }{sto}) {
-			    $anno{ $info[0] }{ $info[6] }{sto} = $$bedent{sto};
-			}
-			else {
-			    next;
-			}
-		    }
-		}
-		else { $self->throw("type: $type not regconized."); }
-	    }
-	    push (@beds, [ $chr, $$bedent{sta}, $$bedent{sto} ]) if ($type eq 'b' and $exOpt);
-	}
+                if ( $type eq 'g' ) {
+                    $genes{ $info[1] } = 1;
+                }
+                elsif ( $type eq 't' ) {
+                    $trans{ $info[0] } = 1;
+                }
+                elsif ( $type eq 'b' ) {
+                    $exOpt = 1 if ( $info[6] =~ /^EX/ );
+                }
+                elsif ( $type eq 'a' ) {
+                    if ( $info[6] =~ /^EX/ ) {
+                        if (   !exists( $anno{ $info[0] } )
+                            or !exists( $anno{ $info[0] }{ $info[6] } ) )
+                        {
+                            $anno{ $info[0] }{ $info[6] }{chr} = $chr;
+                            $anno{ $info[0] }{ $info[6] }{sta} = $$bedent{sta};
+                            $anno{ $info[0] }{ $info[6] }{sto} = $$bedent{sto};
+                            $anno{ $info[0] }{ $info[6] }{blk} = $annoblk;
+                        }
+                        elsif (
+                            $$bedent{sto} > $anno{ $info[0] }{ $info[6] }{sto} )
+                        {
+                            $anno{ $info[0] }{ $info[6] }{sto} = $$bedent{sto};
+                        }
+                        else {
+                            next;
+                        }
+                    }
+                }
+                else { $self->throw("type: $type not regconized."); }
+            }
+            push( @beds, [ $chr, $$bedent{sta}, $$bedent{sto} ] )
+              if ( $type eq 'b' and $exOpt );
+        }
     }
 
-    if ($type eq 'g') {
-	say F join("\n", (sort keys %genes));
+    if ( $type eq 'g' ) {
+        say F join( "\n", ( sort keys %genes ) );
     }
-    elsif ($type eq 't') {
-	say F join("\n", (sort keys %trans));
+    elsif ( $type eq 't' ) {
+        say F join( "\n", ( sort keys %trans ) );
     }
-    elsif ($type eq 'b') { # merge bed regions due to pre-sorted db.
-	if (0 == @beds) {
-	    $self->warn("no region in db.");
-	    return;
-	}
-	my ($pre_chr, $pre_sta, $pre_sto) = @{$beds[0]};
-	for (my $i = 1; $i < @beds; $i++) {
-	    my ($cur_chr, $cur_sta, $cur_sto) = @{$beds[$i]};
-	    if (($cur_chr ne $pre_chr) or ($cur_sta > $pre_sto)) {
-		say F join("\t", $pre_chr, $pre_sta, $pre_sto);
-		($pre_chr, $pre_sta, $pre_sto) = ($cur_chr, $cur_sta, $cur_sto);
-	    }
-	    elsif ($cur_sta == $pre_sto) {
-		$pre_sto = $cur_sto;
-	    }
-	    else {
-		$self->throw("Error: bad db, non-departed beds, or no-sort!");
-	    }
-	}
-	say F join("\t", $pre_chr, $pre_sta, $pre_sto);
+    elsif ( $type eq 'b' ) {    # merge bed regions due to pre-sorted db.
+        if ( 0 == @beds ) {
+            $self->warn("no region in db.");
+            return;
+        }
+        my ( $pre_chr, $pre_sta, $pre_sto ) = @{ $beds[0] };
+        for ( my $i = 1 ; $i < @beds ; $i++ ) {
+            my ( $cur_chr, $cur_sta, $cur_sto ) = @{ $beds[$i] };
+            if ( ( $cur_chr ne $pre_chr ) or ( $cur_sta > $pre_sto ) ) {
+                say F join( "\t", $pre_chr, $pre_sta, $pre_sto );
+                ( $pre_chr, $pre_sta, $pre_sto ) =
+                  ( $cur_chr, $cur_sta, $cur_sto );
+            }
+            elsif ( $cur_sta == $pre_sto ) {
+                $pre_sto = $cur_sto;
+            }
+            else {
+                $self->throw("Error: bad db, non-departed beds, or no-sort!");
+            }
+        }
+        say F join( "\t", $pre_chr, $pre_sta, $pre_sto );
     }
-    elsif ($type eq 'a') {
-	foreach my $nm (sort keys %anno) {
-	    foreach my $ex (sort exsort keys %{$anno{$nm}}) {
-		say F join("\t", $anno{$nm}{$ex}{chr}, $anno{$nm}{$ex}{sta},
-		    $anno{$nm}{$ex}{sto}, $anno{$nm}{$ex}{blk});
-	    }
-	}
+    elsif ( $type eq 'a' ) {
+        foreach my $nm ( sort keys %anno ) {
+            foreach my $ex ( sort exsort keys %{ $anno{$nm} } ) {
+                say F join( "\t",
+                    $anno{$nm}{$ex}{chr}, $anno{$nm}{$ex}{sta},
+                    $anno{$nm}{$ex}{sto}, $anno{$nm}{$ex}{blk} );
+            }
+        }
     }
-    elsif ($type eq 'c') {
-	if (0 == @complete) {
-	    $self->warn("no region in db.");
-	    return;
-	}
-	my ($pre_chr, $pre_sta, $pre_sto) = @{$complete[0]};
-	for (my $i = 1; $i < @complete; $i++) {
-	    my ($cur_chr, $cur_sta, $cur_sto) = @{$complete[$i]};
-	    if (($cur_chr ne $pre_chr) or ($cur_sta > $pre_sto)) {
-		say F join("\t", $pre_chr, $pre_sta, $pre_sto);
-		($pre_chr, $pre_sta, $pre_sto) = ($cur_chr, $cur_sta, $cur_sto);
-	    }
-	    elsif ($cur_sta == $pre_sto) {
-		$pre_sto = $cur_sto;
-	    }
-	    else {
-		$self->throw("Error: bad db, non-departed complete, or no-sort!");
-	    }
-	}
-	say F join("\t", $pre_chr, $pre_sta, $pre_sto);
+    elsif ( $type eq 'c' ) {
+        if ( 0 == @complete ) {
+            $self->warn("no region in db.");
+            return;
+        }
+        my ( $pre_chr, $pre_sta, $pre_sto ) = @{ $complete[0] };
+        for ( my $i = 1 ; $i < @complete ; $i++ ) {
+            my ( $cur_chr, $cur_sta, $cur_sto ) = @{ $complete[$i] };
+            if ( ( $cur_chr ne $pre_chr ) or ( $cur_sta > $pre_sto ) ) {
+                say F join( "\t", $pre_chr, $pre_sta, $pre_sto );
+                ( $pre_chr, $pre_sta, $pre_sto ) =
+                  ( $cur_chr, $cur_sta, $cur_sto );
+            }
+            elsif ( $cur_sta == $pre_sto ) {
+                $pre_sto = $cur_sto;
+            }
+            else {
+                $self->throw(
+                    "Error: bad db, non-departed complete, or no-sort!");
+            }
+        }
+        say F join( "\t", $pre_chr, $pre_sta, $pre_sto );
     }
     else { $self->throw("type: $type not regconized."); }
 
@@ -1384,20 +1466,21 @@ sub write_using {
 }
 
 sub exsort {
-    my ($sym, $anum, $bnum);
-    if ($a =~ /^EX([\+\-\*]?)(\d+)[EP]?$/) {
-	$sym = $1;
-	$anum = $2;
+    my ( $sym, $anum, $bnum );
+    if ( $a =~ /^EX([\+\-\*]?)(\d+)[EP]?$/ ) {
+        $sym  = $1;
+        $anum = $2;
     }
-    if ($b =~ /^EX[\+\-\*]?(\d+)[EP]?$/) {
-	$bnum = $1;
+    if ( $b =~ /^EX[\+\-\*]?(\d+)[EP]?$/ ) {
+        $bnum = $1;
     }
-    confess "ExIn number format error. [$a, $b]" if (!defined $anum or !defined $bnum);
-    if (!defined $sym or $sym !~ /\-/) {
-	$anum <=> $bnum;
+    confess "ExIn number format error. [$a, $b]"
+      if ( !defined $anum or !defined $bnum );
+    if ( !defined $sym or $sym !~ /\-/ ) {
+        $anum <=> $bnum;
     }
     else {
-	$bnum <=> $anum;
+        $bnum <=> $anum;
     }
 }
 
@@ -1419,43 +1502,44 @@ sub exsort {
 =cut
 
 sub get_cover_batch {
-    my ($self, $chr, $stasto_aref) = @_;
-    
+    my ( $self, $chr, $stasto_aref ) = @_;
+
     $chr =~ s/^chr//i;
-    if ($chr =~ /^M/i) {
-	$chr = 'MT';
+    if ( $chr =~ /^M/i ) {
+        $chr = 'MT';
     }
     my $rAnnos;
-    if (!exists $self->{annodb}) {
-	my %open_args;
-	if ( exists $self->{region} ) {
-	    $open_args{region} = $self->{region};
-	}
-	if ( !exists $self->{region} and exists $self->{regbed} ) {
-	    $open_args{regbed} = $self->{regbed};
-	}
-	if ( exists $self->{genes} ) {
-	    $open_args{genes} = $self->{genes};
-	}
-	if ( exists $self->{trans} and exists $self->{clean_trans}) {
-	    $open_args{trans} = $self->{trans};
-	    $open_args{clean_trans} = $self->{clean_trans};
-	}
-	if ( exists $self->{mmap} ) {
-	    $open_args{mmap} = $self->{mmap};
-	}
-	my $rwhole = $self->load_anno(%open_args);
-	$rAnnos = $rwhole->{$chr} if (exists $rwhole->{$chr});
+    if ( !exists $self->{annodb} ) {
+        my %open_args;
+        if ( exists $self->{region} ) {
+            $open_args{region} = $self->{region};
+        }
+        if ( !exists $self->{region} and exists $self->{regbed} ) {
+            $open_args{regbed} = $self->{regbed};
+        }
+        if ( exists $self->{genes} ) {
+            $open_args{genes} = $self->{genes};
+        }
+        if ( exists $self->{trans} and exists $self->{clean_trans} ) {
+            $open_args{trans}       = $self->{trans};
+            $open_args{clean_trans} = $self->{clean_trans};
+        }
+        if ( exists $self->{mmap} ) {
+            $open_args{mmap} = $self->{mmap};
+        }
+        my $rwhole = $self->load_anno(%open_args);
+        $rAnnos = $rwhole->{$chr} if ( exists $rwhole->{$chr} );
     }
     else {
-	$rAnnos = $self->{annodb}->{$chr} if (exists $self->{annodb}->{$chr});
+        $rAnnos = $self->{annodb}->{$chr} if ( exists $self->{annodb}->{$chr} );
     }
 
     my @sorted_stasto = sort pairsort @$stasto_aref;
-    return {} if (0 == @sorted_stasto);
-    if (!defined $rAnnos) {
-	$self->warn("Warning: no available annotation items in curdb for $chr") if (!exists $self->{quiet});
-	return {};
+    return {} if ( 0 == @sorted_stasto );
+    if ( !defined $rAnnos ) {
+        $self->warn("Warning: no available annotation items in curdb for $chr")
+          if ( !exists $self->{quiet} );
+        return {};
     }
 
     my %ret_cov = ();
@@ -1464,68 +1548,69 @@ sub get_cover_batch {
     foreach my $rgn (@sorted_stasto) {
 
         my $pseudo_var =
-          BedAnno::Var->new( $chr, ($rgn->[0] - 1), $rgn->[1], "=", "?" );
-	my $anno_var = BedAnno::Anno->new($pseudo_var);
-	
-	$cur_blkId = $anno_var->getTrPosition( $rAnnos, $cur_blkId );
+          BedAnno::Var->new( $chr, ( $rgn->[0] - 1 ), $rgn->[1], "=", "?" );
+        my $anno_var = BedAnno::Anno->new($pseudo_var);
 
-	my $pospair = join( "-", @$rgn );
-	$ret_cov{$pospair} = $self->get_hitted_blk($anno_var);
+        $cur_blkId = $anno_var->getTrPosition( $rAnnos, $cur_blkId );
+
+        my $pospair = join( "-", @$rgn );
+        $ret_cov{$pospair} = $self->get_hitted_blk($anno_var);
 
     }
     return \%ret_cov;
 }
 
 sub pairsort {
-    $$a[0] <=> $$b[0] or $$a[1] <=> $$b[1]
+    $$a[0] <=> $$b[0] or $$a[1] <=> $$b[1];
 }
 
 sub get_hitted_blk {
-    my $self = shift;
-    my $anno_var = shift;
+    my $self        = shift;
+    my $anno_var    = shift;
     my @hitted_blks = ();
+
     # hit the annotation blks
-    if (exists $anno_var->{trInfo}) {
-	foreach my $tid (sort keys %{$anno_var->{trInfo}}) {
+    if ( exists $anno_var->{trInfo} ) {
+        foreach my $tid ( sort keys %{ $anno_var->{trInfo} } ) {
 
-	    if (    $anno_var->{trInfo}->{$tid}->{rnaBegin} ne '?'
-		and $anno_var->{trInfo}->{$tid}->{rnaEnd} ne '?' )
-	    {
-		my ($begin_hash, $end_hash);
-		$begin_hash = {
-		    gsym => $anno_var->{trInfo}->{$tid}->{geneSym},
-		    gid  => $anno_var->{trInfo}->{$tid}->{geneId},
-		    reg  => $anno_var->{trInfo}->{$tid}->{r_Begin},
-		    exin => $anno_var->{trInfo}->{$tid}->{ei_Begin},
-		    strd => $anno_var->{trInfo}->{$tid}->{strd},
-		    cpos => 'n.'.$anno_var->{trInfo}->{$tid}->{rnaBegin}
-		};
-		$end_hash = {
-		    gsym => $anno_var->{trInfo}->{$tid}->{geneSym},
-		    gid  => $anno_var->{trInfo}->{$tid}->{geneId},
-		    reg  => $anno_var->{trInfo}->{$tid}->{r_End},
-		    exin => $anno_var->{trInfo}->{$tid}->{ei_End},
-		    strd => $anno_var->{trInfo}->{$tid}->{strd},
-		    cpos => 'n.'.$anno_var->{trInfo}->{$tid}->{rnaEnd}
-		};
+            if (    $anno_var->{trInfo}->{$tid}->{rnaBegin} ne '?'
+                and $anno_var->{trInfo}->{$tid}->{rnaEnd} ne '?' )
+            {
+                my ( $begin_hash, $end_hash );
+                $begin_hash = {
+                    gsym => $anno_var->{trInfo}->{$tid}->{geneSym},
+                    gid  => $anno_var->{trInfo}->{$tid}->{geneId},
+                    reg  => $anno_var->{trInfo}->{$tid}->{r_Begin},
+                    exin => $anno_var->{trInfo}->{$tid}->{ei_Begin},
+                    strd => $anno_var->{trInfo}->{$tid}->{strd},
+                    cpos => 'n.' . $anno_var->{trInfo}->{$tid}->{rnaBegin}
+                };
+                $end_hash = {
+                    gsym => $anno_var->{trInfo}->{$tid}->{geneSym},
+                    gid  => $anno_var->{trInfo}->{$tid}->{geneId},
+                    reg  => $anno_var->{trInfo}->{$tid}->{r_End},
+                    exin => $anno_var->{trInfo}->{$tid}->{ei_End},
+                    strd => $anno_var->{trInfo}->{$tid}->{strd},
+                    cpos => 'n.' . $anno_var->{trInfo}->{$tid}->{rnaEnd}
+                };
 
-		if ( exists $anno_var->{trInfo}->{$tid}->{cdsBegin}
-		    and $anno_var->{trInfo}->{$tid}->{cdsBegin} ne '' )
-		{
-		    $begin_hash->{cpos} =
-		      'c.' . $anno_var->{trInfo}->{$tid}->{cdsBegin};
-		    $end_hash->{cpos} =
-		      'c.' . $anno_var->{trInfo}->{$tid}->{cdsEnd};
-		}
+                if ( exists $anno_var->{trInfo}->{$tid}->{cdsBegin}
+                    and $anno_var->{trInfo}->{$tid}->{cdsBegin} ne '' )
+                {
+                    $begin_hash->{cpos} =
+                      'c.' . $anno_var->{trInfo}->{$tid}->{cdsBegin};
+                    $end_hash->{cpos} =
+                      'c.' . $anno_var->{trInfo}->{$tid}->{cdsEnd};
+                }
 
-		if ( $begin_hash->{strd} eq '+' ) {
-		    push( @hitted_blks, [ $tid, $begin_hash, $end_hash ] );
-		}
-		else {
-		    push( @hitted_blks, [ $tid, $end_hash, $begin_hash ] );
-		}
-	    }
-	}
+                if ( $begin_hash->{strd} eq '+' ) {
+                    push( @hitted_blks, [ $tid, $begin_hash, $end_hash ] );
+                }
+                else {
+                    push( @hitted_blks, [ $tid, $end_hash, $begin_hash ] );
+                }
+            }
+        }
     }
     return \@hitted_blks;
 }
@@ -1630,19 +1715,19 @@ sub readtr {
               split( /,/, $headers[5] );
         }
 
-	my @fss = ();
-	if ( $headers[6] =~ /altstart/ ) {
-	    $seqs{ $headers[0] }{altstart} =
-	      { map { $_ => 1 } split( /;/, $headers[7] ) };
-	}
-	elsif (defined $headers[7]) { # frameshift at 8th item
-	    @fss = split(/\|/, $headers[7]);
-	}
+        my @fss = ();
+        if ( $headers[6] =~ /altstart/ ) {
+            $seqs{ $headers[0] }{altstart} =
+              { map { $_ => 1 } split( /;/, $headers[7] ) };
+        }
+        elsif ( defined $headers[7] ) {              # frameshift at 8th item
+            @fss = split( /\|/, $headers[7] );
+        }
 
-	if (defined $headers[8] ) { # frameshift at 9th item
-	    @fss = split(/\|/, $headers[8]);
-	}
-	
+        if ( defined $headers[8] ) {                 # frameshift at 9th item
+            @fss = split( /\|/, $headers[8] );
+        }
+
         if ( 0 < scalar @fss ) {
             confess "Error: [$headers[0]] no cds but with fs!"
               if ( $headers[5] eq "." );
@@ -1708,109 +1793,112 @@ sub load_anno {
 
     my @query_region = ();
     if ( exists $args{region} ) {
-	my @regions = split(/\s+/, $args{region});
-	foreach my $reg (@regions) {
-	    next if ($reg eq "");
-	    if ($reg =~ /^(\S+):(\-?\d+)\-(\d+)$/) {
-		my ($name, $beg, $end) = ($1, $2, $3);
-		if ($beg <= 0) {
-		    $self->warn("Warning: region string should be 1 based [$reg], has been changed to 1 based") if (exists $self->{debug});
-		    $beg = 1;
-		}
-		$name =~ s/^chr//i;
+        my @regions = split( /\s+/, $args{region} );
+        foreach my $reg (@regions) {
+            next if ( $reg eq "" );
+            if ( $reg =~ /^(\S+):(\-?\d+)\-(\d+)$/ ) {
+                my ( $name, $beg, $end ) = ( $1, $2, $3 );
+                if ( $beg <= 0 ) {
+                    $self->warn(
+"Warning: region string should be 1 based [$reg], has been changed to 1 based"
+                    ) if ( exists $self->{debug} );
+                    $beg = 1;
+                }
+                $name =~ s/^chr//i;
                 push( @query_region, [ $name, ( $beg - 1 ), $end ] );
-	    }
-	    else {
-		$self->throw("Error: unavailable region string [$reg].");
-	    }
-	}
+            }
+            else {
+                $self->throw("Error: unavailable region string [$reg].");
+            }
+        }
     }
     elsif ( exists $args{regbed}
-	and defined $args{regbed}
-	and -e $args{regbed} )
+        and defined $args{regbed}
+        and -e $args{regbed} )
     {
-	open (BED, $args{regbed}) or $self->throw("Error: [$args{regbed}] $!");
-	while (<BED>) {
-	    chomp;
-	    my @beditm = split(/\t/);
-	    $self->throw("Error: bed format error.") if (3 > @beditm);
-	    $beditm[0] =~ s/^chr//i;
-	    if ($beditm[0] =~ /^M/i) {
-		$beditm[0] = "MT";
-	    }
-	    push (@query_region, [ @beditm[0, 1, 2] ]);
-	}
-	close BED;
+        open( BED, $args{regbed} ) or $self->throw("Error: [$args{regbed}] $!");
+        while (<BED>) {
+            chomp;
+            my @beditm = split(/\t/);
+            $self->throw("Error: bed format error.") if ( 3 > @beditm );
+            $beditm[0] =~ s/^chr//i;
+            if ( $beditm[0] =~ /^M/i ) {
+                $beditm[0] = "MT";
+            }
+            push( @query_region, [ @beditm[ 0, 1, 2 ] ] );
+        }
+        close BED;
     }
 
     my $read_all_opt = 0;
     my @all_querys   = ();
     if ( 0 == @query_region ) {
-	$read_all_opt = 1;
+        $read_all_opt = 1;
         open( ANNO, "zcat -f $self->{db} |" )
           or $self->throw("Error: [$self->{db}] $!");
     }
     else {
         my @sorted_regions = sort {
-            $a->[0] cmp $b->[0] or $a->[1] <=> $b->[1] or $a->[2] <=> $b->[2]
+                 $a->[0] cmp $b->[0]
+              or $a->[1] <=> $b->[1]
+              or $a->[2] <=> $b->[2]
         } @query_region;
 
-	my ($cname, $cbeg, $cend) = @{$sorted_regions[0]};
-	for (my $k = 1; $k < @sorted_regions; $k++) {
-	    my ($dname, $dbeg, $dend) = @{$sorted_regions[$k]};
-	    if ($dname ne $cname or $dbeg > $cend) {
+        my ( $cname, $cbeg, $cend ) = @{ $sorted_regions[0] };
+        for ( my $k = 1 ; $k < @sorted_regions ; $k++ ) {
+            my ( $dname, $dbeg, $dend ) = @{ $sorted_regions[$k] };
+            if ( $dname ne $cname or $dbeg > $cend ) {
 
-		my $query_ent = $self->{tidb}->query( $cname, $cbeg, $cend );
-		if ( defined $query_ent->{_} ) {
-		    push( @all_querys, $query_ent );
-		}
-		($cname, $cbeg, $cend) = @{$sorted_regions[$k]};
-	    }
-	    else {
-		$cend = $dend;
-	    }
-	}
-	my $q = $self->{tidb}->query( $cname, $cbeg, $cend );
-	if (defined $q->{_}) {
-	    push( @all_querys, $q );
-	}
+                my $query_ent = $self->{tidb}->query( $cname, $cbeg, $cend );
+                if ( defined $query_ent->{_} ) {
+                    push( @all_querys, $query_ent );
+                }
+                ( $cname, $cbeg, $cend ) = @{ $sorted_regions[$k] };
+            }
+            else {
+                $cend = $dend;
+            }
+        }
+        my $q = $self->{tidb}->query( $cname, $cbeg, $cend );
+        if ( defined $q->{_} ) {
+            push( @all_querys, $q );
+        }
     }
 
     # trans filter is always be ahead of genes
-    my $mmapTag = ( exists $args{mmap} )   ? 1 : 0;
-    my $geneTag = ( exists $args{genes} )  ? 1 : 0;
-    my $tranTag = ( exists $args{trans} )  ? 1 : 0;
+    my $mmapTag = ( exists $args{mmap} )  ? 1 : 0;
+    my $geneTag = ( exists $args{genes} ) ? 1 : 0;
+    my $tranTag = ( exists $args{trans} ) ? 1 : 0;
     my $geneList = $args{genes} if ($geneTag);
     my $tranList = $args{trans} if ($tranTag);
     my %pureTran = map { s/\-\d+$//; $_ => 1 } keys %$tranList if ($tranTag);
 
     my $rannodb = {};
-    while (1)
-    {
-	my $tb_ent;
-	if ($read_all_opt) {
-	    $tb_ent = <ANNO>;
-	    last if (!defined $tb_ent or $tb_ent eq "");
-	}
-	else {
-	    while (0 < @all_querys) {
-		my $region_read = $self->{tidb}->read($all_querys[0]);
-		if (!defined $region_read or $region_read eq "") {
-		    shift (@all_querys);
-		}
-		else {
-		    $tb_ent = $region_read;
-		    last;
-		}
-	    }
-	    last if (0 == @all_querys);
-	}
+    while (1) {
+        my $tb_ent;
+        if ($read_all_opt) {
+            $tb_ent = <ANNO>;
+            last if ( !defined $tb_ent or $tb_ent eq "" );
+        }
+        else {
+            while ( 0 < @all_querys ) {
+                my $region_read = $self->{tidb}->read( $all_querys[0] );
+                if ( !defined $region_read or $region_read eq "" ) {
+                    shift(@all_querys);
+                }
+                else {
+                    $tb_ent = $region_read;
+                    last;
+                }
+            }
+            last if ( 0 == @all_querys );
+        }
 
         $tb_ent =~ s/\s+$//;
-        my ( $chr, $start, $stop, $annostr ) = split(/\t/, $tb_ent);
-	if ( !defined $annostr or $annostr eq "" ) {
-	    $self->throw("Error: db format unmatched");
-	}
+        my ( $chr, $start, $stop, $annostr ) = split( /\t/, $tb_ent );
+        if ( !defined $annostr or $annostr eq "" ) {
+            $self->throw("Error: db format unmatched");
+        }
 
         my @annos = split( /; /, $annostr );
 
@@ -1870,35 +1958,35 @@ sub load_anno {
 
 sub region_merge {
 
-    my $radb = shift;
+    my $radb       = shift;
     my %local_radb = %$radb;
 
-    foreach my $chr (keys %local_radb) {
-	my @annoents = @{$local_radb{$chr}};
-	my $oricount = scalar (@annoents);
-	next if ($oricount <= 1);
+    foreach my $chr ( keys %local_radb ) {
+        my @annoents = @{ $local_radb{$chr} };
+        my $oricount = scalar(@annoents);
+        next if ( $oricount <= 1 );
 
-	# merge from bottom to top
-	my $curid = $oricount - 1;
-	ANNOENT:while ($curid > 0) {
-	    my $latter = $annoents[$curid];
-	    my $former = $annoents[$curid - 1];
-	    $curid --;
-	    
-	    next if ($$latter{sta} != $$former{sto});
-	    my @former_ann = keys %{$$former{annos}};
-	    my $formern = scalar @former_ann;
-	    next if ($formern != (scalar keys %{$$latter{annos}}));
-	    foreach my $ann (@former_ann) {
-		next ANNOENT if (!exists $$latter{annos}{$ann});
-	    }
+        # merge from bottom to top
+        my $curid = $oricount - 1;
+      ANNOENT: while ( $curid > 0 ) {
+            my $latter = $annoents[$curid];
+            my $former = $annoents[ $curid - 1 ];
+            $curid--;
 
-	    # splice the latter one and correct the former one
-	    $$former{sto} = $$latter{sto};
-	    splice (@annoents, ($curid + 1), 1);
-	}
+            next if ( $$latter{sta} != $$former{sto} );
+            my @former_ann = keys %{ $$former{annos} };
+            my $formern    = scalar @former_ann;
+            next if ( $formern != ( scalar keys %{ $$latter{annos} } ) );
+            foreach my $ann (@former_ann) {
+                next ANNOENT if ( !exists $$latter{annos}{$ann} );
+            }
 
-	$local_radb{$chr} = [@annoents] if ($oricount > (scalar @annoents));
+            # splice the latter one and correct the former one
+            $$former{sto} = $$latter{sto};
+            splice( @annoents, ( $curid + 1 ), 1 );
+        }
+
+        $local_radb{$chr} = [@annoents] if ( $oricount > ( scalar @annoents ) );
     }
 
     return \%local_radb;
@@ -1906,12 +1994,12 @@ sub region_merge {
 
 # involke parse_annoent to assign detail information to annodb.
 sub assign_detail {
-    my $self = shift;
+    my $self      = shift;
     my $rannodb_k = shift;
-    my %detail = ();
-    foreach my $annoblk (sort keys %{$$rannodb_k{annos}}) {
+    my %detail    = ();
+    foreach my $annoblk ( sort keys %{ $$rannodb_k{annos} } ) {
         my $offset = $$rannodb_k{annos}{$annoblk};
-        my ($tid, $ranno) = parse_annoent($annoblk);
+        my ( $tid, $ranno ) = parse_annoent($annoblk);
         $detail{$tid} = $ranno;
         $detail{$tid}{offset} = $offset;
     }
@@ -1933,10 +2021,10 @@ sub parse_annoent {
     my @tags =
       qw(gsym gid strd blka gpSO exin nsta nsto csta csto wlen mismatch pr);
     @annoinfo{@tags} = @infos;
-    $annoinfo{gpSO} = 'abnormal-intron' if ($annoinfo{gpSO} eq 'abnormal_intron');
+    $annoinfo{gpSO} = 'abnormal-intron'
+      if ( $annoinfo{gpSO} eq 'abnormal_intron' );
     return ( $tid, \%annoinfo );
 }
-
 
 =head2 anno
 
@@ -1958,30 +2046,31 @@ sub parse_annoent {
 
 sub anno {
     my $self = shift;
-    
-    my $debugOpt = (exists $self->{debug}) ? 1 : 0;
+
+    my $debugOpt = ( exists $self->{debug} ) ? 1 : 0;
     my $t0;
     if ($debugOpt) {
-	$t0 = [ gettimeofday ];
+        $t0 = [gettimeofday];
     }
     my $var = BedAnno::Var->new(@_);
 
     my $t1;
     if ($debugOpt) {
-	$t1 = [ gettimeofday ];
-	print STDERR "BedAnno->anno [new BedAnno::Var] ... ".tv_interval( $t0, $t1 )."\n";
-	$t0 = $t1;
+        $t1 = [gettimeofday];
+        print STDERR "BedAnno->anno [new BedAnno::Var] ... "
+          . tv_interval( $t0, $t1 ) . "\n";
+        $t0 = $t1;
     }
-    my ($annoEnt, $idx) = $self->varanno($var);
+    my ( $annoEnt, $idx ) = $self->varanno($var);
 
     if ($debugOpt) {
-	$t1 = [ gettimeofday ];
-	print STDERR "BedAnno->anno [varanno] ... ".tv_interval( $t0, $t1 )."\n";
-	$t0 = $t1;
+        $t1 = [gettimeofday];
+        print STDERR "BedAnno->anno [varanno] ... "
+          . tv_interval( $t0, $t1 ) . "\n";
+        $t0 = $t1;
     }
     return $annoEnt;
 }
-
 
 =head2 varanno
 
@@ -1999,7 +2088,7 @@ sub anno {
                     # import all the keys from original parsed var entry
                     # and add the following keys by this method.
 
-		    varName => $var_mutation_name,
+                    varName => $var_mutation_name,
 
                     # information
                     varTypeSO => $varTypeSO,
@@ -2010,7 +2099,7 @@ sub anno {
                     # when extra resource is available:
 
                     cytoBand  => $cytoBand,
-		    reptag    => $repeatTag,
+                    reptag    => $repeatTag,
                     gwas      => $ref_gwas_ret,
 
                     # For single position for now
@@ -2018,7 +2107,7 @@ sub anno {
                     phyloPpr    => $PhyloPscorePrimates,
                     phyloPve    => $PhyloPscoreVetebrates,
 
-		    reptag	=> $RepeatMaskerTag,
+                    reptag	=> $RepeatMaskerTag,
 
                     dbsnp => {
                         $rsID => {
@@ -2028,7 +2117,7 @@ sub anno {
                         ...
                     },
 
-		    cosmic => $ref_cosmic_return,
+                    cosmic => $ref_cosmic_return,
 
                     tgp => {
                         AN => $tgp_total_allele_count,
@@ -2050,16 +2139,16 @@ sub anno {
                         AF => $esp6500_alt_allele_frequency,
                     },
 
-		    cusdb_XX => {
-			AN => $custom_db_allele_count,
-			AF => $custom_db_allele_frequency,
-		    },
-		    ...
+                    cusdb_XX => {
+                    AN => $custom_db_allele_count,
+                    AF => $custom_db_allele_frequency,
+                    },
+                    ...
 
                 },
                 trInfo => {
                     $tid => {
-			trVarName     => $transcriptVariantName,
+                        trVarName     => $transcriptVariantName,
                         geneId        => $Entrez_Gene_ID,
                         geneSym       => $Gene_Symbol,
                         prot          => $Protein_Acc_Ver,
@@ -2072,7 +2161,7 @@ sub anno {
                         protEnd       => $End_in_Protein,
                         c             => $cHGVS,
                         p             => $pHGVS,
-			p3	      => $threeletter_pHGVS,
+                        p3	          => $threeletter_pHGVS,
                         cc            => $codon_change,
                         polar         => $polar_change,
                         r             => $imp_funcRegion,
@@ -2093,7 +2182,7 @@ sub anno {
                         trRef         => $ref_string_on_transcript,
                         prAlt         => $protein_alt_sequence,
                         prRef         => $protein_ref_sequence,
-			primaryTag    => $refstandard_primary_or_not,	# Y/N
+                        primaryTag    => $refstandard_primary_or_not,	# Y/N
                         preStart => {    # the position before the start of var
                             nDot => $rna_hgvs_pos,
                             cDot => $cds_hgvs_pos,
@@ -2111,11 +2200,11 @@ sub anno {
                             # some trRef components
                         },
 
-			# for some of splice variants, there may exists 
-			# the following function information
-			alt_func        => $alternative_func_code,
-			alt_funcSO      => $alternative_variant_SO_id,
-			alt_funcSOname  => $alt_variant_SO_name,
+                        # for some of splice variants, there may exists 
+                        # the following function information
+                        alt_func        => $alternative_func_code,
+                        alt_funcSO      => $alternative_variant_SO_id,
+                        alt_funcSOname  => $alt_variant_SO_name,
 
                         # The following parts will be exists if extra resource
                         # is available.
@@ -2138,32 +2227,33 @@ sub anno {
 =cut
 
 sub varanno {
-    my ($self, $var, $AEIndex) = @_;
+    my ( $self, $var, $AEIndex ) = @_;
     $AEIndex ||= 0;
 
-    my $debugOpt = (exists $self->{debug}) ? 1 : 0;
+    my $debugOpt = ( exists $self->{debug} ) ? 1 : 0;
     my $t0;
     if ($debugOpt) {
-	$t0 = [ gettimeofday ];
-    }
-    
-    if (exists $self->{cytoBand}) {
-	$var->{cytoBand} = $self->{cytoBand_h}->getCB(@$var{qw(chr pos end)});
+        $t0 = [gettimeofday];
     }
 
-    if (exists $self->{rmsk}) {
-	$var->{reptag} = $self->{rmsk_h}->getRepTag(@$var{qw(chr pos end)});
+    if ( exists $self->{cytoBand} ) {
+        $var->{cytoBand} = $self->{cytoBand_h}->getCB( @$var{qw(chr pos end)} );
     }
 
-    if (exists $self->{gwas}) {
-	$var->{gwas} = $self->{gwas_h}->getGWAS(@$var{qw(chr pos end)});
+    if ( exists $self->{rmsk} ) {
+        $var->{reptag} = $self->{rmsk_h}->getRepTag( @$var{qw(chr pos end)} );
     }
 
-    if (exists $self->{phyloP}) {
-	if ($var->{sm} == 1) {
-	    @$var{qw(phyloPpm phyloPpr phyloPve)} = 
-		@{$self->{phyloP_h}->getPhyloP46wayScore($var->{chr}, ($var->{pos}+1))};
-	}
+    if ( exists $self->{gwas} ) {
+        $var->{gwas} = $self->{gwas_h}->getGWAS( @$var{qw(chr pos end)} );
+    }
+
+    if ( exists $self->{phyloP} ) {
+        if ( $var->{sm} == 1 ) {
+            @$var{qw(phyloPpm phyloPpr phyloPve)} =
+              @{ $self->{phyloP_h}
+                  ->getPhyloP46wayScore( $var->{chr}, ( $var->{pos} + 1 ) ) };
+        }
     }
 
     if ( exists $self->{dbSNP} ) {
@@ -2207,53 +2297,58 @@ sub varanno {
         }
     }
 
-    if (exists $self->{tgp}) {
-	$var->{tgp} = $self->{tgp_h}->getAF(@$var{qw(chr pos end ref alt)});
+    if ( exists $self->{tgp} ) {
+        $var->{tgp} = $self->{tgp_h}->getAF( @$var{qw(chr pos end ref alt)} );
     }
 
-    if (exists $self->{esp6500}) {
-	$var->{esp6500} = $self->{esp6500_h}->getAF(@$var{qw(chr pos end ref alt)});
+    if ( exists $self->{esp6500} ) {
+        $var->{esp6500} =
+          $self->{esp6500_h}->getAF( @$var{qw(chr pos end ref alt)} );
     }
 
-    if (exists $self->{exac}) {
-	$var->{exac} = $self->{exac_h}->getAF(@$var{qw(chr pos end ref alt)});
+    if ( exists $self->{exac} ) {
+        $var->{exac} = $self->{exac_h}->getAF( @$var{qw(chr pos end ref alt)} );
     }
 
-    foreach my $dbhk (sort keys %$self) {
-	if ($dbhk =~ /^cusdb_(\S+)_h/ and defined $self->{$dbhk}) {
-	    my $dbID = $1;
-	    $var->{"cusdb_$dbID"} = $self->{$dbhk}->getAF(@$var{qw(chr pos end ref alt)});
-	}
+    foreach my $dbhk ( sort keys %$self ) {
+        if ( $dbhk =~ /^cusdb_(\S+)_h/ and defined $self->{$dbhk} ) {
+            my $dbID = $1;
+            $var->{"cusdb_$dbID"} =
+              $self->{$dbhk}->getAF( @$var{qw(chr pos end ref alt)} );
+        }
     }
 
-    if (exists $self->{cg54}) {
-	$var->{cg54} = $self->{cg54_h}->getAF(@$var{qw(chr pos end ref alt)});
+    if ( exists $self->{cg54} ) {
+        $var->{cg54} = $self->{cg54_h}->getAF( @$var{qw(chr pos end ref alt)} );
     }
 
-    if (exists $self->{wellderly}) {
-	$var->{wellderly} = $self->{wellderly_h}->getAF(@$var{qw(chr pos end ref alt)});
+    if ( exists $self->{wellderly} ) {
+        $var->{wellderly} =
+          $self->{wellderly_h}->getAF( @$var{qw(chr pos end ref alt)} );
     }
 
-    if (exists $self->{cosmic}) {
-	$var->{cosmic} = $self->{cosmic_h}->getCOSMIC(@$var{qw(chr pos end ref alt)});
+    if ( exists $self->{cosmic} ) {
+        $var->{cosmic} =
+          $self->{cosmic_h}->getCOSMIC( @$var{qw(chr pos end ref alt)} );
     }
 
     my $t1;
     if ($debugOpt) {
-	$t1 = [ gettimeofday ];
-	print STDERR "BedAnno->varanno [var extradb sql] ... ".tv_interval( $t0, $t1 )."\n";
-	$t0 = $t1;
+        $t1 = [gettimeofday];
+        print STDERR "BedAnno->varanno [var extradb sql] ... "
+          . tv_interval( $t0, $t1 ) . "\n";
+        $t0 = $t1;
     }
 
-    $var->{varTypeSO} = $Name2SO{$var->{guess}};
+    $var->{varTypeSO} = $Name2SO{ $var->{guess} };
     $var->{refbuild}  = $self->{refbuild};
     $var->get_gHGVS();
-    if ($var->{gHGVS} =~ /\]$/) {
+    if ( $var->{gHGVS} =~ /\]$/ ) {
         $var->{standard_gHGVS} = gen_standard_gphgvs( $var->{gHGVS} );
-	$var->{alt_gHGVS} = gen_alt_ghgvs( $var->{gHGVS} );
+        $var->{alt_gHGVS}      = gen_alt_ghgvs( $var->{gHGVS} );
     }
 
-    # Due to the bed format database, 
+    # Due to the bed format database,
     # add flank left and right 1bp to query the database
     # to involve all the mismatches
 
@@ -2263,63 +2358,71 @@ sub varanno {
           . ( $var->{pos} + $var->{reflen} + 1 ) );
 
     my $localdb;
-    if (!exists $self->{batch}) { # daemon mode
-	my %locOpts = ( region => $var_region );
-	if (exists $self->{trans}) {
-	    $locOpts{trans} = $self->{trans};
-	}
-	if (exists $self->{genes}) {
-	    $locOpts{genes} = $self->{genes};
-	}
-	my $locLoad = $self->load_anno( %locOpts );
-	$localdb = (exists $locLoad->{$var->{chr}}) ? $locLoad->{$var->{chr}} : [];
+    if ( !exists $self->{batch} ) {    # daemon mode
+        my %locOpts = ( region => $var_region );
+        if ( exists $self->{trans} ) {
+            $locOpts{trans} = $self->{trans};
+        }
+        if ( exists $self->{genes} ) {
+            $locOpts{genes} = $self->{genes};
+        }
+        my $locLoad = $self->load_anno(%locOpts);
+        $localdb =
+          ( exists $locLoad->{ $var->{chr} } ) ? $locLoad->{ $var->{chr} } : [];
     }
     else {
-	if ( !exists $self->{annodb}->{$var->{chr}} ) {
-	    $self->warn("Warning: incomplete annotation database in batch mode, [$var->{chr}]") if ($debugOpt);
-	    $localdb = [];
-	}
-	else {
-	    $localdb = $self->{annodb}->{$var->{chr}};
-	}
+        if ( !exists $self->{annodb}->{ $var->{chr} } ) {
+            $self->warn(
+"Warning: incomplete annotation database in batch mode, [$var->{chr}]"
+            ) if ($debugOpt);
+            $localdb = [];
+        }
+        else {
+            $localdb = $self->{annodb}->{ $var->{chr} };
+        }
     }
 
     if ($debugOpt) {
-	$t1 = [ gettimeofday ];
-	print STDERR "BedAnno->varanno [localdb load] ... ".tv_interval( $t0, $t1 )."\n";
-	$t0 = $t1;
+        $t1 = [gettimeofday];
+        print STDERR "BedAnno->varanno [localdb load] ... "
+          . tv_interval( $t0, $t1 ) . "\n";
+        $t0 = $t1;
     }
 
     my $annoEnt = BedAnno::Anno->new($var);
 
     if ($debugOpt) {
-	$t1 = [ gettimeofday ];
-	print STDERR "BedAnno->varanno [new BedAnno::Anno] ... ".tv_interval( $t0, $t1 )."\n";
-	$t0 = $t1;
+        $t1 = [gettimeofday];
+        print STDERR "BedAnno->varanno [new BedAnno::Anno] ... "
+          . tv_interval( $t0, $t1 ) . "\n";
+        $t0 = $t1;
     }
 
-    $AEIndex = $annoEnt->getTrPosition($localdb, $AEIndex);
+    $AEIndex = $annoEnt->getTrPosition( $localdb, $AEIndex );
     if ($debugOpt) {
-	$t1 = [ gettimeofday ];
-	print STDERR "BedAnno->varanno [getTrPosition] ... ".tv_interval( $t0, $t1 )."\n";
-	$t0 = $t1;
+        $t1 = [gettimeofday];
+        print STDERR "BedAnno->varanno [getTrPosition] ... "
+          . tv_interval( $t0, $t1 ) . "\n";
+        $t0 = $t1;
     }
 
     $annoEnt = $self->getTrChange($annoEnt);
     if ($debugOpt) {
-	$t1 = [ gettimeofday ];
-	print STDERR "BedAnno->varanno [getTrChange] ... ".tv_interval( $t0, $t1 )."\n";
-	$t0 = $t1;
+        $t1 = [gettimeofday];
+        print STDERR "BedAnno->varanno [getTrChange] ... "
+          . tv_interval( $t0, $t1 ) . "\n";
+        $t0 = $t1;
     }
 
     $annoEnt = $self->finaliseAnno($annoEnt);
     if ($debugOpt) {
-	$t1 = [ gettimeofday ];
-	print STDERR "BedAnno->varanno [finaliseAnno] ... ".tv_interval( $t0, $t1 )."\n";
-	$t0 = $t1;
+        $t1 = [gettimeofday];
+        print STDERR "BedAnno->varanno [finaliseAnno] ... "
+          . tv_interval( $t0, $t1 ) . "\n";
+        $t0 = $t1;
     }
 
-    return ($annoEnt, $AEIndex);
+    return ( $annoEnt, $AEIndex );
 }
 
 =head2 P1toP3
@@ -2332,67 +2435,74 @@ sub varanno {
 sub P1toP3 {
     my $p1 = shift;
     if ( $p1 =~ /^p\.([A-Z\*])(\d+)([A-Z\*])((fs\*.+)?)$/ ) {
-	# missense, frameshift
-	return 'p.'.$C1toC3{$1}.$2.$C1toC3{$3}.$4;
+
+        # missense, frameshift
+        return 'p.' . $C1toC3{$1} . $2 . $C1toC3{$3} . $4;
     }
     elsif ( $p1 =~ /^p\.([A-Z\*])(\d+)(del|dup|\[.*\])$/ ) {
-	# 1 bp deletion, duplication, repeats
-	return 'p.'.$C1toC3{$1}.$2.$3;
+
+        # 1 bp deletion, duplication, repeats
+        return 'p.' . $C1toC3{$1} . $2 . $3;
     }
     elsif ( $p1 =~ /^p\.([A-Z\*])(\d+)delins([A-Z\*]+)$/ ) {
-	# 1 bp delins
-	my $former = 'p.'.$C1toC3{$1}.$2.'delins';
-	my @singles = split(//, $3);
-	my $latter = join("", (map {$C1toC3{$_}} @singles));
-	return $former.$latter;
+
+        # 1 bp delins
+        my $former  = 'p.' . $C1toC3{$1} . $2 . 'delins';
+        my @singles = split( //, $3 );
+        my $latter  = join( "", ( map { $C1toC3{$_} } @singles ) );
+        return $former . $latter;
     }
     elsif ( $p1 =~ /^p\.([A-Z\*])(\d+)_([A-Z\*])(\d+)(del|dup|\[.*\])$/ ) {
-	# long deletion, duplication, repeats
-	return 'p.'.$C1toC3{$1}.$2.'_'.$C1toC3{$3}.$4.$5;
+
+        # long deletion, duplication, repeats
+        return 'p.' . $C1toC3{$1} . $2 . '_' . $C1toC3{$3} . $4 . $5;
     }
     elsif ( $p1 =~ /^p\.([A-Z\*])(\d+)_([A-Z\*])(\d+)((del)?ins)([A-Z\*]+)$/ ) {
-	# insertion, long delins
-	my $former = 'p.'.$C1toC3{$1}.$2.'_'.$C1toC3{$3}.$4.$5;
-	my @singles = split(//, $7);
-	my $latter = join("", (map {$C1toC3{$_}} @singles));
-	return $former.$latter;
+
+        # insertion, long delins
+        my $former  = 'p.' . $C1toC3{$1} . $2 . '_' . $C1toC3{$3} . $4 . $5;
+        my @singles = split( //, $7 );
+        my $latter  = join( "", ( map { $C1toC3{$_} } @singles ) );
+        return $former . $latter;
     }
     elsif ( $p1 =~ /^p\.([A-Z\*])(\d+)((delins)?)\?$/ ) {
-	# 1 base no-call
-	return 'p.'.$C1toC3{$1}.$2.$3.'?';
+
+        # 1 base no-call
+        return 'p.' . $C1toC3{$1} . $2 . $3 . '?';
     }
     elsif ( $p1 =~ /^p\.([A-Z\*])(\d+)_([A-Z\*])(\d+)(delins\?)$/ ) {
-	# long no-call
-	return 'p.'.$C1toC3{$1}.$2.'_'.$C1toC3{$3}.$4.$5;
+
+        # long no-call
+        return 'p.' . $C1toC3{$1} . $2 . '_' . $C1toC3{$3} . $4 . $5;
     }
     else {
-	return $p1;
+        return $p1;
     }
 }
 
 sub _intronSO {
     my $r = shift;
-    if ($r =~ /^I5U/) {
-	return 'SO:0000447';
+    if ( $r =~ /^I5U/ ) {
+        return 'SO:0000447';
     }
-    elsif ($r =~ /^I3U/) {
-	return 'SO:0000448';
+    elsif ( $r =~ /^I3U/ ) {
+        return 'SO:0000448';
     }
-    elsif ($r =~ /^I/) {
-	return 'SO:0000191';
+    elsif ( $r =~ /^I/ ) {
+        return 'SO:0000191';
     }
     else {
-	confess "Not intron region tag [$r]";
+        confess "Not intron region tag [$r]";
     }
 }
 
 sub _checkDistEdge {
-    my ($tranno, $dbk) = @_;
+    my ( $tranno, $dbk ) = @_;
     my $edge_pos;
-    if ($dbk->{nsta} =~ /^(\d+)[\+\-]/) {
-	$edge_pos = $1;
+    if ( $dbk->{nsta} =~ /^(\d+)[\+\-]/ ) {
+        $edge_pos = $1;
     }
-    
+
     if ( defined $edge_pos ) {
         if (
             (
@@ -2422,40 +2532,40 @@ sub _checkDistEdge {
 =cut
 
 sub finaliseAnno {
-    my ($self, $annoEnt) = @_;
-    
-    if (exists $annoEnt->{trInfo}) {
+    my ( $self, $annoEnt ) = @_;
 
-	# use this extended local db to check if exon variant locates
-	# in the 3bp range of exon-intron edge.
-	my $av = $annoEnt->{var};
+    if ( exists $annoEnt->{trInfo} ) {
+
+        # use this extended local db to check if exon variant locates
+        # in the 3bp range of exon-intron edge.
+        my $av = $annoEnt->{var};
         my $ext_region =
             $av->{chr} . ':'
           . ( ( $av->{pos} - 3 > 0 ) ? ( $av->{pos} - 3 ) : 0 ) . '-'
           . ( $av->{pos} + $av->{reflen} + 3 );
-	my $ext_localdb = $self->load_anno( region => $ext_region );
-	$ext_localdb = $ext_localdb->{$av->{chr}}; # no need to check exists
+        my $ext_localdb = $self->load_anno( region => $ext_region );
+        $ext_localdb = $ext_localdb->{ $av->{chr} };   # no need to check exists
 
-	foreach my $tid (sort keys %{$annoEnt->{trInfo}}) {
+        foreach my $tid ( sort keys %{ $annoEnt->{trInfo} } ) {
 
-	    my $trAnnoEnt = $annoEnt->{trInfo}->{$tid};
-	    
-	    if ($tid =~ /^N[MR]_MT-/) {
-		$trAnnoEnt->{geneSym} =~ s/^MT-//;
-	    }
+            my $trAnnoEnt = $annoEnt->{trInfo}->{$tid};
 
-	    my $qtid = $tid;
-	    $qtid =~ s/\-\d+$//;
-	    my $trdbEnt = $self->{trInfodb}->{$qtid};
-	    $trAnnoEnt->{prot} =
-	      ( !exists $trdbEnt->{prot} or $trdbEnt->{prot} eq '.' )
-	      ? ""
-	      : $trdbEnt->{prot};
+            if ( $tid =~ /^N[MR]_MT-/ ) {
+                $trAnnoEnt->{geneSym} =~ s/^MT-//;
+            }
 
-	    my ($strd) = ($trAnnoEnt->{strd} eq '+') ? 1 : 0;
+            my $qtid = $tid;
+            $qtid =~ s/\-\d+$//;
+            my $trdbEnt = $self->{trInfodb}->{$qtid};
+            $trAnnoEnt->{prot} =
+              ( !exists $trdbEnt->{prot} or $trdbEnt->{prot} eq '.' )
+              ? ""
+              : $trdbEnt->{prot};
 
-	    # complete informations depend on already assigned values
-	    my $genepartSO;
+            my ($strd) = ( $trAnnoEnt->{strd} eq '+' ) ? 1 : 0;
+
+            # complete informations depend on already assigned values
+            my $genepartSO;
             if (   $trAnnoEnt->{rnaBegin} eq '?'
                 or $trAnnoEnt->{rnaEnd} eq '?'
                 or $trAnnoEnt->{genepartSO} eq "annotation-fail" )
@@ -2465,13 +2575,12 @@ sub finaliseAnno {
                 $trAnnoEnt->{r}              = '?';
                 $trAnnoEnt->{exin}           = '?';
                 $trAnnoEnt->{componentIndex} = '';
-		$trAnnoEnt->{exonIndex} = $1
-		  if ( $trAnnoEnt->{ei_Begin} =~ /EX(\d+)/ );
-		$trAnnoEnt->{intronIndex} = $1
-		  if ( $trAnnoEnt->{ei_Begin} =~ /IVS(\d+)/ );
+                $trAnnoEnt->{exonIndex}      = $1
+                  if ( $trAnnoEnt->{ei_Begin} =~ /EX(\d+)/ );
+                $trAnnoEnt->{intronIndex} = $1
+                  if ( $trAnnoEnt->{ei_Begin} =~ /IVS(\d+)/ );
             }
-            elsif ( $trAnnoEnt->{r_Begin} eq $trAnnoEnt->{r_End} )
-            {
+            elsif ( $trAnnoEnt->{r_Begin} eq $trAnnoEnt->{r_End} ) {
                 $genepartSO =
                   ( $trAnnoEnt->{genepartSO} =~ /^\d+$/ )
                   ? sprintf( "SO:%07d", $trAnnoEnt->{genepartSO} )
@@ -2484,58 +2593,60 @@ sub finaliseAnno {
 
                 if ( $trAnnoEnt->{exin} =~ /^EX(\d+)/ ) {
                     $trAnnoEnt->{componentIndex} = $1;
-                    $trAnnoEnt->{exonIndex}     = $1;
+                    $trAnnoEnt->{exonIndex}      = $1;
                 }
                 elsif ( $trAnnoEnt->{exin} =~ /^IVS(\d+)/ ) {
                     $trAnnoEnt->{componentIndex} = $1;
-                    $trAnnoEnt->{intronIndex}   = $1;
+                    $trAnnoEnt->{intronIndex}    = $1;
                 }
-                else { # PROM
+                else {    # PROM
                     $trAnnoEnt->{componentIndex} = 0;
                 }
             }
-	    elsif ( $trAnnoEnt->{ei_Begin} =~ /^IVS/
-		and $trAnnoEnt->{ei_Begin} eq $trAnnoEnt->{ei_End} )
-	    {                            # span splice or interior intron
-		if (
-			    $trAnnoEnt->{r_Begin} =~ /^D/
-			and $trAnnoEnt->{r_End} =~ /^A/
-		  )
-		{
-		    $genepartSO = 'span';
-		}
-		elsif ( $trAnnoEnt->{r_Begin} =~ /^D/ ) {
-		    $genepartSO = "SO:0000163"; # 5'
-		}
-		elsif ( $trAnnoEnt->{r_End} =~ /^A/ ) {
-		    $genepartSO = "SO:0000164"; # 3'
-		}
-		elsif ( $trAnnoEnt->{r_Begin} =~ /^A/ ) { # insertion on intron edge
-		    $genepartSO = _intronSO($trAnnoEnt->{r_End});
-		}
-		elsif ( $trAnnoEnt->{r_End} =~ /^D/ ) {
-		    $genepartSO = _intronSO($trAnnoEnt->{r_Begin});
-		}
-		else {
-		    $self->confess("Unknown Error in span case intron!");
-		}
+            elsif ( $trAnnoEnt->{ei_Begin} =~ /^IVS/
+                and $trAnnoEnt->{ei_Begin} eq $trAnnoEnt->{ei_End} )
+            {             # span splice or interior intron
+                if (    $trAnnoEnt->{r_Begin} =~ /^D/
+                    and $trAnnoEnt->{r_End} =~ /^A/ )
+                {
+                    $genepartSO = 'span';
+                }
+                elsif ( $trAnnoEnt->{r_Begin} =~ /^D/ ) {
+                    $genepartSO = "SO:0000163";    # 5'
+                }
+                elsif ( $trAnnoEnt->{r_End} =~ /^A/ ) {
+                    $genepartSO = "SO:0000164";    # 3'
+                }
+                elsif ( $trAnnoEnt->{r_Begin} =~ /^A/ )
+                {                                  # insertion on intron edge
+                    $genepartSO = _intronSO( $trAnnoEnt->{r_End} );
+                }
+                elsif ( $trAnnoEnt->{r_End} =~ /^D/ ) {
+                    $genepartSO = _intronSO( $trAnnoEnt->{r_Begin} );
+                }
+                else {
+                    $self->confess("Unknown Error in span case intron!");
+                }
 
-		$trAnnoEnt->{r} = $trAnnoEnt->{r_Begin} . '-' . $trAnnoEnt->{r_End};
-		$trAnnoEnt->{exin}          = $trAnnoEnt->{ei_Begin};
-		$trAnnoEnt->{componentIndex} = $1
-		  if ( $trAnnoEnt->{ei_Begin} =~ /(\d+)/ );
-		$trAnnoEnt->{intronIndex} = $trAnnoEnt->{componentIndex};
-	    }
-	    else {
-                $genepartSO = 'span';
-		$trAnnoEnt->{componentIndex} = '';
-		$trAnnoEnt->{componentIndex} = $1 
-		  if ( $trAnnoEnt->{ei_Begin} =~ /(\d+)/ ); # index the begin part
+                $trAnnoEnt->{r} =
+                  $trAnnoEnt->{r_Begin} . '-' . $trAnnoEnt->{r_End};
+                $trAnnoEnt->{exin}           = $trAnnoEnt->{ei_Begin};
+                $trAnnoEnt->{componentIndex} = $1
+                  if ( $trAnnoEnt->{ei_Begin} =~ /(\d+)/ );
+                $trAnnoEnt->{intronIndex} = $trAnnoEnt->{componentIndex};
+            }
+            else {
+                $genepartSO                  = 'span';
+                $trAnnoEnt->{componentIndex} = '';
+                $trAnnoEnt->{componentIndex} = $1
+                  if ( $trAnnoEnt->{ei_Begin} =~ /(\d+)/ )
+                  ;    # index the begin part
                 $trAnnoEnt->{r} =
                   $trAnnoEnt->{r_Begin} . '-' . $trAnnoEnt->{r_End};
                 if ( $trAnnoEnt->{ei_Begin} eq $trAnnoEnt->{ei_End} ) {
-                    $trAnnoEnt->{exin} = $trAnnoEnt->{ei_Begin};
-		    $trAnnoEnt->{exonIndex} = $trAnnoEnt->{componentIndex} if ($trAnnoEnt->{componentIndex} ne '');
+                    $trAnnoEnt->{exin}      = $trAnnoEnt->{ei_Begin};
+                    $trAnnoEnt->{exonIndex} = $trAnnoEnt->{componentIndex}
+                      if ( $trAnnoEnt->{componentIndex} ne '' );
                 }
                 else {
                     $trAnnoEnt->{exin} =
@@ -2544,49 +2655,58 @@ sub finaliseAnno {
                       if ( $trAnnoEnt->{ei_Begin} =~ /EX(\d+)/ );
                     $trAnnoEnt->{intronIndex} = $1
                       if ( $trAnnoEnt->{ei_Begin} =~ /IVS(\d+)/ );
-		    if ( $trAnnoEnt->{r_Begin} eq 'PROM'
-			and $trAnnoEnt->{r_End} =~ /^5U/ )
-		    {
-			$trAnnoEnt->{componentIndex} = 0;
-		    }
-		    else {    # non-equal exon intron number or UTR/CDS span
-			if ($trAnnoEnt->{trRef} eq '') { # edge insertion case
-			    $trAnnoEnt->{exonIndex} = $1 if ($trAnnoEnt->{exin} =~ /EX(\d+)/);
-			    $trAnnoEnt->{intronIndex} = $1 if ($trAnnoEnt->{exin} =~ /IVS(\d+)/);
-			}
-		    }
+                    if (    $trAnnoEnt->{r_Begin} eq 'PROM'
+                        and $trAnnoEnt->{r_End} =~ /^5U/ )
+                    {
+                        $trAnnoEnt->{componentIndex} = 0;
+                    }
+                    else {    # non-equal exon intron number or UTR/CDS span
+                        if ( $trAnnoEnt->{trRef} eq '' ) { # edge insertion case
+                            $trAnnoEnt->{exonIndex} = $1
+                              if ( $trAnnoEnt->{exin} =~ /EX(\d+)/ );
+                            $trAnnoEnt->{intronIndex} = $1
+                              if ( $trAnnoEnt->{exin} =~ /IVS(\d+)/ );
+                        }
+                    }
                 }
-	    }
+            }
 
-	    confess "Error: unknown genepartSO [$genepartSO]."
-	      if ( !exists $SO2Name{$genepartSO} );
+            confess "Error: unknown genepartSO [$genepartSO]."
+              if ( !exists $SO2Name{$genepartSO} );
 
-	    $trAnnoEnt->{exin} = '.' if (!exists $trAnnoEnt->{exin});
-	    $trAnnoEnt->{r} = '.' if (!exists $trAnnoEnt->{r});
-	    $trAnnoEnt->{genepart} = $SO2Name{$genepartSO};
-	    $trAnnoEnt->{genepartSO} = ( $genepartSO =~ /^SO:/ ) ? $genepartSO : "";
-	    $trAnnoEnt->{componentIndex} = ''
-	      if ( !exists $trAnnoEnt->{componentIndex} );
-	    $trAnnoEnt->{exonIndex} = '.' if ( !exists $trAnnoEnt->{exonIndex} );
-	    $trAnnoEnt->{intronIndex} = '.'
-	      if ( !exists $trAnnoEnt->{intronIndex} );
+            $trAnnoEnt->{exin} = '.' if ( !exists $trAnnoEnt->{exin} );
+            $trAnnoEnt->{r}    = '.' if ( !exists $trAnnoEnt->{r} );
+            $trAnnoEnt->{genepart} = $SO2Name{$genepartSO};
+            $trAnnoEnt->{genepartSO} =
+              ( $genepartSO =~ /^SO:/ ) ? $genepartSO : "";
+            $trAnnoEnt->{componentIndex} = ''
+              if ( !exists $trAnnoEnt->{componentIndex} );
+            $trAnnoEnt->{exonIndex} = '.'
+              if ( !exists $trAnnoEnt->{exonIndex} );
+            $trAnnoEnt->{intronIndex} = '.'
+              if ( !exists $trAnnoEnt->{intronIndex} );
 
-	    # change annotation-fail 's other value to empty?
+            # change annotation-fail 's other value to empty?
 
-	    # uniform protBegin end
-	    $trAnnoEnt->{protBegin} =
-	      ( !exists $trAnnoEnt->{protBegin} or $trAnnoEnt->{protBegin} eq '0' ) ? "" : $trAnnoEnt->{protBegin};
-	    $trAnnoEnt->{protEnd} =
-	      ( !exists $trAnnoEnt->{protEnd} or $trAnnoEnt->{protEnd} eq '0' ) ? "" : $trAnnoEnt->{protEnd};
+            # uniform protBegin end
+            $trAnnoEnt->{protBegin} = (
+                !exists $trAnnoEnt->{protBegin}
+                  or $trAnnoEnt->{protBegin} eq '0'
+            ) ? "" : $trAnnoEnt->{protBegin};
+            $trAnnoEnt->{protEnd} =
+              ( !exists $trAnnoEnt->{protEnd} or $trAnnoEnt->{protEnd} eq '0' )
+              ? ""
+              : $trAnnoEnt->{protEnd};
 
-	    $trAnnoEnt->{func} = 'unknown' if (!exists $trAnnoEnt->{func});
-	    # uniform function group
-	    confess "Error: unknown func code [$trAnnoEnt->{func}]."
-	      if ( !exists $func2SO{ $trAnnoEnt->{func} } );
-	    $trAnnoEnt->{funcSO}     = $func2SO{ $trAnnoEnt->{func} };
-	    $trAnnoEnt->{funcSOname} = $SO2Name{ $trAnnoEnt->{funcSO} };
-	    $trAnnoEnt->{funcSO} =
-	      ( $trAnnoEnt->{funcSO} =~ /^SO:/ ) ? $trAnnoEnt->{funcSO} : "";
+            $trAnnoEnt->{func} = 'unknown' if ( !exists $trAnnoEnt->{func} );
+
+            # uniform function group
+            confess "Error: unknown func code [$trAnnoEnt->{func}]."
+              if ( !exists $func2SO{ $trAnnoEnt->{func} } );
+            $trAnnoEnt->{funcSO}     = $func2SO{ $trAnnoEnt->{func} };
+            $trAnnoEnt->{funcSOname} = $SO2Name{ $trAnnoEnt->{funcSO} };
+            $trAnnoEnt->{funcSO} =
+              ( $trAnnoEnt->{funcSO} =~ /^SO:/ ) ? $trAnnoEnt->{funcSO} : "";
 
             if (
                 exists $trAnnoEnt->{c}
@@ -2656,110 +2776,126 @@ sub finaliseAnno {
                 }
             }
 
-	    if (exists $trAnnoEnt->{alt_func}) {
-		$trAnnoEnt->{alt_funcSO} = $func2SO{ $trAnnoEnt->{alt_func} };
-		$trAnnoEnt->{alt_funcSOname} = $SO2Name{ $trAnnoEnt->{alt_funcSO} };
-		$trAnnoEnt->{alt_funcSO} = 
-		  ( $trAnnoEnt->{alt_funcSO} =~ /^SO:/ ) ? $trAnnoEnt->{alt_funcSO} : "";
-	    }
-	    
-	    # add additional resource
-	    if (exists $trAnnoEnt->{prot} and $trAnnoEnt->{prot} ne "") {
-		$trAnnoEnt->{protBegin} =
-		  ( $trAnnoEnt->{protBegin} eq '0' ) ? "" : $trAnnoEnt->{protBegin};
-		$trAnnoEnt->{protEnd} =
-		  ( $trAnnoEnt->{protEnd} eq '0' ) ? "" : $trAnnoEnt->{protEnd};
-		if ($trAnnoEnt->{protBegin} ne "" and $trAnnoEnt->{protEnd} ne "") {
-		    if (exists $self->{pfam}) {
-			my ($pb, $pe) = ($trAnnoEnt->{protBegin}, $trAnnoEnt->{protEnd});
-			if ($pb > $pe) {
-			    my $tmp = $pb;
-			    $pb = $pe;
-			    $pe = $tmp;
-			}
-			( $trAnnoEnt->{pfamId}, $trAnnoEnt->{pfamName} ) =
-			  $self->{pfam_h}->getPfam( $trAnnoEnt->{prot}, $pb, $pe );
-		    }
-		}
-		if ( exists $self->{prediction} ) {
-		    if ( exists $trAnnoEnt->{p}
-			and $trAnnoEnt->{p} =~ /^p\.[A-Z](\d+)([A-Z])$/ )
-		    {
-			my $rpred =
-			  $self->{prediction_h}
-			  ->getPredScore( $trAnnoEnt->{prot}, $1, $2 );
-			if ( exists $rpred->{sift} ) {
-			    $trAnnoEnt->{siftPred}  = $rpred->{sift}->[0];
-			    $trAnnoEnt->{siftScore} = $rpred->{sift}->[1];
-			}
-			if ( exists $rpred->{polyphen2_humdiv} ) {
-			    $trAnnoEnt->{pp2divPred} =
-			      $rpred->{polyphen2_humdiv}->[0];
-			    $trAnnoEnt->{pp2divScore} =
-			      $rpred->{polyphen2_humdiv}->[1];
-			}
-			if ( exists $rpred->{polyphen2_humvar} ) {
-			    $trAnnoEnt->{pp2varPred} =
-			      $rpred->{polyphen2_humvar}->[0];
-			    $trAnnoEnt->{pp2varScore} =
-			      $rpred->{polyphen2_humvar}->[1];
-			}
+            if ( exists $trAnnoEnt->{alt_func} ) {
+                $trAnnoEnt->{alt_funcSO} = $func2SO{ $trAnnoEnt->{alt_func} };
+                $trAnnoEnt->{alt_funcSOname} =
+                  $SO2Name{ $trAnnoEnt->{alt_funcSO} };
+                $trAnnoEnt->{alt_funcSO} =
+                  ( $trAnnoEnt->{alt_funcSO} =~ /^SO:/ )
+                  ? $trAnnoEnt->{alt_funcSO}
+                  : "";
+            }
 
-		    }
-		    elsif ( exists $trAnnoEnt->{prRef}
-			and exists $trAnnoEnt->{prAlt} )
-		    {
-			my $prReflen = length( $trAnnoEnt->{prRef} );
-			my $prAltlen = length( $trAnnoEnt->{prAlt} );
-			if (    $prReflen == 1
-			    and $prAltlen == 1
-			    and $trAnnoEnt->{protBegin} eq '1'
-			    and $trAnnoEnt->{protEnd} eq '1' )
-			{
-			    my $init_pred =
-			      $self->{prediction_h}
-			      ->getPredScore( $trAnnoEnt->{prot}, 1,
-				$trAnnoEnt->{prAlt} );
+            # add additional resource
+            if ( exists $trAnnoEnt->{prot} and $trAnnoEnt->{prot} ne "" ) {
+                $trAnnoEnt->{protBegin} =
+                  ( $trAnnoEnt->{protBegin} eq '0' )
+                  ? ""
+                  : $trAnnoEnt->{protBegin};
+                $trAnnoEnt->{protEnd} =
+                  ( $trAnnoEnt->{protEnd} eq '0' ) ? "" : $trAnnoEnt->{protEnd};
+                if (    $trAnnoEnt->{protBegin} ne ""
+                    and $trAnnoEnt->{protEnd} ne "" )
+                {
+                    if ( exists $self->{pfam} ) {
+                        my ( $pb, $pe ) =
+                          ( $trAnnoEnt->{protBegin}, $trAnnoEnt->{protEnd} );
+                        if ( $pb > $pe ) {
+                            my $tmp = $pb;
+                            $pb = $pe;
+                            $pe = $tmp;
+                        }
+                        ( $trAnnoEnt->{pfamId}, $trAnnoEnt->{pfamName} ) =
+                          $self->{pfam_h}
+                          ->getPfam( $trAnnoEnt->{prot}, $pb, $pe );
+                    }
+                }
+                if ( exists $self->{prediction} ) {
+                    if ( exists $trAnnoEnt->{p}
+                        and $trAnnoEnt->{p} =~ /^p\.[A-Z](\d+)([A-Z])$/ )
+                    {
+                        my $rpred =
+                          $self->{prediction_h}
+                          ->getPredScore( $trAnnoEnt->{prot}, $1, $2 );
+                        if ( exists $rpred->{sift} ) {
+                            $trAnnoEnt->{siftPred}  = $rpred->{sift}->[0];
+                            $trAnnoEnt->{siftScore} = $rpred->{sift}->[1];
+                        }
+                        if ( exists $rpred->{polyphen2_humdiv} ) {
+                            $trAnnoEnt->{pp2divPred} =
+                              $rpred->{polyphen2_humdiv}->[0];
+                            $trAnnoEnt->{pp2divScore} =
+                              $rpred->{polyphen2_humdiv}->[1];
+                        }
+                        if ( exists $rpred->{polyphen2_humvar} ) {
+                            $trAnnoEnt->{pp2varPred} =
+                              $rpred->{polyphen2_humvar}->[0];
+                            $trAnnoEnt->{pp2varScore} =
+                              $rpred->{polyphen2_humvar}->[1];
+                        }
 
-			    if ( exists $init_pred->{sift} ) {
-				$trAnnoEnt->{siftPred} =
-				  $init_pred->{sift}->[0];
-				$trAnnoEnt->{siftScore} =
-				  $init_pred->{sift}->[1];
-			    }
+                    }
+                    elsif ( exists $trAnnoEnt->{prRef}
+                        and exists $trAnnoEnt->{prAlt} )
+                    {
+                        my $prReflen = length( $trAnnoEnt->{prRef} );
+                        my $prAltlen = length( $trAnnoEnt->{prAlt} );
+                        if (    $prReflen == 1
+                            and $prAltlen == 1
+                            and $trAnnoEnt->{protBegin} eq '1'
+                            and $trAnnoEnt->{protEnd} eq '1' )
+                        {
+                            my $init_pred =
+                              $self->{prediction_h}
+                              ->getPredScore( $trAnnoEnt->{prot}, 1,
+                                $trAnnoEnt->{prAlt} );
 
-			    if ( exists $init_pred->{polyphen2_humdiv} ) {
-				$trAnnoEnt->{pp2divPred} =
-				  $init_pred->{polyphen2_humdiv}->[0];
-				$trAnnoEnt->{pp2divScore} =
-				  $init_pred->{polyphen2_humdiv}->[1];
-			    }
+                            if ( exists $init_pred->{sift} ) {
+                                $trAnnoEnt->{siftPred} =
+                                  $init_pred->{sift}->[0];
+                                $trAnnoEnt->{siftScore} =
+                                  $init_pred->{sift}->[1];
+                            }
 
-			    if ( exists $init_pred->{polyphen2_humvar} ) {
-				$trAnnoEnt->{pp2varPred} =
-				  $init_pred->{polyphen2_humvar}->[0];
-				$trAnnoEnt->{pp2varScore} =
-				  $init_pred->{polyphen2_humvar}->[1];
-			    }
-			}
-		    }
+                            if ( exists $init_pred->{polyphen2_humdiv} ) {
+                                $trAnnoEnt->{pp2divPred} =
+                                  $init_pred->{polyphen2_humdiv}->[0];
+                                $trAnnoEnt->{pp2divScore} =
+                                  $init_pred->{polyphen2_humdiv}->[1];
+                            }
 
-		    if ( exists $self->{condel_h} and defined $self->{condel_h} ) {
-			my $rcondel_info = $self->{condel_h}->pred($trAnnoEnt);
-			if ( exists $rcondel_info->{condelPred} and $rcondel_info->{condelPred} ne "not_computable_was") {
-			    $trAnnoEnt->{condelPred} = $rcondel_info->{condelPred};
-			    $trAnnoEnt->{condelScore} = $rcondel_info->{condelScore};
-			}
-		    }
-		}
-	    }
+                            if ( exists $init_pred->{polyphen2_humvar} ) {
+                                $trAnnoEnt->{pp2varPred} =
+                                  $init_pred->{polyphen2_humvar}->[0];
+                                $trAnnoEnt->{pp2varScore} =
+                                  $init_pred->{polyphen2_humvar}->[1];
+                            }
+                        }
+                    }
+
+                    if ( exists $self->{condel_h}
+                        and defined $self->{condel_h} )
+                    {
+                        my $rcondel_info = $self->{condel_h}->pred($trAnnoEnt);
+                        if ( exists $rcondel_info->{condelPred}
+                            and $rcondel_info->{condelPred} ne
+                            "not_computable_was" )
+                        {
+                            $trAnnoEnt->{condelPred} =
+                              $rcondel_info->{condelPred};
+                            $trAnnoEnt->{condelScore} =
+                              $rcondel_info->{condelScore};
+                        }
+                    }
+                }
+            }
 
             $trAnnoEnt->{standard_pHGVS} =
               gen_standard_gphgvs( $trAnnoEnt->{p} )
               if (  exists $trAnnoEnt->{p}
                 and defined $trAnnoEnt->{p}
                 and $trAnnoEnt->{p} =~ /\]$/ );
-	    
+
             $trAnnoEnt->{p3} = P1toP3( $trAnnoEnt->{p} )
               if ( exists $trAnnoEnt->{p} );
             $trAnnoEnt->{standard_p3} = P1toP3( $trAnnoEnt->{standard_pHGVS} )
@@ -2767,8 +2903,8 @@ sub finaliseAnno {
             $trAnnoEnt->{alt_p3} = P1toP3( $trAnnoEnt->{alt_pHGVS} )
               if ( exists $trAnnoEnt->{alt_pHGVS} );
 
-	    $trAnnoEnt->{trVarName} = _getTrVarName($tid, $trAnnoEnt);
-	}
+            $trAnnoEnt->{trVarName} = _getTrVarName( $tid, $trAnnoEnt );
+        }
     }
 
     $annoEnt->{var}->{varName} = decide_major($annoEnt);
@@ -2780,49 +2916,50 @@ sub finaliseAnno {
 # original HGVS string, but cHGVS need more specification
 sub gen_standard_gphgvs {
     my $rep_hgvs = shift;
-    if ($rep_hgvs =~ /^([gm]\.)(\d+)([ACGTN]+)\[(\d+)>(\d+)\]$/) {
-	my ($sym, $anchor, $rep, $ref_cn, $alt_cn) = ($1, $2, $3, $4, $5);
-	my $replen = length($rep);
-	if ($alt_cn - $ref_cn == 1) { # convert to dup
+    if ( $rep_hgvs =~ /^([gm]\.)(\d+)([ACGTN]+)\[(\d+)>(\d+)\]$/ ) {
+        my ( $sym, $anchor, $rep, $ref_cn, $alt_cn ) = ( $1, $2, $3, $4, $5 );
+        my $replen = length($rep);
+        if ( $alt_cn - $ref_cn == 1 ) {    # convert to dup
             if ( $replen == 1 ) {
                 return $sym . ( $anchor + $ref_cn - 1 ) . 'dup' . $rep;
             }
             else {
-                return   $sym
-                      . ( $anchor + ( $ref_cn - 1 ) * $replen ) . '_'
-                      . ( $anchor + $ref_cn * $replen - 1 ) . 'dup'
-                      . $rep ;
+                return
+                    $sym
+                  . ( $anchor + ( $ref_cn - 1 ) * $replen ) . '_'
+                  . ( $anchor + $ref_cn * $replen - 1 ) . 'dup'
+                  . $rep;
             }
-	}
-	else {
+        }
+        else {
             return $sym . $anchor . $rep . '[' . $alt_cn . ']';
-	}
+        }
     }
-    elsif ($rep_hgvs =~ /^p\.(\D)(\d+)((_\D)(\d+))?\[(\d+)>(\d+)\]$/) {
-	my ($anchor1_char, $anchor1) = ($1, $2);
-	my ($anchor2_char, $anchor2) = ($4, $5);
-	my ($ref_cn,       $alt_cn ) = ($6, $7);
-	$anchor2_char ||= "";
-	$anchor2 ||= "";
+    elsif ( $rep_hgvs =~ /^p\.(\D)(\d+)((_\D)(\d+))?\[(\d+)>(\d+)\]$/ ) {
+        my ( $anchor1_char, $anchor1 ) = ( $1, $2 );
+        my ( $anchor2_char, $anchor2 ) = ( $4, $5 );
+        my ( $ref_cn,       $alt_cn )  = ( $6, $7 );
+        $anchor2_char ||= "";
+        $anchor2      ||= "";
 
-	if ($alt_cn - $ref_cn == 1) {
-	    if (!defined $3 or $3 eq '') {
+        if ( $alt_cn - $ref_cn == 1 ) {
+            if ( !defined $3 or $3 eq '' ) {
                 return
                     'p.'
                   . $anchor1_char
                   . ( $anchor1 + $ref_cn - 1 ) . 'dup';
-	    }
-	    else {
-		my $replen = $anchor2 - $anchor1 + 1;
+            }
+            else {
+                my $replen = $anchor2 - $anchor1 + 1;
                 return
                     'p.'
                   . $anchor1_char
                   . ( $anchor1 + ( $ref_cn - 1 ) * $replen )
                   . $anchor2_char
                   . ( $anchor1 + $ref_cn * $replen - 1 ) . 'dup';
-	    }
-	}
-	else {
+            }
+        }
+        else {
             return
                 "p."
               . $anchor1_char
@@ -2830,10 +2967,10 @@ sub gen_standard_gphgvs {
               . $anchor2_char
               . $anchor2 . '['
               . $alt_cn . ']';
-	}
+        }
     }
     else {
-	return $rep_hgvs;
+        return $rep_hgvs;
     }
 }
 
@@ -2841,11 +2978,11 @@ sub gen_standard_gphgvs {
 sub gen_alt_ghgvs {
     my $rep_hgvs = shift;
 
-    if ($rep_hgvs =~ /^([gm]\.)(\d+)([ACGTN]+)\[(\d+)>(\d+)\]$/) {
-	my ($sym, $anchor, $rep, $ref_cn, $alt_cn) = ($1, $2, $3, $4, $5);
-	my $replen = length($rep);
+    if ( $rep_hgvs =~ /^([gm]\.)(\d+)([ACGTN]+)\[(\d+)>(\d+)\]$/ ) {
+        my ( $sym, $anchor, $rep, $ref_cn, $alt_cn ) = ( $1, $2, $3, $4, $5 );
+        my $replen = length($rep);
 
-	if ($ref_cn > $alt_cn) { # deletion
+        if ( $ref_cn > $alt_cn ) {    # deletion
             if ( $ref_cn - $alt_cn == 1 and $replen == 1 ) {
                 return
                     $sym
@@ -2859,19 +2996,18 @@ sub gen_alt_ghgvs {
                   . ( $anchor + $ref_cn * $replen - 1 ) . 'del'
                   . ( $rep x ( $ref_cn - $alt_cn ) );
             }
-	}
-	else { # insertion
+        }
+        else {    # insertion
             return
                 $sym
               . ( $anchor + $ref_cn * $replen - 1 ) . '_'
               . ( $anchor + $ref_cn * $replen ) . 'ins'
               . ( $rep x ( $alt_cn - $ref_cn ) );
-	}
+        }
     }
 
     return $rep_hgvs;
 }
-
 
 =head2 decide_major
 
@@ -2919,53 +3055,53 @@ sub decide_major {
           ( exists $annoEnt->{var}->{standard_gHGVS} )
           ? $annoEnt->{var}->{standard_gHGVS}
           : $annoEnt->{var}->{gHGVS};
-        my $intergenic =
-          $annoEnt->{var}->{chr} . ": " . $gHGVS;
+        my $intergenic = $annoEnt->{var}->{chr} . ": " . $gHGVS;
         $intergenic = "chr" . $intergenic if ( $intergenic =~ /^[\dXYM]/ );
         $intergenic .= " (intergenic)";    # for only intergenic
 
-	if ($intergenic =~ /^chrMT/) {
-	    $intergenic =~ s/^chrMT/$CURRENT_MT/;
-	}
+        if ( $intergenic =~ /^chrMT/ ) {
+            $intergenic =~ s/^chrMT/$CURRENT_MT/;
+        }
         return $intergenic;
     }
     else {
-	my %prTrs = ();
-	my %nonPrTrs = ();
-	foreach my $tid (keys %{$annoEnt->{trInfo}}) {
-	    if ( !exists $annoEnt->{trInfo}->{$tid}->{genepart} ) {
-		confess "Error: cannot decide major transcript before finaliseAnno";
-	    }
-	    if ( $annoEnt->{trInfo}->{$tid}->{primaryTag} eq "Y" ) {
-		$prTrs{$tid} = $annoEnt->{trInfo}->{$tid}->{genepart};
-	    }
-	    else {
-		$nonPrTrs{$tid} = $annoEnt->{trInfo}->{$tid}->{genepart};
-	    }
-	}
+        my %prTrs    = ();
+        my %nonPrTrs = ();
+        foreach my $tid ( keys %{ $annoEnt->{trInfo} } ) {
+            if ( !exists $annoEnt->{trInfo}->{$tid}->{genepart} ) {
+                confess
+                  "Error: cannot decide major transcript before finaliseAnno";
+            }
+            if ( $annoEnt->{trInfo}->{$tid}->{primaryTag} eq "Y" ) {
+                $prTrs{$tid} = $annoEnt->{trInfo}->{$tid}->{genepart};
+            }
+            else {
+                $nonPrTrs{$tid} = $annoEnt->{trInfo}->{$tid}->{genepart};
+            }
+        }
 
-	my $majorTr;
-	if ( 0 < keys %prTrs ) { # hit primary transcripts
-	    if ( 1 == keys %prTrs ) {
-		my ($majorTid) = keys %prTrs;
-		$majorTr = $majorTid;
-	    }
-	    else {
-		$majorTr = _get_first_tr(\%prTrs);
-	    }
-	}
-	else { # hit only non-primary transcripts
-	    $majorTr = _get_first_tr(\%nonPrTrs);
-	}
+        my $majorTr;
+        if ( 0 < keys %prTrs ) {    # hit primary transcripts
+            if ( 1 == keys %prTrs ) {
+                my ($majorTid) = keys %prTrs;
+                $majorTr = $majorTid;
+            }
+            else {
+                $majorTr = _get_first_tr( \%prTrs );
+            }
+        }
+        else {                      # hit only non-primary transcripts
+            $majorTr = _get_first_tr( \%nonPrTrs );
+        }
 
         my $rTrEnt = $annoEnt->{trInfo}->{$majorTr};
-	return $annoEnt->{trInfo}->{$majorTr}->{trVarName};
+        return $annoEnt->{trInfo}->{$majorTr}->{trVarName};
     }
 }
 
 sub _get_first_tr {
     my $rGeneParts_hash = shift;
-    my @ordered_Trs = sort {
+    my @ordered_Trs     = sort {
         $GenePartsOrder{ $rGeneParts_hash->{$a} }
           <=> $GenePartsOrder{ $rGeneParts_hash->{$b} }
           or $a cmp $b
@@ -2978,15 +3114,15 @@ sub _getTrVarName {
     my ( $trID, $rTrEnt ) = @_;
     my $trhit;
 
-    if ( $trID =~ /N[MR]_MT-/ ) { # mitochondrial mutation
-	$trhit = $rTrEnt->{geneSym};
+    if ( $trID =~ /N[MR]_MT-/ ) {    # mitochondrial mutation
+        $trhit = $rTrEnt->{geneSym};
     }
     else {
-	$trhit = $trID . "(" . $rTrEnt->{geneSym} . ")";
+        $trhit = $trID . "(" . $rTrEnt->{geneSym} . ")";
     }
 
     if ( $rTrEnt->{func} eq 'annotation-fail' ) {
-        $trhit .=": annotation-fail";
+        $trhit .= ": annotation-fail";
     }
     else {
         my $cHGVS =
@@ -3008,20 +3144,21 @@ sub _getTrVarName {
 
 sub _getCodingSeq {
     my $trdbEnt = shift;
-    return "" if (!exists $trdbEnt->{csta});
+    return "" if ( !exists $trdbEnt->{csta} );
     my $codingSeq = substr( $trdbEnt->{seq}, $trdbEnt->{csta},
-	( $trdbEnt->{csto} - $trdbEnt->{csta} ) );
-    return $codingSeq if (!exists $trdbEnt->{cfs});
-    foreach my $fsld (sort {$b<=>$a} keys %{$trdbEnt->{cfs}}) {
-	if ($fsld <= 0 or ($fsld + $trdbEnt->{cfs}->{$fsld}) <= 0
-		or $fsld >= (length($codingSeq) - 1)) {
-	    confess "Error: [$trdbEnt->{gene}] frameshift position error.";
-	}
+        ( $trdbEnt->{csto} - $trdbEnt->{csta} ) );
+    return $codingSeq if ( !exists $trdbEnt->{cfs} );
+    foreach my $fsld ( sort { $b <=> $a } keys %{ $trdbEnt->{cfs} } ) {
+        if (   $fsld <= 0
+            or ( $fsld + $trdbEnt->{cfs}->{$fsld} ) <= 0
+            or $fsld >= ( length($codingSeq) - 1 ) )
+        {
+            confess "Error: [$trdbEnt->{gene}] frameshift position error.";
+        }
         if ( $trdbEnt->{cfs}->{$fsld} < 0 ) {
             substr(
                 $codingSeq,
-                $fsld,
-                0,
+                $fsld, 0,
                 substr(
                     $codingSeq,
                     ( $fsld + $trdbEnt->{cfs}->{$fsld} ),
@@ -3029,36 +3166,36 @@ sub _getCodingSeq {
                 )
             );
         }
-	else {
-	    substr( $codingSeq, $fsld, $trdbEnt->{cfs}->{$fsld}, "" );
-	}
+        else {
+            substr( $codingSeq, $fsld, $trdbEnt->{cfs}->{$fsld}, "" );
+        }
     }
     return $codingSeq;
 }
 
 # let unavailable pr pos to be 0
 sub _getCoveredProd {
-    my ($trdbEnt, $chgvs_5, $chgvs_3) = @_;
+    my ( $trdbEnt, $chgvs_5, $chgvs_3 ) = @_;
     if (
         $chgvs_3 =~ /^\-/       # 5'UTR
-        or $chgvs_5 =~ /^\*/     # 3'UTR
+        or $chgvs_5 =~ /^\*/    # 3'UTR
       )
     {
         return ( 0, 0 );
     }
 
-    my ($prb, $pre) = ();
-    my ($prb_anchor, $prb_sig) = ();
-    my ($pre_anchor, $pre_sig) = ();
+    my ( $prb,        $pre )     = ();
+    my ( $prb_anchor, $prb_sig ) = ();
+    my ( $pre_anchor, $pre_sig ) = ();
 
-    if ($chgvs_5 =~ /^(\d+)([\+\-])/) {
-	$prb_anchor = $1;
-	$prb_sig = $2;
+    if ( $chgvs_5 =~ /^(\d+)([\+\-])/ ) {
+        $prb_anchor = $1;
+        $prb_sig    = $2;
     }
 
-    if ($chgvs_3 =~ /^(\d+)([\+\-])/) {
-	$pre_anchor = $1;
-	$pre_sig = $2;
+    if ( $chgvs_3 =~ /^(\d+)([\+\-])/ ) {
+        $pre_anchor = $1;
+        $pre_sig    = $2;
     }
 
     if (    defined $prb_anchor
@@ -3067,39 +3204,39 @@ sub _getCoveredProd {
         and defined $pre_sig )
     {
         if (
-            $prb_anchor == $pre_anchor # assume no 1 bp exon
+            $prb_anchor == $pre_anchor    # assume no 1 bp exon
             or (    $prb_anchor == ( $pre_anchor - 1 )
                 and $prb_sig eq '+'
                 and $pre_sig eq '-' )
           )
         {
-            return ( 0, 0 );    # single intron
+            return ( 0, 0 );              # single intron
         }
     }
 
-    if ($chgvs_5 =~ /^\-/) {
-	$prb = 1;
+    if ( $chgvs_5 =~ /^\-/ ) {
+        $prb = 1;
     }
-    elsif ($chgvs_5 =~ /^(\d+)/) {
-	my $tmp_cdsp = $1;
-	($prb, $tmp_cdsp) = _calPosFrame($tmp_cdsp);
-    }
-    else {
-	$prb = 0;
-    }
-
-    if ($chgvs_3 =~ /^\*/) {
-	$pre = $trdbEnt->{plen} + 1;
-    }
-    elsif ($chgvs_3 =~ /^(\d+)/) {
-	my $tmp_cdsp2 = $1;
-	($pre, $tmp_cdsp2) = _calPosFrame($tmp_cdsp2);
+    elsif ( $chgvs_5 =~ /^(\d+)/ ) {
+        my $tmp_cdsp = $1;
+        ( $prb, $tmp_cdsp ) = _calPosFrame($tmp_cdsp);
     }
     else {
-	$pre = 0;
+        $prb = 0;
     }
 
-    return ($prb, $pre);
+    if ( $chgvs_3 =~ /^\*/ ) {
+        $pre = $trdbEnt->{plen} + 1;
+    }
+    elsif ( $chgvs_3 =~ /^(\d+)/ ) {
+        my $tmp_cdsp2 = $1;
+        ( $pre, $tmp_cdsp2 ) = _calPosFrame($tmp_cdsp2);
+    }
+    else {
+        $pre = 0;
+    }
+
+    return ( $prb, $pre );
 }
 
 =head2 getTrChange
@@ -3113,7 +3250,7 @@ sub _getCoveredProd {
 =cut
 
 sub getTrChange {
-    my ($self, $annoEnt) = @_;
+    my ( $self, $annoEnt ) = @_;
 
     # do nothing if not hit any transcript
     if ( !exists $annoEnt->{trInfo}
@@ -3123,12 +3260,12 @@ sub getTrChange {
     }
 
     my %getseq_cache = ();
-    foreach my $tid (sort keys %{$annoEnt->{trInfo}}) {
+    foreach my $tid ( sort keys %{ $annoEnt->{trInfo} } ) {
         my $trannoEnt = $annoEnt->{trInfo}->{$tid};
-	my ( $unify_p, $unify_r, $unify_a, $unify_rl, $unify_al ) =
-	  $annoEnt->{var}->getUnifiedVar( $trannoEnt->{strd} );
+        my ( $unify_p, $unify_r, $unify_a, $unify_rl, $unify_al ) =
+          $annoEnt->{var}->getUnifiedVar( $trannoEnt->{strd} );
 
-	# 1. check if annotation-fail
+        # 1. check if annotation-fail
         if (   $trannoEnt->{genepartSO} eq 'annotation-fail'
             or $trannoEnt->{rnaBegin} eq '?'
             or $trannoEnt->{rnaEnd} eq '?' )
@@ -3137,15 +3274,17 @@ sub getTrChange {
             next;
         }
 
-	# the database hash of tr don't hash the annotation failed transcript
+        # the database hash of tr don't hash the annotation failed transcript
         my $qtid = $tid;
-        $qtid =~ s/\-\d+$//; # trim the multiple mapping indicator in trAcc
-        if (!exists $self->{trInfodb}->{$qtid}
-                or $self->{trInfodb}->{$qtid}->{seq} eq "") {
-            $self->throw("Error: your fasta database file may not complete. [$qtid]");
+        $qtid =~ s/\-\d+$//;    # trim the multiple mapping indicator in trAcc
+        if ( !exists $self->{trInfodb}->{$qtid}
+            or $self->{trInfodb}->{$qtid}->{seq} eq "" )
+        {
+            $self->throw(
+                "Error: your fasta database file may not complete. [$qtid]");
         }
         my $trdbEnt = $self->{trInfodb}->{$qtid};
-        my $trSeq = $trdbEnt->{seq};
+        my $trSeq   = $trdbEnt->{seq};
 
         $trdbEnt->{cseq} = _getCodingSeq($trdbEnt)
           if ( !exists $trdbEnt->{cseq} and exists $trdbEnt->{csta} );
@@ -3154,19 +3293,19 @@ sub getTrChange {
           (       exists $trdbEnt->{prot}
               and $trdbEnt->{prot} ne "."
               and $trannoEnt->{cdsBegin} ne '' ) ? 1 : 0;
-	my $strd   = ($trannoEnt->{strd} eq '+') ? 1 : 0;
+        my $strd = ( $trannoEnt->{strd} eq '+' ) ? 1 : 0;
 
-	# fix the trRefComp when ended in 3'downstream
+        # fix the trRefComp when ended in 3'downstream
 
-	# debug
-	#print STDERR Data::Dumper->Dump(
-	#    [$tid, $trannoEnt, $unify_r, $trSeq, $strd], 
-	#    ["tid", "trannoEnt", "unify_r", "trSeq", "strd"] );
+        # debug
+        #print STDERR Data::Dumper->Dump(
+        #    [$tid, $trannoEnt, $unify_r, $trSeq, $strd],
+        #    ["tid", "trannoEnt", "unify_r", "trSeq", "strd"] );
 
         my $trRef = getTrRef( $trannoEnt, $unify_r, $trSeq, $strd );
-	$trannoEnt->{trRef} = $trRef;
+        $trannoEnt->{trRef} = $trRef;
 
-	my $trAlt = $trannoEnt->{trAlt};
+        my $trAlt = $trannoEnt->{trAlt};
 
         $trannoEnt->{prot} = $trdbEnt->{prot}
           if ( exists $trdbEnt->{prot} and $trdbEnt->{prot} ne "." );
@@ -3174,76 +3313,77 @@ sub getTrChange {
         my $chgvs_5 =
           ($cdsOpt) ? $trannoEnt->{cdsBegin} : $trannoEnt->{rnaBegin};
         my $chgvs_3 = ($cdsOpt) ? $trannoEnt->{cdsEnd} : $trannoEnt->{rnaEnd};
-	if ($cdsOpt) {
+        if ($cdsOpt) {
             ( $trannoEnt->{protBegin}, $trannoEnt->{protEnd} ) =
               _getCoveredProd( $trdbEnt, $chgvs_5, $chgvs_3 );
-	}
+        }
 
-	# [ aaPos, codon, aa, polar, frame, [framealt] ]
+        # [ aaPos, codon, aa, polar, frame, [framealt] ]
         my ( $rcInfo5, $rcInfo3 ) =
           _getPairedCodon( $trdbEnt, $trannoEnt->{rnaBegin},
             $trannoEnt->{rnaEnd} );
 
-	# we just use position comparison to show transcript ref
-	# stat, instead of sm in var, because there may exists
-	# indel difference bewteen refgenome and refSeq
-	my $cmpPos = $self->cmpPos( $chgvs_5, $chgvs_3 );
+        # we just use position comparison to show transcript ref
+        # stat, instead of sm in var, because there may exists
+        # indel difference bewteen refgenome and refSeq
+        my $cmpPos = $self->cmpPos( $chgvs_5, $chgvs_3 );
 
-	# 2. check if no-call
-	if ( $trAlt eq '?' ) {
-	    $trannoEnt->{func} = 'unknown-no-call';
-	    if ($cmpPos == 0) { # 1 bp
-		$trannoEnt->{c} = $f . $chgvs_5 . $trRef . '>?';
-	    }
-	    elsif ($cmpPos == 1) { # multiple bp
-		$trannoEnt->{c} = $f . $chgvs_5 . '_' . $chgvs_3 . 'del'
-		    . ( ($trRef =~ /^[ACGTN]+$/ ) ? $trRef : "" ) . 'ins?';
-	    }
-	    else { # ins : reverse the positions
-		$trannoEnt->{c} = $f . $chgvs_3 . '_' . $chgvs_5 . 'ins?';
-	    }
-	    
-	    if ($rcInfo5->[0] == $rcInfo3->[0] and $rcInfo5->[0] > 0) { # single codon
-		my $aaOut = $rcInfo5->[2];
-		$trannoEnt->{p} =
-		  'p.' . $aaOut . $rcInfo5->[0] . '?';
-		$trannoEnt->{cc} = $rcInfo5->[1].'=>?';
-		$trannoEnt->{polar} = $rcInfo5->[3].'=>?';
-	    }
-	    elsif ($rcInfo3->[0] > 0 and $rcInfo5->[0] > 0) { # multiple codon
+        # 2. check if no-call
+        if ( $trAlt eq '?' ) {
+            $trannoEnt->{func} = 'unknown-no-call';
+            if ( $cmpPos == 0 ) {    # 1 bp
+                $trannoEnt->{c} = $f . $chgvs_5 . $trRef . '>?';
+            }
+            elsif ( $cmpPos == 1 ) {    # multiple bp
+                $trannoEnt->{c} =
+                    $f
+                  . $chgvs_5 . '_'
+                  . $chgvs_3 . 'del'
+                  . ( ( $trRef =~ /^[ACGTN]+$/ ) ? $trRef : "" ) . 'ins?';
+            }
+            else {                      # ins : reverse the positions
+                $trannoEnt->{c} = $f . $chgvs_3 . '_' . $chgvs_5 . 'ins?';
+            }
 
-		my $aa5 = $rcInfo5->[2].$rcInfo5->[0];
-		my $aa3 = $rcInfo3->[2].$rcInfo3->[0];
+            if ( $rcInfo5->[0] == $rcInfo3->[0] and $rcInfo5->[0] > 0 )
+            {                           # single codon
+                my $aaOut = $rcInfo5->[2];
+                $trannoEnt->{p}     = 'p.' . $aaOut . $rcInfo5->[0] . '?';
+                $trannoEnt->{cc}    = $rcInfo5->[1] . '=>?';
+                $trannoEnt->{polar} = $rcInfo5->[3] . '=>?';
+            }
+            elsif ( $rcInfo3->[0] > 0 and $rcInfo5->[0] > 0 ) { # multiple codon
 
-		my $diopt = ($rcInfo5->[0] < $rcInfo3->[0]) ? 1 : 0;
+                my $aa5 = $rcInfo5->[2] . $rcInfo5->[0];
+                my $aa3 = $rcInfo3->[2] . $rcInfo3->[0];
 
-		$trannoEnt->{p} = 'p.'
-		  . ($diopt ? $aa5 : $aa3 )
-		  . '_'
-		  . ($diopt ? $aa3 : $aa5 )
-		  . ($diopt ? 'del' : '' )
-		  . 'ins?';
-	    }
+                my $diopt = ( $rcInfo5->[0] < $rcInfo3->[0] ) ? 1 : 0;
 
-	    next;
-	}
+                $trannoEnt->{p} = 'p.'
+                  . ( $diopt ? $aa5  : $aa3 ) . '_'
+                  . ( $diopt ? $aa3  : $aa5 )
+                  . ( $diopt ? 'del' : '' ) . 'ins?';
+            }
 
-	if ($trRef =~ /=/) { # reference sequence too long
-	    if ($trannoEnt->{r_Begin} ne $trannoEnt->{r_End}) {
-		$trannoEnt->{func} = 'span';
-	    }
-	    else {
-		$trannoEnt->{func} = 'unknown';
-	    }
-	    $trannoEnt->{c} = $f . $chgvs_5 . '_' . $chgvs_3 . 'del';
-	    $trannoEnt->{c} .= 'ins'.$trAlt if ($trAlt ne "");
-	    next;
-	}
-	if ($trRef eq $trAlt) {
-	    $trannoEnt->{func} = 'no-change';
-	    $trannoEnt->{c}    = $f . '=';
-	    next;
-	}
+            next;
+        }
+
+        if ( $trRef =~ /=/ ) {    # reference sequence too long
+            if ( $trannoEnt->{r_Begin} ne $trannoEnt->{r_End} ) {
+                $trannoEnt->{func} = 'span';
+            }
+            else {
+                $trannoEnt->{func} = 'unknown';
+            }
+            $trannoEnt->{c} = $f . $chgvs_5 . '_' . $chgvs_3 . 'del';
+            $trannoEnt->{c} .= 'ins' . $trAlt if ( $trAlt ne "" );
+            next;
+        }
+        if ( $trRef eq $trAlt ) {
+            $trannoEnt->{func} = 'no-change';
+            $trannoEnt->{c}    = $f . '=';
+            next;
+        }
 
         my ( $trBegin, $trEnd, $real_var, $rUnified ) =
           $self->trWalker( $tid, $trannoEnt );
@@ -3261,14 +3401,14 @@ sub getTrChange {
           : $trEnd;
         $cmpPos = $self->cmpPos( $chgvs_5, $chgvs_3 );
 
-	# debug
-#        print STDERR Data::Dumper->Dump(
-#            [ $real_var, $trBegin,  $trEnd,  $chgvs_5,  $chgvs_3,  $cmpPos ],
-#            [ "real_var", "trBegin", "trEnd", "chgvs_5", "chgvs_3", "cmpPos" ]
-#        );
+ # debug
+ #        print STDERR Data::Dumper->Dump(
+ #            [ $real_var, $trBegin,  $trEnd,  $chgvs_5,  $chgvs_3,  $cmpPos ],
+ #            [ "real_var", "trBegin", "trEnd", "chgvs_5", "chgvs_3", "cmpPos" ]
+ #        );
 
-	# * check if a repeat case, and use cerntain chgvs string
-	# * assign cHGVS string
+        # * check if a repeat case, and use cerntain chgvs string
+        # * assign cHGVS string
         if (
             $real_var->{imp} eq 'rep'
 
@@ -3277,8 +3417,8 @@ sub getTrChange {
 
             # not get across the edge of intron/exon region or promoter / 3'd
             and !(
-                    $chgvs_5 !~ /\d+[\+\-][ud]?\d+/ 
-		xor $chgvs_3 !~ /\d+[\+\-][ud]?\d+/
+                $chgvs_5 !~ /\d+[\+\-][ud]?\d+/ xor $chgvs_3 !~
+                /\d+[\+\-][ud]?\d+/
             )
 
             # we currently assume repeat variant won't get across more than
@@ -3307,52 +3447,53 @@ sub getTrChange {
                   . $real_var->{alt_cn} . ']';
             }
 
-	    # 0.4.9
-	    # add a new key: alt_cHGVS, using for query database which 
-	    # do not have current standard cHGVS string, especially
-	    # for repeat case
-	    # 
-	    # 0.5.0
-	    # generate standard_cHGVS for this kind of variants
-	    # prior to alt_cHGVS, change alt_cHGVS to only ins/del 
-	    # format notation
+            # 0.4.9
+            # add a new key: alt_cHGVS, using for query database which
+            # do not have current standard cHGVS string, especially
+            # for repeat case
+            #
+            # 0.5.0
+            # generate standard_cHGVS for this kind of variants
+            # prior to alt_cHGVS, change alt_cHGVS to only ins/del
+            # format notation
 
-	    # give this opt to indicate whether to give standard_cHGVS
-	    # a duplication format notation
-	    my $dupopt =
-	      (       $real_var->{ref_cn} > 1
-		  and $real_var->{alt_cn} - $real_var->{ref_cn} == 1 )
-	      ? 1
-	      : 0;
+            # give this opt to indicate whether to give standard_cHGVS
+            # a duplication format notation
+            my $dupopt =
+              (       $real_var->{ref_cn} > 1
+                  and $real_var->{alt_cn} - $real_var->{ref_cn} == 1 )
+              ? 1
+              : 0;
 
             if (   $real_var->{ref_cn} > $real_var->{alt_cn}
                 or $dupopt )
             {    # deletion and duplication
-		if (!$dupopt) {
-		    $trannoEnt->{standard_cHGVS} = 
-		      $f . $chgvs_5 . $trRep . '[' . $real_var->{alt_cn} . ']';
-		}
+                if ( !$dupopt ) {
+                    $trannoEnt->{standard_cHGVS} =
+                      $f . $chgvs_5 . $trRep . '[' . $real_var->{alt_cn} . ']';
+                }
 
-                my $changed_cn   = abs($real_var->{ref_cn} - $real_var->{alt_cn});
+                my $changed_cn =
+                  abs( $real_var->{ref_cn} - $real_var->{alt_cn} );
                 my $changed_type = ($dupopt) ? 'dup' : 'del';
                 my $changed_cont = $trRep x $changed_cn;
-		my $changed_len  = length($changed_cont);
+                my $changed_len  = length($changed_cont);
                 if ( $changed_cn == 1 and $real_var->{replen} == 1 ) {
-		    my $single_change = $f . $chgvs_3 . $changed_type . $trRep;
-		    if ($dupopt) {
-			$trannoEnt->{standard_cHGVS} = $single_change;
-		    }
-		    else {
-			$trannoEnt->{alt_cHGVS} = $single_change;
-		    }
+                    my $single_change = $f . $chgvs_3 . $changed_type . $trRep;
+                    if ($dupopt) {
+                        $trannoEnt->{standard_cHGVS} = $single_change;
+                    }
+                    else {
+                        $trannoEnt->{alt_cHGVS} = $single_change;
+                    }
                 }
                 else {
                     my $renew_offset =
                         ($dupopt)
                       ? ( $real_var->{replen} * ( $real_var->{ref_cn} - 1 ) )
                       : ( $real_var->{replen} * $real_var->{alt_cn} );
-		    
-		    my $renew_cHGVS;
+
+                    my $renew_cHGVS;
                     if ( $chgvs_5 =~ /^\d+$/ ) {    # cds / ncRNA exon
                         $renew_cHGVS =
                             $f
@@ -3466,14 +3607,14 @@ sub getTrChange {
                         ) if ( !exists $self->{quiet} );
                     }
 
-		    if (defined $renew_cHGVS) {
-			if ($dupopt) {
-			    $trannoEnt->{standard_cHGVS} = $renew_cHGVS;
-			}
-			else {
-			    $trannoEnt->{alt_cHGVS} = $renew_cHGVS;
-			}
-		    }
+                    if ( defined $renew_cHGVS ) {
+                        if ($dupopt) {
+                            $trannoEnt->{standard_cHGVS} = $renew_cHGVS;
+                        }
+                        else {
+                            $trannoEnt->{alt_cHGVS} = $renew_cHGVS;
+                        }
+                    }
                 }
             }
 
@@ -3565,52 +3706,58 @@ sub getTrChange {
                 }
             }
         }
-	else {
-	    if ( $cmpPos == 0 ) {    # 1 bp
+        else {
+            if ( $cmpPos == 0 ) {    # 1 bp
 
-		$trannoEnt->{c} = $f . $chgvs_5;
-		if ($real_al == 1) {
-		    $trannoEnt->{c} .= $real_r . '>' . $real_a; # 1bp alt
-		}
-		elsif ($real_al == 0) {
-		    $trannoEnt->{c} .= 'del' . (($real_r =~ /^[ACGTN]+$/) ? $real_r : "");
-		}
-		else {
-		    $trannoEnt->{c} .= 'del'. (($real_r =~ /^[ACGTN]+$/) ? $real_r : "") .'ins' . $real_a;
-		}
+                $trannoEnt->{c} = $f . $chgvs_5;
+                if ( $real_al == 1 ) {
+                    $trannoEnt->{c} .= $real_r . '>' . $real_a;    # 1bp alt
+                }
+                elsif ( $real_al == 0 ) {
+                    $trannoEnt->{c} .=
+                      'del' . ( ( $real_r =~ /^[ACGTN]+$/ ) ? $real_r : "" );
+                }
+                else {
+                    $trannoEnt->{c} .= 'del'
+                      . ( ( $real_r =~ /^[ACGTN]+$/ ) ? $real_r : "" ) . 'ins'
+                      . $real_a;
+                }
 
-	    }
-	    elsif ( $cmpPos > 0 ) {    # multiple bp
+            }
+            elsif ( $cmpPos > 0 ) {    # multiple bp
 
-		$trannoEnt->{c} =
-		  $f . $chgvs_5 . '_' . $chgvs_3 . 'del';
-		$trannoEnt->{c} .= ($real_r =~ /^[ACGTN]+$/ and length($real_r) < 50) ? $real_r : "";
+                $trannoEnt->{c} = $f . $chgvs_5 . '_' . $chgvs_3 . 'del';
+                $trannoEnt->{c} .=
+                  ( $real_r =~ /^[ACGTN]+$/ and length($real_r) < 50 )
+                  ? $real_r
+                  : "";
 
-		if ($real_al > 0) {
-		    $trannoEnt->{c} .= 'ins' . $real_a;
-		}
-	    }
-	    else {                      # ins : reverse the positions
-		$trannoEnt->{c} =
-		  $f . $chgvs_3 . '_' . $chgvs_5 . 'ins' . $real_a;
-	    }
-	}
+                if ( $real_al > 0 ) {
+                    $trannoEnt->{c} .= 'ins' . $real_a;
+                }
+            }
+            else {                     # ins : reverse the positions
+                $trannoEnt->{c} =
+                  $f . $chgvs_3 . '_' . $chgvs_5 . 'ins' . $real_a;
+            }
+        }
 
         # 3. check if transcript-ablation
-        if (( $trBegin =~ /^\-/ or $trBegin eq '1' ) 
-		and ( $trEnd =~ /^\+/ or $trEnd eq "$trdbEnt->{len}" ) )
+        if (    ( $trBegin =~ /^\-/ or $trBegin eq '1' )
+            and ( $trEnd =~ /^\+/ or $trEnd eq "$trdbEnt->{len}" ) )
         {
             $trannoEnt->{func} = 'knockout';
-	    # need prot begin end?
+
+            # need prot begin end?
 
             next;
         }
-	
-	# * check if exon remapping introduced special case
-	if ( $chgvs_5 =~ /^\+|\+d/ and $chgvs_3 =~ /^\+|\+d/ ) {
-	    $trannoEnt->{func} = 'unknown';
-	    next;
-	}
+
+        # * check if exon remapping introduced special case
+        if ( $chgvs_5 =~ /^\+|\+d/ and $chgvs_3 =~ /^\+|\+d/ ) {
+            $trannoEnt->{func} = 'unknown';
+            next;
+        }
 
         if (
                 exists $trannoEnt->{preStart}
@@ -3628,148 +3775,154 @@ sub getTrChange {
                  # without skip the following steps
         }
 
-	# 4. check if span different exon/intron/promoter/downstream
+        # 4. check if span different exon/intron/promoter/downstream
         if (
             (
                    $chgvs_3 =~ /^\+|\+d/
                 or $trannoEnt->{ei_Begin} ne $trannoEnt->{ei_End}
             )
-            and $cmpPos >= 0	    # not insertion at the edge
+            and $cmpPos >= 0    # not insertion at the edge
           )
         {
             $trannoEnt->{func} = 'span';
 
-	    # need prot begin end?
+            # need prot begin end?
 
             next;
         }
-	
-	# 5. check if all promoter
+
+        # 5. check if all promoter
         if (    $trannoEnt->{r_Begin} eq 'PROM'
             and $trannoEnt->{r_Begin} eq $trannoEnt->{r_End} )
         {
             $trannoEnt->{func} = 'promoter';
-	    
+
             next;
         }
 
-	# 6. check if all intron
+        # 6. check if all intron
         if (    $trannoEnt->{ei_Begin} =~ /IVS/
             and $trannoEnt->{ei_Begin} eq $trannoEnt->{ei_End} )
         {
-	    if ( $trannoEnt->{genepartSO} eq 'abnormal-intron' ) {
-		$trannoEnt->{func} = 'abnormal-intron';
-	    }
-	    else {
-		if (    exists $self->{genome_h}
-		    and defined $self->{genome_h}
-		    and $trannoEnt->{r_Begin} =~ /^[AD]/
-		    and $trannoEnt->{r_End} eq $trannoEnt->{r_Begin}
-		    and length($trRef) == length($trAlt) )
-		{    # only in splice site substitution, to check if conanical
-		    my $cis_tag = substr( $trannoEnt->{r_Begin}, 0, 1 );
-		    my $ext_len = 2 - length($trRef);
-		    $self->throw("Error length for trRef") if ($ext_len < 0);
-		    my ($Ladded, $Radded) = ("", "");
-		    my ( $gchr, $gstart, $gend ) = (
-			$annoEnt->{var}->{chr},
-			$annoEnt->{var}->{pos},
-			$annoEnt->{var}->{end}
-		    );
+            if ( $trannoEnt->{genepartSO} eq 'abnormal-intron' ) {
+                $trannoEnt->{func} = 'abnormal-intron';
+            }
+            else {
+                if (    exists $self->{genome_h}
+                    and defined $self->{genome_h}
+                    and $trannoEnt->{r_Begin} =~ /^[AD]/
+                    and $trannoEnt->{r_End} eq $trannoEnt->{r_Begin}
+                    and length($trRef) == length($trAlt) )
+                {    # only in splice site substitution, to check if conanical
+                    my $cis_tag = substr( $trannoEnt->{r_Begin}, 0, 1 );
+                    my $ext_len = 2 - length($trRef);
+                    $self->throw("Error length for trRef") if ( $ext_len < 0 );
+                    my ( $Ladded, $Radded ) = ( "", "" );
+                    my ( $gchr, $gstart, $gend ) = (
+                        $annoEnt->{var}->{chr},
+                        $annoEnt->{var}->{pos},
+                        $annoEnt->{var}->{end}
+                    );
 
-		    $gchr = "chr".$gchr if ($gchr !~ /^chr/);
+                    $gchr = "chr" . $gchr if ( $gchr !~ /^chr/ );
 
-		    if ($ext_len == 1) { # only can be 1
-			if (
-			    (
-				$trannoEnt->{strd} eq '+'
-				and (  $trannoEnt->{rnaBegin} =~ /\+2$/
-				    or $trannoEnt->{rnaBegin} =~ /\-1$/ )
-			    )
-			    or (
-				$trannoEnt->{strd} eq '-'
-				and (  $trannoEnt->{rnaEnd} =~ /\+1$/
-				    or $trannoEnt->{rnaEnd} =~ /\-2$/ )
-			    )
-			  )
-			{
-			    my $extpos = $gstart; # extend 1 bp left
-			    my $rgn_tmp = $gchr.":".$extpos."-".$extpos;
-			    if (exists $getseq_cache{$rgn_tmp}) {
-				$Ladded = $getseq_cache{$rgn_tmp};
-			    }
-			    else {
-				my $toAdd1 = $self->{genome_h}->getseq($rgn_tmp);
-				if (defined $toAdd1) {
-				    $Ladded = uc($toAdd1);
-				    $getseq_cache{$rgn_tmp} = $Ladded;
-				}
-				else {
-				    $self->warn("Warning: Can not get string from genome for $rgn_tmp");
-				}
-			    }
-			}
-			else {
-			    my $extpos2 = $gend + 1; # extend 1 bp right
-			    my $rgn_tmp2 = $gchr.":".$extpos2."-".$extpos2;
-			    if (exists $getseq_cache{$rgn_tmp2}) {
-				$Radded = $getseq_cache{$rgn_tmp2};
-			    }
-			    else {
-				my $toAdd2 = $self->{genome_h}->getseq($rgn_tmp2);
-				if (defined $toAdd2) {
-				    $Radded = uc($toAdd2);
-				    $getseq_cache{$rgn_tmp2} = $Radded;
-				}
-				else {
-				    $self->warn("Warning: Can not get string from genome for $rgn_tmp2");
-				}
-			    }
-			}
+                    if ( $ext_len == 1 ) {    # only can be 1
+                        if (
+                            (
+                                $trannoEnt->{strd} eq '+'
+                                and (  $trannoEnt->{rnaBegin} =~ /\+2$/
+                                    or $trannoEnt->{rnaBegin} =~ /\-1$/ )
+                            )
+                            or (
+                                $trannoEnt->{strd} eq '-'
+                                and (  $trannoEnt->{rnaEnd} =~ /\+1$/
+                                    or $trannoEnt->{rnaEnd} =~ /\-2$/ )
+                            )
+                          )
+                        {
+                            my $extpos = $gstart;    # extend 1 bp left
+                            my $rgn_tmp = $gchr . ":" . $extpos . "-" . $extpos;
+                            if ( exists $getseq_cache{$rgn_tmp} ) {
+                                $Ladded = $getseq_cache{$rgn_tmp};
+                            }
+                            else {
+                                my $toAdd1 =
+                                  $self->{genome_h}->getseq($rgn_tmp);
+                                if ( defined $toAdd1 ) {
+                                    $Ladded = uc($toAdd1);
+                                    $getseq_cache{$rgn_tmp} = $Ladded;
+                                }
+                                else {
+                                    $self->warn(
+"Warning: Can not get string from genome for $rgn_tmp"
+                                    );
+                                }
+                            }
+                        }
+                        else {
+                            my $extpos2 = $gend + 1;    # extend 1 bp right
+                            my $rgn_tmp2 =
+                              $gchr . ":" . $extpos2 . "-" . $extpos2;
+                            if ( exists $getseq_cache{$rgn_tmp2} ) {
+                                $Radded = $getseq_cache{$rgn_tmp2};
+                            }
+                            else {
+                                my $toAdd2 =
+                                  $self->{genome_h}->getseq($rgn_tmp2);
+                                if ( defined $toAdd2 ) {
+                                    $Radded = uc($toAdd2);
+                                    $getseq_cache{$rgn_tmp2} = $Radded;
+                                }
+                                else {
+                                    $self->warn(
+"Warning: Can not get string from genome for $rgn_tmp2"
+                                    );
+                                }
+                            }
+                        }
 
-			if ($trannoEnt->{strd} eq '-') { # change to tr strand
-			    my $tmp = $Ladded;
-			    $Ladded = $self->rev_comp($Radded);
-			    $Radded = $self->rev_comp($tmp);
-			}
-		    }
+                        if ( $trannoEnt->{strd} eq '-' ) { # change to tr strand
+                            my $tmp = $Ladded;
+                            $Ladded = $self->rev_comp($Radded);
+                            $Radded = $self->rev_comp($tmp);
+                        }
+                    }
 
-		    my ( $toCheckRef, $toCheckAlt ) = (
-			$Ladded . uc($trRef) . $Radded,
-			$Ladded . uc($trAlt) . $Radded
-		    );
+                    my ( $toCheckRef, $toCheckAlt ) = (
+                        $Ladded . uc($trRef) . $Radded,
+                        $Ladded . uc($trAlt) . $Radded
+                    );
 
-		    if (    $toCheckRef ne $canonicalSS{$cis_tag}
-			and $toCheckAlt eq $canonicalSS{$cis_tag} )
-		    {
-			$trannoEnt->{func} = 'no-change';
-			$trannoEnt->{c}    = 'c.=';
-			next;
-		    }
-		}
+                    if (    $toCheckRef ne $canonicalSS{$cis_tag}
+                        and $toCheckAlt eq $canonicalSS{$cis_tag} )
+                    {
+                        $trannoEnt->{func} = 'no-change';
+                        $trannoEnt->{c}    = 'c.=';
+                        next;
+                    }
+                }
 
-		if ( $trannoEnt->{r_Begin} =~ /^D/
-		    and $trannoEnt->{r_End} =~ /^A/ )
-		{
-		    $trannoEnt->{func} = 'splice';
-		}
-		elsif ( $trannoEnt->{r_Begin} =~ /^D/ ) {
-		    $trannoEnt->{func} = 'splice-5';
-		}
-		elsif ( $trannoEnt->{r_End} =~ /^A/ ) {
-		    $trannoEnt->{func} = 'splice-3';
-		}
-		else {
-		    $trannoEnt->{func} = 'intron';
-		}
-	    }
+                if (    $trannoEnt->{r_Begin} =~ /^D/
+                    and $trannoEnt->{r_End} =~ /^A/ )
+                {
+                    $trannoEnt->{func} = 'splice';
+                }
+                elsif ( $trannoEnt->{r_Begin} =~ /^D/ ) {
+                    $trannoEnt->{func} = 'splice-5';
+                }
+                elsif ( $trannoEnt->{r_End} =~ /^A/ ) {
+                    $trannoEnt->{func} = 'splice-3';
+                }
+                else {
+                    $trannoEnt->{func} = 'intron';
+                }
+            }
 
             next;
         }
 
-
-	# 7. check if all exon or ex/intron edge insertion
-	#    count all this insertion to be exon region insertion
+        # 7. check if all exon or ex/intron edge insertion
+        #    count all this insertion to be exon region insertion
         if (
             (
                     $trannoEnt->{ei_Begin} eq $trannoEnt->{ei_End}
@@ -3778,41 +3931,41 @@ sub getTrChange {
             or
             ( $cmpPos < 0 and $trannoEnt->{ei_Begin} ne $trannoEnt->{ei_End} )
           )
-	{ # any edge-insertion case will count on the exon change
-	  # any coding-utr edge insertion case will count on the
-	  # utr parts
-	    if (!$cdsOpt) {
-		if ($chgvs_5 =~ /^\+/) {
-		    $trannoEnt->{func} = 'unknown';
-		}
-		elsif ($chgvs_3 =~ /^\-/) {
-		    $trannoEnt->{func} = 'promoter';
-		}
-		elsif ($chgvs_5 eq '1' and $chgvs_3 eq $trdbEnt->{len}) {
-		    $trannoEnt->{func} = 'knockout';
-		}
-		else {
-		    $trannoEnt->{func} = 'ncRNA';
-		}
-		next;
-	    }
-	    else { # coding RNA
-		if ($chgvs_3 =~ /\-u1$/) {
-		    $trannoEnt->{func} = 'promoter';
-		    next;
-		}
-		elsif ($chgvs_5 =~ /\+d1$/) { # 3' downstream edge insertion
-		    $trannoEnt->{func} = 'unknown';
-		}
-		elsif ($chgvs_3 =~ /^\-/) { # besides utr-5 - cds edge
-		    $trannoEnt->{func} = 'utr-5';
-		    next;
-		}
-		elsif ($chgvs_5 =~ /^\*/) { # besides utr-3 - cds edge
-		    $trannoEnt->{func} = 'utr-3';
-		    next;
-		}
-		elsif ($chgvs_5 =~ /^\-/ and $chgvs_3 =~ /^\*/) {
+        {    # any edge-insertion case will count on the exon change
+                # any coding-utr edge insertion case will count on the
+                # utr parts
+            if ( !$cdsOpt ) {
+                if ( $chgvs_5 =~ /^\+/ ) {
+                    $trannoEnt->{func} = 'unknown';
+                }
+                elsif ( $chgvs_3 =~ /^\-/ ) {
+                    $trannoEnt->{func} = 'promoter';
+                }
+                elsif ( $chgvs_5 eq '1' and $chgvs_3 eq $trdbEnt->{len} ) {
+                    $trannoEnt->{func} = 'knockout';
+                }
+                else {
+                    $trannoEnt->{func} = 'ncRNA';
+                }
+                next;
+            }
+            else {    # coding RNA
+                if ( $chgvs_3 =~ /\-u1$/ ) {
+                    $trannoEnt->{func} = 'promoter';
+                    next;
+                }
+                elsif ( $chgvs_5 =~ /\+d1$/ ) {   # 3' downstream edge insertion
+                    $trannoEnt->{func} = 'unknown';
+                }
+                elsif ( $chgvs_3 =~ /^\-/ ) {     # besides utr-5 - cds edge
+                    $trannoEnt->{func} = 'utr-5';
+                    next;
+                }
+                elsif ( $chgvs_5 =~ /^\*/ ) {     # besides utr-3 - cds edge
+                    $trannoEnt->{func} = 'utr-3';
+                    next;
+                }
+                elsif ( $chgvs_5 =~ /^\-/ and $chgvs_3 =~ /^\*/ ) {
                     my $utr5_len = $1 if ( $chgvs_5 =~ /^\-(\d+)$/ );
                     my $utr3_len = $1 if ( $chgvs_3 =~ /^\*(\d+)$/ );
                     if (    $utr5_len eq $trdbEnt->{csta}
@@ -3826,76 +3979,82 @@ sub getTrChange {
                     }
                     $trannoEnt->{p} = 'p.0?';
                     next;
-		}
-		elsif ($chgvs_3 eq '1-1') { # cds-begin - last 5'utr intron edge
-		    $trannoEnt->{func} = 'utr-5';
-		    next;
-		}
+                }
+                elsif ( $chgvs_3 eq '1-1' )
+                {    # cds-begin - last 5'utr intron edge
+                    $trannoEnt->{func} = 'utr-5';
+                    next;
+                }
                 elsif ( $chgvs_5 =~ /^(\d+)\+1/
                     and $1 == ( $trdbEnt->{csto} - $trdbEnt->{csta} ) )
                 {
                     $trannoEnt->{func} = 'utr-3';
                     next;
                 }
-		# here protein sequence var should be reparsed
-		elsif ($chgvs_5 =~ /^\-(\d+)/) {
-		    my $u5_len = $1;
-		    if ($real_var->{imp} eq 'rep') {
-			if ( $u5_len > ($real_rl - $real_al ) )
-			{
-			    $trannoEnt->{func} = 'utr-5';
-			}
-			else {
-			    $trannoEnt->{func} = 'unknown';
-			}
-		    }
-		    else {
-			$trannoEnt->{func} = 'init-loss';
-			$trannoEnt->{p}    = 'p.0?';
-		    }
-		    next;
-		}
-		else {
-		    if ($chgvs_3 =~ /^\*(\d+)/) {
-			# variant get across the 3' end of cds
-			my $u3_len = $1;
-			if ( $real_var->{imp} eq 'rep'
-			    and ( $u3_len > ( $real_rl - $real_al ) ) )
-			{
-			    $trannoEnt->{func} = 'utr-3';
-			    $trannoEnt->{p} = 'p.(=)';
-			    next;
-			}
-		    }
 
-		    $chgvs_5 = $1+1 if ($cmpPos < 0 and $chgvs_5 =~ /^(\d+)\+1$/);
-		    $chgvs_3 = $1-1 if ($cmpPos < 0 and $chgvs_3 =~ /^(\d+)\-1$/);
-		    $trBegin = $1+1 if ($cmpPos < 0 and $trBegin =~ /^(\d+)\+1$/);
-		    $trEnd = $1-1 if ($cmpPos < 0 and $trEnd =~ /^(\d+)\-1$/);
+                # here protein sequence var should be reparsed
+                elsif ( $chgvs_5 =~ /^\-(\d+)/ ) {
+                    my $u5_len = $1;
+                    if ( $real_var->{imp} eq 'rep' ) {
+                        if ( $u5_len > ( $real_rl - $real_al ) ) {
+                            $trannoEnt->{func} = 'utr-5';
+                        }
+                        else {
+                            $trannoEnt->{func} = 'unknown';
+                        }
+                    }
+                    else {
+                        $trannoEnt->{func} = 'init-loss';
+                        $trannoEnt->{p}    = 'p.0?';
+                    }
+                    next;
+                }
+                else {
+                    if ( $chgvs_3 =~ /^\*(\d+)/ ) {
 
-		    # 5' end should be in coding region.
-		    # leave this as debug information
-                    $self->throw(
-                        "Error: unavailable 5' cHGVS. $chgvs_5")
+                        # variant get across the 3' end of cds
+                        my $u3_len = $1;
+                        if ( $real_var->{imp} eq 'rep'
+                            and ( $u3_len > ( $real_rl - $real_al ) ) )
+                        {
+                            $trannoEnt->{func} = 'utr-3';
+                            $trannoEnt->{p}    = 'p.(=)';
+                            next;
+                        }
+                    }
+
+                    $chgvs_5 = $1 + 1
+                      if ( $cmpPos < 0 and $chgvs_5 =~ /^(\d+)\+1$/ );
+                    $chgvs_3 = $1 - 1
+                      if ( $cmpPos < 0 and $chgvs_3 =~ /^(\d+)\-1$/ );
+                    $trBegin = $1 + 1
+                      if ( $cmpPos < 0 and $trBegin =~ /^(\d+)\+1$/ );
+                    $trEnd = $1 - 1
+                      if ( $cmpPos < 0 and $trEnd =~ /^(\d+)\-1$/ );
+
+                    # 5' end should be in coding region.
+                    # leave this as debug information
+                    $self->throw("Error: unavailable 5' cHGVS. $chgvs_5")
                       if ( $chgvs_5 !~ /^\d+$/ or $chgvs_5 == 0 );
 
                     ( $rcInfo5, $rcInfo3 ) =
                       _getPairedCodon( $trdbEnt, $trBegin, $trEnd );
 
-		    if ( $real_a eq "" ) { # for deletion case try to predict the pr change
-			if (5 < @$rcInfo5) {
-			    splice (@$rcInfo5, 4, 1);
-			}
-			if (5 < @$rcInfo3) {
-			    splice (@$rcInfo3, 4, 1);
-			}
+                    if ( $real_a eq "" )
+                    {    # for deletion case try to predict the pr change
+                        if ( 5 < @$rcInfo5 ) {
+                            splice( @$rcInfo5, 4, 1 );
+                        }
+                        if ( 5 < @$rcInfo3 ) {
+                            splice( @$rcInfo3, 4, 1 );
+                        }
 
                         if (    $rcInfo5->[0] > 0
-			    and $rcInfo3->[0] > 0 
+                            and $rcInfo3->[0] > 0
                             and $rcInfo5->[4] == -1
                             and $rcInfo3->[4] == -1 )
                         {
-			    my $hit_whole_deleted_fs = 0;
+                            my $hit_whole_deleted_fs = 0;
                             foreach my $fsld ( keys %{ $trdbEnt->{nfs} } ) {
                                 if ( $fsld == ( $trBegin - 1 )
                                     and ( $fsld + $trdbEnt->{nfs}->{$fsld} ) ==
@@ -3905,57 +4064,64 @@ sub getTrChange {
                                     last;
                                 }
                             }
-			    if ($hit_whole_deleted_fs) {
-				$trannoEnt->{protBegin} = $rcInfo5->[0];
-				$trannoEnt->{protEnd} = $rcInfo3->[0];
-				$trannoEnt->{func} = 'no-change';
-				next;
-			    }
+                            if ($hit_whole_deleted_fs) {
+                                $trannoEnt->{protBegin} = $rcInfo5->[0];
+                                $trannoEnt->{protEnd}   = $rcInfo3->[0];
+                                $trannoEnt->{func}      = 'no-change';
+                                next;
+                            }
                         }
-		    }
+                    }
 
-		    if (    $rcInfo5->[0] > 0
-			and $rcInfo5->[4] == -1
-			and $rcInfo3->[0] > 0
-			and $rcInfo3->[4] == -1
-		    )
-		    {
-			$trannoEnt->{protBegin} = $rcInfo5->[0];
-			$trannoEnt->{protEnd} = $rcInfo3->[0];
-			$trannoEnt->{func} = 'abnormal-fs-site';
-			next;
-		    }
+                    if (    $rcInfo5->[0] > 0
+                        and $rcInfo5->[4] == -1
+                        and $rcInfo3->[0] > 0
+                        and $rcInfo3->[4] == -1 )
+                    {
+                        $trannoEnt->{protBegin} = $rcInfo5->[0];
+                        $trannoEnt->{protEnd}   = $rcInfo3->[0];
+                        $trannoEnt->{func}      = 'abnormal-fs-site';
+                        next;
+                    }
 
-		    my $real_rl_hidden_ofst = 0;
-		    if (exists $trdbEnt->{nfs}) {
-			foreach my $fsld (keys %{$trdbEnt->{nfs}}) {
-			    my $fsEd = $fsld + $trdbEnt->{nfs}->{$fsld};
+                    my $real_rl_hidden_ofst = 0;
+                    if ( exists $trdbEnt->{nfs} ) {
+                        foreach my $fsld ( keys %{ $trdbEnt->{nfs} } ) {
+                            my $fsEd = $fsld + $trdbEnt->{nfs}->{$fsld};
                             if (
                                 (
                                         $trdbEnt->{nfs}->{$fsld} > 0
                                     and $fsld >= $trBegin
                                     and $fsEd <= $trEnd
                                 )
-                                or (    $trdbEnt->{nfs}->{$fsld} < 0
-                                    and (($fsEd >= $trBegin and $fsld < $trEnd )
-					or  ( $fsld >= $trEnd and $fsEd < $trBegin ) ) )
+                                or (
+                                    $trdbEnt->{nfs}->{$fsld} < 0
+                                    and (
+                                        (
+                                                $fsEd >= $trBegin
+                                            and $fsld < $trEnd
+                                        )
+                                        or
+                                        ( $fsld >= $trEnd and $fsEd < $trBegin )
+                                    )
+                                )
                               )
-                            { # contain fs site or in duplicated fs site
+                            {    # contain fs site or in duplicated fs site
                                 $real_rl_hidden_ofst +=
                                   $trdbEnt->{nfs}->{$fsld};
                             }
-			    else {
+                            else {
                                 if (    $trdbEnt->{nfs}->{$fsld} > 0
                                     and $fsld < $trBegin
                                     and $trBegin <= $fsEd )
-                                { # begin in deleted fs site
+                                {    # begin in deleted fs site
                                     $real_rl_hidden_ofst +=
                                       ( $fsEd - $trBegin );
                                 }
                                 if (    $trdbEnt->{nfs}->{$fsld} > 0
                                     and $fsld < $trEnd
                                     and $trEnd <= $fsEd )
-                                { # end in deleted fs site
+                                {    # end in deleted fs site
                                     $real_rl_hidden_ofst += ( $trEnd - $fsld );
                                 }
                                 if (
@@ -3969,41 +4135,42 @@ sub getTrChange {
                                         ( $fsld >= $trEnd and $fsEd < $trEnd )
                                     )
                                   )
-                                { # start or end in duplicated fs site
+                                {    # start or end in duplicated fs site
                                     $real_rl_hidden_ofst +=
                                       $trdbEnt->{nfs}->{$fsld};
                                 }
-			    }
-			}
-		    }
+                            }
+                        }
+                    }
 
-		    my %translate_opts = ();
-		    $translate_opts{mito} = 1 if ($tid =~ /^NM_MT-/);
-		    $translate_opts{polyA} = 1 if (exists $trdbEnt->{A});
-		    $translate_opts{nostop} = 1 if (exists $trdbEnt->{X} or exists $trdbEnt->{U});
-		    my %altcodon_opts = %translate_opts;
+                    my %translate_opts = ();
+                    $translate_opts{mito}  = 1 if ( $tid =~ /^NM_MT-/ );
+                    $translate_opts{polyA} = 1 if ( exists $trdbEnt->{A} );
+                    $translate_opts{nostop} = 1
+                      if ( exists $trdbEnt->{X} or exists $trdbEnt->{U} );
+                    my %altcodon_opts = %translate_opts;
                     delete $altcodon_opts{nostop}
                       if ( exists $altcodon_opts{nostop} );
 
                     if ( !exists $trdbEnt->{pseq} ) {
-                        my ( $pseq, $frame_next ) = translate(
-                            $trdbEnt->{cseq}, \%translate_opts
-                        );
+                        my ( $pseq, $frame_next ) =
+                          translate( $trdbEnt->{cseq}, \%translate_opts );
                         $trdbEnt->{pseq} = $pseq;
                     }
 
-		    my ($prBegin, $prEnd, $prRef, $prAlt);
+                    my ( $prBegin, $prEnd, $prRef, $prAlt );
 
-		    $prBegin = $rcInfo5->[0];
+                    $prBegin = $rcInfo5->[0];
 
-		    my $ready_to_add_5 = substr($rcInfo5->[1], 0, $rcInfo5->[4]);
+                    my $ready_to_add_5 =
+                      substr( $rcInfo5->[1], 0, $rcInfo5->[4] );
 
-		    my $diff_ra = $real_rl - $real_al - $real_rl_hidden_ofst;
+                    my $diff_ra = $real_rl - $real_al - $real_rl_hidden_ofst;
 
-		    # probably frame shift flag
-		    my $frameshift_flag = ($diff_ra % 3 > 0) ? 1 : 0;
+                    # probably frame shift flag
+                    my $frameshift_flag = ( $diff_ra % 3 > 0 ) ? 1 : 0;
 
-		    # end in cds or not.
+                    # end in cds or not.
                     my $end_in_cds_flag = (
                              $chgvs_3 =~ /^\*/
                           or $chgvs_3 > ( $trdbEnt->{csto} - 3 )
@@ -4025,75 +4192,80 @@ sub getTrChange {
                             ( $rcInfo3->[4] + 1 ),
                             ( 2 - $rcInfo3->[4] )
                         );
-			$prEnd = $rcInfo3->[0];
+                        $prEnd = $rcInfo3->[0];
                     }
-		    
-		    if ( ($trdbEnt->{plen} + 1) != length($trdbEnt->{pseq}) ) {
-			$self->warn( "[Critical Warning] : annotation for $tid may not be correct, \n",
-			             "                     due to a mis-translated base in its \n",
-				     "                     cds region, usually a frameshift on \n",
-				     "                     TGA to GAX, please ignore any annotation \n", 
-				     "                     on latter part behind that frameshift.\n", 
-				     "                     protein annotation for $tid will be skipped\n",
-				     "                     and the function of it will be annotation-fail\n",
-				     "                     until the problem is fixed."
-				 ) if (!exists $self->{quiet});
-			$trannoEnt->{func} = 'annotation-fail';
-			next;
-		    }
 
-		    # Make protBegin and protEnd be coordinate to the 
-		    # coordinates of nucl variants, extend the 
-		    # frameshift's effect to the end of protein
-		    $trannoEnt->{protBegin} = $prBegin;
-		    $trannoEnt->{protEnd} = $prEnd;
+                    if (
+                        ( $trdbEnt->{plen} + 1 ) != length( $trdbEnt->{pseq} ) )
+                    {
+                        $self->warn(
+"[Critical Warning] : annotation for $tid may not be correct, \n",
+"                     due to a mis-translated base in its \n",
+"                     cds region, usually a frameshift on \n",
+"                     TGA to GAX, please ignore any annotation \n",
+"                     on latter part behind that frameshift.\n",
+"                     protein annotation for $tid will be skipped\n",
+"                     and the function of it will be annotation-fail\n",
+                            "                     until the problem is fixed."
+                        ) if ( !exists $self->{quiet} );
+                        $trannoEnt->{func} = 'annotation-fail';
+                        next;
+                    }
 
-		    # make the order of func assignment as follow:
-		    # * total
-		    # 1. init-loss
-		    # 2. frameshift
-		    # 3. coding-synon
-		    # 
-		    # * 1bp aa change
-		    # 0. abnormal-inseq-stop
-		    # 1. stop-retained
-		    # 2. stop-loss
-		    # 3. nonsense
-		    # 4. missense
-		    # 
-		    # * other variants
-		    # 0. abnormal-inseq-stop
-		    # 1. stop-retained
-		    # 2. frameshift
-		    # 3. stop-loss
-		    # 4. stop-gain
-		    # 5. cds-ins
-		    # 6. cds-del
-		    # 7. cds-indel
-		    
-		    # extend the altered sequence to codon coordinates
-		    my $codon_alt = $ready_to_add_5 . $real_a . $ready_to_add_3;
+                    # Make protBegin and protEnd be coordinate to the
+                    # coordinates of nucl variants, extend the
+                    # frameshift's effect to the end of protein
+                    $trannoEnt->{protBegin} = $prBegin;
+                    $trannoEnt->{protEnd}   = $prEnd;
 
-		    # here only issues variant start/stop on exon region
-		    # and 5' start position on the coding region
-		    # init codon flag
+                    # make the order of func assignment as follow:
+                    # * total
+                    # 1. init-loss
+                    # 2. frameshift
+                    # 3. coding-synon
+                    #
+                    # * 1bp aa change
+                    # 0. abnormal-inseq-stop
+                    # 1. stop-retained
+                    # 2. stop-loss
+                    # 3. nonsense
+                    # 4. missense
+                    #
+                    # * other variants
+                    # 0. abnormal-inseq-stop
+                    # 1. stop-retained
+                    # 2. frameshift
+                    # 3. stop-loss
+                    # 4. stop-gain
+                    # 5. cds-ins
+                    # 6. cds-del
+                    # 7. cds-indel
+
+                    # extend the altered sequence to codon coordinates
+                    my $codon_alt = $ready_to_add_5 . $real_a . $ready_to_add_3;
+
+                    # here only issues variant start/stop on exon region
+                    # and 5' start position on the coding region
+                    # init codon flag
                     my $hit_init_flag = ( $rcInfo5->[0] == 1 ) ? 1 : 0;
-		    # stop codon flag
+
+                    # stop codon flag
                     my $hit_stop_flag =
-                    ( $trEnd > ( $trdbEnt->{csta} + 3 * $trdbEnt->{plen} ) )
+                      ( $trEnd > ( $trdbEnt->{csta} + 3 * $trdbEnt->{plen} ) )
                       ? 1
                       : 0;
 
-		    # check if an alterstart
-		    my %start_codons = ('ATG' => -1);
+                    # check if an alterstart
+                    my %start_codons = ( 'ATG' => -1 );
                     if ( exists $trdbEnt->{altstart} ) {
                         %start_codons =
                           map { $_ => 1 } keys %{ $trdbEnt->{altstart} };
                     }
 
-		    my $init_synon = 0; # indicate start codon search result
+                    my $init_synon = 0;    # indicate start codon search result
                     if ($hit_init_flag) {
-			# check if altered sequence have new start codon
+
+                        # check if altered sequence have new start codon
                         foreach my $startCodon ( sort keys %start_codons ) {
                             if ( substr( $codon_alt, 0, 3 ) eq $startCodon ) {
                                 $init_synon = 1;
@@ -4101,17 +4273,18 @@ sub getTrChange {
                             }
                         }
 
-			if ($init_synon == 0) {
-			    if ($trAlt =~ /N/) {
-				my $all_hit = 1;
-				foreach my $base ( 'A', 'C', 'G', 'T' ) {
-				    my $subalt_codon = $codon_alt;
-				    $subalt_codon =~ s/N/$base/;
-				    if (!exists $start_codons{$subalt_codon}) {
-					$all_hit = 0;
-					last;
-				    }
-				}
+                        if ( $init_synon == 0 ) {
+                            if ( $trAlt =~ /N/ ) {
+                                my $all_hit = 1;
+                                foreach my $base ( 'A', 'C', 'G', 'T' ) {
+                                    my $subalt_codon = $codon_alt;
+                                    $subalt_codon =~ s/N/$base/;
+                                    if ( !exists $start_codons{$subalt_codon} )
+                                    {
+                                        $all_hit = 0;
+                                        last;
+                                    }
+                                }
 
                                 $trannoEnt->{cc} =
                                   $rcInfo5->[1] . "=>" . $codon_alt
@@ -4124,96 +4297,102 @@ sub getTrChange {
                                 else {
                                     $trannoEnt->{func} = 'unknown-no-call';
                                 }
-			    }
-			    else {
-				$trannoEnt->{func} = 'init-loss';
-				$trannoEnt->{p}    = 'p.0?';
-				if ($prBegin eq '1' and $prEnd eq '1') {
-				    my $zero;
-				    $trannoEnt->{prRef} = 'M';
-				    my $altCodon = substr( $codon_alt, 0, 3 );
-				    ( $trannoEnt->{prAlt}, $zero ) =
-				      translate( $altCodon, \%altcodon_opts );
-				}
-				next;
-			    }
-			}
-			else {
-			    $trannoEnt->{func} = 'altstart';
-			    # can it continue to be assigned
-			    # other function code and pHGVS
-			    # or just finished as altstart?
-			    #
-			    # I choose to continue.
-			}
+                            }
+                            else {
+                                $trannoEnt->{func} = 'init-loss';
+                                $trannoEnt->{p}    = 'p.0?';
+                                if ( $prBegin eq '1' and $prEnd eq '1' ) {
+                                    my $zero;
+                                    $trannoEnt->{prRef} = 'M';
+                                    my $altCodon = substr( $codon_alt, 0, 3 );
+                                    ( $trannoEnt->{prAlt}, $zero ) =
+                                      translate( $altCodon, \%altcodon_opts );
+                                }
+                                next;
+                            }
+                        }
+                        else {
+                            $trannoEnt->{func} = 'altstart';
+
+                            # can it continue to be assigned
+                            # other function code and pHGVS
+                            # or just finished as altstart?
+                            #
+                            # I choose to continue.
+                        }
                     }
 
-		    # give out the first of single codon to be
-		    my $codon_to_be = substr($codon_alt, 0, 3);
+                    # give out the first of single codon to be
+                    my $codon_to_be = substr( $codon_alt, 0, 3 );
 
-		    if ( $prBegin - 1 == $trdbEnt->{plen} and $prEnd == $prBegin ) {
-			$prRef = '*';
-		    }
-		    elsif ( $prBegin - 1 < $trdbEnt->{plen} ) {
-			$prRef = substr(
-			    $trdbEnt->{pseq},
-			    ( $prBegin - 1 ),
-			    ( $prEnd - $prBegin + 1 )
-			);
-		    }
-		    else {
-			$self->throw("Error: Cannot get prRef from $tid, [$trdbEnt->{plen}, $prBegin, $prEnd]\n",
-			    "      Var: [$annoEnt->{var}->{chr}, $annoEnt->{var}->{pos}, $annoEnt->{var}->{end},",
-			    "$annoEnt->{var}->{ref}, $annoEnt->{var}->{alt}]");
-		    }
+                    if (    $prBegin - 1 == $trdbEnt->{plen}
+                        and $prEnd == $prBegin )
+                    {
+                        $prRef = '*';
+                    }
+                    elsif ( $prBegin - 1 < $trdbEnt->{plen} ) {
+                        $prRef = substr(
+                            $trdbEnt->{pseq},
+                            ( $prBegin - 1 ),
+                            ( $prEnd - $prBegin + 1 )
+                        );
+                    }
+                    else {
+                        $self->throw(
+"Error: Cannot get prRef from $tid, [$trdbEnt->{plen}, $prBegin, $prEnd]\n",
+"      Var: [$annoEnt->{var}->{chr}, $annoEnt->{var}->{pos}, $annoEnt->{var}->{end},",
+                            "$annoEnt->{var}->{ref}, $annoEnt->{var}->{alt}]"
+                        );
+                    }
 
-		    # we can not allow inseq stop codon in altered sequence
-		    # due to frameshift and ambiguity.
+                    # we can not allow inseq stop codon in altered sequence
+                    # due to frameshift and ambiguity.
 
-		    my $next_alt_frame;
+                    my $next_alt_frame;
                     ( $prAlt, $next_alt_frame ) =
                       translate( $codon_alt, \%altcodon_opts );
 
-		    if ($hit_init_flag) {
-			$prRef =~ s/^[A-Z]/M/; # change init pep to M
-			# change alt-init to M
-			$prAlt =~ s/^[A-Z]/M/ if ($init_synon);
-		    }
+                    if ($hit_init_flag) {
+                        $prRef =~ s/^[A-Z]/M/;    # change init pep to M
+                                                  # change alt-init to M
+                        $prAlt =~ s/^[A-Z]/M/ if ($init_synon);
+                    }
 
-		    $trannoEnt->{prRef} = $prRef;
-		    $trannoEnt->{prAlt} ||= $prAlt;
+                    $trannoEnt->{prRef} = $prRef;
+                    $trannoEnt->{prAlt} ||= $prAlt;
 
-		    $prAlt = $trannoEnt->{prAlt}; # uniform prAlt
+                    $prAlt = $trannoEnt->{prAlt};    # uniform prAlt
 
-		    # to indicate whether the alternate sequence 
-		    # encode a stop codon or non-frameshift, or otherwise
-		    # with a non stopped frameshift.
+                    # to indicate whether the alternate sequence
+                    # encode a stop codon or non-frameshift, or otherwise
+                    # with a non stopped frameshift.
                     my $non_stop_flag = (
-                        $prAlt !~ /\*$/
-                          and ($prRef eq "*"
+                        $prAlt !~ /\*$/ and ( $prRef eq "*"
                             or $next_alt_frame
                             or $frameshift_flag )
                     ) ? 1 : 0;
 
-		    # To avoid large range perlre, before parse protein 
-		    # var we should first deal with frameshift issues
-		    # need to deal with non_stop_flag and frameshift and 
-		    # imp ref case.
-		    
-		    # assign cc and polar to the same length, 
-		    # single aa substitution, no matter which position.
-		    if ($diff_ra == 0 and $rcInfo5->[0] == $rcInfo3->[0]) {
-			# using trim due to terminal codon
-                        my ( $aa_to_be, $polar_to_be ) =
-                          _getAAandPolar($codon_to_be, \%altcodon_opts);
-			
-			$trannoEnt->{cc} = $rcInfo5->[1].'=>'.$codon_to_be;
-			if ($prRef ne $prAlt) {
-			    $trannoEnt->{polar} = $rcInfo5->[3].'=>'.$polar_to_be;
-			}
-		    }
+                    # To avoid large range perlre, before parse protein
+                    # var we should first deal with frameshift issues
+                    # need to deal with non_stop_flag and frameshift and
+                    # imp ref case.
 
-		    my $prSimpleSame = 0;
+                    # assign cc and polar to the same length,
+                    # single aa substitution, no matter which position.
+                    if ( $diff_ra == 0 and $rcInfo5->[0] == $rcInfo3->[0] ) {
+
+                        # using trim due to terminal codon
+                        my ( $aa_to_be, $polar_to_be ) =
+                          _getAAandPolar( $codon_to_be, \%altcodon_opts );
+
+                        $trannoEnt->{cc} = $rcInfo5->[1] . '=>' . $codon_to_be;
+                        if ( $prRef ne $prAlt ) {
+                            $trannoEnt->{polar} =
+                              $rcInfo5->[3] . '=>' . $polar_to_be;
+                        }
+                    }
+
+                    my $prSimpleSame = 0;
                     for (
                         my $pp = 0 ;
                         $pp < length($prRef) and $pp < length($prAlt) ;
@@ -4230,139 +4409,148 @@ sub getTrChange {
                             last;
                         }
                     }
-		    my $no_parsed_pP = $prBegin - 1 + $prSimpleSame;
+                    my $no_parsed_pP = $prBegin - 1 + $prSimpleSame;
                     my $no_parsed_prStart =
                       substr( $trdbEnt->{pseq}, $no_parsed_pP, 1 );
-		    my $no_parsed_prAlt_Start = substr( $prAlt, $prSimpleSame, 1 );
+                    my $no_parsed_prAlt_Start =
+                      substr( $prAlt, $prSimpleSame, 1 );
 
-		    # non stop frameshift with extra non-coded base
-		    if ($non_stop_flag) {
-			if ($no_parsed_pP >= $trdbEnt->{plen} ) {
-			    $trannoEnt->{func} = 'stop-loss';
-			}
-			else {
-			    $trannoEnt->{func} = 'frameshift';
-			}
-			$trannoEnt->{p} = 'p.' . $no_parsed_prStart
-			  . ( $no_parsed_pP + 1 ) . $no_parsed_prAlt_Start . 'fs*?';
-			$trannoEnt->{protBegin} += $prSimpleSame;
-			next;
-		    }
-
-		    # identical to reference (can be from any kind of vars)
-		    if ($prRef eq $prAlt) {
-                        if ($init_synon)
-                        { # altstart
-                            # do nothing
+                    # non stop frameshift with extra non-coded base
+                    if ($non_stop_flag) {
+                        if ( $no_parsed_pP >= $trdbEnt->{plen} ) {
+                            $trannoEnt->{func} = 'stop-loss';
                         }
-			elsif ($hit_stop_flag) {
-			    # need this special assertion?
-			    $trannoEnt->{func} = 'stop-retained';
-			}
-			else {
-			    $trannoEnt->{func} = 'coding-synon';
-			}
-			$trannoEnt->{p}    = 'p.(=)';
+                        else {
+                            $trannoEnt->{func} = 'frameshift';
+                        }
+                        $trannoEnt->{p} = 'p.'
+                          . $no_parsed_prStart
+                          . ( $no_parsed_pP + 1 )
+                          . $no_parsed_prAlt_Start . 'fs*?';
+                        $trannoEnt->{protBegin} += $prSimpleSame;
+                        next;
+                    }
 
-			if (1 == length($prRef)) { # single synonymous var
-			    $trannoEnt->{alt_pHGVS} = 'p.'.$prRef.$no_parsed_pP.$prAlt;
-			}
+                    # identical to reference (can be from any kind of vars)
+                    if ( $prRef eq $prAlt ) {
+                        if ($init_synon) {    # altstart
+                                              # do nothing
+                        }
+                        elsif ($hit_stop_flag) {
 
-			next;
-		    }
+                            # need this special assertion?
+                            $trannoEnt->{func} = 'stop-retained';
+                        }
+                        else {
+                            $trannoEnt->{func} = 'coding-synon';
+                        }
+                        $trannoEnt->{p} = 'p.(=)';
 
-		    # frameshift
-		    if (!$end_in_cds_flag or $frameshift_flag) {
+                        if ( 1 == length($prRef) ) {    # single synonymous var
+                            $trannoEnt->{alt_pHGVS} =
+                              'p.' . $prRef . $no_parsed_pP . $prAlt;
+                        }
 
-			$trannoEnt->{func} = 'frameshift';
-			$trannoEnt->{p}    = 'p.'. $no_parsed_prStart 
-			    . ( $no_parsed_pP + 1 ) . $no_parsed_prAlt_Start;
-			my $ext_length = ( length($prAlt) - $prSimpleSame );
-			if ($ext_length > 1 or $prAlt !~ /\*$/) {
-			    $trannoEnt->{p} .= 'fs*';
-			    if ($prAlt =~ /\*$/) { # ext length estimated
-				$trannoEnt->{p} .= $ext_length;
-			    }
-			    else { # don't meet a stop codon
-				$trannoEnt->{p} .= '?';
-			    }
-			}
-			$trannoEnt->{protBegin} += $prSimpleSame;
-			next;
-		    }
+                        next;
+                    }
 
-		    my $ins_stop_tag = 0;
-                    if ( $prRef !~ /\*/ and $prAlt ne '*' and $prAlt =~ /\*$/ ) {    # stop gain
-                        $prEnd = $trdbEnt->{plen}; # extent to the end of prot
+                    # frameshift
+                    if ( !$end_in_cds_flag or $frameshift_flag ) {
+
+                        $trannoEnt->{func} = 'frameshift';
+                        $trannoEnt->{p}    = 'p.'
+                          . $no_parsed_prStart
+                          . ( $no_parsed_pP + 1 )
+                          . $no_parsed_prAlt_Start;
+                        my $ext_length = ( length($prAlt) - $prSimpleSame );
+                        if ( $ext_length > 1 or $prAlt !~ /\*$/ ) {
+                            $trannoEnt->{p} .= 'fs*';
+                            if ( $prAlt =~ /\*$/ ) {    # ext length estimated
+                                $trannoEnt->{p} .= $ext_length;
+                            }
+                            else {    # don't meet a stop codon
+                                $trannoEnt->{p} .= '?';
+                            }
+                        }
+                        $trannoEnt->{protBegin} += $prSimpleSame;
+                        next;
+                    }
+
+                    my $ins_stop_tag = 0;
+                    if ( $prRef !~ /\*/ and $prAlt ne '*' and $prAlt =~ /\*$/ )
+                    {                 # stop gain
+                        $prEnd = $trdbEnt->{plen};   # extent to the end of prot
                         $prRef = substr(
                             $trdbEnt->{pseq},
                             ( $prBegin - 1 ),
                             ( $prEnd - $prBegin + 1 )
                         );
                         $prAlt =~ s/\*$//;
-			$ins_stop_tag = 1;
+                        $ins_stop_tag = 1;
                     }
 
-		    # parse the protein variants
-		    # to recognize the repeat and adjust to correct position
+                    # parse the protein variants
+                    # to recognize the repeat and adjust to correct position
                     my $prVar =
                       $self->prWalker( $trdbEnt->{pseq}, $prBegin, $prEnd,
                         $prRef, $prAlt );
 
-		    # 0-based
+                    # 0-based
                     my ( $p_P, $p_r, $p_a, $prl, $pal ) =
                       $prVar->getUnifiedVar('+');
 
-		    my $prStart = substr( $trdbEnt->{pseq}, $p_P, 1 );
-                    my $prStop = substr( $trdbEnt->{pseq}, ($p_P + $prl - 1), 1 )
+                    my $prStart = substr( $trdbEnt->{pseq}, $p_P, 1 );
+                    my $prStop =
+                      substr( $trdbEnt->{pseq}, ( $p_P + $prl - 1 ), 1 )
                       if ( $p_P > 0 or $prl > 0 );
 
-		    # single substitution
+                    # single substitution
                     if ( $prVar->{imp} eq 'snv' ) {
                         if ( $p_r eq 'X' ) {
-			    $trannoEnt->{func} = 'abnormal-inseq-stop';
+                            $trannoEnt->{func} = 'abnormal-inseq-stop';
                         }
-			elsif ( $p_r eq '.' ) { # N in refseq transcript
-			    $trannoEnt->{func} = 'unknown';
-			}
-			elsif ( $p_a eq '?' ) { # substitution with N 
-			    $trannoEnt->{func} = 'unknown-no-call';
-			}
-			elsif ( $p_r eq '*' ) {
-			    $trannoEnt->{func} = 'stop-loss';
-			}
+                        elsif ( $p_r eq '.' ) {    # N in refseq transcript
+                            $trannoEnt->{func} = 'unknown';
+                        }
+                        elsif ( $p_a eq '?' ) {    # substitution with N
+                            $trannoEnt->{func} = 'unknown-no-call';
+                        }
+                        elsif ( $p_r eq '*' ) {
+                            $trannoEnt->{func} = 'stop-loss';
+                        }
                         elsif ( $p_a eq '*' ) {
-			    $trannoEnt->{func} = 'nonsense';
+                            $trannoEnt->{func} = 'nonsense';
                         }
-			elsif ($init_synon) {
-			    $trannoEnt->{func} = 'altstart';
-			}
+                        elsif ($init_synon) {
+                            $trannoEnt->{func} = 'altstart';
+                        }
                         else {
                             $trannoEnt->{func} = 'missense';
                         }
-                        $trannoEnt->{p} = 'p.' . $p_r . ($p_P + 1) . $p_a;
+                        $trannoEnt->{p} = 'p.' . $p_r . ( $p_P + 1 ) . $p_a;
                         next;
                     }
 
-		    # repeat
-		    if ( $prVar->{imp} eq 'rep' ) {
-			if ( $prVar->{ref_cn} < $prVar->{alt_cn} ) {
-			    $trannoEnt->{func} = 'cds-ins';
-			}
-			else {
-			    $trannoEnt->{func} = 'cds-del';
-			}
+                    # repeat
+                    if ( $prVar->{imp} eq 'rep' ) {
+                        if ( $prVar->{ref_cn} < $prVar->{alt_cn} ) {
+                            $trannoEnt->{func} = 'cds-ins';
+                        }
+                        else {
+                            $trannoEnt->{func} = 'cds-del';
+                        }
 
-			if ($prVar->{replen} == 1) {
-			    $trannoEnt->{p} = 'p.' . $prVar->{rep} . ( $p_P + 1 );
-			}
-			else {
+                        if ( $prVar->{replen} == 1 ) {
+                            $trannoEnt->{p} =
+                              'p.' . $prVar->{rep} . ( $p_P + 1 );
+                        }
+                        else {
                             $trannoEnt->{p} = 'p.'
                               . $prStart
                               . ( $p_P + 1 ) . '_'
                               . substr( $prVar->{rep}, -1, 1 )
                               . ( $p_P + $prVar->{replen} );
-			}
+                        }
                         if (    $prVar->{ref_cn} == 1
                             and $prVar->{alt_cn} == 2 )
                         {
@@ -4374,16 +4562,17 @@ sub getTrChange {
                               . $prVar->{alt_cn} . ']';
                         }
 
-			# add a new key alt_pHGVS for querying 
-			# previous database, do exactly like alt_cHGVS
-			# but will be much more simple.
-			
-			my $phgvs_5 = $p_P + 1;
-			my $phgvs_3 = $p_P + ($prVar->{ref_cn} * $prVar->{replen});
-			my $repPrSta = substr( $prVar->{rep}, 0, 1 );
-			my $repPrEnd = substr( $prVar->{rep}, -1, 1 );
-			if (   $prVar->{ref_cn} > $prVar->{alt_cn} )
-			{ # deletion or duplication in previous definition
+                        # add a new key alt_pHGVS for querying
+                        # previous database, do exactly like alt_cHGVS
+                        # but will be much more simple.
+
+                        my $phgvs_5 = $p_P + 1;
+                        my $phgvs_3 =
+                          $p_P + ( $prVar->{ref_cn} * $prVar->{replen} );
+                        my $repPrSta = substr( $prVar->{rep}, 0,  1 );
+                        my $repPrEnd = substr( $prVar->{rep}, -1, 1 );
+                        if ( $prVar->{ref_cn} > $prVar->{alt_cn} )
+                        {    # deletion or duplication in previous definition
                             if ( ( $prVar->{ref_cn} - $prVar->{alt_cn} ) == 1
                                 and $prVar->{replen} == 1 )
                             {
@@ -4399,56 +4588,63 @@ sub getTrChange {
                                   . $repPrEnd
                                   . $phgvs_3 . 'del';
                             }
-			}
-			else { # insertion
-			    my $ins_cn = $prVar->{alt_cn} - $prVar->{ref_cn};
-			    my $ins_cont = $prVar->{rep} x $ins_cn;
-			    my $prPost = substr($trdbEnt->{pseq}, $phgvs_3, 1);
-			    $trannoEnt->{alt_pHGVS} =
-				'p.'
-			      . $repPrEnd . $phgvs_3 . '_'
-			      . $prPost . ( $phgvs_3 + 1 ) . 'ins'
-			      . $ins_cont;
-			}
+                        }
+                        else {    # insertion
+                            my $ins_cn   = $prVar->{alt_cn} - $prVar->{ref_cn};
+                            my $ins_cont = $prVar->{rep} x $ins_cn;
+                            my $prPost =
+                              substr( $trdbEnt->{pseq}, $phgvs_3, 1 );
+                            $trannoEnt->{alt_pHGVS} =
+                                'p.'
+                              . $repPrEnd
+                              . $phgvs_3 . '_'
+                              . $prPost
+                              . ( $phgvs_3 + 1 ) . 'ins'
+                              . $ins_cont;
+                        }
 
-			next;
-		    }
+                        next;
+                    }
 
-		    # when inserted bases contains stop codon but not framshift
-		    if ($p_a =~ /^\*$/) { # prAlt is only a stop codon
-			$trannoEnt->{p} = 'p.' . $prStart . ($p_P + 1) . '*';
-			$trannoEnt->{func} = 'stop-gain';
-			next;
-		    }
+                    # when inserted bases contains stop codon but not framshift
+                    if ( $p_a =~ /^\*$/ ) {    # prAlt is only a stop codon
+                        $trannoEnt->{p} = 'p.' . $prStart . ( $p_P + 1 ) . '*';
+                        $trannoEnt->{func} = 'stop-gain';
+                        next;
+                    }
 
-		    # insertion
-		    if ( $prVar->{sm} == 0 ) {
-			# insert into the 5'edge of start codon
-			# this may caused by a insertion or delins
-			# around init-codon to recreat a new init-codon
-			# in the altered sequence
-			if ( $p_a eq '?' ) { # substitution with N 
-			    $trannoEnt->{func} = 'unknown-no-call';
-			}
-			elsif ($p_P == 0) {
-			    # altstart don't fix this
-			    # use pHGVS to indicate 
-			    # altstart here
-			    $trannoEnt->{p} = 'p.(=)';
+                    # insertion
+                    if ( $prVar->{sm} == 0 ) {
 
-			    # can it be utr-5?
-			    $trannoEnt->{func} = 'utr-5';
-			    next;
-			}
-			# insert between the last aa and stop codon
-			# this may caused by a insertion or delins
-			# aroud the stop codon
-			elsif ($hit_stop_flag) {
-			    $trannoEnt->{func} = 'stop-retained';
-			}
-			else {
-			    $trannoEnt->{func} = ($ins_stop_tag) ? 'stop-gain' : 'cds-ins';
-			}
+                        # insert into the 5'edge of start codon
+                        # this may caused by a insertion or delins
+                        # around init-codon to recreat a new init-codon
+                        # in the altered sequence
+                        if ( $p_a eq '?' ) {    # substitution with N
+                            $trannoEnt->{func} = 'unknown-no-call';
+                        }
+                        elsif ( $p_P == 0 ) {
+
+                            # altstart don't fix this
+                            # use pHGVS to indicate
+                            # altstart here
+                            $trannoEnt->{p} = 'p.(=)';
+
+                            # can it be utr-5?
+                            $trannoEnt->{func} = 'utr-5';
+                            next;
+                        }
+
+                        # insert between the last aa and stop codon
+                        # this may caused by a insertion or delins
+                        # aroud the stop codon
+                        elsif ($hit_stop_flag) {
+                            $trannoEnt->{func} = 'stop-retained';
+                        }
+                        else {
+                            $trannoEnt->{func} =
+                              ($ins_stop_tag) ? 'stop-gain' : 'cds-ins';
+                        }
 
                         $trannoEnt->{p} = 'p.'
                           . $prStop
@@ -4456,22 +4652,22 @@ sub getTrChange {
                           . $prStart
                           . ( $p_P + 1 ) . 'ins'
                           . $p_a;
-			next;
-		    }
+                        next;
+                    }
 
                     if ( $prVar->{sm} >= 1 ) {
-			if ( $p_a eq '?' ) { # substitution with N 
-			    $trannoEnt->{func} = 'unknown-no-call';
-			}
+                        if ( $p_a eq '?' ) {    # substitution with N
+                            $trannoEnt->{func} = 'unknown-no-call';
+                        }
                         elsif ( $p_r =~ /\*/ ) {
                             $trannoEnt->{func} = 'stop-loss';
                         }
                         elsif ($hit_stop_flag) {
                             $trannoEnt->{func} = 'stop-retained';
                         }
-			elsif ($ins_stop_tag) {
-			    $trannoEnt->{func} = 'stop-gain';
-			}
+                        elsif ($ins_stop_tag) {
+                            $trannoEnt->{func} = 'stop-gain';
+                        }
                         elsif ( $pal == 0 ) {
                             $trannoEnt->{func} = 'cds-del';
                         }
@@ -4493,11 +4689,11 @@ sub getTrChange {
                         $trannoEnt->{p} .= 'ins' . $p_a if ( $p_a ne "" );
                         next;
                     }
-		}
-	    }
+                }
+            }
         }
 
-	# any other cases?
+        # any other cases?
     }
 
     return $annoEnt;
@@ -4516,12 +4712,12 @@ sub getTrChange {
 =cut
 
 sub prWalker {
-    my ($self, $prSeq, $prBegin, $prEnd, $prRef, $prAlt) = @_;
+    my ( $self, $prSeq, $prBegin, $prEnd, $prRef, $prAlt ) = @_;
     my $prVar =
       BedAnno::Var->new( "nouse", ( $prBegin - 1 ), $prEnd, $prRef, $prAlt );
-    my ($pr_P, $pr_r, $pr_a, $pr_rl, $pr_al) = $prVar->getUnifiedVar('+');
+    my ( $pr_P, $pr_r, $pr_a, $pr_rl, $pr_al ) = $prVar->getUnifiedVar('+');
 
-    if ( ( defined $pr_al and $pr_rl == $pr_al )
+    if (   ( defined $pr_al and $pr_rl == $pr_al )
         or ( 0 != index( $pr_r, $pr_a ) and 0 != index( $pr_a, $pr_r ) ) )
     {
         return $prVar;
@@ -4563,13 +4759,13 @@ sub prWalker {
 =cut
 
 sub trWalker {
-    my ($self, $tid, $rtrinfo) = @_;
+    my ( $self, $tid, $rtrinfo ) = @_;
 
     # reparse the transcript originated var
-    my $real_var = BedAnno::Var->new( $tid, 0, length($rtrinfo->{trRef}), 
-	$rtrinfo->{trRef}, $rtrinfo->{trAlt} );
+    my $real_var = BedAnno::Var->new( $tid, 0, length( $rtrinfo->{trRef} ),
+        $rtrinfo->{trRef}, $rtrinfo->{trAlt} );
     my @Unified = $real_var->getUnifiedVar('+');
-    my ($real_p, $real_r, $real_a, $real_rl, $real_al) = @Unified;
+    my ( $real_p, $real_r, $real_a, $real_rl, $real_al ) = @Unified;
 
     my $trBegin = reCalTrPos_by_ofst( $rtrinfo, $real_p );
     my $trEnd = reCalTrPos_by_ofst( $rtrinfo, ( $real_p + $real_rl - 1 ) );
@@ -4581,8 +4777,8 @@ sub trWalker {
         # skip span case or any edge case
         or ( $rtrinfo->{ei_Begin} ne $rtrinfo->{ei_End} )
 
-	# skip non exon begin/end position
-	or ( $trBegin !~ /^\d+$/ or $trEnd !~ /^\d+$/ )
+        # skip non exon begin/end position
+        or ( $trBegin !~ /^\d+$/ or $trEnd !~ /^\d+$/ )
 
         # skip delins without repeat
         or (    0 != index( $real_r, $real_a )
@@ -4600,94 +4796,96 @@ sub trWalker {
       walker( $trBegin, $trEnd, $trSeq, $real_r, $real_a, $real_rl, $real_al );
 
     if (   $ref_sta ne $trBegin
-	or $ref_sto ne $trEnd )
+        or $ref_sto ne $trEnd )
     {
-	$trBegin = $ref_sta;
-	$trEnd   = $ref_sto;
+        $trBegin = $ref_sta;
+        $trEnd   = $ref_sto;
 
-	$real_var = BedAnno::Var->new( $tid, 0, length($trRef), $trRef, $trAlt);
-	@Unified  = $real_var->getUnifiedVar('+');
+        $real_var =
+          BedAnno::Var->new( $tid, 0, length($trRef), $trRef, $trAlt );
+        @Unified = $real_var->getUnifiedVar('+');
     }
 
-    return ($trBegin, $trEnd, $real_var, \@Unified);
+    return ( $trBegin, $trEnd, $real_var, \@Unified );
 }
 
 sub walker {
-    my ($ref_sta, $ref_sto, $whole_seq, $ref, $alt, $reflen, $altlen) = @_;
+    my ( $ref_sta, $ref_sto, $whole_seq, $ref, $alt, $reflen, $altlen ) = @_;
     my $seqlen = length($whole_seq);
 
     my $ori_walker;
     my $track_opt;
 
-    if ($reflen < $altlen) {
-	$ref_sta = $ref_sto + 1;
-	$ori_walker = substr( $alt, $reflen );
-	$track_opt = 0; # walk on alt
+    if ( $reflen < $altlen ) {
+        $ref_sta    = $ref_sto + 1;
+        $ori_walker = substr( $alt, $reflen );
+        $track_opt  = 0;                         # walk on alt
     }
     else {
-	$ref_sta += $altlen;
-	$ori_walker = substr( $ref, $altlen );
-	$track_opt = 1; # walk on ref
+        $ref_sta += $altlen;
+        $ori_walker = substr( $ref, $altlen );
+        $track_opt  = 1;                         # walk on ref
     }
 
     # walk to 3' most
-    my @cur_walker = split(//, $ori_walker);
+    my @cur_walker = split( //, $ori_walker );
     my $walk_forward_step = 0;
-    for (my $p = $ref_sto; $p < $seqlen; $p++) {
-	if (substr($whole_seq, $p, 1) eq $cur_walker[0]) {
-	    push (@cur_walker, shift(@cur_walker));
-	    if ($p == $seqlen - 1) {
-		$walk_forward_step = $seqlen - $ref_sto;
-		last;
-	    }
-	}
-	else {
-	    $walk_forward_step = $p - $ref_sto;
-	    last;
-	}
+    for ( my $p = $ref_sto ; $p < $seqlen ; $p++ ) {
+        if ( substr( $whole_seq, $p, 1 ) eq $cur_walker[0] ) {
+            push( @cur_walker, shift(@cur_walker) );
+            if ( $p == $seqlen - 1 ) {
+                $walk_forward_step = $seqlen - $ref_sto;
+                last;
+            }
+        }
+        else {
+            $walk_forward_step = $p - $ref_sto;
+            last;
+        }
     }
 
-    $ref_sto += $walk_forward_step; # the final end on reference track
+    $ref_sto += $walk_forward_step;    # the final end on reference track
 
     # use the 3' most element as the final matched difference
     my $match_target = join( "", @cur_walker );
 
-    my $forward_footprint = substr($whole_seq, $ref_sta-1, $walk_forward_step);
+    my $forward_footprint =
+      substr( $whole_seq, $ref_sta - 1, $walk_forward_step );
 
     # walk to 5' most
-    @cur_walker = split(//, $ori_walker);
+    @cur_walker = split( //, $ori_walker );
     my $walk_back_step = 0;
-    for ( my $q = $ref_sta - 1; $q > 0; $q -- ) {
-	if (substr($whole_seq, $q-1, 1) eq $cur_walker[-1]) {
-	    unshift( @cur_walker, pop(@cur_walker) );
-	    if ($q == 1) {
-		$walk_back_step = $ref_sta - 1;
-		last;
-	    }
-	}
-	else {
-	    $walk_back_step = $ref_sta - $q - 1;
-	    last;
-	}
+    for ( my $q = $ref_sta - 1 ; $q > 0 ; $q-- ) {
+        if ( substr( $whole_seq, $q - 1, 1 ) eq $cur_walker[-1] ) {
+            unshift( @cur_walker, pop(@cur_walker) );
+            if ( $q == 1 ) {
+                $walk_back_step = $ref_sta - 1;
+                last;
+            }
+        }
+        else {
+            $walk_back_step = $ref_sta - $q - 1;
+            last;
+        }
     }
 
     my $back_most = $ref_sta - $walk_back_step;
     my $backward_footprint =
       substr( $whole_seq, $ref_sta - $walk_back_step - 1, $walk_back_step );
-    
+
     my $cur_short_track = $backward_footprint . $forward_footprint;
-    my $cur_long_track = $cur_short_track . $match_target;
-    my $target_sta = index($cur_long_track, $match_target);
+    my $cur_long_track  = $cur_short_track . $match_target;
+    my $target_sta      = index( $cur_long_track, $match_target );
     $ref_sta = $back_most + $target_sta;
-    
-    my ($renew_ref, $renew_alt);
+
+    my ( $renew_ref, $renew_alt );
     if ($track_opt) {
-	$renew_ref = substr( $cur_long_track,  $target_sta );
-	$renew_alt = substr( $cur_short_track, $target_sta );
+        $renew_ref = substr( $cur_long_track,  $target_sta );
+        $renew_alt = substr( $cur_short_track, $target_sta );
     }
     else {
-	$renew_ref = substr( $cur_short_track, $target_sta );
-	$renew_alt = substr( $cur_long_track,  $target_sta );
+        $renew_ref = substr( $cur_short_track, $target_sta );
+        $renew_alt = substr( $cur_long_track,  $target_sta );
     }
 
     return ( $ref_sta, $ref_sto, $renew_ref, $renew_alt );
@@ -4705,97 +4903,104 @@ sub walker {
 
 sub cmpPos {
     my $self = shift;
-    my ($p1, $p2) = @_;
-    return 0 if ($p1 eq $p2);
-    my ($s1, $s2, $anc1, $anc2, $int_s1, $int_s2, $ofst1, $ofst2);
+    my ( $p1, $p2 ) = @_;
+    return 0 if ( $p1 eq $p2 );
+    my ( $s1, $s2, $anc1, $anc2, $int_s1, $int_s2, $ofst1, $ofst2 );
 
     my %order_s = (
-	'-u' => 1,
-	'-' => 2,
-	''  => 3,
-	'+' => 4,
-	'*' => 5,
-	'+d' => 6,
+        '-u' => 1,
+        '-'  => 2,
+        ''   => 3,
+        '+'  => 4,
+        '*'  => 5,
+        '+d' => 6,
     );
 
-    if ($p1 =~ /^([\-\+\*]?)(\d+)([\+\-]?[ud]?)(\d*)$/) {
-	$s1 = $1; $anc1 = $2; $int_s1 = $3; $ofst1 = $4;
+    if ( $p1 =~ /^([\-\+\*]?)(\d+)([\+\-]?[ud]?)(\d*)$/ ) {
+        $s1     = $1;
+        $anc1   = $2;
+        $int_s1 = $3;
+        $ofst1  = $4;
     }
 
-    if ($p2 =~ /^([\-\+\*]?)(\d+)([\+\-]?[ud]?)(\d*)$/) {
-	$s2 = $1; $anc2 = $2; $int_s2 = $3; $ofst2 = $4;
+    if ( $p2 =~ /^([\-\+\*]?)(\d+)([\+\-]?[ud]?)(\d*)$/ ) {
+        $s2     = $1;
+        $anc2   = $2;
+        $int_s2 = $3;
+        $ofst2  = $4;
     }
 
-    if ($order_s{$s1} < $order_s{$s2}) {
-	return 1;
+    if ( $order_s{$s1} < $order_s{$s2} ) {
+        return 1;
     }
-    elsif ($order_s{$s1} > $order_s{$s2}) {
-	return -1;
+    elsif ( $order_s{$s1} > $order_s{$s2} ) {
+        return -1;
     }
-    else { # $s1 eq $s2
-	if ($s1 eq '-') {
-	    if ($anc1 > $anc2) {
-		return 1;
-	    }
-	    elsif ($anc1 < $anc2) {
-		return -1;
-	    }
-	}
-	else {
-	    if ($anc1 < $anc2) {
-		return 1;
-	    }
-	    elsif ($anc1 > $anc2) {
-		return -1;
-	    }
-	}
+    else {    # $s1 eq $s2
+        if ( $s1 eq '-' ) {
+            if ( $anc1 > $anc2 ) {
+                return 1;
+            }
+            elsif ( $anc1 < $anc2 ) {
+                return -1;
+            }
+        }
+        else {
+            if ( $anc1 < $anc2 ) {
+                return 1;
+            }
+            elsif ( $anc1 > $anc2 ) {
+                return -1;
+            }
+        }
 
-	# anc1 eq anc2
-	if ($order_s{$int_s1} < $order_s{$int_s2}) {
-	    return 1;
-	}
-	elsif ($order_s{$int_s1} > $order_s{$int_s2}) {
-	    return -1;
-	}
-	else { # int_s2 same
-	    if ( $int_s1 =~ /\-/ ) {
-		if ($ofst1 > $ofst2) {
-		    return 1;
-		}
-		elsif ($ofst1 < $ofst2) {
-		    return -1;
-		}
-	    }
-	    else {
-		if ($ofst1 < $ofst2) {
-		    return 1;
-		}
-		elsif ($ofst1 > $ofst2) {
-		    return -1;
-		}
-	    }
-	}
+        # anc1 eq anc2
+        if ( $order_s{$int_s1} < $order_s{$int_s2} ) {
+            return 1;
+        }
+        elsif ( $order_s{$int_s1} > $order_s{$int_s2} ) {
+            return -1;
+        }
+        else {    # int_s2 same
+            if ( $int_s1 =~ /\-/ ) {
+                if ( $ofst1 > $ofst2 ) {
+                    return 1;
+                }
+                elsif ( $ofst1 < $ofst2 ) {
+                    return -1;
+                }
+            }
+            else {
+                if ( $ofst1 < $ofst2 ) {
+                    return 1;
+                }
+                elsif ( $ofst1 > $ofst2 ) {
+                    return -1;
+                }
+            }
+        }
     }
     return 0;
 }
 
 sub _getAAandPolar {
-    my $codon = shift;
+    my $codon       = shift;
     my $rtrans_opts = shift;
-    my ($aa, $zero) = translate($codon, $rtrans_opts);
+    my ( $aa, $zero ) = translate( $codon, $rtrans_opts );
     my $polar =
       ( exists $Polar{$aa} ) ? $Polar{$aa} : ( ( $codon =~ /N/ ) ? '?' : '.' );
-    return ($aa, $polar);
+    return ( $aa, $polar );
 }
 
 # change the 1based nDot position into cDot format
 sub _cPosMark {
+
     #	1based	0-based 1based
-    my ($trPos, $csta, $csto, $trlen) = @_;
-    return $trPos if ($trPos eq "");
+    my ( $trPos, $csta, $csto, $trlen ) = @_;
+    return $trPos if ( $trPos eq "" );
 
     my $cDot;
-    if ($trPos =~ /^([\+\-]?)(\d+)([\+\-]?)(\d*)$/) {
+    if ( $trPos =~ /^([\+\-]?)(\d+)([\+\-]?)(\d*)$/ ) {
         my ( $s1, $anchor, $s2, $ofst ) = ( $1, $2, $3, $4 );
         if ( $s1 eq '' and $s2 eq '' ) {
             $cDot = $anchor - $csta;
@@ -4811,28 +5016,30 @@ sub _cPosMark {
             $cDot = ( ( $csta == 0 ) ? 1 : ( -$csta ) ) . '-u' . $anchor;
         }
         elsif ( $s1 eq '+' ) {
-            $cDot = ( ( $csto == $trlen )
+            $cDot = (
+                  ( $csto == $trlen )
                 ? ( $csto - $csta )
-                : '*' . ( $trlen - $csto ) )
+                : '*' . ( $trlen - $csto )
+              )
               . '+d'
               . $anchor;
         }
-	elsif ( $s2 =~ /[\+\-]/ ) {
-	    my $cDot_tmp = _cPosMark($anchor, $csta, $csto, $trlen);
-	    $cDot = $cDot_tmp.$s2.$ofst;
-	}
-	else {
-	    confess "Error: unmatched nDot string: [$trPos]";
-	}
+        elsif ( $s2 =~ /[\+\-]/ ) {
+            my $cDot_tmp = _cPosMark( $anchor, $csta, $csto, $trlen );
+            $cDot = $cDot_tmp . $s2 . $ofst;
+        }
+        else {
+            confess "Error: unmatched nDot string: [$trPos]";
+        }
     }
     return $cDot;
 }
 
 sub _getCPosFrame {
-    my ($trdbEnt, $p) = @_;
-    return ( -1 ) if (!exists $trdbEnt->{csta} or $p !~ /^\d+$/);
+    my ( $trdbEnt, $p ) = @_;
+    return (-1) if ( !exists $trdbEnt->{csta} or $p !~ /^\d+$/ );
     my $cds_p = $p - $trdbEnt->{csta};
-    return _getCPosFrame_by_cdsPos($trdbEnt, $cds_p);
+    return _getCPosFrame_by_cdsPos( $trdbEnt, $cds_p );
 }
 
 =head2 _getCPosFrame_by_cdsPos
@@ -4863,87 +5070,86 @@ sub _getCPosFrame {
 
 # give codon number and frame with involving frameshift case
 sub _getCPosFrame_by_cdsPos {
-    my ($trdbEnt, $p) = @_;
+    my ( $trdbEnt, $p ) = @_;
     if (   !exists $trdbEnt->{csta}
         or $trdbEnt->{csta} eq '.'
-	or $p !~ /^\d+$/
+        or $p !~ /^\d+$/
         or $p <= 0
-        or $p > ($trdbEnt->{csto} - $trdbEnt->{csta}) )
+        or $p > ( $trdbEnt->{csto} - $trdbEnt->{csta} ) )
     {
-	return ( -1 );
+        return (-1);
     }
-    if (exists $trdbEnt->{cfs}) {
-	my $total_fs = 0;
+    if ( exists $trdbEnt->{cfs} ) {
+        my $total_fs = 0;
         foreach my $fsld ( sort { $a <=> $b } keys %{ $trdbEnt->{cfs} } ) {
             if ( $fsld < $p and ( $fsld + $trdbEnt->{cfs}->{$fsld} ) < $p )
             {    # normal
                 $total_fs += $trdbEnt->{cfs}->{$fsld};
             }
             elsif ( $fsld < $p and $fsld + $trdbEnt->{cfs}->{$fsld} >= $p )
-            {   # in deleted frames
-		my $codon_pre = $fsld - $total_fs;
-		my ($pP_pre, $frame_pre) = _calPosFrame($codon_pre);
-		my ($pP_lat, $frame_lat);
-		if ($frame_pre < 2) {
-		    $pP_lat = $pP_pre;
-		    $frame_lat = $frame_pre + 1;
-		}
-		else {
-		    $pP_lat = $pP_pre + 1;
-		    $frame_lat = 0;
-		}
+            {    # in deleted frames
+                my $codon_pre = $fsld - $total_fs;
+                my ( $pP_pre, $frame_pre ) = _calPosFrame($codon_pre);
+                my ( $pP_lat, $frame_lat );
+                if ( $frame_pre < 2 ) {
+                    $pP_lat    = $pP_pre;
+                    $frame_lat = $frame_pre + 1;
+                }
+                else {
+                    $pP_lat    = $pP_pre + 1;
+                    $frame_lat = 0;
+                }
                 return ( 0, [ $pP_pre, $frame_pre ], [ $pP_lat, $frame_lat ] );
             }
             elsif ( $fsld >= $p and $fsld + $trdbEnt->{cfs}->{$fsld} < $p )
-            {   # in dup frames
-		my $codon_1 = $p - $total_fs;
-		my $codon_2 = $p - $total_fs + abs($trdbEnt->{cfs}->{$fsld});
-		my ($pP_1, $frame_1) = _calPosFrame($codon_1);
-		my ($pP_2, $frame_2) = _calPosFrame($codon_2);
-		return ( 2, [ $pP_1, $frame_1 ], [ $pP_2, $frame_2 ] );
+            {    # in dup frames
+                my $codon_1 = $p - $total_fs;
+                my $codon_2 = $p - $total_fs + abs( $trdbEnt->{cfs}->{$fsld} );
+                my ( $pP_1, $frame_1 ) = _calPosFrame($codon_1);
+                my ( $pP_2, $frame_2 ) = _calPosFrame($codon_2);
+                return ( 2, [ $pP_1, $frame_1 ], [ $pP_2, $frame_2 ] );
             }
             else {    # after the current position
                 last;
             }
         }
-	$p -= $total_fs;
+        $p -= $total_fs;
     }
-    return ( 1, [ ( _calPosFrame( $p ) ) ] );
+    return ( 1, [ ( _calPosFrame($p) ) ] );
 }
 
 # calculate codon number and frame directly be cds position
 sub _calPosFrame {
     my $cds_p = shift;
-    my $pP = int($cds_p / 3);
-    if ($cds_p % 3 > 0) {
-	$pP ++;
+    my $pP    = int( $cds_p / 3 );
+    if ( $cds_p % 3 > 0 ) {
+        $pP++;
     }
-    my $frame = 2 - ($pP * 3 - $cds_p);
-    return ($pP, $frame);
+    my $frame = 2 - ( $pP * 3 - $cds_p );
+    return ( $pP, $frame );
 }
 
 # generate codon together with AA and Polar by codon number
 sub _genCodonInfo {
-    my ($trdbEnt, $pP) = @_;
+    my ( $trdbEnt, $pP ) = @_;
 
-    $trdbEnt->{cseq} = _getCodingSeq($trdbEnt) if (!exists $trdbEnt->{cseq});
-    if ($pP <= 0 or ($pP-1) > $trdbEnt->{plen}) {
-	confess "Error: [$trdbEnt->{gene}] no codon info for $pP position.";
+    $trdbEnt->{cseq} = _getCodingSeq($trdbEnt) if ( !exists $trdbEnt->{cseq} );
+    if ( $pP <= 0 or ( $pP - 1 ) > $trdbEnt->{plen} ) {
+        confess "Error: [$trdbEnt->{gene}] no codon info for $pP position.";
     }
-    my $codon = substr( $trdbEnt->{cseq}, ($pP-1) * 3, 3 );
+    my $codon = substr( $trdbEnt->{cseq}, ( $pP - 1 ) * 3, 3 );
     my $rtrans_opts = {};
 
-    $rtrans_opts->{mito} = 1 if ($trdbEnt->{gene} =~ /^MT\-/); # chrM gene
+    $rtrans_opts->{mito} = 1 if ( $trdbEnt->{gene} =~ /^MT\-/ );    # chrM gene
 
-    if ($pP <= $trdbEnt->{plen}) { # plen not involve terminal codon
-	$rtrans_opts->{nostop} = 1;
+    if ( $pP <= $trdbEnt->{plen} ) {    # plen not involve terminal codon
+        $rtrans_opts->{nostop} = 1;
     }
-    elsif ($pP == $trdbEnt->{plen} + 1)
-    { # terminal with polyA complement
-	$codon .= 'A' x (3 - length($codon)) if (exists $trdbEnt->{A});
+    elsif ( $pP == $trdbEnt->{plen} + 1 ) {    # terminal with polyA complement
+        $codon .= 'A' x ( 3 - length($codon) ) if ( exists $trdbEnt->{A} );
     }
-    
-    return ( $codon, _getAAandPolar($codon, $rtrans_opts) );
+
+    return ( $codon, _getAAandPolar( $codon, $rtrans_opts ) );
 }
 
 =head2 _cdsubstr
@@ -4961,29 +5167,29 @@ sub _genCodonInfo {
 =cut
 
 sub _cdsubstr {
-    my ($trdbEnt, $start, $len, $replace) = @_;
-    if (!defined $len) {
-	$len = $trdbEnt->{len} - $start;
+    my ( $trdbEnt, $start, $len, $replace ) = @_;
+    if ( !defined $len ) {
+        $len = $trdbEnt->{len} - $start;
     }
-    if (!exists $trdbEnt->{csta} or !exists $trdbEnt->{nfs}) {
-	if (defined $replace) {
-	    my $trSeq = $trdbEnt->{seq};
-	    substr($trSeq, $start, $len, $replace);
-	    return $trSeq;
-	}
-	else {
-	    return substr($trdbEnt->{seq}, $start, $len);
-	}
+    if ( !exists $trdbEnt->{csta} or !exists $trdbEnt->{nfs} ) {
+        if ( defined $replace ) {
+            my $trSeq = $trdbEnt->{seq};
+            substr( $trSeq, $start, $len, $replace );
+            return $trSeq;
+        }
+        else {
+            return substr( $trdbEnt->{seq}, $start, $len );
+        }
     }
     else {
-	if ($start < 0) {
-	    $start = $trdbEnt->{len} + $start;
-	}
-	if ($len < 0) {
-	    $len = $trdbEnt->{len} + $len - $start;
-	}
-	my @start_ofst = _calfsOfst($trdbEnt, $start);
-	my @stop_ofst = _calfsOfst($trdbEnt, ($start + $len - 1));
+        if ( $start < 0 ) {
+            $start = $trdbEnt->{len} + $start;
+        }
+        if ( $len < 0 ) {
+            $len = $trdbEnt->{len} + $len - $start;
+        }
+        my @start_ofst = _calfsOfst( $trdbEnt, $start );
+        my @stop_ofst = _calfsOfst( $trdbEnt, ( $start + $len - 1 ) );
 
         $trdbEnt->{cseq} = _getCodingSeq($trdbEnt)
           if ( !exists $trdbEnt->{cseq} );
@@ -4993,7 +5199,7 @@ sub _cdsubstr {
           . substr( $trdbEnt->{seq}, $trdbEnt->{csto} );
 
         my $returned_seq;
-	my $max_len = -1;
+        my $max_len = -1;
         foreach my $sta_ofst (@start_ofst) {
             my $new_start = $start - $sta_ofst;
             foreach my $sto_ofst (@stop_ofst) {
@@ -5001,48 +5207,48 @@ sub _cdsubstr {
                 next if ( $new_start > $new_stop );
                 $new_stop += 1;
                 my $new_len = $new_stop - $new_start;
-		if ($new_len > $max_len) {
-		    if (defined $replace) {
-			$returned_seq = $new_wholeseq;
-			substr($returned_seq, $new_start, $new_len, $replace);
-			$max_len = $new_len;
-		    }
-		    else {
-			$returned_seq = substr( $new_wholeseq, $new_start, $new_len );
-			$max_len = $new_len;
-		    }
-		}
+                if ( $new_len > $max_len ) {
+                    if ( defined $replace ) {
+                        $returned_seq = $new_wholeseq;
+                        substr( $returned_seq, $new_start, $new_len, $replace );
+                        $max_len = $new_len;
+                    }
+                    else {
+                        $returned_seq =
+                          substr( $new_wholeseq, $new_start, $new_len );
+                        $max_len = $new_len;
+                    }
+                }
             }
         }
-	
-	
-	# only return the longest substring
-	return $returned_seq;
+
+        # only return the longest substring
+        return $returned_seq;
     }
 }
 
 sub _calfsOfst {
-    my ($trdbEnt, $p) = @_; # 0 based
-    if (!exists $trdbEnt->{csta} or !exists $trdbEnt->{nfs}) {
-	return 0;
+    my ( $trdbEnt, $p ) = @_;    # 0 based
+    if ( !exists $trdbEnt->{csta} or !exists $trdbEnt->{nfs} ) {
+        return 0;
     }
 
     my $ofst = 0;
-    foreach my $fsld (sort {$a<=>$b} keys %{$trdbEnt->{nfs}}) {
-	my $fsEd = $fsld + $trdbEnt->{nfs}->{$fsld};
-	if ($fsld <= $p and $fsEd < $p) { # before p
-	    $ofst += $trdbEnt->{nfs}->{$fsld};
-	}
-	elsif ($fsld <= $p and $fsEd >= $p) {
-	    $ofst += ($fsld + $trdbEnt->{nfs}->{$fsld} - $p);
-	    return ($ofst);
-	}
-	elsif ($fsld > $p and $fsEd <= $p ) {
-	    return ( $ofst, ($ofst + $trdbEnt->{nfs}->{$fsld}) );
-	}
-	else {
-	    last;
-	}
+    foreach my $fsld ( sort { $a <=> $b } keys %{ $trdbEnt->{nfs} } ) {
+        my $fsEd = $fsld + $trdbEnt->{nfs}->{$fsld};
+        if ( $fsld <= $p and $fsEd < $p ) {    # before p
+            $ofst += $trdbEnt->{nfs}->{$fsld};
+        }
+        elsif ( $fsld <= $p and $fsEd >= $p ) {
+            $ofst += ( $fsld + $trdbEnt->{nfs}->{$fsld} - $p );
+            return ($ofst);
+        }
+        elsif ( $fsld > $p and $fsEd <= $p ) {
+            return ( $ofst, ( $ofst + $trdbEnt->{nfs}->{$fsld} ) );
+        }
+        else {
+            last;
+        }
     }
     return ($ofst);
 }
@@ -5070,31 +5276,32 @@ sub _calfsOfst {
 =cut
 
 sub _getPairedCodon {
-    my ($trdbEnt, $p5, $p3) = @_;
+    my ( $trdbEnt, $p5, $p3 ) = @_;
     my @c5 = _getCPosFrame( $trdbEnt, $p5 );
     my @c3 = _getCPosFrame( $trdbEnt, $p3 );
     if ( $c5[0] == 1 and $c3[0] == 1 ) {    # all normal
-	if (exists $trdbEnt->{nfs}) {
-	    my $contain_fs = 0;
-	    foreach my $fsld (keys %{$trdbEnt->{nfs}}) {
-		if ($p5 <= $fsld and $p3 >= $fsld + $trdbEnt->{nfs}->{$fsld}) {
-		    $contain_fs = 1;
-		    last;
-		}
-	    }
-	    if ($contain_fs == 1) {
-		return (
-		    [
-			$c5[1]->[0], ( _genCodonInfo( $trdbEnt, $c5[1]->[0] ) ),
-			-1, $c5[1]->[1]
-		    ],
-		    [
-			$c3[1]->[0], ( _genCodonInfo( $trdbEnt, $c3[1]->[0] ) ),
-			-1, $c3[1]->[1]
-		    ]
-		);
-	    }
-	}
+        if ( exists $trdbEnt->{nfs} ) {
+            my $contain_fs = 0;
+            foreach my $fsld ( keys %{ $trdbEnt->{nfs} } ) {
+                if ( $p5 <= $fsld and $p3 >= $fsld + $trdbEnt->{nfs}->{$fsld} )
+                {
+                    $contain_fs = 1;
+                    last;
+                }
+            }
+            if ( $contain_fs == 1 ) {
+                return (
+                    [
+                        $c5[1]->[0], ( _genCodonInfo( $trdbEnt, $c5[1]->[0] ) ),
+                        -1, $c5[1]->[1]
+                    ],
+                    [
+                        $c3[1]->[0], ( _genCodonInfo( $trdbEnt, $c3[1]->[0] ) ),
+                        -1, $c3[1]->[1]
+                    ]
+                );
+            }
+        }
         return (
             [
                 $c5[1]->[0], ( _genCodonInfo( $trdbEnt, $c5[1]->[0] ) ),
@@ -5106,14 +5313,14 @@ sub _getPairedCodon {
             ]
         );
     }
-    elsif ( $c5[0] == 0 and $c3[0] == 0 ) { # all in deleted frame
-	if ( $c5[1]->[0] == $c3[1]->[0] ) { # same frame
-	    return (
-		[ $c5[2]->[0], ( _genCodonInfo( $trdbEnt, $c5[2]->[0] ) ), -1 ],
-		[ $c5[1]->[0], ( _genCodonInfo( $trdbEnt, $c5[1]->[0] ) ), -1 ]
-	    );
-	}
-	else { # different frames
+    elsif ( $c5[0] == 0 and $c3[0] == 0 ) {    # all in deleted frame
+        if ( $c5[1]->[0] == $c3[1]->[0] ) {    # same frame
+            return (
+                [ $c5[2]->[0], ( _genCodonInfo( $trdbEnt, $c5[2]->[0] ) ), -1 ],
+                [ $c5[1]->[0], ( _genCodonInfo( $trdbEnt, $c5[1]->[0] ) ), -1 ]
+            );
+        }
+        else {                                 # different frames
             return (
                 [
                     $c5[2]->[0], ( _genCodonInfo( $trdbEnt, $c5[2]->[0] ) ),
@@ -5124,92 +5331,92 @@ sub _getPairedCodon {
                     -1, $c3[1]->[1]
                 ],
             );
-	}
+        }
     }
-    elsif ( $c5[0] == 2 and $c3[0] == 2) { # all in duplicated frame
-	if ( _chkCodonPosRel( \@c5, \@c3 ) ) {    # connected
-	    return (
-		[
-		    $c5[1]->[0], ( _genCodonInfo( $trdbEnt, $c5[1]->[0] ) ),
-		    -1, $c5[1]->[1]
-		],
-		[
-		    $c3[2]->[0], ( _genCodonInfo( $trdbEnt, $c3[2]->[0] ) ),
-		    -1, $c3[2]->[1]
-		]
-	    );
-	}
-	else { # non-connected, this case don't exists in current db,
-	       # we will only take the first two returned value
-	       # and give up the latter two.
-	    return (
-		[
-		    $c5[1]->[0], ( _genCodonInfo( $trdbEnt, $c5[1]->[0] ) ),
-		    -1, $c5[1]->[1]
-		],
-		[
-		    $c3[1]->[0], ( _genCodonInfo( $trdbEnt, $c3[1]->[0] ) ),
-		    -1, $c3[1]->[1]
-		],
+    elsif ( $c5[0] == 2 and $c3[0] == 2 ) {    # all in duplicated frame
+        if ( _chkCodonPosRel( \@c5, \@c3 ) ) {    # connected
+            return (
+                [
+                    $c5[1]->[0], ( _genCodonInfo( $trdbEnt, $c5[1]->[0] ) ),
+                    -1, $c5[1]->[1]
+                ],
+                [
+                    $c3[2]->[0], ( _genCodonInfo( $trdbEnt, $c3[2]->[0] ) ),
+                    -1, $c3[2]->[1]
+                ]
+            );
+        }
+        else {    # non-connected, this case don't exists in current db,
+                  # we will only take the first two returned value
+                  # and give up the latter two.
+            return (
+                [
+                    $c5[1]->[0], ( _genCodonInfo( $trdbEnt, $c5[1]->[0] ) ),
+                    -1, $c5[1]->[1]
+                ],
+                [
+                    $c3[1]->[0], ( _genCodonInfo( $trdbEnt, $c3[1]->[0] ) ),
+                    -1, $c3[1]->[1]
+                ],
 
-		[
-		    $c5[2]->[0], ( _genCodonInfo( $trdbEnt, $c5[2]->[0] ) ),
-		    -1, $c5[2]->[1]
-		],
-		[
-		    $c3[2]->[0], ( _genCodonInfo( $trdbEnt, $c3[2]->[0] ) ),
-		    -1, $c3[2]->[1]
-		]
-	    );
-	}
+                [
+                    $c5[2]->[0], ( _genCodonInfo( $trdbEnt, $c5[2]->[0] ) ),
+                    -1, $c5[2]->[1]
+                ],
+                [
+                    $c3[2]->[0], ( _genCodonInfo( $trdbEnt, $c3[2]->[0] ) ),
+                    -1, $c3[2]->[1]
+                ]
+            );
+        }
     }
     else {
-	my ($r5_ret, $r3_ret);
-	if ($c5[0] == 1) {
+        my ( $r5_ret, $r3_ret );
+        if ( $c5[0] == 1 ) {
             $r5_ret = [
                 $c5[1]->[0], ( _genCodonInfo( $trdbEnt, $c5[1]->[0] ) ),
                 $c5[1]->[1]
             ];
-	}
-	elsif ($c5[0] < 0) {
-	    $r5_ret = [ 0, "", "", "", -1 ];
-	}
-	elsif ($c5[0] == 0) {
-	    $r5_ret = [
+        }
+        elsif ( $c5[0] < 0 ) {
+            $r5_ret = [ 0, "", "", "", -1 ];
+        }
+        elsif ( $c5[0] == 0 ) {
+            $r5_ret = [
                 $c5[2]->[0], ( _genCodonInfo( $trdbEnt, $c5[2]->[0] ) ),
                 -1, $c5[2]->[1]
-	    ];
-	}
-	elsif ($c5[0] == 2) {
-	    $r5_ret = [
+            ];
+        }
+        elsif ( $c5[0] == 2 ) {
+            $r5_ret = [
                 $c5[1]->[0], ( _genCodonInfo( $trdbEnt, $c5[1]->[0] ) ),
                 -1, $c5[1]->[1]
-	    ];
-	}
+            ];
+        }
 
-	if ($c3[0] == 1) {
-	    $r3_ret = [
+        if ( $c3[0] == 1 ) {
+            $r3_ret = [
                 $c3[-1]->[0], ( _genCodonInfo( $trdbEnt, $c3[-1]->[0] ) ),
                 $c3[-1]->[1]
-	    ];
-	}
-	elsif ($c3[0] < 0) {
-	    $r3_ret = [ 0, "", "", "", -1 ];
-	}
-	elsif ($c3[0] == 0) {
+            ];
+        }
+        elsif ( $c3[0] < 0 ) {
+            $r3_ret = [ 0, "", "", "", -1 ];
+        }
+        elsif ( $c3[0] == 0 ) {
             $r3_ret = [
                 $c3[1]->[0], ( _genCodonInfo( $trdbEnt, $c3[1]->[0] ) ),
                 $c3[1]->[1]
             ];
-	}
-	elsif ($c3[0] == 2) {
-	    $r3_ret = [
+        }
+        elsif ( $c3[0] == 2 ) {
+            $r3_ret = [
                 $c3[2]->[0], ( _genCodonInfo( $trdbEnt, $c3[2]->[0] ) ),
                 $c3[2]->[1]
             ];
-	}
+        }
 
-	return ( $r5_ret, $r3_ret );
+        return ( $r5_ret, $r3_ret );
     }
 }
 
@@ -5230,8 +5437,9 @@ sub _chkCodonPosRel {
         return 1;
     }
     elsif ( $rsta->[2]->[0] < $rsto->[1]->[0] ) {
-	# overlapped cases
-	return 1;
+
+        # overlapped cases
+        return 1;
     }
     else {
         return 0;
@@ -5255,43 +5463,43 @@ sub _chkCodonPosRel {
 =cut
 
 sub translate {
-    my $nucl = shift;
-    my $ropt = shift if ( @_ );
-    my $mito = (defined $ropt and exists $ropt->{mito}) ? 1 : 0;
-    my $nostop = (defined $ropt and exists $ropt->{nostop}) ? 1 : 0;
-    my $polyA = (defined $ropt and exists $ropt->{polyA}) ? 1 : 0;
+    my $nucl   = shift;
+    my $ropt   = shift if (@_);
+    my $mito   = ( defined $ropt and exists $ropt->{mito} ) ? 1 : 0;
+    my $nostop = ( defined $ropt and exists $ropt->{nostop} ) ? 1 : 0;
+    my $polyA  = ( defined $ropt and exists $ropt->{polyA} ) ? 1 : 0;
 
-    my $lenN = length($nucl);
+    my $lenN       = length($nucl);
     my $frame_next = $lenN % 3;
-    if ($frame_next != 0 and $polyA) {
-	$nucl .= 'A' x (3 - $frame_next);
+    if ( $frame_next != 0 and $polyA ) {
+        $nucl .= 'A' x ( 3 - $frame_next );
     }
     $nucl = uc($nucl);
     my $prot = "";
-    for (my $i = 0; $i < length($nucl); $i+=3) {
-	my $codon = substr($nucl,$i,3);
+    for ( my $i = 0 ; $i < length($nucl) ; $i += 3 ) {
+        my $codon = substr( $nucl, $i, 3 );
         my $aa =
           ( exists $C1{$codon} )
           ? $C1{$codon}
           : ( ( $codon =~ /N/ ) ? '?' : '.' );
-	if ( $mito and $codon eq 'ATA' ) {
-	    $aa = 'M';
-	}
-	if ($aa eq '*' and $mito and $codon eq 'TGA') {
-	    $aa = 'W';
-	}
-	elsif ($aa eq '*' and $nostop) {
-	    $aa = ($codon eq 'TGA') ? 'U' : 'X';
-	}
-	elsif ($aa eq '*') {
-	    $prot .= $aa;
-	    return ($prot, 0);
-	}
-	$prot .= $aa;
+        if ( $mito and $codon eq 'ATA' ) {
+            $aa = 'M';
+        }
+        if ( $aa eq '*' and $mito and $codon eq 'TGA' ) {
+            $aa = 'W';
+        }
+        elsif ( $aa eq '*' and $nostop ) {
+            $aa = ( $codon eq 'TGA' ) ? 'U' : 'X';
+        }
+        elsif ( $aa eq '*' ) {
+            $prot .= $aa;
+            return ( $prot, 0 );
+        }
+        $prot .= $aa;
     }
     $prot =~ s/[UX]$/*/g if ($nostop);
-    $prot =~ s/\.$// if ($frame_next != 0);
-    return ($prot, $frame_next);
+    $prot =~ s/\.$// if ( $frame_next != 0 );
+    return ( $prot, $frame_next );
 }
 
 # new var generated from new() in BedAnnoVar the real transcript var
@@ -5303,121 +5511,121 @@ sub reCalTrPos_by_ofst {
     return $trannoEnt->{preStart}->{nDot}
       if ( $trRef_ofst == -1 and exists $trannoEnt->{preStart} );
 
-    my @tag_sort = sort trRefSort keys %{ $trannoEnt->{trRefComp} };
+    my @tag_sort     = sort trRefSort keys %{ $trannoEnt->{trRefComp} };
     my $cumulate_len = 0;
-    my ($cur_ex_start, $intOfst);
-    if ($trannoEnt->{rnaBegin} =~ /^(\-?\d+)([\+\-]?\d*)$/) {
-	$cur_ex_start = $1;
-	$intOfst = $2;
+    my ( $cur_ex_start, $intOfst );
+    if ( $trannoEnt->{rnaBegin} =~ /^(\-?\d+)([\+\-]?\d*)$/ ) {
+        $cur_ex_start = $1;
+        $intOfst      = $2;
     }
-    if ($intOfst =~ /^\+/) {
-	$cur_ex_start += 1;
-    }
-
-    if ($cur_ex_start =~ /^-/) {
-	$intOfst = $cur_ex_start;
-	$cur_ex_start = 1;
-    }
-    if ($intOfst eq '') {
-	$intOfst = 0;
+    if ( $intOfst =~ /^\+/ ) {
+        $cur_ex_start += 1;
     }
 
+    if ( $cur_ex_start =~ /^-/ ) {
+        $intOfst      = $cur_ex_start;
+        $cur_ex_start = 1;
+    }
+    if ( $intOfst eq '' ) {
+        $intOfst = 0;
+    }
 
     foreach my $exin (@tag_sort) {
-	my $cur_blk_len;
-	if ( $exin !~ /^EX/ ) {
+        my $cur_blk_len;
+        if ( $exin !~ /^EX/ ) {
             $cur_blk_len =
               ( 2 > @{ $trannoEnt->{trRefComp}->{$exin} } )
               ? 0
               : ( $trannoEnt->{trRefComp}->{$exin}->[1] -
                   $trannoEnt->{trRefComp}->{$exin}->[0] );
-	}
-	else {
-	    $cur_blk_len = $trannoEnt->{trRefComp}->{$exin};
-	}
+        }
+        else {
+            $cur_blk_len = $trannoEnt->{trRefComp}->{$exin};
+        }
 
-	my $cur_blk_ofst = ($trRef_ofst - $cumulate_len);
+        my $cur_blk_ofst = ( $trRef_ofst - $cumulate_len );
 
-	if ( $cur_blk_ofst >= $cur_blk_len ) {
-	    if ( $cur_blk_ofst == $cur_blk_len and $exin eq $tag_sort[-1] ) {
-		return $trannoEnt->{postEnd}->{nDot};
-	    }
-	    else {
-		$cumulate_len += $cur_blk_len;
-		if ($exin =~ /^EX/) { # only cumulate ex pos
-		    $cur_ex_start += $cur_blk_len;
-		    $intOfst = 0;
-		}
-	    }
-	}
-	else { # hit current block
-	    if ( $exin !~ /^EX/) {
-		if ($intOfst < 0 and $cur_ex_start == 1) { # in promoter
-		    confess "Error: non-zero cumulate_len in promoter [$cumulate_len]." if ($cumulate_len > 0);
-		    return ($intOfst + $cur_blk_ofst);
-		}
-		elsif ($exin =~ /^Z/) {
-		    return '+'.($cur_blk_ofst + 1);
-		}
-		else { # intron
-		    my ($blk_begin, $blk_end);
-		    if ($exin eq $tag_sort[0]) {
-			$blk_begin = $trannoEnt->{rnaBegin};
-		    }
-		    else {
-			$blk_begin = ($cur_ex_start - 1)."+1";
-		    }
-		    if ($exin eq $tag_sort[-1]) {
-			$blk_end = $trannoEnt->{rnaEnd};
-		    }
-		    else {
-			$blk_end   = $cur_ex_start."-1";
-		    }
+        if ( $cur_blk_ofst >= $cur_blk_len ) {
+            if ( $cur_blk_ofst == $cur_blk_len and $exin eq $tag_sort[-1] ) {
+                return $trannoEnt->{postEnd}->{nDot};
+            }
+            else {
+                $cumulate_len += $cur_blk_len;
+                if ( $exin =~ /^EX/ ) {    # only cumulate ex pos
+                    $cur_ex_start += $cur_blk_len;
+                    $intOfst = 0;
+                }
+            }
+        }
+        else {                             # hit current block
+            if ( $exin !~ /^EX/ ) {
+                if ( $intOfst < 0 and $cur_ex_start == 1 ) {    # in promoter
+                    confess
+"Error: non-zero cumulate_len in promoter [$cumulate_len]."
+                      if ( $cumulate_len > 0 );
+                    return ( $intOfst + $cur_blk_ofst );
+                }
+                elsif ( $exin =~ /^Z/ ) {
+                    return '+' . ( $cur_blk_ofst + 1 );
+                }
+                else {                                          # intron
+                    my ( $blk_begin, $blk_end );
+                    if ( $exin eq $tag_sort[0] ) {
+                        $blk_begin = $trannoEnt->{rnaBegin};
+                    }
+                    else {
+                        $blk_begin = ( $cur_ex_start - 1 ) . "+1";
+                    }
+                    if ( $exin eq $tag_sort[-1] ) {
+                        $blk_end = $trannoEnt->{rnaEnd};
+                    }
+                    else {
+                        $blk_end = $cur_ex_start . "-1";
+                    }
 
                     return getIntrPos( $blk_begin, $blk_end, $cur_blk_ofst,
                         $cur_blk_len );
-		}
-	    }
-	    else {
-		return ($cur_ex_start + $cur_blk_ofst);
-	    }
-	}
+                }
+            }
+            else {
+                return ( $cur_ex_start + $cur_blk_ofst );
+            }
+        }
     }
     confess "Error: out of trRefComp range [$trRef_ofst].";
 }
 
 # calculate position in intron region
 sub getIntrPos {
-    my ($begin, $end, $ofst, $blk_len) = @_;
-    
-    my ($exPosBegin, $exPosEnd, $intPosBegin, $intPosEnd);
-    if ($begin =~ /^(\d+)([\+\-]\d+)$/) {
-	$exPosBegin = $1;
-	$intPosBegin = $2;
+    my ( $begin, $end, $ofst, $blk_len ) = @_;
+
+    my ( $exPosBegin, $exPosEnd, $intPosBegin, $intPosEnd );
+    if ( $begin =~ /^(\d+)([\+\-]\d+)$/ ) {
+        $exPosBegin  = $1;
+        $intPosBegin = $2;
     }
-    if ($end =~ /^(\d+)([\+\-]\d+)$/) {
-	$exPosEnd = $1;
-	$intPosEnd = $2;
+    if ( $end =~ /^(\d+)([\+\-]\d+)$/ ) {
+        $exPosEnd  = $1;
+        $intPosEnd = $2;
     }
 
-    if ($exPosBegin eq $exPosEnd) {
+    if ( $exPosBegin eq $exPosEnd ) {
         return
             $exPosBegin
           . ( ( $intPosBegin < 0 ) ? "" : '+' )
           . ( $intPosBegin + $ofst );
     }
     else {
-	my $wlen = $intPosBegin - $intPosEnd + $blk_len - 2;
-	my $lofst = $intPosBegin + $ofst - 1;
-	if ($lofst < ($wlen / 2 - 1)) {
-	    return ($exPosBegin . '+' . ($lofst + 1));
-	}
-	else {
-	    return ($exPosEnd . '-' . ($wlen - $lofst));
-	}
+        my $wlen  = $intPosBegin - $intPosEnd + $blk_len - 2;
+        my $lofst = $intPosBegin + $ofst - 1;
+        if ( $lofst < ( $wlen / 2 - 1 ) ) {
+            return ( $exPosBegin . '+' . ( $lofst + 1 ) );
+        }
+        else {
+            return ( $exPosEnd . '-' . ( $wlen - $lofst ) );
+        }
     }
 }
-
 
 =head2 getTrRef
 
@@ -5441,7 +5649,7 @@ sub getTrRef {
     my $trStart  = getTrStart( $trannoEnt->{rnaBegin} );
     foreach my $exin (@tag_sort) {
         if ( $exin !~ /^EX/ ) {
-	    return '=' if ($refgenome eq '=');
+            return '=' if ( $refgenome eq '=' );
             my $int_seq =
               ( 2 == scalar @{ $trannoEnt->{trRefComp}->{$exin} } )
               ? substr(
@@ -5469,20 +5677,20 @@ sub getTrRef {
 # from any nDot format HGVS position string.
 sub getTrStart {
     my $trStart = shift;
-    if ($trStart =~ /^-/) {
-	return 0;
+    if ( $trStart =~ /^-/ ) {
+        return 0;
     }
-    elsif ($trStart =~ /^(\d+)\-/) {
-	return ($1 - 1);
+    elsif ( $trStart =~ /^(\d+)\-/ ) {
+        return ( $1 - 1 );
     }
-    elsif ($trStart =~ /^(\d+)\+/) {
-	return $1;
+    elsif ( $trStart =~ /^(\d+)\+/ ) {
+        return $1;
     }
-    elsif ($trStart =~ /^(\d+)$/) {
-	return ($1 - 1);
+    elsif ( $trStart =~ /^(\d+)$/ ) {
+        return ( $1 - 1 );
     }
     else {
-	confess "Error: not available trStart [$trStart]";
+        confess "Error: not available trStart [$trStart]";
     }
 }
 
@@ -5517,43 +5725,42 @@ sub trRefSort {
 =cut
 
 sub batch_anno {
-    my ($self, $rVars) = @_;
+    my ( $self, $rVars ) = @_;
     my @all_annoRst = ();
     my @sorted_vars =
       sort { $a->{chr} cmp $b->{chr} or $a->{pos} <=> $b->{pos} } @$rVars;
 
-    my $cur_chr = "";
+    my $cur_chr  = "";
     my $anno_idx = 0;
     foreach my $var (@sorted_vars) {
-	if ($var->{chr} ne $cur_chr) {
-	    $cur_chr = $var->{chr};
-	    $anno_idx = 0;
-	}
-	my $annoEnt;
-	($annoEnt, $anno_idx) = $self->varanno($var, $anno_idx);
-	push (@all_annoRst, $annoEnt);
+        if ( $var->{chr} ne $cur_chr ) {
+            $cur_chr  = $var->{chr};
+            $anno_idx = 0;
+        }
+        my $annoEnt;
+        ( $annoEnt, $anno_idx ) = $self->varanno( $var, $anno_idx );
+        push( @all_annoRst, $annoEnt );
     }
     return \@all_annoRst;
 }
 
 sub rev_comp {
     my $self = shift;
-    my $Seq = shift;
+    my $Seq  = shift;
     $Seq = reverse($Seq);
-    $Seq =~ tr/ATCG/TAGC/; # only deal with 'A', 'T', 'G', 'C'
+    $Seq =~ tr/ATCG/TAGC/;    # only deal with 'A', 'T', 'G', 'C'
     return $Seq;
 }
 
 sub throw {
-    my ($self,@msg) = @_;
-    confess @msg,"\n";
+    my ( $self, @msg ) = @_;
+    confess @msg, "\n";
 }
 
 sub warn {
-    my ($self, @msg) = @_;
-    carp @msg,"\n";
+    my ( $self, @msg ) = @_;
+    carp @msg, "\n";
 }
-
 
 =head1 BedAnno::Var
 
@@ -5652,7 +5859,7 @@ our $MAX_COMPLEX_PARSING = 200;
 
 sub new {
     my $class = shift;
-    my ($chr, $start, $end, $ref, $alt);
+    my ( $chr, $start, $end, $ref, $alt );
     my %var;
 
     if ( ref( $_[0] ) ) {
@@ -5664,7 +5871,7 @@ sub new {
               "chr, start, alt, ref specified.";
         }
 
-	%var = %{$_[0]};
+        %var = %{ $_[0] };
 
         $chr   = $_[0]->{chr};
         $start = $_[0]->{begin};
@@ -5677,7 +5884,7 @@ sub new {
         else {
             $alt = "";
         }
-	$alt = "" if ($alt =~ /^null$/i);
+        $alt = "" if ( $alt =~ /^null$/i );
 
         if ( exists $_[0]->{referenceSequence}
             and !defined $_[0]->{referenceSequence} )
@@ -5690,68 +5897,68 @@ sub new {
             ( exists $_[0]->{referenceSequence} ) ? $_[0]->{referenceSequence}
             : "="
           );
-	$ref = "" if ($ref =~ /^null$/i);
+        $ref = "" if ( $ref =~ /^null$/i );
 
-	# clean %var
-	delete $var{"chr"};
-	delete $var{"begin"};
-	delete $var{"end"} if (exists $var{end});
-	delete $var{"referenceSequence"} if (exists $var{referenceSequence});
-	delete $var{"variantSequence"} if (exists $var{variantSequence});
+        # clean %var
+        delete $var{"chr"};
+        delete $var{"begin"};
+        delete $var{"end"}               if ( exists $var{end} );
+        delete $var{"referenceSequence"} if ( exists $var{referenceSequence} );
+        delete $var{"variantSequence"}   if ( exists $var{variantSequence} );
     }
     else {
-	confess "Error: not enough args, need at least 4 args." if (4 > @_);
-	($chr, $start, $end, $ref, $alt) = @_;
+        confess "Error: not enough args, need at least 4 args." if ( 4 > @_ );
+        ( $chr, $start, $end, $ref, $alt ) = @_;
     }
 
+    if ( !defined $end or $end !~ /^\d+$/ ) {    # from VCF v4.1 1-based start
+        if ( defined $end ) {
+            $alt = $ref;
+            $ref = $end;
+        }
 
-    if (!defined $end or $end !~ /^\d+$/) { # from VCF v4.1 1-based start
-	if (defined $end) {
-	    $alt = $ref;
-	    $ref = $end;
-	}
-
-	$ref = normalise_seq($ref);
-	$alt = normalise_seq($alt);
+        $ref = normalise_seq($ref);
+        $alt = normalise_seq($alt);
         if ( ( $ref ne $alt or length($ref) > 1 )
             and substr( $ref, 0, 1 ) eq substr( $alt, 0, 1 ) )
         {
             $ref = substr( $ref, 1 );
             $alt = substr( $alt, 1 );
         }
-	else {
-	    $start -= 1; # change to 0-based start
-	}
-	my $rl = length($ref);
-	$end = $start + $rl;
+        else {
+            $start -= 1;    # change to 0-based start
+        }
+        my $rl = length($ref);
+        $end = $start + $rl;
     }
 
-
-    my $len_ref = $end - $start;            # chance to annotate long range
-    my ($varType, $implicit_varType, $sm) = guess_type($len_ref, $ref, $alt);
+    my $len_ref = $end - $start;    # chance to annotate long range
+    my ( $varType, $implicit_varType, $sm ) =
+      guess_type( $len_ref, $ref, $alt );
 
     $chr = normalise_chr($chr);
-    %var = ( %var,  # remain some extra keys in the var hash, e.g. var_id etc.
+    %var = (
+        %var,    # remain some extra keys in the var hash, e.g. var_id etc.
         chr    => $chr,
         pos    => $start,
         ref    => uc($ref),
-	end    => $end,
+        end    => $end,
         alt    => uc($alt),
         reflen => $len_ref,
-	guess  => $varType,
-	imp    => $implicit_varType,
-	sm     => $sm,
+        guess  => $varType,
+        imp    => $implicit_varType,
+        sm     => $sm,
     );
-    $var{altlen} = length($alt) if ($alt ne '?');
+    $var{altlen} = length($alt) if ( $alt ne '?' );
 
     my $var;
     $var = {%var};
     bless $var, ref($class) || $class;
 
-    if ($varType eq 'no-call' or $implicit_varType ne 'delins') {
-	return $var;
+    if ( $varType eq 'no-call' or $implicit_varType ne 'delins' ) {
+        return $var;
     }
-    
+
     return $var
       if ( $len_ref > $MAX_COMPLEX_PARSING
         or length($alt) > $MAX_COMPLEX_PARSING );
@@ -5778,64 +5985,63 @@ sub TO_JSON {
 =cut
 
 sub getUnifiedVar {
-    my $var = shift;
+    my $var  = shift;
     my $strd = shift;
 
     my $consPos = $$var{pos};
     my $consRef = $$var{ref};
     my $consAlt = $$var{alt};
-    my $consRL	= $$var{reflen};
+    my $consRL  = $$var{reflen};
 
-    if (!exists $$var{altlen}) {
-	return ($consPos, $consRef, $consAlt, $consRL);
-    }
-
-    my $consAL	= $$var{altlen};
-    
-    if (exists $var->{p}) { # rep
-	$consPos = $$var{p};
-	$consRef = $$var{r};
-	$consAlt = $$var{a};
-	$consRL	 = $$var{rl};
-	$consAL	 = $$var{al};
-    }
-    elsif (exists $var->{bp}) { # complex bc strand same
-	$consPos = $$var{bp};
-	$consRef = $$var{br};
-	$consAlt = $$var{ba};
-	$consRL	 = $$var{brl};
-	$consAL	 = $$var{bal};
-    }
-    elsif (exists $var->{$strd}) { # complex bc strand diff
-	$consPos = $$var{$strd}{bp};
-	$consRef = $$var{$strd}{br};
-	$consAlt = $$var{$strd}{ba};
-	$consRL	 = $$var{$strd}{brl};
-	$consAL	 = $$var{$strd}{bal};
+    if ( !exists $$var{altlen} ) {
+        return ( $consPos, $consRef, $consAlt, $consRL );
     }
 
-    return ($consPos, $consRef, $consAlt, $consRL, $consAL);
+    my $consAL = $$var{altlen};
+
+    if ( exists $var->{p} ) {    # rep
+        $consPos = $$var{p};
+        $consRef = $$var{r};
+        $consAlt = $$var{a};
+        $consRL  = $$var{rl};
+        $consAL  = $$var{al};
+    }
+    elsif ( exists $var->{bp} ) {    # complex bc strand same
+        $consPos = $$var{bp};
+        $consRef = $$var{br};
+        $consAlt = $$var{ba};
+        $consRL  = $$var{brl};
+        $consAL  = $$var{bal};
+    }
+    elsif ( exists $var->{$strd} ) {    # complex bc strand diff
+        $consPos = $$var{$strd}{bp};
+        $consRef = $$var{$strd}{br};
+        $consAlt = $$var{$strd}{ba};
+        $consRL  = $$var{$strd}{brl};
+        $consAL  = $$var{$strd}{bal};
+    }
+
+    return ( $consPos, $consRef, $consAlt, $consRL, $consAL );
 }
-
 
 sub normalise_chr {
     my $chr = shift;
     $chr =~ s/^chr//i;
-    if ($chr eq '23') {
-	$chr = 'X';
+    if ( $chr eq '23' ) {
+        $chr = 'X';
     }
-    elsif ($chr eq '24') {
-	$chr = 'Y';
+    elsif ( $chr eq '24' ) {
+        $chr = 'Y';
     }
-    elsif ($chr eq '25') {
-	$chr = 'MT';
+    elsif ( $chr eq '25' ) {
+        $chr = 'MT';
     }
-    elsif ($chr =~ /^[xym]$/i) {
-	$chr = uc($chr);
-	$chr .= 'T' if ($chr eq 'M');
+    elsif ( $chr =~ /^[xym]$/i ) {
+        $chr = uc($chr);
+        $chr .= 'T' if ( $chr eq 'M' );
     }
-    elsif ($chr =~ /^M_/i) {
-	$chr = 'MT';
+    elsif ( $chr =~ /^M_/i ) {
+        $chr = 'MT';
     }
     return $chr;
 }
@@ -5843,11 +6049,11 @@ sub normalise_chr {
 sub normalise_seq {
     my $seq = shift;
     $seq =~ s/\s+//g;
-    $seq = "" if ($seq eq '.');
+    $seq = "" if ( $seq eq '.' );
     $seq = uc($seq);
-    if ($seq =~ /[^ACGTN]/ and $seq ne '?') {
-	confess "Error: unrecognized pattern exists,",
-	    "no multiple alts please. [$seq]";
+    if ( $seq =~ /[^ACGTN]/ and $seq ne '?' ) {
+        confess "Error: unrecognized pattern exists,",
+          "no multiple alts please. [$seq]";
     }
     return $seq;
 }
@@ -5865,50 +6071,53 @@ sub normalise_seq {
 
 sub parse_complex {
     my $var = shift;
-    my ($ref, $alt, $len_ref, $len_alt) = @{$var}{qw(ref alt reflen altlen)};
+    my ( $ref, $alt, $len_ref, $len_alt ) = @{$var}{qw(ref alt reflen altlen)};
 
     my $get_rst = get_internal( $ref, $len_ref, $alt, $len_alt );
-    if ($get_rst->{r} != $len_ref) {
-	my ($imp_guess, $sm) = guess_type_by_length( $get_rst->{r}, $get_rst->{a} );
-	$var->{imp} = $imp_guess;
-	$var->{sm}  = $sm;
-	if ( $get_rst->{'+'} != $get_rst->{'-'} ) {
-	    for my $strd ( '+', '-' ) {
-		$var->{$strd}->{bp} = $var->{pos} + $get_rst->{$strd};
-		$var->{$strd}->{brl} = $get_rst->{r};
-		$var->{$strd}->{bal} = $get_rst->{a};
-		$var->{$strd}->{br} =
-		  substr( $var->{ref}, $get_rst->{$strd}, $get_rst->{r} );
-		$var->{$strd}->{ba} =
-		  substr( $var->{alt}, $get_rst->{$strd}, $get_rst->{a} );
-	    }
-	}
-	else {
-	    $var->{bp}  = $var->{pos} + $get_rst->{'+'};
-	    $var->{brl} = $get_rst->{r};
-	    $var->{bal} = $get_rst->{a};
-	    $var->{br} = substr( $var->{ref}, $get_rst->{'+'}, $get_rst->{r} );
-	    $var->{ba} = substr( $var->{alt}, $get_rst->{'+'}, $get_rst->{a} );
-	}
+    if ( $get_rst->{r} != $len_ref ) {
+        my ( $imp_guess, $sm ) =
+          guess_type_by_length( $get_rst->{r}, $get_rst->{a} );
+        $var->{imp} = $imp_guess;
+        $var->{sm}  = $sm;
+        if ( $get_rst->{'+'} != $get_rst->{'-'} ) {
+            for my $strd ( '+', '-' ) {
+                $var->{$strd}->{bp}  = $var->{pos} + $get_rst->{$strd};
+                $var->{$strd}->{brl} = $get_rst->{r};
+                $var->{$strd}->{bal} = $get_rst->{a};
+                $var->{$strd}->{br} =
+                  substr( $var->{ref}, $get_rst->{$strd}, $get_rst->{r} );
+                $var->{$strd}->{ba} =
+                  substr( $var->{alt}, $get_rst->{$strd}, $get_rst->{a} );
+            }
+        }
+        else {
+            $var->{bp}  = $var->{pos} + $get_rst->{'+'};
+            $var->{brl} = $get_rst->{r};
+            $var->{bal} = $get_rst->{a};
+            $var->{br}  = substr( $var->{ref}, $get_rst->{'+'}, $get_rst->{r} );
+            $var->{ba}  = substr( $var->{alt}, $get_rst->{'+'}, $get_rst->{a} );
+        }
     }
 
-    if ($var->{sm} == 3) { # equal length long subs
-	my @separate_snvs = ();
-	for (my $i = 0; $i < $var->{reflen}; $i++) {
-	    next if (substr($var->{ref}, $i, 1) eq substr($var->{alt}, $i, 1));
-	    push (@separate_snvs,  $var->{pos} + $i + 1); # 1-based
-	}
-	$var->{sep_snvs} = [@separate_snvs];
+    if ( $var->{sm} == 3 ) {    # equal length long subs
+        my @separate_snvs = ();
+        for ( my $i = 0 ; $i < $var->{reflen} ; $i++ ) {
+            next
+              if (
+                substr( $var->{ref}, $i, 1 ) eq substr( $var->{alt}, $i, 1 ) );
+            push( @separate_snvs, $var->{pos} + $i + 1 );    # 1-based
+        }
+        $var->{sep_snvs} = [@separate_snvs];
     }
 
     my $rc_ref = count_content($ref);
     my $rc_alt = count_content($alt);
-    my @diff = map { $$rc_ref[$_] - $$rc_alt[$_] } (0 .. $AAcount);
+    my @diff   = map { $$rc_ref[$_] - $$rc_alt[$_] } ( 0 .. $AAcount );
 
     # check if the sign of all base diff are consistent.
-    if (check_sign( \@diff )) { # possible short tandom repeat variation
-	my @absdiff = map {abs} @diff;
-	my ($larger, $smaller, $llen, $slen);
+    if ( check_sign( \@diff ) ) {    # possible short tandom repeat variation
+        my @absdiff = map { abs } @diff;
+        my ( $larger, $smaller, $llen, $slen );
         if ( $len_ref > $len_alt ) {
             $larger  = $ref;
             $llen    = $len_ref;
@@ -5922,88 +6131,86 @@ sub parse_complex {
             $slen    = $len_ref;
         }
 
-	my %has = ();
-	for (my $rep = $llen; $rep > 0; $rep--) {
-	    while ($larger =~ /([A-Z]+)(?:\1){$rep}/g) {
-		next if (exists $has{$1});
+        my %has = ();
+        for ( my $rep = $llen ; $rep > 0 ; $rep-- ) {
+            while ( $larger =~ /([A-Z]+)(?:\1){$rep}/g ) {
+                next if ( exists $has{$1} );
 
                 my $rep_el = $1;
                 my $lofs   = length($`);    # $` is the prematched string
 
                 my $cn = check_div( $rep_el, \@absdiff );
-		if ($cn and check_insrep($larger, $smaller, $rep_el, $cn)) {
-		    my $lenrep = length($rep_el);
+                if ( $cn and check_insrep( $larger, $smaller, $rep_el, $cn ) ) {
+                    my $lenrep = length($rep_el);
 
                     @$var{qw(p rep replen)} =
                       ( ( $var->{pos} + $lofs ), $rep_el, $lenrep );
 
-		    $rep += 1; # add the first copy of element
+                    $rep += 1;              # add the first copy of element
 
-		    my $l_cn = $rep;
-		    my $s_cn = $rep - $cn;
-		    my $l_wholerep = $rep_el x $l_cn;
-		    my $s_wholerep = $rep_el x $s_cn;
-		    my $l_replen   = $lenrep * $l_cn;
-		    my $s_replen   = $lenrep * $s_cn;
+                    my $l_cn       = $rep;
+                    my $s_cn       = $rep - $cn;
+                    my $l_wholerep = $rep_el x $l_cn;
+                    my $s_wholerep = $rep_el x $s_cn;
+                    my $l_replen   = $lenrep * $l_cn;
+                    my $s_replen   = $lenrep * $s_cn;
 
-		    if ($llen == $len_ref) { # ref is longer
+                    if ( $llen == $len_ref ) {    # ref is longer
                         @$var{qw(ref_cn alt_cn r a rl al)} = (
                             $l_cn, $s_cn, $l_wholerep, $s_wholerep, $l_replen,
                             $s_replen
                         );
-		    }
-		    else { # alt is longer
+                    }
+                    else {                        # alt is longer
                         @$var{qw(alt_cn ref_cn a r al rl)} = (
                             $l_cn, $s_cn, $l_wholerep, $s_wholerep, $l_replen,
                             $s_replen
                         );
-		    }
+                    }
 
-		    $var->{imp} = 'rep';
-		    $var->{sm}  = ($var->{rl} == 1) ? 1 : 2;
+                    $var->{imp} = 'rep';
+                    $var->{sm} = ( $var->{rl} == 1 ) ? 1 : 2;
 
-		    return $var;
-		}
-		$has{$rep_el} = 1;
-	    }
-	}
+                    return $var;
+                }
+                $has{$rep_el} = 1;
+            }
+        }
     }
     return $var;
 }
 
-
 # guess only by length for get_internal result
 # the only delins without no-call left
 # get_internal will recognize the real mutant
-# region, discard the influnce by other 
+# region, discard the influnce by other
 # sample's result.
 sub guess_type_by_length {
-    my ($rl, $al) = @_;
-    my ($imp_guess, $sm);
-    if ($rl == 0) {
-	$imp_guess = 'ins';
-	$sm = 0;
+    my ( $rl, $al ) = @_;
+    my ( $imp_guess, $sm );
+    if ( $rl == 0 ) {
+        $imp_guess = 'ins';
+        $sm        = 0;
     }
-    elsif ($rl == 1) {
-	if ($al == 1) {
-	    $imp_guess = 'snv';
-	}
-	elsif ($al == 0) {
-	    $imp_guess = 'del';
-	}
-	else {
-	    $imp_guess = 'delins';
-	}
-	$sm = 1;
+    elsif ( $rl == 1 ) {
+        if ( $al == 1 ) {
+            $imp_guess = 'snv';
+        }
+        elsif ( $al == 0 ) {
+            $imp_guess = 'del';
+        }
+        else {
+            $imp_guess = 'delins';
+        }
+        $sm = 1;
     }
     else {
-	$imp_guess = ($al == 0) ? 'del' : 'delins';
-	$sm = ($rl == $al) ? 3 : 2;
+        $imp_guess = ( $al == 0 )   ? 'del' : 'delins';
+        $sm        = ( $rl == $al ) ? 3     : 2;
     }
 
-    return ($imp_guess, $sm);
+    return ( $imp_guess, $sm );
 }
-
 
 =head2 guess_type
 
@@ -6023,7 +6230,8 @@ sub guess_type_by_length {
 =cut
 
 sub guess_type {
-    my ($len_ref, $ref, $alt) = @_;
+    my ( $len_ref, $ref, $alt ) = @_;
+
     # imp_varType: implicit variant type is for HGVS naming
     # varType    : to be output as varType name. can be as the key
     #              to get the SO term by Name2SO hash.
@@ -6032,69 +6240,67 @@ sub guess_type {
     #              1 - for single base variants
     #              2 - for non-equal-length multiple bases variants
     #              3 - for equal-length multiple bases delins
-    my ($imp_varType, $varType, $sm);
-    if ($len_ref == 0) {
-	if ($ref eq $alt) {
-	    $imp_varType = 'ref';
-	}
-	else {
-	    $imp_varType = 'ins';
-	}
-	$sm = 0;
+    my ( $imp_varType, $varType, $sm );
+    if ( $len_ref == 0 ) {
+        if ( $ref eq $alt ) {
+            $imp_varType = 'ref';
+        }
+        else {
+            $imp_varType = 'ins';
+        }
+        $sm = 0;
     }
-    elsif ($len_ref == 1) {
-	if ($ref eq $alt) {
-	    $imp_varType = 'ref';
-	}
-	elsif ($alt eq '') {
-	    $imp_varType = 'del';
-	}
-	elsif (1 == length($alt)) {
-	    $imp_varType = 'snv';
-	}
-	else {
-	    $imp_varType = 'delins';
-	}
-	$sm = 1;
+    elsif ( $len_ref == 1 ) {
+        if ( $ref eq $alt ) {
+            $imp_varType = 'ref';
+        }
+        elsif ( $alt eq '' ) {
+            $imp_varType = 'del';
+        }
+        elsif ( 1 == length($alt) ) {
+            $imp_varType = 'snv';
+        }
+        else {
+            $imp_varType = 'delins';
+        }
+        $sm = 1;
     }
-    elsif ($len_ref > 1) {
-	if ($ref eq $alt) {
-	    $imp_varType = 'ref';
-	}
-	elsif ($alt eq '') {
-	    $imp_varType = 'del';
-	}
-	else {
-	    $imp_varType = 'delins';
-	}
+    elsif ( $len_ref > 1 ) {
+        if ( $ref eq $alt ) {
+            $imp_varType = 'ref';
+        }
+        elsif ( $alt eq '' ) {
+            $imp_varType = 'del';
+        }
+        else {
+            $imp_varType = 'delins';
+        }
 
-	if (length($ref) != length($alt)) {
-	    $sm = 2; # non-equal-length delins
-	}
-	else {
-	    $sm = 3; # equal-length subs
-	}
+        if ( length($ref) != length($alt) ) {
+            $sm = 2;    # non-equal-length delins
+        }
+        else {
+            $sm = 3;    # equal-length subs
+        }
     }
-    $varType = ($alt eq '?' or $alt eq 'N') ? 'no-call' : $imp_varType;
-    return ($varType, $imp_varType, $sm);
+    $varType = ( $alt eq '?' or $alt eq 'N' ) ? 'no-call' : $imp_varType;
+    return ( $varType, $imp_varType, $sm );
 }
-
 
 # check whether the smaller with inserted $cn copies repeat elements
 # is the same with larger one
 sub check_insrep {
-    my ($larger, $smaller, $repeat, $cn) = @_;
-    my $ind = index($smaller, $repeat);
-    if ($ind > -1) {
-	my $temp = $smaller;
-	substr($temp, $ind, 0, ($repeat x $cn));
-	if ($larger eq $temp) {
-	    return 1;
-	}
+    my ( $larger, $smaller, $repeat, $cn ) = @_;
+    my $ind = index( $smaller, $repeat );
+    if ( $ind > -1 ) {
+        my $temp = $smaller;
+        substr( $temp, $ind, 0, ( $repeat x $cn ) );
+        if ( $larger eq $temp ) {
+            return 1;
+        }
     }
     return 0;
 }
-
 
 =head2 get_internal
 
@@ -6114,46 +6320,49 @@ sub check_insrep {
 =cut
 
 sub get_internal {
-    my ($ref, $reflen, $alt, $altlen) = @_;
-    my $shorter = ($reflen < $altlen) ? $reflen : $altlen;
-    my ($lgo, $loff, $rgo, $roff) = (1, 0, 1, 0);
-    for (my $i = 0; $i < $shorter; $i++) {
-	if ($lgo and substr($ref, $i, 1) eq substr($alt, $i, 1)) {
-	    $loff ++;
-	}
-	else {
-	    $lgo = 0;
-	}
+    my ( $ref, $reflen, $alt, $altlen ) = @_;
+    my $shorter = ( $reflen < $altlen ) ? $reflen : $altlen;
+    my ( $lgo, $loff, $rgo, $roff ) = ( 1, 0, 1, 0 );
+    for ( my $i = 0 ; $i < $shorter ; $i++ ) {
+        if ( $lgo and substr( $ref, $i, 1 ) eq substr( $alt, $i, 1 ) ) {
+            $loff++;
+        }
+        else {
+            $lgo = 0;
+        }
 
-	if ($rgo and substr($ref,-($i+1),1) eq substr($alt,-($i+1),1)) {
-	    $roff ++;
-	}
-	else {
-	    $rgo = 0;
-	}
+        if ( $rgo
+            and substr( $ref, -( $i + 1 ), 1 ) eq
+            substr( $alt, -( $i + 1 ), 1 ) )
+        {
+            $roff++;
+        }
+        else {
+            $rgo = 0;
+        }
 
-	last if ($lgo == 0 and $rgo == 0);
+        last if ( $lgo == 0 and $rgo == 0 );
     }
-    my ($new_ref_len, $new_alt_len);
-    if ($shorter >= $loff + $roff) {
-	$new_ref_len = $reflen - $loff - $roff;
-	$new_alt_len = $altlen - $loff - $roff;
-	return {
-	    '+' => $loff,
-	    '-' => $loff,
-	    'r' => $new_ref_len,
-	    'a' => $new_alt_len
-	};
+    my ( $new_ref_len, $new_alt_len );
+    if ( $shorter >= $loff + $roff ) {
+        $new_ref_len = $reflen - $loff - $roff;
+        $new_alt_len = $altlen - $loff - $roff;
+        return {
+            '+' => $loff,
+            '-' => $loff,
+            'r' => $new_ref_len,
+            'a' => $new_alt_len
+        };
     }
     else {
-	$new_ref_len = $reflen - $shorter;
-	$new_alt_len = $altlen - $shorter;
-	return {
-	    '+' => $loff,
-	    '-' => ($shorter - $roff),
-	    'r' => $new_ref_len,
-	    'a' => $new_alt_len
-	};
+        $new_ref_len = $reflen - $shorter;
+        $new_alt_len = $altlen - $shorter;
+        return {
+            '+' => $loff,
+            '-' => ( $shorter - $roff ),
+            'r' => $new_ref_len,
+            'a' => $new_alt_len
+        };
     }
 }
 
@@ -6168,23 +6377,23 @@ sub check_sign {
 
 # check length and content consistent-divisability for string and diff-array
 sub check_div {
-    my ($s, $rc) = @_;
+    my ( $s, $rc ) = @_;
     my $rcs = count_content($s);
-    return 0 unless ($$rc[0] % $$rcs[0] == 0);
+    return 0 unless ( $$rc[0] % $$rcs[0] == 0 );
     my $div = $$rc[0] / $$rcs[0];
-    for (1 .. $AAcount) {
-        return 0 if ($$rc[$_] != $$rcs[$_] * $div);
+    for ( 1 .. $AAcount ) {
+        return 0 if ( $$rc[$_] != $$rcs[$_] * $div );
     }
     return $div;
 }
 
 sub count_content {
-    my $s = uc(shift);
-    my $l = length($s);
-    my @count = ($l, (0) x $AAcount);
-    while ($s=~/(.)/g) {
-	confess "unknown base [$1]" if (!exists $AAnumber{$1});
-	$count[$AAnumber{$1}] ++;
+    my $s     = uc(shift);
+    my $l     = length($s);
+    my @count = ( $l, (0) x $AAcount );
+    while ( $s =~ /(.)/g ) {
+        confess "unknown base [$1]" if ( !exists $AAnumber{$1} );
+        $count[ $AAnumber{$1} ]++;
     }
     return \@count;
 }
@@ -6199,48 +6408,50 @@ sub count_content {
 =cut
 
 sub get_gHGVS {
-    my $var = shift;
+    my $var   = shift;
     my $gHGVS = 'g.';
-    if ($var->{chr} =~ /^M/) { # hit mito chromosome
-	$gHGVS = 'm.';
+    if ( $var->{chr} =~ /^M/ ) {    # hit mito chromosome
+        $gHGVS = 'm.';
     }
 
     my $imp = $var->{imp};
     my $sm  = $var->{sm};
-    my ($pos, $ref, $alt, $reflen, $altlen) = $var->getUnifiedVar('+');
+    my ( $pos, $ref, $alt, $reflen, $altlen ) = $var->getUnifiedVar('+');
 
-    if ($imp eq 'snv') {
-	$gHGVS .= $pos.$ref.'>'.$alt;
+    if ( $imp eq 'snv' ) {
+        $gHGVS .= $pos . $ref . '>' . $alt;
     }
-    elsif ($imp eq 'ins') {
-	$gHGVS .= $pos.'_'.($pos+1).'ins'.$alt;
+    elsif ( $imp eq 'ins' ) {
+        $gHGVS .= $pos . '_' . ( $pos + 1 ) . 'ins' . $alt;
     }
-    elsif ($imp eq 'del' or $imp eq 'delins') {
-	# 1bp del/delins
-	$gHGVS .= ($pos+1);
-	if ($sm > 1) {
-	    $gHGVS .= '_'.($pos + $reflen);
-	}
-	$gHGVS .= 'del'.(($ref =~ /^[ACGTN]+$/) ? $ref : "");
-	$gHGVS .= 'ins'.$alt if ( $imp =~ /delins/);
+    elsif ( $imp eq 'del' or $imp eq 'delins' ) {
+
+        # 1bp del/delins
+        $gHGVS .= ( $pos + 1 );
+        if ( $sm > 1 ) {
+            $gHGVS .= '_' . ( $pos + $reflen );
+        }
+        $gHGVS .= 'del' . ( ( $ref =~ /^[ACGTN]+$/ ) ? $ref : "" );
+        $gHGVS .= 'ins' . $alt if ( $imp =~ /delins/ );
     }
-    elsif ($imp eq 'rep') {
-	$gHGVS .= ($pos + 1);
-	if ($var->{ref_cn} == 1 and $var->{alt_cn} == 2) { # dup
-	    if ($sm > 1) {
-		$gHGVS .= '_' . ($pos + $var->{replen});
-	    }
-	    $gHGVS .= 'dup'. $var->{rep};
-	}
-	else {
-	    $gHGVS .= $var->{rep}.'['.$var->{ref_cn}.'>'.$var->{alt_cn}.']';
-	}
+    elsif ( $imp eq 'rep' ) {
+        $gHGVS .= ( $pos + 1 );
+        if ( $var->{ref_cn} == 1 and $var->{alt_cn} == 2 ) {    # dup
+            if ( $sm > 1 ) {
+                $gHGVS .= '_' . ( $pos + $var->{replen} );
+            }
+            $gHGVS .= 'dup' . $var->{rep};
+        }
+        else {
+            $gHGVS .=
+              $var->{rep} . '[' . $var->{ref_cn} . '>' . $var->{alt_cn} . ']';
+        }
     }
-    elsif ($imp eq 'ref') {
-	$gHGVS .= '=';
+    elsif ( $imp eq 'ref' ) {
+        $gHGVS .= '=';
     }
     else {
-	confess "Can not recognize type $imp.";
+        confess "Can not recognize type $imp.";
     }
     $var->{gHGVS} = $gHGVS;
 
@@ -6273,7 +6484,7 @@ use Carp;
 
 sub new {
     my $class = shift;
-    my $var = shift;
+    my $var   = shift;
     my $self;
     $self->{var} = $var;
     bless $self, ref($class) || $class;
@@ -6283,392 +6494,6 @@ sub new {
 sub TO_JSON {
     return { %{ shift() } };
 }
-
-=head2 reformatAnno
-
-    About   : reformat the BedAnno::Anno entry to fit the need of crawler
-    Usage   : my $crawler_need = $anno->reformatAnno();
-    Note    : ID mapping changes are list the following:
-              var group:
-              refbuild -> referenceBuild
-              chr -> chr
-              pos -> begin
-              end -> end
-              ref -> referenceSequence
-              alt -> variantSequence
-              guess -> varType
-              varTypeSO -> varTypeSO
-              cytoBand -> cytoband
-              dbsnp => {rsID1,rsID2 ... } -> dbsnpIds
-              cg54 => AF -> CG54_AF
-              cg54 => AN -> CG54_AN
-              tgp => AF -> 1000G_AF
-              tgp => AN -> 1000G_AN
-              wellderly => AF -> Wellderly_AF
-              wellderly => AN -> Wellderly_AN
-              esp6500 => AF -> ESP6500_AF
-              esp6500 => AN -> ESP6500_AN
-              phyloPpm -> PhyloPscorePlacentalMammals
-              phyloPpr -> PhyloPscorePrimates
-              phyloPve -> PhyloPscoreVetebrates
-              gHGVS -> gHGVS
-              varName -> VarName
-
-              trInfo group:
-              geneId -> GeneID
-              geneSym -> GeneSym
-              prot -> ProteinAccession
-              strd -> TranscriptOrientation
-	      trVarName -> TranscriptVarName
-              rnaBegin -> TranscriptBegin
-              rnaEnd -> TranscriptEnd
-              protBegin -> ProteinBegin
-              protEnd -> ProteinEnd
-              pfamId -> PFAM_ID
-              pfamName -> PFAM_NAME
-              genepart -> GenePart
-              genepartSO -> GenePartSO
-	      Indexofgenepart -> GenePartIndex
-              componentIndex -> ComponentIndex
-              exonIndex -> ExonNumber
-              intronIndex -> IntronNumer
-              funcSOname -> FunctionImpact
-              IndexofFuncSOname -> ImpactIndex
-              funcSO -> FunctionImpactSO
-              c -> cHGVS
-              p -> pHGVS
-              cc -> CodonChange
-              polar -> AAPolarityRef + AAPolarityVar
-              siftPred -> SIFTpred
-              siftScore -> SIFTscore
-              pp2divPred -> Polyphen2HumDivPred
-              pp2divScore -> Polyphen2HumDivScore
-              pp2varPred -> Polyphen2VarPred
-              pp2varScore -> Polyphen2VarScore
-
-=cut
-
-sub reformatAnno {
-    my $anno = shift;
-    my $var = $anno->{var};
-    my $crawler_need = {
-        var => {
-            referenceBuild    => $var->{refbuild},
-            chr               => (($var->{chr} =~ /^chr/) ? $var->{chr} : 'chr'.$var->{chr}),
-            begin             => $var->{pos},
-            end               => $var->{end},
-            referenceSequence => $var->{ref},
-            variantSequence   => $var->{alt},
-            varType           => $var->{guess},
-            varTypeIndex      => ((exists $varTypeName2Index{ $var->{guess} })
-				    ? $varTypeName2Index{ $var->{guess} }
-				    : "" ),
-            varTypeSO         => (( $var->{varTypeSO} =~ /SO:/ ) 
-				    ? $var->{varTypeSO}
-				    : ""),
-            gHGVS             => ((exists $var->{standard_gHGVS}) ? $var->{standard_gHGVS} : $var->{gHGVS}),
-            VarName           => $var->{varName},
-            cytoband          => ( ( exists $var->{cytoBand} ) 
-				    ? $var->{cytoBand} : "" ),
-            dbsnpIds => (
-                ( exists $var->{dbsnp} )
-                ? join( ";", sort keys %{ $var->{dbsnp} } )
-                : ""
-            ),
-            alleleFrequencies => {
-                "CG54" => {
-                    AF => (
-                        ( exists $var->{cg54} and exists $var->{cg54}->{AF} )
-                        ? $var->{cg54}->{AF}
-                        : ""
-                    ),
-                    AN => (
-                        ( exists $var->{cg54} and exists $var->{cg54}->{AN} )
-                        ? $var->{cg54}->{AN}
-                        : ""
-                    ),
-                },
-                "1000G" => {
-                    AF => (
-                        ( exists $var->{tgp} and exists $var->{tgp}->{AF} )
-                        ? $var->{tgp}->{AF}
-                        : ""
-                    ),
-                    AN => (
-                        ( exists $var->{tgp} and exists $var->{tgp}->{AN} )
-                        ? $var->{tgp}->{AN}
-                        : ""
-                    ),
-                },
-                "Wellderly" => {
-                    AF => (
-                        (
-                                  exists $var->{wellderly}
-                              and exists $var->{wellderly}->{AF}
-                        ) ? $var->{wellderly}->{AF} : ""
-                    ),
-                    AN => (
-                        (
-                                  exists $var->{wellderly}
-                              and exists $var->{wellderly}->{AN}
-                        ) ? $var->{wellderly}->{AN} : ""
-                    ),
-                },
-                "ESP6500" => {
-                    AF => (
-                        (
-                                  exists $var->{esp6500}
-                              and exists $var->{esp6500}->{AF}
-                        ) ? $var->{esp6500}->{AF} : ""
-                    ),
-                    AN => (
-                        (
-                                  exists $var->{esp6500}
-                              and exists $var->{esp6500}->{AN}
-                        ) ? $var->{esp6500}->{AN} : ""
-                    ),
-                },
-              },
-            PhyloPscorePlacentalMammals =>
-              ( ( exists $var->{phyloPpm} ) ? $var->{phyloPpm} : "" ),
-            PhyloPscorePrimates =>
-              ( ( exists $var->{phyloPpr} ) ? $var->{phyloPpr} : "" ),
-            PhyloPscoreVetebrates =>
-              ( ( exists $var->{phyloPve} ) ? $var->{phyloPve} : "" ),
-        },
-    };
-
-    foreach my $kinvar (sort keys %$var) {
-	if ($kinvar =~ /^cusdb_(\S+)/) {
-	    my $dbID = $1;
-	    $crawler_need->{var}->{alleleFrequencies}->{"LocalDB_".$dbID}->{AN} = 
-              ( exists $var->{$kinvar}->{AN} ) ? $var->{$kinvar}->{AN} : "";
-	    $crawler_need->{var}->{alleleFrequencies}->{"LocalDB_".$dbID}->{AF} = 
-              ( exists $var->{$kinvar}->{AF} ) ? $var->{$kinvar}->{AF} : "";
-	}
-    }
-
-    if ( !exists $anno->{trInfo} ) {
-	my @trTags = qw(GeneID GeneSym ProteinAccession 
-	  TranscriptOrientation TranscriptBegin TranscriptEnd 
-	  ProteinBegin ProteinEnd 
-	  PFAM_ID PFAM_NAME 
-	  ComponentIndex ExonNumber IntronNumer 
-	  FunctionImpact ImpactIndex FunctionImpactSO 
-	  cHGVS pHGVS CodonChange 
-	  AAPolarityRef AAPolarityVar 
-	  SIFTpred SIFTscore
-	  Polyphen2HumDivPred Polyphen2HumDivScore 
-	  Polyphen2VarPred Polyphen2VarScore);
-
-	my %empty_tr;
-	@empty_tr{@trTags} = ("") x (scalar @trTags);
-	$crawler_need->{trInfo}->{""} = {%empty_tr};
-	$crawler_need->{trInfo}->{""}->{GenePart} = "intergenic_region";
-	$crawler_need->{trInfo}->{""}->{GenePartSO} = "SO:0000605";
-	$crawler_need->{trInfo}->{""}->{GenePartIndex} = 13;
-	$crawler_need->{trInfo}->{""}->{TranscriptVarName} = $crawler_need->{var}->{VarName};
-	$crawler_need->{trInfo}->{""}->{DistanceToExon} = $MAXDISTANCE;
-    }
-    else {
-        foreach my $trAcc ( sort keys %{ $anno->{trInfo} } ) {
-            my $rTr    = $anno->{trInfo}->{$trAcc};
-            my %trInfo = ();
-            @trInfo{qw(GeneID GeneSym TranscriptOrientation)} =
-              @$rTr{qw(geneId geneSym strd)};
-            $trInfo{ProteinAccession} =
-              ( exists $rTr->{prot} ) ? $rTr->{prot} : "";
-            $trInfo{TranscriptVarName} =
-              ( exists $rTr->{trVarName} ) ? $rTr->{trVarName} : "";
-            $trInfo{TranscriptBegin} =
-              ( exists $rTr->{rnaBegin} ) ? $rTr->{rnaBegin} : "";
-            $trInfo{TranscriptEnd} =
-              ( exists $rTr->{rnaEnd} ) ? $rTr->{rnaEnd} : "";
-	    $trInfo{TranscriptBegin} = "" if ( $trInfo{TranscriptBegin} =~ /^\+/ );
-	    $trInfo{TranscriptEnd} = "" if ( $trInfo{TranscriptEnd} =~ /^\+/ );
-
-            $trInfo{TranscriptBegin} = ""
-              if ( $trInfo{TranscriptBegin} eq '?' );
-            $trInfo{TranscriptEnd} = "" if ( $trInfo{TranscriptEnd} eq '?' );
-
-	    if ($trInfo{TranscriptBegin} !~ /^\d*$/ or $trInfo{TranscriptEnd} !~ /^\d*$/) {
-		my ($begin_anchor_sign, $begin_anchor, $begin_tail_sign, $begin_tail, 
-		    $end_anchor_sign,   $end_anchor,   $end_tail_sign,   $end_tail   );
-		if ($trInfo{TranscriptBegin} =~ /^([\-\+]?)(\d+)([\+\-]?)(\d*)$/) {
-		    $begin_anchor_sign = $1;
-		    $begin_anchor = $2;
-		    $begin_tail_sign = $3;
-		    $begin_tail = $4;
-		}
-		if ($trInfo{TranscriptEnd} =~ /^([\-\+]?)(\d+)([\+\-]?)(\d*)$/) {
-		    $end_anchor_sign = $1;
-		    $end_anchor = $2;
-		    $end_tail_sign = $3;
-		    $end_tail = $4;
-		}
-
-                confess( "Error: not known error",
-                    " [$trInfo{TranscriptBegin}, $trInfo{TranscriptEnd}]",
-                    "\n" )
-                  if (
-                    (  $trInfo{TranscriptBegin} ne "" and !defined $begin_anchor )
-                    or ( $trInfo{TranscriptEnd} ne "" and !defined $end_anchor )
-                  );
-
-                if (
-                        defined $begin_anchor
-                    and defined $end_anchor
-                    and (
-                        (
-                                $begin_anchor_sign eq $end_anchor_sign
-                            and $begin_anchor_sign ne ""
-                        )
-                        or (    $begin_anchor eq $end_anchor
-                            and $begin_tail_sign eq $end_tail_sign
-                            and $begin_tail_sign ne "" )
-                        or (    $begin_anchor == $end_anchor - 1
-                            and $begin_tail_sign eq "+"
-                            and $end_tail_sign eq "-" )
-                    )
-                  )
-                {
-                    $trInfo{TranscriptBegin} = "";
-                    $trInfo{TranscriptEnd}   = "";
-                }
-		else {
-
-		    if (defined $end_anchor) {
-			if ($end_anchor_sign eq "+") { # current method don't know the length of transcript
-			    $trInfo{TranscriptEnd} = "";
-			}
-			elsif ($end_anchor_sign eq "") {
-			    if (defined $begin_anchor and $begin_anchor_sign eq "+" and $begin_anchor eq "1") {
-				$trInfo{TranscriptBegin} = "";
-				$trInfo{TranscriptEnd} = "";
-			    }
-			    else {
-				if ($end_tail_sign eq "+") {
-				    $trInfo{TranscriptEnd} = $end_anchor;
-				}
-				elsif ($end_tail_sign eq "-") {
-				    $trInfo{TranscriptEnd} = $end_anchor - 1;
-				}
-			    }
-			}
-		    }
-
-		    if (defined $begin_anchor) {
-			if ($begin_anchor_sign eq "-") {
-			    $trInfo{TranscriptBegin} = 1;
-			}
-			elsif ($begin_anchor_sign eq "") {
-			    if (defined $end_anchor and $end_anchor_sign eq "-" and $end_anchor eq "1") {
-				$trInfo{TranscriptBegin} = "";
-				$trInfo{TranscriptEnd} = "";
-			    }
-			    else {
-				if ($begin_tail_sign eq "-") {
-				    $trInfo{TranscriptBegin} = $begin_anchor;
-				}
-				elsif ($begin_tail_sign eq "+") {
-				    $trInfo{TranscriptBegin} = $begin_anchor + 1;
-				}
-			    }
-			}
-		    }
-		}
-	    }
-
-            $trInfo{ProteinBegin} =
-              ( exists $rTr->{protBegin} ) ? $rTr->{protBegin} : "";
-            $trInfo{ProteinEnd} =
-              ( exists $rTr->{protEnd} ) ? $rTr->{protEnd} : "";
-            $trInfo{PFAM_ID} =
-              ( exists $rTr->{pfamId} ) ? $rTr->{pfamId} : "";
-            $trInfo{PFAM_NAME} =
-              ( exists $rTr->{pfamName} ) ? $rTr->{pfamName} : "";
-            $trInfo{GenePart} =
-              ( exists $rTr->{genepart} ) ? $rTr->{genepart} : "";
-	    $trInfo{GenePartIndex} = 
-	      ( exists $genepartName2Index{ $rTr->{genepart} } )
-	      ? $genepartName2Index{ $rTr->{genepart} }
-	      : "";
-            $trInfo{GenePartSO} =
-              ( exists $rTr->{genepartSO} and $rTr->{genepartSO} =~ /SO:/ )
-              ? $rTr->{genepartSO}
-              : "";
-            $trInfo{ComponentIndex} =
-              ( exists $rTr->{componentIndex} ) ? $rTr->{componentIndex} : "";
-            $trInfo{ExonNumber} =
-              ( exists $rTr->{exonIndex} ) ? $rTr->{exonIndex} : "";
-            $trInfo{IntronNumber} =
-              ( exists $rTr->{intronIndex} ) ? $rTr->{intronIndex} : "";
-            $trInfo{FunctionImpact} =
-              ( exists $rTr->{funcSOname} ) ? $rTr->{funcSOname} : "";
-            $trInfo{ImpactIndex} =
-              ( exists $funcName2Index{ $rTr->{funcSOname} } )
-              ? $funcName2Index{ $rTr->{funcSOname} }
-              : "";
-            $trInfo{FunctionImpactSO} =
-              ( exists $rTr->{funcSO} and $rTr->{funcSO} =~ /SO:/ )
-              ? $rTr->{funcSO}
-              : "";
-            $trInfo{cHGVS} =
-              ( exists $rTr->{c} ) ? $rTr->{c} : "";
-	    $trInfo{cHGVS} = $rTr->{standard_cHGVS} if (exists $rTr->{standard_cHGVS});
-            $trInfo{pHGVS} =
-              ( exists $rTr->{p} ) ? $rTr->{p} : "";
-	    $trInfo{pHGVS} = $rTr->{standard_pHGVS} if (exists $rTr->{standard_pHGVS});
-            $trInfo{CodonChange} =
-              ( exists $rTr->{cc} ) ? $rTr->{cc} : "";
-            $trInfo{SIFTpred} =
-              ( exists $rTr->{siftPred} ) ? lc($rTr->{siftPred}) : "";
-	    $trInfo{SIFTpred} =~ s/\s+/\-/g;
-            $trInfo{SIFTscore} =
-              ( exists $rTr->{siftScore} ) ? $rTr->{siftScore} : "";
-            $trInfo{Polyphen2HumDivPred} =
-              ( exists $rTr->{pp2divPred} ) ? lc($rTr->{pp2divPred}) : "";
-	    $trInfo{Polyphen2HumDivPred} =~ s/\s+/\-/g;
-            $trInfo{Polyphen2HumDivScore} =
-              ( exists $rTr->{pp2divScore} ) ? $rTr->{pp2divScore} : "";
-            $trInfo{Polyphen2VarPred} =
-              ( exists $rTr->{pp2varPred} ) ? lc($rTr->{pp2varPred}) : "";
-	    $trInfo{Polyphen2VarPred} =~ s/\s+/\-/g;
-            $trInfo{Polyphen2VarScore} =
-              ( exists $rTr->{pp2varScore} ) ? $rTr->{pp2varScore} : "";
-            $trInfo{AAPolarityRef} = "";
-            $trInfo{AAPolarityVar} = "";
-
-            if ( exists $rTr->{polar} ) {
-                my @pol = split( /=>/, $rTr->{polar} );
-                if ( 2 == @pol ) {
-                    $trInfo{AAPolarityRef} = $pol[0];
-                    $trInfo{AAPolarityVar} = $pol[1];
-                }
-            }
-
-	    $trInfo{DistanceToExon} = 0;
-            if (   $trInfo{GenePart} eq "promoter"
-                or $trInfo{GenePart} =~ /fail/i )
-            {
-                $trInfo{DistanceToExon} = $MAXDISTANCE;
-            }
-            elsif ( $trInfo{GenePart} ne "span" ) {
-                my $min = $MAXDISTANCE;
-                while ( $trInfo{cHGVS} =~ /\d+[+-](\d+)/g ) {
-                    $min = $1 if ( $1 < $min );
-                }
-                if ( $min < $MAXDISTANCE ) {
-                    $trInfo{DistanceToExon} = $min;
-                }
-            }
-
-            $crawler_need->{trInfo}->{$trAcc} = {%trInfo};
-        }
-    }
-    return $crawler_need;
-}
-
 
 =head2 getTrPosition
 
@@ -6709,10 +6534,10 @@ sub reformatAnno {
 =cut
 
 sub getTrPosition {
-    my ($annoEnt, $rannodb, $aeIndex) = @_;
+    my ( $annoEnt, $rannodb, $aeIndex ) = @_;
 
     my $var = $annoEnt->{var};
-    
+
     # gather the covered entries
     my $new_aeIndex;
 
@@ -6720,43 +6545,45 @@ sub getTrPosition {
     my %rpreLeft = ();
 
     # debug
-#    print STDERR "DEBUG: getTrPosition for ".Dumper($annoEnt);
-    
+    #    print STDERR "DEBUG: getTrPosition for ".Dumper($annoEnt);
+
     my %hit_badaln_ins = ();
-    for (my $k = $aeIndex; $k < @$rannodb; $k ++) {
-	if ($$rannodb[$k]{sto} < $var->{pos}) { # not reach var
-	    $aeIndex ++;
-	    next;
-	}
-	elsif ( $$rannodb[$k]{sta} > $var->{end} ) { # past var
-	    last;
-	}
-	else { # covered by var
+    for ( my $k = $aeIndex ; $k < @$rannodb ; $k++ ) {
+        if ( $$rannodb[$k]{sto} < $var->{pos} ) {    # not reach var
+            $aeIndex++;
+            next;
+        }
+        elsif ( $$rannodb[$k]{sta} > $var->{end} ) {    # past var
+            last;
+        }
+        else {                                          # covered by var
 
-#	    # debug info
-#	    print STDERR "blk: $k [ $$rannodb[$k]{sta}, $$rannodb[$k]{sto} ]\n"; 
-	    
-	    if ($$rannodb[$k]{sta} <= $var->{pos}
-		and $var->{pos} <= $$rannodb[$k]{sto} ) {
-		$new_aeIndex = $k;
+      #	    # debug info
+      #	    print STDERR "blk: $k [ $$rannodb[$k]{sta}, $$rannodb[$k]{sto} ]\n";
 
-		# for edge hit case fetch backward one block.
-		$new_aeIndex -= 1 if ($new_aeIndex > 0 and $$rannodb[$k]{sta} == $var->{pos});
-	    }
+            if (    $$rannodb[$k]{sta} <= $var->{pos}
+                and $var->{pos} <= $$rannodb[$k]{sto} )
+            {
+                $new_aeIndex = $k;
 
-	    if (!exists $$rannodb[$k]{detail}) { # parse anno db
-		$$rannodb[$k] = BedAnno->assign_detail($$rannodb[$k]);
-	    }
+                # for edge hit case fetch backward one block.
+                $new_aeIndex -= 1
+                  if ( $new_aeIndex > 0 and $$rannodb[$k]{sta} == $var->{pos} );
+            }
 
-	    foreach my $tid (keys %{$$rannodb[$k]{detail}}) {
-		my $rtidDetail = $$rannodb[$k]{detail}{$tid};
+            if ( !exists $$rannodb[$k]{detail} ) {    # parse anno db
+                $$rannodb[$k] = BedAnno->assign_detail( $$rannodb[$k] );
+            }
 
-		my $strd = ($rtidDetail->{strd} eq '+') ? 1 : 0;
+            foreach my $tid ( keys %{ $$rannodb[$k]{detail} } ) {
+                my $rtidDetail = $$rannodb[$k]{detail}{$tid};
+
+                my $strd = ( $rtidDetail->{strd} eq '+' ) ? 1 : 0;
 
                 my ( $unify_p, $unify_r, $unify_a, $unify_rl, $unify_al ) =
                   $var->getUnifiedVar( $rtidDetail->{strd} );
 
-		# skip non hitted block
+                # skip non hitted block
                 next
                   if ( $unify_p > $$rannodb[$k]{sto}
                     or ( $unify_p + $unify_rl ) < $$rannodb[$k]{sta} );
@@ -6772,32 +6599,32 @@ sub getTrPosition {
                   $$rtidDetail{offset} + ( $unify_p - $$rannodb[$k]{sta} );
                 my $total_right_ofst = $total_left_ofst + $unify_rl;
 
-		# debug
-#		print STDERR join(" ", "tid: $tid", $rtidDetail->{strd}, 
-#		    $rtidDetail->{nsta}, $rtidDetail->{nsto}, 
-#		    $rtidDetail->{mismatch})."\n";
-#		print STDERR "rel: $total_left_ofst $total_right_ofst\n";
-
+                # debug
+                #		print STDERR join(" ", "tid: $tid", $rtidDetail->{strd},
+                #		    $rtidDetail->{nsta}, $rtidDetail->{nsto},
+                #		    $rtidDetail->{mismatch})."\n";
+                #		print STDERR "rel: $total_left_ofst $total_right_ofst\n";
 
                 if (   !exists $annoEnt->{trInfo}
                     or !exists $annoEnt->{trInfo}->{$tid}
                     or !exists $annoEnt->{trInfo}->{$tid}->{trAlt} )
                 {
-		    # $tid added into trInfo
+                    # $tid added into trInfo
                     $annoEnt->{trInfo}->{$tid}->{trAlt} =
                       (       $unify_a =~ /^[ACGTN]+$/
                           and $rtidDetail->{strd} eq '-' )
                       ? BedAnno->rev_comp($unify_a)
                       : $unify_a;
 
-		    my $tmp_trInfo = $annoEnt->{trInfo}->{$tid};
+                    my $tmp_trInfo = $annoEnt->{trInfo}->{$tid};
 
                     $tmp_trInfo->{geneId}     = $rtidDetail->{gid};
                     $tmp_trInfo->{geneSym}    = $rtidDetail->{gsym};
                     $tmp_trInfo->{strd}       = $rtidDetail->{strd};
                     $tmp_trInfo->{primaryTag} = $rtidDetail->{pr};
+
                     # assign left rna positions
-		    # if no assignment then skip the right position assignment
+                    # if no assignment then skip the right position assignment
                     if (
                         $annoEnt->cal_hgvs_pos(
                             tid       => $tid,
@@ -6810,20 +6637,22 @@ sub getTrPosition {
                         if ( $rtidDetail->{blka} =~ /^PROM/ ) {
 
                             #			              use P0 for sort
-                            $tmp_trInfo->{trRefComp}->{P0}->[0]
-                              = 0;
+                            $tmp_trInfo->{trRefComp}->{P0}->[0] =
+                              0;
                         }
                         elsif ( $rtidDetail->{exin} =~ /^IVS/ ) {
-                            $tmp_trInfo->{trRefComp}
-                              ->{ $rtidDetail->{exin} }->[0] = 0;
+                            $tmp_trInfo->{trRefComp}->{ $rtidDetail->{exin} }
+                              ->[0] = 0;
                         }
-			elsif ( !$strd and $tmp_trInfo->{rnaEnd} =~ /^\+(\d+)/ ) {
-			    $tmp_trInfo->{trRefComp}->{ Z999 }->[0] = 0;
-			    $tmp_trInfo->{trRefComp}->{ Z999 }->[1] = $1;
-			}
-			# let right rna positions to record Exon block
+                        elsif ( !$strd and $tmp_trInfo->{rnaEnd} =~ /^\+(\d+)/ )
+                        {
+                            $tmp_trInfo->{trRefComp}->{Z999}->[0] = 0;
+                            $tmp_trInfo->{trRefComp}->{Z999}->[1] = $1;
+                        }
 
-			if ($total_left_ofst > 0) {
+                        # let right rna positions to record Exon block
+
+                        if ( $total_left_ofst > 0 ) {
                             $rpreLeft{$tid} = $annoEnt->cal_hgvs_pos(
                                 tid       => $tid,
                                 tidDetail => $rtidDetail,
@@ -6831,85 +6660,93 @@ sub getTrPosition {
                                 LR        => 0,                  # preLeft mode
                                 noassign  => 1,
                             );
-			}
-			elsif ( !exists $rpreLeft{$tid} ) {
-			    # no left block of annotation for this tid
-			    # then 5'promoter left or 3'downstream
-			    $rpreLeft{$tid} = 0;
-			}
+                        }
+                        elsif ( !exists $rpreLeft{$tid} ) {
 
-			unless (ref($rpreLeft{$tid})) {
-			    # no left block of annotation for this tid
-			    # then 5'promoter left or 3'downstream
-			    if ($total_left_ofst == 0) {
-				my $preLeft_cDot = "";
-				my $preLeft_nDot = "";
-				my $preLeft_exin = "";
-				my $preLeft_r    = "";
-				if ($strd) {
-				    $preLeft_exin = ".";
-				    $preLeft_r    = "PROM";
-				    if ( $tmp_trInfo->{cdsBegin} ne "" ) {
-					if ( $tmp_trInfo->{cdsBegin} =~ /^(.*)-u(\d+)$/ ) {
-					    $preLeft_cDot = $1.'-u'.($2+1);
-					}
-					else {
-					    confess "Error: bad cdsBegin for promoter region [$tid:$tmp_trInfo->{cdsBegin}]";
-					}
-				    }
-				    if ( $tmp_trInfo->{rnaBegin} eq "1" ) {
-					$preLeft_nDot = -1;
-				    }
-				    else {
-					$preLeft_nDot = $tmp_trInfo->{rnaBegin} - 1;
-				    }
-				}
-				else {
-				    $preLeft_exin = ".";
-				    $preLeft_r    = "3D";
-				    $preLeft_nDot = '+1';
-				    $preLeft_cDot = '+d1';
-				}
-				$rpreLeft{$tid} = {
-				    nDot => $preLeft_nDot,
-				    cDot => $preLeft_cDot,
-				    exin => $preLeft_exin,
-				    r    => $preLeft_r,
-				};
-			    }
-			}
+                            # no left block of annotation for this tid
+                            # then 5'promoter left or 3'downstream
+                            $rpreLeft{$tid} = 0;
+                        }
 
-			if (ref($rpreLeft{$tid})) {
-			    if ($strd) {
-				$tmp_trInfo->{preStart} = $rpreLeft{$tid};
-			    }
-			    else {
-				$tmp_trInfo->{postEnd} = $rpreLeft{$tid};
-			    }
-			}
+                        unless ( ref( $rpreLeft{$tid} ) ) {
+
+                            # no left block of annotation for this tid
+                            # then 5'promoter left or 3'downstream
+                            if ( $total_left_ofst == 0 ) {
+                                my $preLeft_cDot = "";
+                                my $preLeft_nDot = "";
+                                my $preLeft_exin = "";
+                                my $preLeft_r    = "";
+                                if ($strd) {
+                                    $preLeft_exin = ".";
+                                    $preLeft_r    = "PROM";
+                                    if ( $tmp_trInfo->{cdsBegin} ne "" ) {
+                                        if ( $tmp_trInfo->{cdsBegin} =~
+                                            /^(.*)-u(\d+)$/ )
+                                        {
+                                            $preLeft_cDot =
+                                              $1 . '-u' . ( $2 + 1 );
+                                        }
+                                        else {
+                                            confess
+"Error: bad cdsBegin for promoter region [$tid:$tmp_trInfo->{cdsBegin}]";
+                                        }
+                                    }
+                                    if ( $tmp_trInfo->{rnaBegin} eq "1" ) {
+                                        $preLeft_nDot = -1;
+                                    }
+                                    else {
+                                        $preLeft_nDot =
+                                          $tmp_trInfo->{rnaBegin} - 1;
+                                    }
+                                }
+                                else {
+                                    $preLeft_exin = ".";
+                                    $preLeft_r    = "3D";
+                                    $preLeft_nDot = '+1';
+                                    $preLeft_cDot = '+d1';
+                                }
+                                $rpreLeft{$tid} = {
+                                    nDot => $preLeft_nDot,
+                                    cDot => $preLeft_cDot,
+                                    exin => $preLeft_exin,
+                                    r    => $preLeft_r,
+                                };
+                            }
+                        }
+
+                        if ( ref( $rpreLeft{$tid} ) ) {
+                            if ($strd) {
+                                $tmp_trInfo->{preStart} = $rpreLeft{$tid};
+                            }
+                            else {
+                                $tmp_trInfo->{postEnd} = $rpreLeft{$tid};
+                            }
+                        }
                     }
                     else {
-			$rpreLeft{$tid} = $annoEnt->cal_hgvs_pos(
-			    tid       => $tid,
-			    tidDetail => $rtidDetail,
-			    offset    => $total_left_ofst,
-			    LR        => 0,                  # preLeft mode
-			    noassign  => 1,
-			);
-			
-			next;
+                        $rpreLeft{$tid} = $annoEnt->cal_hgvs_pos(
+                            tid       => $tid,
+                            tidDetail => $rtidDetail,
+                            offset    => $total_left_ofst,
+                            LR        => 0,                  # preLeft mode
+                            noassign  => 1,
+                        );
+
+                        next;
                     }
                 }
 
-		# $tid have been added into trInfo in the left end assignment
-		my $trinfoEnt = $annoEnt->{trInfo}->{$tid};
+                # $tid have been added into trInfo in the left end assignment
+                my $trinfoEnt = $annoEnt->{trInfo}->{$tid};
 
-		if ( $var->{pos} == $var->{end} ) { # assume all insertion are on transcript
-		    $trinfoEnt->{staInTr} = 1;
-		    $trinfoEnt->{stoInTr} = 1;
-		}
+                if ( $var->{pos} == $var->{end} )
+                {    # assume all insertion are on transcript
+                    $trinfoEnt->{staInTr} = 1;
+                    $trinfoEnt->{stoInTr} = 1;
+                }
 
-		# check if hit on transcript region
+                # check if hit on transcript region
                 if (    $$rannodb[$k]{sta} < $$rannodb[$k]{sto}
                     and $var->{pos} >= $$rannodb[$k]{sta}
                     and $var->{pos} < $$rannodb[$k]{sto} )
@@ -6923,44 +6760,43 @@ sub getTrPosition {
                     $trinfoEnt->{stoInTr} = 1;
                 }
 
-		# assign right rna positions
+                # assign right rna positions
                 if (    $total_left_ofst == 0
                     and $total_left_ofst == $total_right_ofst
-		    and $rtidDetail->{wlen} > 0 
-		    and $rtidDetail->{mismatch} eq ""
-		    and !exists $hit_badaln_ins{$tid}
-		)
-                { # here is the part of insertion in edge,
-		  # we don't need to recall cal_hgvs_pos,
-		  # just use the already generated infomation
-		  # About genepart judgement for this edge insertion case
-		  # 1. promoter-any     => promoter
-		  # 2. any-3'downstream => 3'downstream
-		  # 3. utr-cds          => utr
-		  # 4. exon-intron      => exon
-		    if ($strd) {
-			$trinfoEnt->{rnaEnd} = $rpreLeft{$tid}->{nDot};
-			$trinfoEnt->{cdsEnd} = $rpreLeft{$tid}->{cDot};
-			$trinfoEnt->{ei_End} = $rpreLeft{$tid}->{exin};
-			$trinfoEnt->{r_End}  = $rpreLeft{$tid}->{r};
-		    }
-		    else {
-			$trinfoEnt->{rnaBegin} = $rpreLeft{$tid}->{nDot};
-			$trinfoEnt->{cdsBegin} = $rpreLeft{$tid}->{cDot};
-			$trinfoEnt->{ei_Begin} = $rpreLeft{$tid}->{exin};
-			$trinfoEnt->{r_Begin}  = $rpreLeft{$tid}->{r};
-		    }
+                    and $rtidDetail->{wlen} > 0
+                    and $rtidDetail->{mismatch} eq ""
+                    and !exists $hit_badaln_ins{$tid} )
+                {    # here is the part of insertion in edge,
+                        # we don't need to recall cal_hgvs_pos,
+                        # just use the already generated infomation
+                        # About genepart judgement for this edge insertion case
+                        # 1. promoter-any     => promoter
+                        # 2. any-3'downstream => 3'downstream
+                        # 3. utr-cds          => utr
+                        # 4. exon-intron      => exon
+                    if ($strd) {
+                        $trinfoEnt->{rnaEnd} = $rpreLeft{$tid}->{nDot};
+                        $trinfoEnt->{cdsEnd} = $rpreLeft{$tid}->{cDot};
+                        $trinfoEnt->{ei_End} = $rpreLeft{$tid}->{exin};
+                        $trinfoEnt->{r_End}  = $rpreLeft{$tid}->{r};
+                    }
+                    else {
+                        $trinfoEnt->{rnaBegin} = $rpreLeft{$tid}->{nDot};
+                        $trinfoEnt->{cdsBegin} = $rpreLeft{$tid}->{cDot};
+                        $trinfoEnt->{ei_Begin} = $rpreLeft{$tid}->{exin};
+                        $trinfoEnt->{r_Begin}  = $rpreLeft{$tid}->{r};
+                    }
 
-		    # correct genepartSO for different type of edge insertion
+                    # correct genepartSO for different type of edge insertion
                     if (   $trinfoEnt->{r_Begin} eq 'PROM'
                         or $trinfoEnt->{r_End} eq 'PROM' )
                     {
                         $trinfoEnt->{genepartSO} = '167';
-			$trinfoEnt->{trRefComp}->{P0} = [ 0, 0 ];
-			$trinfoEnt->{exin} = '.';
-			$trinfoEnt->{r} = 'PROM';
+                        $trinfoEnt->{trRefComp}->{P0} = [ 0, 0 ];
+                        $trinfoEnt->{exin}            = '.';
+                        $trinfoEnt->{r}               = 'PROM';
                     }
-                    elsif (   $trinfoEnt->{r_Begin} eq '3D'
+                    elsif ($trinfoEnt->{r_Begin} eq '3D'
                         or $trinfoEnt->{r_End} eq '3D' )
                     { # 3'downstream insertion will be ignored as intergenic variantion
                         delete $annoEnt->{trInfo}->{$tid};
@@ -6979,9 +6815,11 @@ sub getTrPosition {
                           getSOfromR( $trinfoEnt->{r_End} );
                         $trinfoEnt->{trRefComp}->{ $trinfoEnt->{ei_End} } = 0
                           if ( !exists $trinfoEnt->{trRefComp}
-                            or !exists $trinfoEnt->{trRefComp}->{ $trinfoEnt->{ei_End} } );
-			$trinfoEnt->{exin} = $trinfoEnt->{ei_End};
-			$trinfoEnt->{r} = $trinfoEnt->{r_End};
+                            or !
+                            exists $trinfoEnt->{trRefComp}
+                            ->{ $trinfoEnt->{ei_End} } );
+                        $trinfoEnt->{exin} = $trinfoEnt->{ei_End};
+                        $trinfoEnt->{r}    = $trinfoEnt->{r_End};
                     }
                     elsif (
                         (
@@ -6996,29 +6834,35 @@ sub getTrPosition {
                           getSOfromR( $trinfoEnt->{r_Begin} );
                         $trinfoEnt->{trRefComp}->{ $trinfoEnt->{ei_Begin} } = 0
                           if ( !exists $trinfoEnt->{trRefComp}
-                            or !exists $trinfoEnt->{trRefComp}->{ $trinfoEnt->{ei_Begin} } );
-			$trinfoEnt->{exin} = $trinfoEnt->{ei_Begin};
-			$trinfoEnt->{r} = $trinfoEnt->{r_Begin};
+                            or !
+                            exists $trinfoEnt->{trRefComp}
+                            ->{ $trinfoEnt->{ei_Begin} } );
+                        $trinfoEnt->{exin} = $trinfoEnt->{ei_Begin};
+                        $trinfoEnt->{r}    = $trinfoEnt->{r_Begin};
                     }
-		    else { # no genepart change needed
-			if ($trinfoEnt->{ei_Begin} eq $trinfoEnt->{ei_End}) {
-			    if ($trinfoEnt->{ei_Begin} =~ /^EX/) {
-                                $trinfoEnt->{trRefComp}->{ $trinfoEnt->{ei_Begin} } = 0
+                    else {    # no genepart change needed
+                        if ( $trinfoEnt->{ei_Begin} eq $trinfoEnt->{ei_End} ) {
+                            if ( $trinfoEnt->{ei_Begin} =~ /^EX/ ) {
+                                $trinfoEnt->{trRefComp}
+                                  ->{ $trinfoEnt->{ei_Begin} } = 0
                                   if ( !exists $trinfoEnt->{trRefComp}
-                                    or !exists $trinfoEnt->{trRefComp}->{ $trinfoEnt->{ei_Begin} } );
- 
-			    }
-			    elsif ($trinfoEnt->{ei_Begin} eq '?') {
-				$trinfoEnt->{trRefComp}->{'Q1'} = 0;
-			    }
-			    else {
-				$trinfoEnt->{trRefComp}->{$trinfoEnt->{ei_Begin}} = [ 0, 0 ];
-			    }
-			}
-			$trinfoEnt->{exin} = $trinfoEnt->{ei_Begin};
-			$trinfoEnt->{r} = $trinfoEnt->{r_Begin};
-		    }
-		}
+                                    or !
+                                    exists $trinfoEnt->{trRefComp}
+                                    ->{ $trinfoEnt->{ei_Begin} } );
+
+                            }
+                            elsif ( $trinfoEnt->{ei_Begin} eq '?' ) {
+                                $trinfoEnt->{trRefComp}->{'Q1'} = 0;
+                            }
+                            else {
+                                $trinfoEnt->{trRefComp}
+                                  ->{ $trinfoEnt->{ei_Begin} } = [ 0, 0 ];
+                            }
+                        }
+                        $trinfoEnt->{exin} = $trinfoEnt->{ei_Begin};
+                        $trinfoEnt->{r}    = $trinfoEnt->{r_Begin};
+                    }
+                }
                 elsif (
                     $annoEnt->cal_hgvs_pos(
                         tid       => $tid,
@@ -7028,18 +6872,18 @@ sub getTrPosition {
                     )
                   )
                 {
-		    # assign the trRefComp
-		    my $tmp_exin = $rtidDetail->{exin};
+                    # assign the trRefComp
+                    my $tmp_exin = $rtidDetail->{exin};
                     if ( $tmp_exin =~ /^EX/ ) {
                         if (   !exists $tidExblk{$tid}
                             or !exists $tidExblk{$tid}{$tmp_exin}
-                            or !exists $tidExblk{$tid}{$tmp_exin}{
-				$rtidDetail->{nsta} . ',' . $rtidDetail->{nsto}
-				}
+                            or !
+                            exists $tidExblk{$tid}{$tmp_exin}
+                            { $rtidDetail->{nsta} . ',' . $rtidDetail->{nsto} }
                           )
                         {    # non Insertion on refseq, and first occured exon
-                            $tidExblk{$tid}{$tmp_exin}{
-				    $rtidDetail->{nsta} . ','
+                            $tidExblk{$tid}{$tmp_exin}
+                              {     $rtidDetail->{nsta} . ','
                                   . $rtidDetail->{nsto} } = 1;
 
                             my ( $cmpStart, $cmpEnd );
@@ -7054,7 +6898,7 @@ sub getTrPosition {
                                   ? $rtidDetail->{nsta}
                                   : $trinfoEnt->{rnaBegin}
                                   ;    # select the larger one
-				$cmpEnd = 
+                                $cmpEnd =
                                   (
                                     0 < BedAnno->cmpPos(
                                         $trinfoEnt->{rnaEnd},
@@ -7064,8 +6908,8 @@ sub getTrPosition {
                                   ? $trinfoEnt->{rnaEnd}
                                   : $rtidDetail->{nsto}
                                   ;    # select the smaller one
-			    }
-			    else {
+                            }
+                            else {
                                 $cmpStart =
                                   (
                                     0 < BedAnno->cmpPos(
@@ -7090,11 +6934,12 @@ sub getTrPosition {
 
                             if ( $cmpStart !~ /^\d+$/ or $cmpEnd !~ /^\d+$/ ) {
                                 confess "Error: unknown bug cmpStart ",
-				    "[$cmpStart], cmpEnd [$cmpEnd]";
+                                  "[$cmpStart], cmpEnd [$cmpEnd]";
                             }
 
                             delete $trinfoEnt->{trRefComp}->{Z999}
-                              if (  $strd and exists $trinfoEnt->{trRefComp}
+                              if (  $strd
+                                and exists $trinfoEnt->{trRefComp}
                                 and exists $trinfoEnt->{trRefComp}->{Z999} );
 
                             $trinfoEnt->{trRefComp}->{$tmp_exin} +=
@@ -7111,8 +6956,9 @@ sub getTrPosition {
                         }
 
                     }
-		    elsif ($rtidDetail->{blka} eq '?') { # problem for trRef assign for new version
-			my ($af_sta, $af_sto);
+                    elsif ( $rtidDetail->{blka} eq '?' )
+                    {    # problem for trRef assign for new version
+                        my ( $af_sta, $af_sto );
                         $af_sta =
                           ( $$rannodb[$k]{sta} < $unify_p )
                           ? $unify_p
@@ -7121,64 +6967,64 @@ sub getTrPosition {
                           ( $$rannodb[$k]{sto} < $unify_p + $unify_rl )
                           ? $$rannodb[$k]{sto}
                           : ( $unify_p + $unify_rl );
-			$trinfoEnt->{trRefComp}->{'Q1'} += $af_sto - $af_sta;
-		    }
-		    else { # for intron region and PROM
-			if ( $rtidDetail->{blka} =~ /^PROM/ ) {
-			    $tmp_exin = 'P0'; # for sort
-			}
+                        $trinfoEnt->{trRefComp}->{'Q1'} += $af_sto - $af_sta;
+                    }
+                    else {    # for intron region and PROM
+                        if ( $rtidDetail->{blka} =~ /^PROM/ ) {
+                            $tmp_exin = 'P0';    # for sort
+                        }
 
                         delete $trinfoEnt->{trRefComp}->{Z999}
-                          if (  $strd and exists $trinfoEnt->{trRefComp}
+                          if (  $strd
+                            and exists $trinfoEnt->{trRefComp}
                             and exists $trinfoEnt->{trRefComp}->{Z999} );
 
                         if (   !exists $trinfoEnt->{trRefComp}
-                            or !exists $trinfoEnt->{trRefComp}
-                            ->{$tmp_exin} )
+                            or !exists $trinfoEnt->{trRefComp}->{$tmp_exin} )
                         {
-                            $trinfoEnt->{trRefComp}
-                              ->{$tmp_exin}->[0] =
+                            $trinfoEnt->{trRefComp}->{$tmp_exin}->[0] =
                               $$rannodb[$k]{sta} - $unify_p;
                         }
                         my $less =
-                          ( $$rannodb[$k]{sto} > ($unify_p + $unify_rl) )
-                          ? ($unify_p + $unify_rl)
+                            ( $$rannodb[$k]{sto} > ( $unify_p + $unify_rl ) )
+                          ? ( $unify_p + $unify_rl )
                           : $$rannodb[$k]{sto};
-                        $trinfoEnt->{trRefComp}->{$tmp_exin}
-                          ->[1] = $less - $unify_p;
-			if ( $tmp_exin eq 'P0' and !$strd ) {
-			    $trinfoEnt->{trRefComp}->{$tmp_exin}->[1] = $unify_rl;
-			}
-		    }
+                        $trinfoEnt->{trRefComp}->{$tmp_exin}->[1] =
+                          $less - $unify_p;
+                        if ( $tmp_exin eq 'P0' and !$strd ) {
+                            $trinfoEnt->{trRefComp}->{$tmp_exin}->[1] =
+                              $unify_rl;
+                        }
+                    }
                 }
-		
-		my $rpostRight = $annoEnt->cal_hgvs_pos(
-		    tid       => $tid,
-		    tidDetail => $rtidDetail,
-		    offset    => $total_right_ofst,
-		    LR        => 1,                   # post right mode
-		    noassign  => 1,
-		);
-		if (ref($rpostRight)) {
-		    if ($strd) {
-			$trinfoEnt->{postEnd} = $rpostRight;
-		    }
-		    else {
-			$trinfoEnt->{preStart} = $rpostRight;
-		    }
-		}
 
-		# debug
-#                print STDERR "AnnoEnt Check: "
-#                  . Dumper( $annoEnt->{trInfo}->{$tid} )
-#                  if (  exists $annoEnt->{trInfo}
-#                    and exists $annoEnt->{trInfo}->{$tid} );
-	    }
+                my $rpostRight = $annoEnt->cal_hgvs_pos(
+                    tid       => $tid,
+                    tidDetail => $rtidDetail,
+                    offset    => $total_right_ofst,
+                    LR        => 1,                   # post right mode
+                    noassign  => 1,
+                );
+                if ( ref($rpostRight) ) {
+                    if ($strd) {
+                        $trinfoEnt->{postEnd} = $rpostRight;
+                    }
+                    else {
+                        $trinfoEnt->{preStart} = $rpostRight;
+                    }
+                }
+
+                # debug
+                #                print STDERR "AnnoEnt Check: "
+                #                  . Dumper( $annoEnt->{trInfo}->{$tid} )
+                #                  if (  exists $annoEnt->{trInfo}
+                #                    and exists $annoEnt->{trInfo}->{$tid} );
+            }
         }
     }
 
     # debug
-#    print STDERR "Annotations before check and uniform:", Dumper($annoEnt);
+    #    print STDERR "Annotations before check and uniform:", Dumper($annoEnt);
 
     # final check and uniform trinfo
     if ( exists $annoEnt->{trInfo} ) {
@@ -7188,17 +7034,18 @@ sub getTrPosition {
                 delete $tinfo->{staInTr};
                 delete $tinfo->{stoInTr};
             }
-            elsif ( !exists $tinfo->{staInTr} and !exists $tinfo->{stoInTr}
-		and exists $tinfo->{preStart}
+            elsif ( !exists $tinfo->{staInTr}
+                and !exists $tinfo->{stoInTr}
+                and exists $tinfo->{preStart}
                 and $tinfo->{preStart}->{r} ne 'PROM' )
             {    # hit 3'downstream only
                 delete $annoEnt->{trInfo}->{$t};
                 next;
             }
-	    else {
-                delete $tinfo->{staInTr} if (exists $tinfo->{staInTr});
-                delete $tinfo->{stoInTr} if (exists $tinfo->{stoInTr});
-	    }
+            else {
+                delete $tinfo->{staInTr} if ( exists $tinfo->{staInTr} );
+                delete $tinfo->{stoInTr} if ( exists $tinfo->{stoInTr} );
+            }
 
             if (
                 (
@@ -7225,8 +7072,8 @@ sub getTrPosition {
         }
     }
 
-#    debug
-#    print STDERR "DEBUG: Done getTrPosition\n";
+    #    debug
+    #    print STDERR "DEBUG: Done getTrPosition\n";
 
     $new_aeIndex ||= $aeIndex;
     return $new_aeIndex;
@@ -7234,44 +7081,43 @@ sub getTrPosition {
 
 sub getSOfromR {
     my $r = shift;
-    if ($r eq '?') {
-	return 'annotation-fail';
+    if ( $r eq '?' ) {
+        return 'annotation-fail';
     }
-    elsif ($r eq 'PROM') {
-	return '167';
+    elsif ( $r eq 'PROM' ) {
+        return '167';
     }
-    elsif ($r =~ /^5U/) {
-	return '204';
+    elsif ( $r =~ /^5U/ ) {
+        return '204';
     }
-    elsif ($r =~ /^3U/) {
-	return '205';
+    elsif ( $r =~ /^3U/ ) {
+        return '205';
     }
-    elsif ($r =~ /^C/) {
-	return '316';
+    elsif ( $r =~ /^C/ ) {
+        return '316';
     }
-    elsif ($r =~ /^R/) {
-	return '655';
+    elsif ( $r =~ /^R/ ) {
+        return '655';
     }
-    elsif ($r =~ /^D/) {
-	return '163';
+    elsif ( $r =~ /^D/ ) {
+        return '163';
     }
-    elsif ($r =~ /^A/) {
-	return '164';
+    elsif ( $r =~ /^A/ ) {
+        return '164';
     }
-    elsif ($r =~ /^I5U/) {
-	return '447';
+    elsif ( $r =~ /^I5U/ ) {
+        return '447';
     }
-    elsif ($r =~ /^I3U/) {
-	return '448';
+    elsif ( $r =~ /^I3U/ ) {
+        return '448';
     }
-    elsif ($r =~ /^IC/ or $r =~ /^IR/) {
-	return '191';
+    elsif ( $r =~ /^IC/ or $r =~ /^IR/ ) {
+        return '191';
     }
-    else { # default to intergenic_region
-	return '605';
+    else {    # default to intergenic_region
+        return '605';
     }
 }
-
 
 =head2 cal_hgvs_pos
 
@@ -7343,225 +7189,245 @@ sub getSOfromR {
 =cut
 
 sub cal_hgvs_pos {
-    my $annoEnt = shift;
+    my $annoEnt  = shift;
     my %cal_args = @_;
-    if (exists $cal_args{noassign} and $cal_args{noassign} == 0) {
-	delete $cal_args{noassign};
+    if ( exists $cal_args{noassign} and $cal_args{noassign} == 0 ) {
+        delete $cal_args{noassign};
     }
     my ( $ofst, $tid, $rtidDetail, $lr ) =
       @cal_args{qw(offset tid tidDetail LR)};
     my ( $nDot, $cDot ) = ( '', '' );
-    my $strd = ($$rtidDetail{strd} eq '+') ? 1 : 0;
-    my $trAlt = $annoEnt->{trInfo}->{$tid}->{trAlt} if (!exists $cal_args{noassign});
+    my $strd = ( $$rtidDetail{strd} eq '+' ) ? 1 : 0;
+    my $trAlt = $annoEnt->{trInfo}->{$tid}->{trAlt}
+      if ( !exists $cal_args{noassign} );
 
     my $exin = $rtidDetail->{exin};
     my $blka = $rtidDetail->{blka};
     my $gpSO = $rtidDetail->{gpSO};
 
     my $lofst = $ofst;
-    if ($lr) { # only one time assignment for one var, offset for left 
-	my $rofst = $$rtidDetail{wlen} - $ofst - 1;
-        if ($lofst < 0) {
-	    if ($strd) {
+    if ($lr) {    # only one time assignment for one var, offset for left
+        my $rofst = $$rtidDetail{wlen} - $ofst - 1;
+        if ( $lofst < 0 ) {
+            if ($strd) {
 
-		# 5'promoter is always available
-		$nDot = $$rtidDetail{nsta} + $lofst;
-		if ($$rtidDetail{csta} =~ /^(\S+)\-u(\d+)/) {
+                # 5'promoter is always available
+                $nDot = $$rtidDetail{nsta} + $lofst;
+                if ( $$rtidDetail{csta} =~ /^(\S+)\-u(\d+)/ ) {
                     $cDot = $1 . '-u' . ( $2 - $lofst );
-		}
-	    }
-	    else { # outside transcript region into 3'downstream
-		$nDot = '+'.(0-$lofst);
-		if ($$rtidDetail{csta} =~ /^\*?\d+$/) {
+                }
+            }
+            else {    # outside transcript region into 3'downstream
+                $nDot = '+' . ( 0 - $lofst );
+                if ( $$rtidDetail{csta} =~ /^\*?\d+$/ ) {
                     $cDot = $$rtidDetail{csta} . '+d' . ( 0 - $lofst );
-		}
+                }
 
-		$exin = '.';
-		$blka = '3D';
-		$gpSO = '605';
-	    }
+                $exin = '.';
+                $blka = '3D';
+                $gpSO = '605';
+            }
         }
-	elsif ($lofst > $$rtidDetail{wlen}) {
-	    if (!exists $cal_args{noassign}) {
-		confess "Error: exceed the whole length [$lofst>$$rtidDetail{wlen}]";
-	    }
-	    else {
-		return 0;
-	    }
-	}
-	else { # 0 <= $lofst <= $$rtidDetail{wlen}
-        
-	    # 1. check if a mismatch block (only exon have this)
-	    if ( $rtidDetail->{mismatch} ne "" and $rtidDetail->{mismatch} ne "?" ) {
-		# for each kind of mismatch block,
-		# hit the left edge of var, the refSeq ref will
-		# contain start from the start of the mismatch
-		# block, case I in database already has
-		# a reversed coordinate between left and right.
-		# transcript-alt string shoule be assigned to 
-		# this tid
-		$nDot = $rtidDetail->{nsta};
-		$cDot = $rtidDetail->{csta};
-		if (!exists $cal_args{noassign} and $lofst>0) {
-		    # mismatch info record the transcript-stranded
-		    # reference sequence
+        elsif ( $lofst > $$rtidDetail{wlen} ) {
+            if ( !exists $cal_args{noassign} ) {
+                confess
+                  "Error: exceed the whole length [$lofst>$$rtidDetail{wlen}]";
+            }
+            else {
+                return 0;
+            }
+        }
+        else {    # 0 <= $lofst <= $$rtidDetail{wlen}
+
+            # 1. check if a mismatch block (only exon have this)
+            if (    $rtidDetail->{mismatch} ne ""
+                and $rtidDetail->{mismatch} ne "?" )
+            {
+                # for each kind of mismatch block,
+                # hit the left edge of var, the refSeq ref will
+                # contain start from the start of the mismatch
+                # block, case I in database already has
+                # a reversed coordinate between left and right.
+                # transcript-alt string shoule be assigned to
+                # this tid
+                $nDot = $rtidDetail->{nsta};
+                $cDot = $rtidDetail->{csta};
+                if ( !exists $cal_args{noassign} and $lofst > 0 ) {
+
+                    # mismatch info record the transcript-stranded
+                    # reference sequence
                     my ( $mType, $mStart, $mEnd, $strand_ref ) =
                       split( /,/, $rtidDetail->{mismatch} );
-		    
-		    if ( $mType eq 'E' ) { # edge cross alignment
-			$trAlt = '?';
-		    }
 
-		    if ($strd) { # cut left
-			$trAlt = substr($strand_ref, 0, $lofst).$trAlt if ($trAlt ne '?');
-		    }
-		    else { # cut right
-			$trAlt .= substr($strand_ref, -$lofst, $lofst) if ($trAlt ne '?');
-		    }
-		}
-	    }
-	    # 2. check if hit a normal block's right edge
-	    elsif ( $lofst == $$rtidDetail{wlen} ) {
-		# give back the chance for left edge parsing
-		if (!exists $cal_args{noassign}) {
-		    delete $annoEnt->{trInfo}->{$tid};
-		}
-		return 0;
-	    }
-	    # 3. check if annotation-fail
-	    elsif ($gpSO eq 'annotation-fail') { # may not exist from 0.73
-#		( $nDot, $cDot ) = ( '?', '?' );
-	    }
-	    # 4. check if a promoter
-	    elsif ($blka eq 'PROM') {
+                    if ( $mType eq 'E' ) {    # edge cross alignment
+                        $trAlt = '?';
+                    }
+
+                    if ($strd) {              # cut left
+                        $trAlt = substr( $strand_ref, 0, $lofst ) . $trAlt
+                          if ( $trAlt ne '?' );
+                    }
+                    else {                    # cut right
+                        $trAlt .= substr( $strand_ref, -$lofst, $lofst )
+                          if ( $trAlt ne '?' );
+                    }
+                }
+            }
+
+            # 2. check if hit a normal block's right edge
+            elsif ( $lofst == $$rtidDetail{wlen} ) {
+
+                # give back the chance for left edge parsing
+                if ( !exists $cal_args{noassign} ) {
+                    delete $annoEnt->{trInfo}->{$tid};
+                }
+                return 0;
+            }
+
+            # 3. check if annotation-fail
+            elsif ( $gpSO eq 'annotation-fail' ) {    # may not exist from 0.73
+
+                #		( $nDot, $cDot ) = ( '?', '?' );
+            }
+
+            # 4. check if a promoter
+            elsif ( $blka eq 'PROM' ) {
                 $nDot =
                     ($strd)
                   ? ( $rtidDetail->{nsta} + $lofst )
                   : ( $rtidDetail->{nsta} - $lofst );
-		if ($rtidDetail->{csta} =~ /^(\S+)\-u(\d+)$/) {
+                if ( $rtidDetail->{csta} =~ /^(\S+)\-u(\d+)$/ ) {
                     $cDot =
                         ($strd)
                       ? ( $1 . '-u' . ( $2 - $lofst ) )
                       : ( $1 . '-u' . ( $2 + $lofst ) );
-		}
-	    }
-	    # 5. check if an exon
-	    elsif ($exin =~ /EX/) {
+                }
+            }
+
+            # 5. check if an exon
+            elsif ( $exin =~ /EX/ ) {
                 $nDot =
                     ($strd)
                   ? ( $rtidDetail->{nsta} + $lofst )
                   : ( $rtidDetail->{nsta} - $lofst );
-		if ($rtidDetail->{csta} =~ /^(\*?)(\-?\d+)$/) {
-		    $cDot = ($strd) ? $1.($2 + $lofst) : $1.($2 - $lofst);
-		}
-	    }
-	    # 6. intron
-	    elsif ($exin =~ /IVS/) {
-		my $half_length = $rtidDetail->{wlen} / 2;
-		if ( $gpSO eq 'abnormal-intron' ) {
-		    # for abnormal intron
-		    # the length may be less than 2 bp
-		    # and then the nsta nsto and csta csto
-		    # will point to the neighbor exons' edge
-		    if ($lofst >= $half_length) {
-			if ($rtidDetail->{nsto} =~ /\d+/) {
+                if ( $rtidDetail->{csta} =~ /^(\*?)(\-?\d+)$/ ) {
+                    $cDot =
+                      ($strd) ? $1 . ( $2 + $lofst ) : $1 . ( $2 - $lofst );
+                }
+            }
+
+            # 6. intron
+            elsif ( $exin =~ /IVS/ ) {
+                my $half_length = $rtidDetail->{wlen} / 2;
+                if ( $gpSO eq 'abnormal-intron' ) {
+
+                    # for abnormal intron
+                    # the length may be less than 2 bp
+                    # and then the nsta nsto and csta csto
+                    # will point to the neighbor exons' edge
+                    if ( $lofst >= $half_length ) {
+                        if ( $rtidDetail->{nsto} =~ /\d+/ ) {
                             $nDot =
                               ($strd)
                               ? $rtidDetail->{nsto} . '-' . ( $rofst + 1 )
                               : $rtidDetail->{nsto} . '+' . ( $rofst + 1 );
-			}
-			if ($rtidDetail->{csto} =~ /\d+/) {
+                        }
+                        if ( $rtidDetail->{csto} =~ /\d+/ ) {
                             $cDot =
                               ($strd)
                               ? $rtidDetail->{csto} . '-' . ( $rofst + 1 )
                               : $rtidDetail->{csto} . '+' . ( $rofst + 1 );
-			}
-		    }
-		    else {
-			if ($rtidDetail->{nsta} =~ /\d+/) {
+                        }
+                    }
+                    else {
+                        if ( $rtidDetail->{nsta} =~ /\d+/ ) {
                             $nDot =
                               ($strd)
                               ? $rtidDetail->{nsta} . '+' . ( $lofst + 1 )
                               : $rtidDetail->{nsta} . '-' . ( $lofst + 1 );
-			}
-			if ($rtidDetail->{csta} =~ /\d+/) {
+                        }
+                        if ( $rtidDetail->{csta} =~ /\d+/ ) {
                             $cDot =
                               ($strd)
                               ? $rtidDetail->{csta} . '+' . ( $lofst + 1 )
                               : $rtidDetail->{csta} . '-' . ( $lofst + 1 );
-			}
-		    }
-		}
-		else {
-		    if ($lofst >= $half_length) { # drop into latter part
-			if ($rtidDetail->{nsto} =~ /^(\d+\+?)(\-?\d+)$/) {
-			    $nDot =
-				($strd)
-			      ? ( $1 . ( $2 - $rofst ) )
-			      : ( $1 . ( $2 + $rofst ) );
-			}
-			if ($rtidDetail->{csto} =~ /^([\*\-]?\d+\+?)(\-?\d+)$/) {
-			    $cDot =
-				($strd)
-			      ? ( $1 . ( $2 - $rofst ) )
-			      : ( $1 . ( $2 + $rofst ) );
-			}
-		    }
-		    else {
-			if ($rtidDetail->{nsta} =~ /^(\d+\+?)(\-?\d+)$/) {
-			    $nDot =
-				($strd)
-			      ? ( $1 . ( $2 + $lofst ) )
-			      : ( $1 . ( $2 - $lofst ) );
-			}
-			if ($rtidDetail->{csta} =~ /^([\*\-]?\d+\+?)(\-?\d+)$/) {
-			    $cDot =
-				($strd)
-			      ? ( $1 . ( $2 + $lofst ) )
-			      : ( $1 . ( $2 - $lofst ) );
-			}
-		    }
-		}
-	    }
-	    else {
-		confess "Error: what's this? $rtidDetail->{exin}\n";
-	    }
-	}
+                        }
+                    }
+                }
+                else {
+                    if ( $lofst >= $half_length ) {    # drop into latter part
+                        if ( $rtidDetail->{nsto} =~ /^(\d+\+?)(\-?\d+)$/ ) {
+                            $nDot =
+                                ($strd)
+                              ? ( $1 . ( $2 - $rofst ) )
+                              : ( $1 . ( $2 + $rofst ) );
+                        }
+                        if (
+                            $rtidDetail->{csto} =~ /^([\*\-]?\d+\+?)(\-?\d+)$/ )
+                        {
+                            $cDot =
+                                ($strd)
+                              ? ( $1 . ( $2 - $rofst ) )
+                              : ( $1 . ( $2 + $rofst ) );
+                        }
+                    }
+                    else {
+                        if ( $rtidDetail->{nsta} =~ /^(\d+\+?)(\-?\d+)$/ ) {
+                            $nDot =
+                                ($strd)
+                              ? ( $1 . ( $2 + $lofst ) )
+                              : ( $1 . ( $2 - $lofst ) );
+                        }
+                        if (
+                            $rtidDetail->{csta} =~ /^([\*\-]?\d+\+?)(\-?\d+)$/ )
+                        {
+                            $cDot =
+                                ($strd)
+                              ? ( $1 . ( $2 + $lofst ) )
+                              : ( $1 . ( $2 - $lofst ) );
+                        }
+                    }
+                }
+            }
+            else {
+                confess "Error: what's this? $rtidDetail->{exin}\n";
+            }
+        }
 
-	if (!exists $cal_args{noassign}) {
+        if ( !exists $cal_args{noassign} ) {
 
-	    # the Begin End assignment is always from 5'->3' except for insertion
-	    if ($strd) {
-		$annoEnt->{trInfo}->{$tid}->{rnaBegin} = $nDot;
-		$annoEnt->{trInfo}->{$tid}->{cdsBegin} = $cDot;
-		$annoEnt->{trInfo}->{$tid}->{ei_Begin} = $exin; 
-		$annoEnt->{trInfo}->{$tid}->{r_Begin}  = $blka;
-	    }
-	    else {
-		$annoEnt->{trInfo}->{$tid}->{rnaEnd} = $nDot;
-		$annoEnt->{trInfo}->{$tid}->{cdsEnd} = $cDot;
-		$annoEnt->{trInfo}->{$tid}->{ei_End} = $exin;
-		$annoEnt->{trInfo}->{$tid}->{r_End}  = $blka;
-	    }
-	    $annoEnt->{trInfo}->{$tid}->{genepartSO} = $gpSO;
-	    $annoEnt->{trInfo}->{$tid}->{trAlt} = $trAlt;
-	}
+           # the Begin End assignment is always from 5'->3' except for insertion
+            if ($strd) {
+                $annoEnt->{trInfo}->{$tid}->{rnaBegin} = $nDot;
+                $annoEnt->{trInfo}->{$tid}->{cdsBegin} = $cDot;
+                $annoEnt->{trInfo}->{$tid}->{ei_Begin} = $exin;
+                $annoEnt->{trInfo}->{$tid}->{r_Begin}  = $blka;
+            }
+            else {
+                $annoEnt->{trInfo}->{$tid}->{rnaEnd} = $nDot;
+                $annoEnt->{trInfo}->{$tid}->{cdsEnd} = $cDot;
+                $annoEnt->{trInfo}->{$tid}->{ei_End} = $exin;
+                $annoEnt->{trInfo}->{$tid}->{r_End}  = $blka;
+            }
+            $annoEnt->{trInfo}->{$tid}->{genepartSO} = $gpSO;
+            $annoEnt->{trInfo}->{$tid}->{trAlt}      = $trAlt;
+        }
     }
-    else { # can be multiple times assignment if large var, offset for right
-	my $real_ofst = $lofst - 1; # end_ofst change
-	my $rofst = $$rtidDetail{wlen} - $ofst;
-	if ($lofst > $$rtidDetail{wlen}) {
-	    my $ex_ofst = ($lofst - $$rtidDetail{wlen});
-	    if ($strd) {
-		$nDot = '+'.$ex_ofst;
+    else {    # can be multiple times assignment if large var, offset for right
+        my $real_ofst = $lofst - 1;                   # end_ofst change
+        my $rofst     = $$rtidDetail{wlen} - $ofst;
+        if ( $lofst > $$rtidDetail{wlen} ) {
+            my $ex_ofst = ( $lofst - $$rtidDetail{wlen} );
+            if ($strd) {
+                $nDot = '+' . $ex_ofst;
                 if ( $$rtidDetail{csto} =~ /^\*?\d+$/ ) {
                     $cDot = $$rtidDetail{csto} . '+d' . $ex_ofst;
                 }
-		$exin = '.';
-		$blka = '3D';
-		$gpSO = '605';
-	    }
-	    else { # outside 5'promoter region ?
+                $exin = '.';
+                $blka = '3D';
+                $gpSO = '605';
+            }
+            else {    # outside 5'promoter region ?
                 $nDot =
                     ( $$rtidDetail{nsto} =~ /^\-\d+$/ )
                   ? ( $$rtidDetail{nsto} - $ex_ofst )
@@ -7569,156 +7435,176 @@ sub cal_hgvs_pos {
                 if ( $$rtidDetail{csto} =~ /^(\S+)\-u(\d+)/ ) {
                     $cDot = $1 . '-u' . ( $2 + $ex_ofst );
                 }
-	    }
-	}
-	elsif ($lofst < 0) { # not proper called
-	    if (!exists $cal_args{noassign}) {
-		confess "Error: right preceed the block [$lofst < 0]";
-	    }
-	    else {
-		return 0;
-	    }
-	}
-	else { # 0 <= $lofst <= $$rtidDetail{wlen}
+            }
+        }
+        elsif ( $lofst < 0 ) {    # not proper called
+            if ( !exists $cal_args{noassign} ) {
+                confess "Error: right preceed the block [$lofst < 0]";
+            }
+            else {
+                return 0;
+            }
+        }
+        else {                    # 0 <= $lofst <= $$rtidDetail{wlen}
 
-	    # 1. check if a mismatch block (exon)
-	    if ($rtidDetail->{mismatch} ne "" and $rtidDetail->{mismatch} ne "?") {
-		$nDot = $rtidDetail->{nsto};
-		$cDot = $rtidDetail->{csto};
-		if (!exists $cal_args{noassign} and $lofst < $rtidDetail->{wlen}) {
+            # 1. check if a mismatch block (exon)
+            if (    $rtidDetail->{mismatch} ne ""
+                and $rtidDetail->{mismatch} ne "?" )
+            {
+                $nDot = $rtidDetail->{nsto};
+                $cDot = $rtidDetail->{csto};
+                if ( !exists $cal_args{noassign}
+                    and $lofst < $rtidDetail->{wlen} )
+                {
                     my ( $mType, $mStart, $mEnd, $strand_ref ) =
                       split( /,/, $rtidDetail->{mismatch} );
-		    
-		    if ( $mType eq 'E' ) { # edge cross alignment
-			$trAlt = '?';
-		    }
 
-		    my $cut_len = $rtidDetail->{wlen} - $lofst;
-		    if ($strd) { # cut right
-			$trAlt .= substr($strand_ref, -$cut_len, $cut_len) if ($trAlt ne '?');
-		    }
-		    else { # cut left
-			$trAlt = substr($strand_ref, 0, $cut_len).$trAlt if ($trAlt ne '?');
-		    }
-		}
-	    }
-	    # 2. check if hit a normal block's left edge
-	    elsif ($lofst == 0) {
-		return 0;
-	    }
-#	    # 3. check if annotation-fail
-	    elsif ($gpSO eq 'annotation-fail') {
-#		( $nDot, $cDot ) = ( '?', '?' );
-	    }
-	    # 4. check if a promoter
-	    elsif ($blka =~ /^PROM/) {
+                    if ( $mType eq 'E' ) {    # edge cross alignment
+                        $trAlt = '?';
+                    }
+
+                    my $cut_len = $rtidDetail->{wlen} - $lofst;
+                    if ($strd) {              # cut right
+                        $trAlt .= substr( $strand_ref, -$cut_len, $cut_len )
+                          if ( $trAlt ne '?' );
+                    }
+                    else {                    # cut left
+                        $trAlt = substr( $strand_ref, 0, $cut_len ) . $trAlt
+                          if ( $trAlt ne '?' );
+                    }
+                }
+            }
+
+            # 2. check if hit a normal block's left edge
+            elsif ( $lofst == 0 ) {
+                return 0;
+            }
+
+            #	    # 3. check if annotation-fail
+            elsif ( $gpSO eq 'annotation-fail' ) {
+
+                #		( $nDot, $cDot ) = ( '?', '?' );
+            }
+
+            # 4. check if a promoter
+            elsif ( $blka =~ /^PROM/ ) {
                 $nDot =
                     ($strd)
                   ? ( $rtidDetail->{nsta} + $real_ofst )
                   : ( $rtidDetail->{nsta} - $real_ofst );
-		if ($rtidDetail->{csta} =~ /^(\S+)\-u(\d+)$/) {
+                if ( $rtidDetail->{csta} =~ /^(\S+)\-u(\d+)$/ ) {
                     $cDot =
                         ($strd)
                       ? ( $1 . '-u' . ( $2 - $real_ofst ) )
                       : ( $1 . '-u' . ( $2 + $real_ofst ) );
-		}
-	    }
-	    # 5. check if an exon
-	    elsif ($exin =~ /EX/) {
+                }
+            }
+
+            # 5. check if an exon
+            elsif ( $exin =~ /EX/ ) {
                 $nDot =
                     ($strd)
                   ? ( $rtidDetail->{nsta} + $real_ofst )
                   : ( $rtidDetail->{nsta} - $real_ofst );
-		if ($rtidDetail->{csta} =~ /^(\*?)(\-?\d+)$/) {
-		    $cDot = ($strd) ? $1.($2 + $real_ofst) : $1.($2 - $real_ofst);
-		}
-	    }
-	    # 6. intron
-	    elsif ($exin =~ /IVS/) {
-		my $half_length = $rtidDetail->{wlen} / 2;
+                if ( $rtidDetail->{csta} =~ /^(\*?)(\-?\d+)$/ ) {
+                    $cDot =
+                      ($strd)
+                      ? $1 . ( $2 + $real_ofst )
+                      : $1 . ( $2 - $real_ofst );
+                }
+            }
 
-		if ($gpSO eq 'abnormal-intron') {
-		    if ($real_ofst >= $half_length ) {
-			if ($rtidDetail->{nsto} =~ /\d+/) {
+            # 6. intron
+            elsif ( $exin =~ /IVS/ ) {
+                my $half_length = $rtidDetail->{wlen} / 2;
+
+                if ( $gpSO eq 'abnormal-intron' ) {
+                    if ( $real_ofst >= $half_length ) {
+                        if ( $rtidDetail->{nsto} =~ /\d+/ ) {
                             $nDot =
                               ($strd)
                               ? $rtidDetail->{nsto} . '-' . ( $rofst + 1 )
                               : $rtidDetail->{nsto} . '+' . ( $rofst + 1 );
-			}
-			if ($rtidDetail->{csto} =~ /\d+/) {
+                        }
+                        if ( $rtidDetail->{csto} =~ /\d+/ ) {
                             $cDot =
                               ($strd)
                               ? $rtidDetail->{csto} . '-' . ( $rofst + 1 )
                               : $rtidDetail->{csto} . '+' . ( $rofst + 1 );
-			}
-		    }
-		    else {
-			if ($rtidDetail->{nsta} =~ /\d+/) {
-			    $nDot =
-				($strd)
-			      ? $rtidDetail->{nsta} . '+' . ( $real_ofst + 1 )
-			      : $rtidDetail->{nsta} . '-' . ( $real_ofst + 1 );
-			}
-			if ($rtidDetail->{csta} =~ /\d+/) {
-			    $cDot =
-				($strd)
-			      ? $rtidDetail->{csta} . '+' . ( $real_ofst + 1 )
-			      : $rtidDetail->{csta} . '-' . ( $real_ofst + 1 );
-			}
-		    }
-		}
-		else {
-		    if ($real_ofst >= $half_length) { # drop into latter part
-			if ($rtidDetail->{nsto} =~ /^(\d+\+?)(\-?\d+)$/) {
-			    $nDot =
-				($strd)
-			      ? ( $1 . ( $2 - $rofst ) )
-			      : ( $1 . ( $2 + $rofst ) );
-			}
-			if ($rtidDetail->{csto} =~ /^([\*\-]?\d+\+?)(\-?\d+)$/) {
-			    $cDot =
-				($strd)
-			      ? ( $1 . ( $2 - $rofst ) )
-			      : ( $1 . ( $2 + $rofst ) );
-			}
-		    }
-		    else {
-			if ($rtidDetail->{nsta} =~ /^(\d+\+?)(\-?\d+)$/) {
-			    $nDot =
-				($strd)
-			      ? ( $1 . ( $2 + $real_ofst ) )
-			      : ( $1 . ( $2 - $real_ofst ) );
-			}
-			if ($rtidDetail->{csta} =~ /^([\*\-]?\d+\+?)(\-?\d+)$/) {
-			    $cDot =
-				($strd)
-			      ? ( $1 . ( $2 + $real_ofst ) )
-			      : ( $1 . ( $2 - $real_ofst ) );
-			}
-		    }
-		}
-	    }
-	    else {
-		confess "Error: what's this? $rtidDetail->{exin}\n";
-	    }
-	}
+                        }
+                    }
+                    else {
+                        if ( $rtidDetail->{nsta} =~ /\d+/ ) {
+                            $nDot =
+                              ($strd)
+                              ? $rtidDetail->{nsta} . '+' . ( $real_ofst + 1 )
+                              : $rtidDetail->{nsta} . '-' . ( $real_ofst + 1 );
+                        }
+                        if ( $rtidDetail->{csta} =~ /\d+/ ) {
+                            $cDot =
+                              ($strd)
+                              ? $rtidDetail->{csta} . '+' . ( $real_ofst + 1 )
+                              : $rtidDetail->{csta} . '-' . ( $real_ofst + 1 );
+                        }
+                    }
+                }
+                else {
+                    if ( $real_ofst >= $half_length ) {  # drop into latter part
+                        if ( $rtidDetail->{nsto} =~ /^(\d+\+?)(\-?\d+)$/ ) {
+                            $nDot =
+                                ($strd)
+                              ? ( $1 . ( $2 - $rofst ) )
+                              : ( $1 . ( $2 + $rofst ) );
+                        }
+                        if (
+                            $rtidDetail->{csto} =~ /^([\*\-]?\d+\+?)(\-?\d+)$/ )
+                        {
+                            $cDot =
+                                ($strd)
+                              ? ( $1 . ( $2 - $rofst ) )
+                              : ( $1 . ( $2 + $rofst ) );
+                        }
+                    }
+                    else {
+                        if ( $rtidDetail->{nsta} =~ /^(\d+\+?)(\-?\d+)$/ ) {
+                            $nDot =
+                                ($strd)
+                              ? ( $1 . ( $2 + $real_ofst ) )
+                              : ( $1 . ( $2 - $real_ofst ) );
+                        }
+                        if (
+                            $rtidDetail->{csta} =~ /^([\*\-]?\d+\+?)(\-?\d+)$/ )
+                        {
+                            $cDot =
+                                ($strd)
+                              ? ( $1 . ( $2 + $real_ofst ) )
+                              : ( $1 . ( $2 - $real_ofst ) );
+                        }
+                    }
+                }
+            }
+            else {
+                confess "Error: what's this? $rtidDetail->{exin}\n";
+            }
+        }
 
-	if (!exists $cal_args{noassign}) {
-	    # the Begin End assignment is always from 5'->3' except for insertion
-	    if ($strd) {
-		$annoEnt->{trInfo}->{$tid}->{rnaEnd} = $nDot;
-		$annoEnt->{trInfo}->{$tid}->{cdsEnd} = $cDot;
-		$annoEnt->{trInfo}->{$tid}->{ei_End} = $exin;
-		$annoEnt->{trInfo}->{$tid}->{r_End}  = $blka;
-	    }
-	    else {
-		$annoEnt->{trInfo}->{$tid}->{rnaBegin} = $nDot;
-		$annoEnt->{trInfo}->{$tid}->{cdsBegin} = $cDot;
-		$annoEnt->{trInfo}->{$tid}->{ei_Begin} = $exin; 
-		$annoEnt->{trInfo}->{$tid}->{r_Begin}  = $blka;
-	    }
-	    $annoEnt->{trInfo}->{$tid}->{trAlt} = $trAlt;
-	    
+        if ( !exists $cal_args{noassign} ) {
+
+           # the Begin End assignment is always from 5'->3' except for insertion
+            if ($strd) {
+                $annoEnt->{trInfo}->{$tid}->{rnaEnd} = $nDot;
+                $annoEnt->{trInfo}->{$tid}->{cdsEnd} = $cDot;
+                $annoEnt->{trInfo}->{$tid}->{ei_End} = $exin;
+                $annoEnt->{trInfo}->{$tid}->{r_End}  = $blka;
+            }
+            else {
+                $annoEnt->{trInfo}->{$tid}->{rnaBegin} = $nDot;
+                $annoEnt->{trInfo}->{$tid}->{cdsBegin} = $cDot;
+                $annoEnt->{trInfo}->{$tid}->{ei_Begin} = $exin;
+                $annoEnt->{trInfo}->{$tid}->{r_Begin}  = $blka;
+            }
+            $annoEnt->{trInfo}->{$tid}->{trAlt} = $trAlt;
+
             if (
                 $rtidDetail->{gpSO} eq 'annotation-fail'
                 or ( exists $annoEnt->{trInfo}->{$tid}->{genepartSO}
@@ -7739,20 +7625,19 @@ sub cal_hgvs_pos {
                 carp "Warning: no genepartSO specified in left?";
                 $annoEnt->{trInfo}->{$tid}->{genepartSO} = $gpSO;
             }
-	}
+        }
     }
 
-    if (exists $cal_args{noassign}) {
-	return {
-	    nDot => $nDot,
-	    cDot => $cDot,
-	    exin => $exin,
-	    r    => $blka,
-	};
+    if ( exists $cal_args{noassign} ) {
+        return {
+            nDot => $nDot,
+            cDot => $cDot,
+            exin => $exin,
+            r    => $blka,
+        };
     }
     return 1;
 }
-
 
 =head1 BedAnno::CNV
 
@@ -7790,81 +7675,89 @@ use Tabix;
 =cut
 
 sub new {
-    my ($class, %args) = @_;
+    my ( $class, %args ) = @_;
     my $self;
     $self = $class->SUPER::new(%args);
     bless $self, ref($class) || $class;
 
-    if (exists $args{dgv}) {
-	$self->set_dgv( $args{dgv} );
+    if ( exists $args{dgv} ) {
+        $self->set_dgv( $args{dgv} );
     }
 
-    if (exists $args{sfari}) {
-	$self->set_sfari( $args{sfari} );
+    if ( exists $args{sfari} ) {
+        $self->set_sfari( $args{sfari} );
     }
 
-    if (exists $args{cnvPub}) {
-	$self->set_cnvPub( $args{cnvPub} );
+    if ( exists $args{cnvPub} ) {
+        $self->set_cnvPub( $args{cnvPub} );
     }
 
-    if (exists $args{cnvd}) {
-	$self->set_cnvd( $args{cnvd} );
+    if ( exists $args{cnvd} ) {
+        $self->set_cnvd( $args{cnvd} );
     }
 
     return $self;
 }
 
 sub set_dgv {
-    my $self = shift;
+    my $self  = shift;
     my $dgvdb = shift;
     $self->{dgv} = $dgvdb;
-    require GetDGV if (!exists $self->{dgv_h});
+    require GetDGV if ( !exists $self->{dgv_h} );
     my %common_opts = ();
-    $common_opts{quiet} = 1 if (exists $self->{quiet});
-    $common_opts{ovlp_rate} = $self->{ovlp_rate} if (exists $self->{ovlp_rate});
-    $common_opts{max_uncov} = $self->{max_uncov} if (exists $self->{max_uncov});
+    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
+    $common_opts{ovlp_rate} = $self->{ovlp_rate}
+      if ( exists $self->{ovlp_rate} );
+    $common_opts{max_uncov} = $self->{max_uncov}
+      if ( exists $self->{max_uncov} );
     my $dgv_h = GetDGV->new( db => $dgvdb, %common_opts );
     $self->{dgv_h} = $dgv_h;
     return $self;
 }
 
 sub set_sfari {
-    my $self = shift;
+    my $self    = shift;
     my $sfaridb = shift;
     $self->{sfari} = $sfaridb;
-    require GetSFARI if (!exists $self->{sfari_h});
+    require GetSFARI if ( !exists $self->{sfari_h} );
     my %common_opts = ();
-    $common_opts{quiet} = 1 if (exists $self->{quiet});
-    $common_opts{ovlp_rate} = $self->{ovlp_rate} if (exists $self->{ovlp_rate});
-    $common_opts{max_uncov} = $self->{max_uncov} if (exists $self->{max_uncov});
+    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
+    $common_opts{ovlp_rate} = $self->{ovlp_rate}
+      if ( exists $self->{ovlp_rate} );
+    $common_opts{max_uncov} = $self->{max_uncov}
+      if ( exists $self->{max_uncov} );
     my $sfari_h = GetSFARI->new( db => $sfaridb, %common_opts );
     $self->{sfari_h} = $sfari_h;
     return $self;
 }
 
 sub set_cnvPub {
-    my $self = shift;
+    my $self     = shift;
     my $cnvPubdb = shift;
     $self->{cnvPub} = $cnvPubdb;
-    require GetCNVPub if (!exists $self->{cnvPub_h});
+    require GetCNVPub if ( !exists $self->{cnvPub_h} );
     my %common_opts = ();
-    $common_opts{quiet} = 1 if (exists $self->{quiet});
-    $common_opts{ovlp_rate} = $self->{ovlp_rate} if (exists $self->{ovlp_rate});
-    $common_opts{max_uncov} = $self->{max_uncov} if (exists $self->{max_uncov});
+    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
+    $common_opts{ovlp_rate} = $self->{ovlp_rate}
+      if ( exists $self->{ovlp_rate} );
+    $common_opts{max_uncov} = $self->{max_uncov}
+      if ( exists $self->{max_uncov} );
     my $cnvPub_h = GetCNVPub->new( db => $cnvPubdb, %common_opts );
     $self->{cnvPub_h} = $cnvPub_h;
     return $self;
 }
 
 sub set_cnvd {
-    my $self = shift;
+    my $self  = shift;
     my $cnvdb = shift;
     $self->{cnvd} = $cnvdb;
-    require GetCNVD if (!exists $self->{cnvd});
+    require GetCNVD if ( !exists $self->{cnvd} );
     my %common_opts = ();
-    $common_opts{quiet} = 1 if (exists $self->{quiet});
-    $common_opts{ovlp_rate} = $self->{ovlp_rate} if (exists $self->{ovlp_rate});
-    $common_opts{max_uncov} = $self->{max_uncov} if (exists $self->{max_uncov});
+    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
+    $common_opts{ovlp_rate} = $self->{ovlp_rate}
+      if ( exists $self->{ovlp_rate} );
+    $common_opts{max_uncov} = $self->{max_uncov}
+      if ( exists $self->{max_uncov} );
     my $cnvd_h = GetCNVD->new( db => $cnvdb, %common_opts );
     $self->{cnvd_h} = $cnvd_h;
     return $self;
@@ -7908,11 +7801,11 @@ sub set_cnvd {
 
 sub annoCNV {
     my $self = shift;
-    my ($chr, $start, $end, $copy_number) = @_;
+    my ( $chr, $start, $end, $copy_number ) = @_;
 
     $chr =~ s/^chr//i;
-    if ($chr =~ /^M/i) {
-	$chr = 'MT';
+    if ( $chr =~ /^M/i ) {
+        $chr = 'MT';
     }
 
     my $cb = $self->{cytoBand_h}->getCB( $chr, $start, $end )
@@ -7924,52 +7817,51 @@ sub annoCNV {
     my $cnvPub =
       $self->{cnvPub_h}->getCNVpub( $chr, $start, $end, $copy_number )
       if ( defined $self->{cnvPub_h} );
-    my $cnvd = 
-      $self->{cnvd_h}->getCNVD( $chr, $start, $end, $copy_number )
+    my $cnvd = $self->{cnvd_h}->getCNVD( $chr, $start, $end, $copy_number )
       if ( defined $self->{cnvd_h} );
 
     my $rAnnos;
     my %open_args;
-    my ($qstart, $qend) = ($start, $end);
-    if ($start == $end) {  #query with 1 bp flank for ins case
-	$qstart -- if ($qstart > 0);
-	$qend ++;
+    my ( $qstart, $qend ) = ( $start, $end );
+    if ( $start == $end ) {    #query with 1 bp flank for ins case
+        $qstart-- if ( $qstart > 0 );
+        $qend++;
     }
-    $open_args{region} = $chr.':'.($qstart + 1).'-'.$qend;
+    $open_args{region} = $chr . ':' . ( $qstart + 1 ) . '-' . $qend;
     if ( exists $self->{genes} ) {
-	$open_args{genes} = $self->{genes};
+        $open_args{genes} = $self->{genes};
     }
-    if ( exists $self->{trans} and exists $self->{clean_trans}) {
-	$open_args{trans} = $self->{trans};
-	$open_args{clean_trans} = $self->{clean_trans};
+    if ( exists $self->{trans} and exists $self->{clean_trans} ) {
+        $open_args{trans}       = $self->{trans};
+        $open_args{clean_trans} = $self->{clean_trans};
     }
     if ( exists $self->{mmap} ) {
-	$open_args{mmap} = $self->{mmap};
+        $open_args{mmap} = $self->{mmap};
     }
     my $rcurrent = $self->load_anno(%open_args);
-    $rAnnos = $rcurrent->{$chr} if (exists $rcurrent->{$chr});
+    $rAnnos = $rcurrent->{$chr} if ( exists $rcurrent->{$chr} );
 
     my %cnv_anno = ();
-    $cnv_anno{cytoBand} = $cb if (defined $cb);
-    $cnv_anno{dgv} = $dgv if (defined $dgv);
-    $cnv_anno{cnvPub} = $cnvPub if (defined $cnvPub);
-    $cnv_anno{sfari} = $sfari if (defined $sfari);
-    $cnv_anno{cnvd} = $cnvd if (defined $cnvd);
+    $cnv_anno{cytoBand} = $cb     if ( defined $cb );
+    $cnv_anno{dgv}      = $dgv    if ( defined $dgv );
+    $cnv_anno{cnvPub}   = $cnvPub if ( defined $cnvPub );
+    $cnv_anno{sfari}    = $sfari  if ( defined $sfari );
+    $cnv_anno{cnvd}     = $cnvd   if ( defined $cnvd );
 
-    if (!defined $rAnnos) {
+    if ( !defined $rAnnos ) {
         $self->warn("Warning: no available annotation items in curdb for $chr")
           if ( !exists $self->{quiet} );
-	$cnv_anno{cnva_type} = "unknown";
-	return \%cnv_anno;
+        $cnv_anno{cnva_type} = "unknown";
+        return \%cnv_anno;
     }
 
     my $pseudo_var = BedAnno::Var->new( $chr, $start, $end, "=", "?" );
-    my $pseudo_anno = BedAnno::Anno->new( $pseudo_var );
+    my $pseudo_anno = BedAnno::Anno->new($pseudo_var);
     $pseudo_anno->getTrPosition( $rAnnos, 0 );
     my $rhitted_blks = $self->get_hitted_blk($pseudo_anno);
-    
+
     my $ranno_cnv = $self->parse_cnva($rhitted_blks);
-    $cnv_anno{anno} = $ranno_cnv->{anno} if (exists $ranno_cnv->{anno});
+    $cnv_anno{anno} = $ranno_cnv->{anno} if ( exists $ranno_cnv->{anno} );
     $cnv_anno{cnva_type} = $ranno_cnv->{cnva_type};
 
     return \%cnv_anno;
@@ -8021,7 +7913,7 @@ sub annoCNV {
 =cut
 
 sub batch_annoCNV {
-    my $self = shift;
+    my $self     = shift;
     my $rCNVvars = shift;
     my %cnvAnnos = ();
     foreach my $chr ( sort keys %$rCNVvars ) {
@@ -8030,11 +7922,11 @@ sub batch_annoCNV {
         foreach my $pos_pair ( sort keys %$rh_cnva ) {
             my $cur_anno = $self->parse_cnva( $rh_cnva->{$pos_pair} );
 
-            my $cur_CN   = $rCNVvars->{$chr}->{$pos_pair};
+            my $cur_CN = $rCNVvars->{$chr}->{$pos_pair};
             $cur_anno->{cur_CN} = $cur_CN;
 
             my ( $start, $stop ) = split( /-/, $pos_pair );
-	    $start -= 1; # change 1 based pos pair to 0 based start
+            $start -= 1;    # change 1 based pos pair to 0 based start
             $cur_anno->{dgv} =
               $self->{dgv_h}->getDGV( $chr, $start, $stop, $cur_CN )
               if ( defined $self->{dgv_h} );
@@ -8046,8 +7938,8 @@ sub batch_annoCNV {
               if ( defined $self->{cnvPub_h} );
             $cur_anno->{cytoband} =
               $self->{cytoBand_h}->getCB( $chr, $start, $stop )
-	      if ( defined $self->{cytoBand_h} );
-	    $cur_anno->{cnvd} =
+              if ( defined $self->{cytoBand_h} );
+            $cur_anno->{cnvd} =
               $self->{cnvd_h}->getCNVD( $chr, $start, $stop, $cur_CN )
               if ( defined $self->{cnvd_h} );
             $cnvAnnos{$chr}{$pos_pair} = $cur_anno;
@@ -8057,29 +7949,29 @@ sub batch_annoCNV {
 }
 
 sub parse_cnva {
-    my $self = shift;
+    my $self         = shift;
     my $rhitted_blks = shift;
-    my %cur_anno = ();
+    my %cur_anno     = ();
     my $cnv_anno_type;
     foreach my $rTid (@$rhitted_blks) {
-	my ($tid, $rleft, $rright) = @$rTid;
-	my $ref_tida = {};
-	$ref_tida = get_region( $rleft, $rright );
+        my ( $tid, $rleft, $rright ) = @$rTid;
+        my $ref_tida = {};
+        $ref_tida = get_region( $rleft, $rright );
 
-	if (exists $ref_tida->{regtyp}) {
-	    if (!defined $cnv_anno_type) {
-		$cnv_anno_type = $ref_tida->{regtyp};
-	    }
-	    elsif ($cnv_anno_type ne $ref_tida->{regtyp}) {
-		$cnv_anno_type = "Multiple";
-	    }
-	}
-	else {
-	    $self->throw("Error: fail to get region type for $tid\n");
-	}
+        if ( exists $ref_tida->{regtyp} ) {
+            if ( !defined $cnv_anno_type ) {
+                $cnv_anno_type = $ref_tida->{regtyp};
+            }
+            elsif ( $cnv_anno_type ne $ref_tida->{regtyp} ) {
+                $cnv_anno_type = "Multiple";
+            }
+        }
+        else {
+            $self->throw("Error: fail to get region type for $tid\n");
+        }
 
-	@$ref_tida{qw(gsym gid strd)} = @$rleft{qw(gsym gid strd)};
-	$cur_anno{anno}{$tid} = $ref_tida;
+        @$ref_tida{qw(gsym gid strd)} = @$rleft{qw(gsym gid strd)};
+        $cur_anno{anno}{$tid} = $ref_tida;
     }
 
     $cur_anno{cnva_type} =
@@ -8089,21 +7981,22 @@ sub parse_cnva {
 }
 
 sub get_region {
-    my ($rl, $rr) = @_;
+    my ( $rl, $rr ) = @_;
 
     confess "Unknown invoking error, no cpos.\n"
       if ( !exists $rl->{cpos} or !exists $rr->{cpos} );
 
     my %region_anno = ();
-    if ($rl->{cpos} eq '?' or $rr->{cpos} eq '?') {
-	$region_anno{cpos} = '?';
-	$region_anno{exin} = 'unknown';
-	$region_anno{regcod} = 'unknown';
-	$region_anno{regtyp} = 'unknown';
-	return \%region_anno;
+    if ( $rl->{cpos} eq '?' or $rr->{cpos} eq '?' ) {
+        $region_anno{cpos}   = '?';
+        $region_anno{exin}   = 'unknown';
+        $region_anno{regcod} = 'unknown';
+        $region_anno{regtyp} = 'unknown';
+        return \%region_anno;
     }
 
-    my $cmp_stat = BedAnno->cmpPos( substr($rl->{cpos},2), substr($rr->{cpos},2) );
+    my $cmp_stat =
+      BedAnno->cmpPos( substr( $rl->{cpos}, 2 ), substr( $rr->{cpos}, 2 ) );
 
     if ( $cmp_stat == 0 ) {
         $region_anno{cpos} = $rl->{cpos};
@@ -8119,7 +8012,8 @@ sub get_region {
 
     if ( $rl->{reg} eq $rr->{reg} ) {
         $region_anno{regcod} = $rl->{reg};
-        $region_anno{exin}   = ($rl->{reg} eq 'PROM') ? "Promoter" : $rl->{exin};
+        $region_anno{exin} =
+          ( $rl->{reg} eq 'PROM' ) ? "Promoter" : $rl->{exin};
         if ( $region_anno{regcod} =~ /^I|^5U|^3U|^PROM/i ) {
             $region_anno{regtyp} = "LowRisk";
         }
@@ -8165,11 +8059,11 @@ sub get_region {
 
 sub DESTROY {
     my $self = shift;
-    foreach my $key (keys %$self) {
-	next if ($key !~ /_h$/);
-	$self->{$key}->DESTROY()
-	  if ( defined $self->{$key} and $self->{$key}->can('DESTROY') );
-	delete $self->{$key};
+    foreach my $key ( keys %$self ) {
+        next if ( $key !~ /_h$/ );
+        $self->{$key}->DESTROY()
+          if ( defined $self->{$key} and $self->{$key}->can('DESTROY') );
+        delete $self->{$key};
     }
     return;
 }
