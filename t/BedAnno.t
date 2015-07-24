@@ -3899,6 +3899,8 @@ my $ins_nochange_anno = $bare_beda->anno( "chr11", 67765163, 67765163, "", "G" )
 my $ins_nochange_varname = $ins_nochange_anno->{var}->{varName};
 my $long_ref_anno = $bare_beda->anno( "chr2", "27532178", "27533753", "=", "CAGGC" );
 my $long_ref_varname = $long_ref_anno->{var}->{varName};
+my $span_cds_edge_rep_anno = $bare_beda->anno( "chr11", "67434394", "67434394", "", "TTCATCC");
+my $span_cds_edge_rep_varname = $span_cds_edge_rep_anno->{var}->{varName};
 
 ok( $prTag_correction eq "NM_000151.3(G6PC): c.326G>A (p.C109Y)",
     "for [ primary tag correction ]" )
@@ -3929,6 +3931,8 @@ ok ( $ins_nochange_varname eq "NM_030930.2(UNC93B1): c.=",
 ok ( $long_ref_varname eq "NM_002437.4(MPV17): c.462-904_*464+d181delinsGCCTG",
     "for [ long reference anno ]"
 ) or explain "The anno info: ", $long_ref_anno;
+ok ( $span_cds_edge_rep_varname eq "NM_001031615.1(ALDH3B2): c.6_12dupGGATGAA (p.P5Gfs*2)", "for [ span cds edge repeat anno ]"
+) or explain "The anno info: ", $span_cds_edge_rep_anno;
 
 $bare_beda->DESTROY();
 undef $bare_beda;

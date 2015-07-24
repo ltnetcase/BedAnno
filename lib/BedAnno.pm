@@ -55,70 +55,70 @@ our $CURRENT_MT  = 'NC_012920.1';
 my $load_opt_vcfaf = 0;
 
 %C3 = (
-    TTT => "Phe",
-    CTT => "Leu",
-    ATT => "Ile",
-    GTT => "Val",
-    TTC => "Phe",
-    CTC => "Leu",
-    ATC => "Ile",
-    GTC => "Val",
-    TCT => "Ser",
-    CCT => "Pro",
-    ACT => "Thr",
-    GCT => "Ala",
-    TCC => "Ser",
-    CCC => "Pro",
-    ACC => "Thr",
-    GCC => "Ala",
-    TAT => "Tyr",
-    CAT => "His",
-    AAT => "Asn",
-    GAT => "Asp",
-    TAC => "Tyr",
-    CAC => "His",
-    AAC => "Asn",
-    GAC => "Asp",
-    TGT => "Cys",
-    CGT => "Arg",
-    AGT => "Ser",
-    GGT => "Gly",
-    TGC => "Cys",
-    CGC => "Arg",
-    AGC => "Ser",
-    GGC => "Gly",
-    TTA => "Leu",
-    CTA => "Leu",
-    ATA => "Ile",
-    GTA => "Val",
-    TCA => "Ser",
-    CTG => "Leu",
-    ACA => "Thr",
-    GTG => "Val",
-    TAA => "*",
-    CCA => "Pro",
     AAA => "Lys",
-    GCA => "Ala",
-    TGA => "*",
-    CCG => "Pro",
-    AGA => "Arg",
-    GCG => "Ala",
-    TTG => "Leu",
-    CAA => "Gln",
-    ATG => "Met",
-    GAA => "Glu",
-    TCG => "Ser",
-    CAG => "Gln",
-    ACG => "Thr",
-    GAG => "Glu",
-    TAG => "*",
-    CGA => "Arg",
+    AAC => "Asn",
     AAG => "Lys",
-    GGA => "Gly",
-    TGG => "Trp",
-    CGG => "Arg",
+    AAT => "Asn",
+    ACA => "Thr",
+    ACC => "Thr",
+    ACG => "Thr",
+    ACT => "Thr",
+    AGA => "Arg",
+    AGC => "Ser",
     AGG => "Arg",
+    AGT => "Ser",
+    ATA => "Ile",
+    ATC => "Ile",
+    ATG => "Met",
+    ATT => "Ile",
+    CAA => "Gln",
+    CAC => "His",
+    CAG => "Gln",
+    CAT => "His",
+    CCA => "Pro",
+    CCC => "Pro",
+    CCG => "Pro",
+    CCT => "Pro",
+    CGA => "Arg",
+    CGC => "Arg",
+    CGG => "Arg",
+    CGT => "Arg",
+    CTA => "Leu",
+    CTC => "Leu",
+    CTG => "Leu",
+    CTT => "Leu",
+    GAA => "Glu",
+    GAC => "Asp",
+    GAG => "Glu",
+    GAT => "Asp",
+    GCA => "Ala",
+    GCC => "Ala",
+    GCG => "Ala",
+    GCT => "Ala",
+    GGA => "Gly",
+    GGC => "Gly",
     GGG => "Gly",
+    GGT => "Gly",
+    GTA => "Val",
+    GTC => "Val",
+    GTG => "Val",
+    GTT => "Val",
+    TAA => "*",
+    TAC => "Tyr",
+    TAG => "*",
+    TAT => "Tyr",
+    TCA => "Ser",
+    TCC => "Ser",
+    TCG => "Ser",
+    TCT => "Ser",
+    TGA => "*",
+    TGC => "Cys",
+    TGG => "Trp",
+    TGT => "Cys",
+    TTA => "Leu",
+    TTC => "Phe",
+    TTG => "Leu",
+    TTT => "Phe",
 
     TCN => "Ser",
     CCN => "Pro",
@@ -137,70 +137,70 @@ my $load_opt_vcfaf = 0;
 );
 
 %C1 = (
-    TTT => "F",
-    CTT => "L",
-    ATT => "I",
-    GTT => "V",
-    TTC => "F",
-    CTC => "L",
-    ATC => "I",
-    GTC => "V",
-    TCT => "S",
-    CCT => "P",
-    ACT => "T",
-    GCT => "A",
-    TCC => "S",
-    CCC => "P",
-    ACC => "T",
-    GCC => "A",
-    TAT => "Y",
-    CAT => "H",
-    AAT => "N",
-    GAT => "D",
-    TAC => "Y",
-    CAC => "H",
-    AAC => "N",
-    GAC => "D",
-    TGT => "C",
-    CGT => "R",
-    AGT => "S",
-    GGT => "G",
-    TGC => "C",
-    CGC => "R",
-    AGC => "S",
-    GGC => "G",
-    TTA => "L",
-    CTA => "L",
-    ATA => "I",
-    GTA => "V",
-    TCA => "S",
-    CTG => "L",
-    ACA => "T",
-    GTG => "V",
-    TAA => "*",
-    CCA => "P",
     AAA => "K",
-    GCA => "A",
-    TGA => "*",
-    CCG => "P",
-    AGA => "R",
-    GCG => "A",
-    TTG => "L",
-    CAA => "Q",
-    ATG => "M",
-    GAA => "E",
-    TCG => "S",
-    CAG => "Q",
-    ACG => "T",
-    GAG => "E",
-    TAG => "*",
-    CGA => "R",
+    AAC => "N",
     AAG => "K",
-    GGA => "G",
-    TGG => "W",
-    CGG => "R",
+    AAT => "N",
+    ACA => "T",
+    ACC => "T",
+    ACG => "T",
+    ACT => "T",
+    AGA => "R",
+    AGC => "S",
     AGG => "R",
+    AGT => "S",
+    ATA => "I",
+    ATC => "I",
+    ATG => "M",
+    ATT => "I",
+    CAA => "Q",
+    CAC => "H",
+    CAG => "Q",
+    CAT => "H",
+    CCA => "P",
+    CCC => "P",
+    CCG => "P",
+    CCT => "P",
+    CGA => "R",
+    CGC => "R",
+    CGG => "R",
+    CGT => "R",
+    CTA => "L",
+    CTC => "L",
+    CTG => "L",
+    CTT => "L",
+    GAA => "E",
+    GAC => "D",
+    GAG => "E",
+    GAT => "D",
+    GCA => "A",
+    GCC => "A",
+    GCG => "A",
+    GCT => "A",
+    GGA => "G",
+    GGC => "G",
     GGG => "G",
+    GGT => "G",
+    GTA => "V",
+    GTC => "V",
+    GTG => "V",
+    GTT => "V",
+    TAA => "*",
+    TAC => "Y",
+    TAG => "*",
+    TAT => "Y",
+    TCA => "S",
+    TCC => "S",
+    TCG => "S",
+    TCT => "S",
+    TGA => "*",
+    TGC => "C",
+    TGG => "W",
+    TGT => "C",
+    TTA => "L",
+    TTC => "F",
+    TTG => "L",
+    TTT => "F",
 
     TCN => "S",
     CCN => "P",
@@ -228,26 +228,26 @@ $AAnumber{'.'}                 = $AAcount + 2;
 
 %Polar = (
     Ala => "NP",
-    Asn => "P0",
     Arg => "P+",
+    Asn => "P0",
     Asp => "P-",
-    Ile => "NP",
     Cys => "P0",
-    His => "P+",
-    Glu => "P-",
-    Leu => "NP",
     Gln => "P0",
+    Glu => "P-",
+    Gly => "P0",
+    His => "P+",
+    Ile => "NP",
+    Leu => "NP",
     Lys => "P+",
     Met => "NP",
-    Gly => "P0",
     Phe => "NP",
-    Ser => "P0",
     Pro => "NP",
+    Sec => "NP",
+    Ser => "P0",
     Thr => "P0",
     Trp => "NP",
     Tyr => "P0",
     Val => "NP",
-    Sec => "NP",
 
     'X' => '.',
     '*' => '.'
@@ -3400,6 +3400,72 @@ sub getTrChange {
             $trdbEnt->{len} )
           : $trEnd;
         $cmpPos = $self->cmpPos( $chgvs_5, $chgvs_3 );
+
+        # check if a rep get across the utr/cds edge and can be curated
+        # to a variant in cds region, add a new key uncurated_cHGVS
+        # to restore the uncurated version of cHGVS
+        if ( $real_var->{imp} eq 'rep' and $cdsOpt
+                and ( $chgvs_5 =~ /^\d+$/ xor $chgvs_3 =~ /^\d+$/ )
+                and ( $chgvs_5 =~ /^\-\d+$/ xor $chgvs_3 =~ /^\*\d+$/ )
+        )
+        {
+            my $lesser_len = ($real_rl < $real_al) ? $real_rl : $real_al;
+            if (
+                ( $chgvs_5 =~ /^\-(\d+)$/ and $1 <= $lesser_len )
+                or ( $chgvs_5 =~ /^(\d+)$/
+                    and ( $trdbEnt->{csto} - $1 ) <= $lesser_len )
+              )
+            {
+                # 5utr and first cds
+                my $offset = $1;
+                my $opt_53 = ( $chgvs_5 =~ /^\-/ ) ? 1 : 0;
+                if ( !$opt_53 ) {
+                    $offset = $trdbEnt->{csto} - $offset;
+                }
+                my $change_cn = 0;
+                $change_cn++
+                  while ( $offset > $change_cn * $real_var->{replen} );
+
+                # restore uncurated version of cHGVS
+                $trannoEnt->{uncurated_cHGVS} =
+                  $f . $chgvs_5 . '_' . $chgvs_3 . 'del';
+                $trannoEnt->{uncurated_cHGVS} .=
+                  ( $real_r =~ /^[ACGTN]+$/ and length($real_r) < 50 )
+                  ? $real_r
+                  : "";
+
+                if ( $real_al > 0 ) {
+                    $trannoEnt->{uncurated_cHGVS} .= 'ins' . $real_a;
+                }
+
+                my $trPosChanged = $change_cn * $real_var->{replen};
+                $trBegin += $trPosChanged;
+                $real_var = BedAnno::Var->new(
+                    $tid, 0,
+                    $real_rl - $trPosChanged,
+                    substr( $real_r, $trPosChanged ),
+                    substr( $real_a, $trPosChanged )
+                );
+
+                ( $real_p, $real_r, $real_a, $real_rl, $real_al ) =
+                  $real_var->getUnifiedVar('+');
+                $chgvs_5 =
+                  ($cdsOpt)
+                  ? _cPosMark(
+                    $trBegin,         $trdbEnt->{csta},
+                    $trdbEnt->{csto}, $trdbEnt->{len}
+                  )
+                  : $trBegin;
+                $chgvs_3 =
+                  ($cdsOpt)
+                  ? _cPosMark(
+                    $trEnd,           $trdbEnt->{csta},
+                    $trdbEnt->{csto}, $trdbEnt->{len}
+                  )
+                  : $trEnd;
+                $cmpPos = $self->cmpPos( $chgvs_5, $chgvs_3 );
+            }
+        }
 
  # debug
  #        print STDERR Data::Dumper->Dump(
