@@ -266,3 +266,6 @@
 
 0.88  Wed Apr 29 15:00:01
     - remove reformat_anno method from BedAnno
+
+1.00  Sat May 7 18:00:01
+    - update to HGVS version 2.1511

@@ -2650,7 +2650,7 @@ my $badmap_correction_ref = {
 };
 
 my $badmap_correction_ins = {
-    'c'              => 'c.=',
+    'c'              => 'c.1572_1576=',
     'cdsBegin'       => '1572',
     'cdsEnd'         => '1576',
     'componentIndex' => '8',
@@ -3006,8 +3006,8 @@ my $synon_dup_frame = {
     'genepart'       => 'CDS',
     'genepartSO'     => 'SO:0000316',
     'intronIndex'    => '.',
-    'p'              => 'p.(=)',
-    'p3'             => 'p.(=)',
+    'p'              => 'p.(320_321=)',
+    'p3'             => 'p.(320_321=)',
     'postEnd'        => {
         'cDot' => '957',
         'exin' => 'EX2E',
@@ -3328,10 +3328,8 @@ my $mt_altstart = {
         'exin' => 'EX1E'
     },
     'geneId'     => '4535',
-    'p'          => 'p.(=)',
-    'p3' => 'p.(=)',
-    'alt_pHGVS'  => 'p.M1M',
-    'alt_p3'     => 'p.Met1Met',
+    'p'          => 'p.(M1=)',
+    'p3' => 'p.(Met1=)',
     'rnaEnd'     => 3,
     'genepart'   => 'CDS',
     'prAlt'      => 'M',
@@ -3431,10 +3429,8 @@ my $no_call_altstart = {
         'exin' => 'EX1E'
     },
     'geneId'     => '4535',
-    'p'          => 'p.(=)',
-    'p3'          => 'p.(=)',
-    'alt_pHGVS'   => 'p.M1M',
-    'alt_p3'     => 'p.Met1Met',
+    'p'          => 'p.(M1=)',
+    'p3'          => 'p.(Met1=)',
     'rnaEnd'     => 3,
     'prAlt'      => 'M',
     'genepart'   => 'CDS',
@@ -3638,10 +3634,8 @@ my $mt_coding_synon = {
         'exin' => 'EX1E'
     },
     'geneId'     => '4535',
-    'p'          => 'p.(=)',
-    'p3'          => 'p.(=)',
-    'alt_pHGVS'  => 'p.Y43Y',
-    'alt_p3' => 'p.Tyr43Tyr',
+    'p'          => 'p.(Y43=)',
+    'p3'          => 'p.(Tyr43=)',
     'rnaEnd'     => 129,
     'prAlt'      => 'Y',
     'genepart'   => 'CDS',
@@ -3925,7 +3919,7 @@ ok(
     $down3_anno_varname eq 'chr1: g.209788213G>A (intergenic)',
     "for [ 3\' downstream var next to badaln edge ]"
 ) or explain "The anno info: ", $down3_anno_next_to_badaln_edge;
-ok ( $ins_nochange_varname eq "NM_030930.2(UNC93B1): c.=",
+ok ( $ins_nochange_varname eq "NM_030930.2(UNC93B1): c.888C=",
     "for [ ins nochange anno ]"
 ) or explain "The anno info: ", $ins_nochange_anno;
 ok ( $long_ref_varname eq "NM_002437.4(MPV17): c.462-904_*464+d181delinsGCCTG",

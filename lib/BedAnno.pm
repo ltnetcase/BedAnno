@@ -8,13 +8,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '0.88';
+our $VERSION = '1.00';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED format database.
 
-=head2 VERSION v0.88
+=head2 VERSION v1.00
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -2475,6 +2475,9 @@ sub P1toP3 {
         # long no-call
         return 'p.' . $C1toC3{$1} . $2 . '_' . $C1toC3{$3} . $4 . $5;
     }
+    elsif ( $p1 =~ /^p\.\(([A-Z\*])(\d+)=\)$/ ) {
+        return 'p.(' . $C1toC3{$1} . $2 . '=)';
+    }
     else {
         return $p1;
     }
@@ -3381,7 +3384,19 @@ sub getTrChange {
         }
         if ( $trRef eq $trAlt ) {
             $trannoEnt->{func} = 'no-change';
-            $trannoEnt->{c}    = $f . '=';
+            $trannoEnt->{c} = $f;
+            if ($cmpPos == 0) {
+                $trannoEnt->{c} .= $chgvs_5 . $trRef . '=';
+            }
+            elsif ($cmpPos > 0) {
+                $trannoEnt->{c} .= $chgvs_5 . "_" . $chgvs_3 . "=";
+            }
+            else {
+                # hgvs 2.1511 don't refer to this kind of no-change, which
+                # come from del/ins mismatch from refgenome and refseq
+                # with 0 length refSeq.
+                $trannoEnt->{c} .= "=";
+            }
             next;
         }
 
@@ -3919,9 +3934,7 @@ sub getTrChange {
                                     $getseq_cache{$rgn_tmp} = $Ladded;
                                 }
                                 else {
-                                    $self->warn(
-"Warning: Can not get string from genome for $rgn_tmp"
-                                    );
+                                    $self->warn( "Warning: Can not get string from genome for $rgn_tmp");
                                 }
                             }
                         }
@@ -3940,9 +3953,7 @@ sub getTrChange {
                                     $getseq_cache{$rgn_tmp2} = $Radded;
                                 }
                                 else {
-                                    $self->warn(
-"Warning: Can not get string from genome for $rgn_tmp2"
-                                    );
+                                    $self->warn( "Warning: Can not get string from genome for $rgn_tmp2");
                                 }
                             }
                         }
@@ -3963,7 +3974,8 @@ sub getTrChange {
                         and $toCheckAlt eq $canonicalSS{$cis_tag} )
                     {
                         $trannoEnt->{func} = 'no-change';
-                        $trannoEnt->{c}    = 'c.=';
+                        # here may need to keep the original format of hgvs. 
+                        # $trannoEnt->{c}    = 'c.=';
                         next;
                     }
                 }
@@ -4084,6 +4096,9 @@ sub getTrChange {
                             and ( $u3_len > ( $real_rl - $real_al ) ) )
                         {
                             $trannoEnt->{func} = 'utr-3';
+
+                            # hgvs 2.1511 don't refer to this kind of
+                            # coding synon, just keep it.
                             $trannoEnt->{p}    = 'p.(=)';
                             next;
                         }
@@ -4265,13 +4280,13 @@ sub getTrChange {
                         ( $trdbEnt->{plen} + 1 ) != length( $trdbEnt->{pseq} ) )
                     {
                         $self->warn(
-"[Critical Warning] : annotation for $tid may not be correct, \n",
-"                     due to a mis-translated base in its \n",
-"                     cds region, usually a frameshift on \n",
-"                     TGA to GAX, please ignore any annotation \n",
-"                     on latter part behind that frameshift.\n",
-"                     protein annotation for $tid will be skipped\n",
-"                     and the function of it will be annotation-fail\n",
+                            "[Critical Warning] : annotation for $tid may not be correct, \n",
+                            "                     due to a mis-translated base in its \n",
+                            "                     cds region, usually a frameshift on \n",
+                            "                     TGA to GAX, please ignore any annotation \n",
+                            "                     on latter part behind that frameshift.\n",
+                            "                     protein annotation for $tid will be skipped\n",
+                            "                     and the function of it will be annotation-fail\n",
                             "                     until the problem is fixed."
                         ) if ( !exists $self->{quiet} );
                         $trannoEnt->{func} = 'annotation-fail';
@@ -4405,8 +4420,8 @@ sub getTrChange {
                     }
                     else {
                         $self->throw(
-"Error: Cannot get prRef from $tid, [$trdbEnt->{plen}, $prBegin, $prEnd]\n",
-"      Var: [$annoEnt->{var}->{chr}, $annoEnt->{var}->{pos}, $annoEnt->{var}->{end},",
+                            "Error: Cannot get prRef from $tid, [$trdbEnt->{plen}, $prBegin, $prEnd]\n",
+                            "      Var: [$annoEnt->{var}->{chr}, $annoEnt->{var}->{pos}, $annoEnt->{var}->{end},",
                             "$annoEnt->{var}->{ref}, $annoEnt->{var}->{alt}]"
                         );
                     }
@@ -4510,11 +4525,12 @@ sub getTrChange {
                         else {
                             $trannoEnt->{func} = 'coding-synon';
                         }
-                        $trannoEnt->{p} = 'p.(=)';
 
-                        if ( 1 == length($prRef) ) {    # single synonymous var
-                            $trannoEnt->{alt_pHGVS} =
-                              'p.' . $prRef . $no_parsed_pP . $prAlt;
+                        if (1 == length($prRef)) {
+                            $trannoEnt->{p} = 'p.(' . $prRef . $no_parsed_pP . '=)';
+                        }
+                        else {
+                            $trannoEnt->{p} = 'p.(' . $no_parsed_pP . '_' . ($no_parsed_pP + length($prRef) - 1) . '=)';
                         }
 
                         next;
@@ -4694,6 +4710,9 @@ sub getTrChange {
                             # altstart don't fix this
                             # use pHGVS to indicate
                             # altstart here
+                            #
+                            # hgvs 2.1511 don't refer to this kind of 
+                            # coding synon, so just keep it.
                             $trannoEnt->{p} = 'p.(=)';
 
                             # can it be utr-5?
@@ -6514,7 +6533,12 @@ sub get_gHGVS {
         }
     }
     elsif ( $imp eq 'ref' ) {
-        $gHGVS .= '=';
+        if ($reflen == 1) {
+            $gHGVS .= $pos . $ref . '=';
+        }
+        else {
+            $gHGVS .= $pos . '_' . ($pos + $reflen - 1) . '=';
+        }
     }
     else {
         confess "Can not recognize type $imp.";
