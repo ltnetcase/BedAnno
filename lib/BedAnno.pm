@@ -26,7 +26,7 @@ be supported.
 =head1 SYNOPSIS
 
   use BedAnno;
-  my $beda = BedAnno->new( db => "in.bed.gz", tr => 'in.trans.fas.gz' );
+  my $beda = BedAnno->new( db => "in.bed.gz", tr => 'in.trans.fas' );
   my $anno = $beda->anno( 'chr20', 1234567, 1234569, 'AG', 'TGGG' );
 
 =head1 DESCRIPTION
@@ -55,79 +55,25 @@ our $CURRENT_MT  = 'NC_012920.1';
 my $load_opt_vcfaf = 0;
 
 %C3 = (
-    AAA => "Lys",
-    AAC => "Asn",
-    AAG => "Lys",
-    AAT => "Asn",
-    ACA => "Thr",
-    ACC => "Thr",
-    ACG => "Thr",
-    ACT => "Thr",
-    AGA => "Arg",
-    AGC => "Ser",
-    AGG => "Arg",
-    AGT => "Ser",
-    ATA => "Ile",
-    ATC => "Ile",
-    ATG => "Met",
-    ATT => "Ile",
-    CAA => "Gln",
-    CAC => "His",
-    CAG => "Gln",
-    CAT => "His",
-    CCA => "Pro",
-    CCC => "Pro",
-    CCG => "Pro",
-    CCT => "Pro",
-    CGA => "Arg",
-    CGC => "Arg",
-    CGG => "Arg",
-    CGT => "Arg",
-    CTA => "Leu",
-    CTC => "Leu",
-    CTG => "Leu",
-    CTT => "Leu",
-    GAA => "Glu",
-    GAC => "Asp",
-    GAG => "Glu",
-    GAT => "Asp",
-    GCA => "Ala",
-    GCC => "Ala",
-    GCG => "Ala",
-    GCT => "Ala",
-    GGA => "Gly",
-    GGC => "Gly",
-    GGG => "Gly",
-    GGT => "Gly",
-    GTA => "Val",
-    GTC => "Val",
-    GTG => "Val",
-    GTT => "Val",
-    TAA => "*",
-    TAC => "Tyr",
-    TAG => "*",
-    TAT => "Tyr",
-    TCA => "Ser",
-    TCC => "Ser",
-    TCG => "Ser",
-    TCT => "Ser",
-    TGA => "*",
-    TGC => "Cys",
-    TGG => "Trp",
-    TGT => "Cys",
-    TTA => "Leu",
-    TTC => "Phe",
-    TTG => "Leu",
-    TTT => "Phe",
+    AAA => "Lys", AAC => "Asn", AAG => "Lys", AAT => "Asn",
+    ACA => "Thr", ACC => "Thr", ACG => "Thr", ACT => "Thr",
+    AGA => "Arg", AGC => "Ser", AGG => "Arg", AGT => "Ser",
+    ATA => "Ile", ATC => "Ile", ATG => "Met", ATT => "Ile",
+    CAA => "Gln", CAC => "His", CAG => "Gln", CAT => "His",
+    CCA => "Pro", CCC => "Pro", CCG => "Pro", CCT => "Pro",
+    CGA => "Arg", CGC => "Arg", CGG => "Arg", CGT => "Arg",
+    CTA => "Leu", CTC => "Leu", CTG => "Leu", CTT => "Leu",
+    GAA => "Glu", GAC => "Asp", GAG => "Glu", GAT => "Asp",
+    GCA => "Ala", GCC => "Ala", GCG => "Ala", GCT => "Ala",
+    GGA => "Gly", GGC => "Gly", GGG => "Gly", GGT => "Gly",
+    GTA => "Val", GTC => "Val", GTG => "Val", GTT => "Val",
+    TAA => "*",   TAC => "Tyr", TAG => "*",   TAT => "Tyr",
+    TCA => "Ser", TCC => "Ser", TCG => "Ser", TCT => "Ser",
+    TGA => "*",   TGC => "Cys", TGG => "Trp", TGT => "Cys",
+    TTA => "Leu", TTC => "Phe", TTG => "Leu", TTT => "Phe",
 
-    TCN => "Ser",
-    CCN => "Pro",
-    ACN => "Thr",
-    GTN => "Val",
-    CTN => "Leu",
-    GCN => "Ala",
-    CGN => "Arg",
-    GGN => "Gly",
+    TCN => "Ser", CCN => "Pro", ACN => "Thr", GTN => "Val",
+    CTN => "Leu", GCN => "Ala", CGN => "Arg", GGN => "Gly",
 
     # inseq stop codon
     UAA => "X", UAG => "X",
@@ -137,79 +83,25 @@ my $load_opt_vcfaf = 0;
 );
 
 %C1 = (
-    AAA => "K",
-    AAC => "N",
-    AAG => "K",
-    AAT => "N",
-    ACA => "T",
-    ACC => "T",
-    ACG => "T",
-    ACT => "T",
-    AGA => "R",
-    AGC => "S",
-    AGG => "R",
-    AGT => "S",
-    ATA => "I",
-    ATC => "I",
-    ATG => "M",
-    ATT => "I",
-    CAA => "Q",
-    CAC => "H",
-    CAG => "Q",
-    CAT => "H",
-    CCA => "P",
-    CCC => "P",
-    CCG => "P",
-    CCT => "P",
-    CGA => "R",
-    CGC => "R",
-    CGG => "R",
-    CGT => "R",
-    CTA => "L",
-    CTC => "L",
-    CTG => "L",
-    CTT => "L",
-    GAA => "E",
-    GAC => "D",
-    GAG => "E",
-    GAT => "D",
-    GCA => "A",
-    GCC => "A",
-    GCG => "A",
-    GCT => "A",
-    GGA => "G",
-    GGC => "G",
-    GGG => "G",
-    GGT => "G",
-    GTA => "V",
-    GTC => "V",
-    GTG => "V",
-    GTT => "V",
-    TAA => "*",
-    TAC => "Y",
-    TAG => "*",
-    TAT => "Y",
-    TCA => "S",
-    TCC => "S",
-    TCG => "S",
-    TCT => "S",
-    TGA => "*",
-    TGC => "C",
-    TGG => "W",
-    TGT => "C",
-    TTA => "L",
-    TTC => "F",
-    TTG => "L",
-    TTT => "F",
+    AAA => "K", AAC => "N", AAG => "K", AAT => "N",
+    ACA => "T", ACC => "T", ACG => "T", ACT => "T",
+    AGA => "R", AGC => "S", AGG => "R", AGT => "S",
+    ATA => "I", ATC => "I", ATG => "M", ATT => "I",
+    CAA => "Q", CAC => "H", CAG => "Q", CAT => "H",
+    CCA => "P", CCC => "P", CCG => "P", CCT => "P",
+    CGA => "R", CGC => "R", CGG => "R", CGT => "R",
+    CTA => "L", CTC => "L", CTG => "L", CTT => "L",
+    GAA => "E", GAC => "D", GAG => "E", GAT => "D",
+    GCA => "A", GCC => "A", GCG => "A", GCT => "A",
+    GGA => "G", GGC => "G", GGG => "G", GGT => "G",
+    GTA => "V", GTC => "V", GTG => "V", GTT => "V",
+    TAA => "*", TAC => "Y", TAG => "*", TAT => "Y",
+    TCA => "S", TCC => "S", TCG => "S", TCT => "S",
+    TGA => "*", TGC => "C", TGG => "W", TGT => "C",
+    TTA => "L", TTC => "F", TTG => "L", TTT => "F",
 
-    TCN => "S",
-    CCN => "P",
-    ACN => "T",
-    GTN => "V",
-    CTN => "L",
-    GCN => "A",
-    CGN => "R",
-    GGN => "G",
+    TCN => "S", CCN => "P", ACN => "T", GTN => "V",
+    CTN => "L", GCN => "A", CGN => "R", GGN => "G",
 
     UAA => "X", UAG => "X",
 
@@ -227,30 +119,14 @@ $AAnumber{'?'}                 = $AAcount + 1;
 $AAnumber{'.'}                 = $AAcount + 2;
 
 %Polar = (
-    Ala => "NP",
-    Arg => "P+",
-    Asn => "P0",
-    Asp => "P-",
-    Cys => "P0",
-    Gln => "P0",
-    Glu => "P-",
-    Gly => "P0",
-    His => "P+",
-    Ile => "NP",
-    Leu => "NP",
-    Lys => "P+",
-    Met => "NP",
-    Phe => "NP",
-    Pro => "NP",
-    Sec => "NP",
-    Ser => "P0",
-    Thr => "P0",
-    Trp => "NP",
-    Tyr => "P0",
+    Ala => "NP", Arg => "P+", Asn => "P0", Asp => "P-",
+    Cys => "P0", Gln => "P0", Glu => "P-", Gly => "P0",
+    His => "P+", Ile => "NP", Leu => "NP", Lys => "P+",
+    Met => "NP", Phe => "NP", Pro => "NP", Sec => "NP",
+    Ser => "P0", Thr => "P0", Trp => "NP", Tyr => "P0",
     Val => "NP",
 
-    'X' => '.',
-    '*' => '.'
+    'X' => '.', '*' => '.'
 );
 
 @Polar{ @C1{ ( sort keys %C1 ) } } = @Polar{ @C3{ ( sort keys %C1 ) } };
@@ -1666,7 +1542,7 @@ sub readtr {
         $self->throw("Options arg 'trans' only accept hash ref as value.");
     }
 
-    open( FAS, "zcat -f $self->{tr} |" ) or confess "$self->{tr}: $!";
+    my $trfas_pid = open( FAS, "-|", "zcat -f $self->{tr}" ) or confess "$self->{tr}: $!";
     local $/ = ">";
     my %seqs = ();
     while (<FAS>) {
@@ -1743,6 +1619,7 @@ sub readtr {
         }
     }
     close FAS;
+    waitpid($trfas_pid, 0);
     return \%seqs;
 }
 
@@ -1832,10 +1709,10 @@ sub load_anno {
 
     my $read_all_opt = 0;
     my @all_querys   = ();
+    my $zcat_pid;
     if ( 0 == @query_region ) {
         $read_all_opt = 1;
-        open( ANNO, "zcat -f $self->{db} |" )
-          or $self->throw("Error: [$self->{db}] $!");
+        $zcat_pid = open( ANNO, "-|",  "zcat $self->{db}" ) or confess "Error: [$self->{db}] $!\n";
     }
     else {
         my @sorted_regions = sort {
@@ -1939,7 +1816,10 @@ sub load_anno {
         next if ( !exists $ent{annos} );
         push( @{ $$rannodb{$chr} }, {%ent} );
     }
-    close ANNO if ($read_all_opt);
+    if ($read_all_opt) {
+        close ANNO;
+        waitpid($zcat_pid, 0);
+    }
 
     $rannodb = region_merge($rannodb)
       if ( $mmapTag or $geneTag or $tranTag );
