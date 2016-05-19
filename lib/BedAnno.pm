@@ -6658,8 +6658,7 @@ sub getTrPosition {
                                               $1 . '-u' . ( $2 + 1 );
                                         }
                                         else {
-                                            confess
-"Error: bad cdsBegin for promoter region [$tid:$tmp_trInfo->{cdsBegin}]";
+                                            $preLeft_cDot = $tmp_trInfo->{cdsBegin} . '-u1';
                                         }
                                     }
                                     if ( $tmp_trInfo->{rnaBegin} eq "1" ) {
