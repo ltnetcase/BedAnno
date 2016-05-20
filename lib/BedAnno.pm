@@ -6657,16 +6657,19 @@ sub getTrPosition {
                                             $preLeft_cDot =
                                               $1 . '-u' . ( $2 + 1 );
                                         }
-                                        else {
-                                            $preLeft_cDot = $tmp_trInfo->{cdsBegin} . '-u1';
+                                        else { # for some sub region anno db entries
+                                            $preLeft_cDot = "[uncertain preLeft]:" . $tmp_trInfo->{cdsBegin};
                                         }
                                     }
                                     if ( $tmp_trInfo->{rnaBegin} eq "1" ) {
                                         $preLeft_nDot = -1;
                                     }
-                                    else {
+                                    elsif ($tmp_trInfo->{rnaBegin} =~ /^\-?\d+$/) {
                                         $preLeft_nDot =
                                           $tmp_trInfo->{rnaBegin} - 1;
+                                    }
+                                    else { # for some sub region anno db entries
+                                        $preLeft_nDot = "[uncertain preLeft]:" . $tmp_trInfo->{rnaBegin};    
                                     }
                                 }
                                 else {
@@ -7796,7 +7799,7 @@ sub annoCNV {
         $qstart-- if ( $qstart > 0 );
         $qend++;
     }
-    $open_args{region} = $chr . ':' . ( $qstart + 1 ) . '-' . $qend;
+    $open_args{region} = $chr . ':' . ($qstart + 1) . '-' . $qend;
     if ( exists $self->{genes} ) {
         $open_args{genes} = $self->{genes};
     }
