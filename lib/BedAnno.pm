@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use Carp;
 use Data::Dumper;
+use IO::Uncompress::Gunzip qw($GunzipError);
 use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
@@ -1542,10 +1543,17 @@ sub readtr {
         $self->throw("Options arg 'trans' only accept hash ref as value.");
     }
 
-    my $trfas_pid = open( FAS, "-|", "zcat -f $self->{tr}" ) or confess "$self->{tr}: $!";
+    my $fas_h;
+    if ($self->{tr} =~ /\.gz$/) {
+        $fas_h = new IO::Uncompress::Gunzip $self->{tr}, AUTOCLOSE => 1
+            or confess "Error: [$self->{tr}] $GunzipError\n";
+    }
+    else {
+        open($fas_h, $self->{tr}) or confess "Error: [$self->{tr}] $!";
+    }
     local $/ = ">";
     my %seqs = ();
-    while (<FAS>) {
+    while (<$fas_h>) {
         s/[\s>]+$//g;
         next if (/^\s*$/);
         my $hd = $1 if (s/^(\S+[^\n]*)\n//);
@@ -1618,8 +1626,7 @@ sub readtr {
             };
         }
     }
-    close FAS;
-    waitpid($trfas_pid, 0);
+    close($fas_h);
     return \%seqs;
 }
 
@@ -1709,10 +1716,11 @@ sub load_anno {
 
     my $read_all_opt = 0;
     my @all_querys   = ();
-    my $zcat_pid;
+    my $annodb_h;
     if ( 0 == @query_region ) {
         $read_all_opt = 1;
-        $zcat_pid = open( ANNO, "-|",  "zcat $self->{db}" ) or confess "Error: [$self->{db}] $!\n";
+        $annodb_h = new IO::Uncompress::Gunzip $self->{db}, AUTOCLOSE => 1
+            or confess "Error: [$self->{db}] $GunzipError\n";
     }
     else {
         my @sorted_regions = sort {
@@ -1754,7 +1762,7 @@ sub load_anno {
     while (1) {
         my $tb_ent;
         if ($read_all_opt) {
-            $tb_ent = <ANNO>;
+            $tb_ent = <$annodb_h>;
             last if ( !defined $tb_ent or $tb_ent eq "" );
         }
         else {
@@ -1817,8 +1825,7 @@ sub load_anno {
         push( @{ $$rannodb{$chr} }, {%ent} );
     }
     if ($read_all_opt) {
-        close ANNO;
-        waitpid($zcat_pid, 0);
+        close($annodb_h);
     }
 
     $rannodb = region_merge($rannodb)
