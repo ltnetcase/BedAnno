@@ -4458,6 +4458,23 @@ sub getTrChange {
                         $ins_stop_tag = 1;
                     }
 
+                    if ( $prAlt eq '?' ) {
+                        $trannoEnt->{func} = 'unknown-no-call';
+                        $trannoEnt->{p} = 'p.';
+                        if ($prBegin == $prEnd) {
+                            $trannoEnt->{p} .= $prRef . $prBegin . '?';
+                        }
+                        elsif ($prBegin < $prEnd) {
+                            $trannoEnt->{p} .= substr($prRef,0,1) . $prBegin 
+                                            . '_' . substr($prRef,-1,1) . $prEnd . 'delins?';
+                        }
+                        else {
+                            $trannoEnt->{p} .= substr($trdbEnt->{pseq}, $prEnd - 1, 1) . $prEnd
+                                            . '_' . substr($trdbEnt->{pseq}, $prBegin - 1, 1) . $prBegin . 'ins?';
+                        }
+                        next;
+                    }
+
                     # parse the protein variants
                     # to recognize the repeat and adjust to correct position
                     my $prVar =
