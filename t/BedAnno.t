@@ -2329,9 +2329,9 @@ my $ins_stop = {
         'exin' => 'IVS1'
     },
     'geneId'     => '259236',
-    'p'          => 'p.T34_K156del',
+    'p'          => 'p.T34*',
     'rnaEnd'     => 248,
-    'p3'         => 'p.Thr34_Lys156del',
+    'p3'         => 'p.Thr34*',
     'prAlt'      => 'PS*',
     'genepart'   => 'span',
     'prRef'      => '',
@@ -3897,6 +3897,8 @@ my $span_cds_edge_rep_anno = $bare_beda->anno( "chr11", "67434394", "67434394", 
 my $span_cds_edge_rep_varname = $span_cds_edge_rep_anno->{var}->{varName};
 my $unknownProt_varanno = $bare_beda->anno("chr12", "56490980", "56490980", "", "GNT");
 my $unknownProt_varname = $unknownProt_varanno->{var}->{varName};
+my $ins_stop_anno2 = $bare_beda->anno( "chr17", "7578238", "7578240", "CC", "AA" );
+my $ins_stop_varname = $ins_stop_anno2->{var}->{varName};
 
 ok( $prTag_correction eq "NM_000151.3(G6PC): c.326G>A (p.C109Y)",
     "for [ primary tag correction ]" )
@@ -3931,6 +3933,8 @@ ok ( $span_cds_edge_rep_varname eq "NM_001031615.1(ALDH3B2): c.6_12dupGGATGAA (p
 ) or explain "The anno info: ", $span_cds_edge_rep_anno;
 ok ( $unknownProt_varname eq "NM_001982.3(ERBB3): c.2427_2428insNTG (p.Q809_L810ins?)", "for [ ambiguous mutant of protein anno ]"
 ) or explain "The anno info: ", $unknownProt_varanno;
+ok ( $ins_stop_varname eq "NM_000546.5(TP53): c.609_610delGGinsTT (p.E204*)", "for [ delins mutation with insert a stop codon anno ]"
+) or explain "The anno info: ", $ins_stop_anno2;
 
 $bare_beda->DESTROY();
 undef $bare_beda;

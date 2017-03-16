@@ -4668,7 +4668,17 @@ sub getTrChange {
                         }
 
                         $trannoEnt->{p} = 'p.' . $prStart . ( $p_P + 1 );
-                        if ( $prVar->{sm} == 1 ) {
+                        if ($ins_stop_tag) {
+                            if ($p_a eq "") {
+                                $trannoEnt->{p} .= '*'
+                            }
+                            else {
+                                my $Ptmp = substr($trdbEnt->{pseq}, $p_P + $pal, 1);
+                                my $PendTmp = $p_P + $pal + 1;
+                                $trannoEnt->{p} .= '_' . $Ptmp . $PendTmp . 'delins' . $p_a . '*';
+                            }
+                            next;
+                        } elsif ( $prVar->{sm} == 1 ) {
                             $trannoEnt->{p} .= 'del';
                         }
                         else {
