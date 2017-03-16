@@ -269,3 +269,6 @@
 
 1.00  Sat May 7 18:00:01
     - update to HGVS version 2.1511
+
+1.01  Thu Mar 17 00:10:00
+    - correct a probleam of mutation with stop codon inserted in, the pHGVS is corrected now.
