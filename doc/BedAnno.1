@@ -133,15 +133,15 @@
 .\" ========================================================================
 .\"
 .IX Title "BedAnno 3"
-.TH BedAnno 3 "2016-05-07" "perl v5.22.1" "User Contributed Perl Documentation"
+.TH BedAnno 3 "2017-04-07" "perl v5.22.2" "User Contributed Perl Documentation"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
 .nh
 .SH "NAME"
 BedAnno \- Perl module for annotating variation depend on the BED format database.
-.SS "\s-1VERSION\s0 v1.00"
-.IX Subsection "VERSION v1.00"
+.SS "\s-1VERSION\s0 v1.11"
+.IX Subsection "VERSION v1.11"
 From version 0.32 BedAnno will change to support \s-1CG\s0's variant shell list
 and use ncbi annotation release 104 as the annotation database
 with reformatted database format, and won't give any individual
@@ -152,7 +152,7 @@ be supported.
 .IX Header "SYNOPSIS"
 .Vb 3
 \&  use BedAnno;
-\&  my $beda = BedAnno\->new( db => "in.bed.gz", tr => \*(Aqin.trans.fas.gz\*(Aq );
+\&  my $beda = BedAnno\->new( db => "in.bed.gz", tr => \*(Aqin.trans.fas\*(Aq );
 \&  my $anno = $beda\->anno( \*(Aqchr20\*(Aq, 1234567, 1234569, \*(AqAG\*(Aq, \*(AqTGGG\*(Aq );
 .Ve
 .SH "DESCRIPTION"
@@ -327,6 +327,14 @@ resource dependencies will be required.
 .RE
 .RS 4
 .RE
+.IP "\fIgnomAD\fR [gnomad.exomes.r2.0.1.sites.vcf.gz]" 4
+.IX Item "gnomAD [gnomad.exomes.r2.0.1.sites.vcf.gz]"
+.RS 4
+.IP "add gnomAD allele frequency information of 123,136 exomes and 15,496 genomes from unrelated individuals sequenced" 4
+.IX Item "add gnomAD allele frequency information of 123,136 exomes and 15,496 genomes from unrelated individuals sequenced"
+.RE
+.RS 4
+.RE
 .IP "\fIcustomdb_XX\fR [custom db in the same format with esp6500's]" 4
 .IX Item "customdb_XX [custom db in the same format with esp6500's]"
 .RS 4
@@ -472,6 +480,7 @@ resource dependencies will be required.
 \&    esp6500             o            o
 \&    esp6500_h           o            x
 \&    exac                o            o
+\&    gnomAD              o            o
 \&    exac_h              o            x
 \&    cg54                o            o
 \&    cg54_h              o            x
@@ -1421,7 +1430,7 @@ The Format of annotation database is listed as following:
 .Ve
 .SH "AUTHOR"
 .IX Header "AUTHOR"
-liutao <liutao@genomics.cn>
+liutao <liut@geneplus.org.cn>
 .SH "COPYRIGHT AND LICENSE"
 .IX Header "COPYRIGHT AND LICENSE"
 Please check \s-1LICENSE\s0 file for detail

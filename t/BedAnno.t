@@ -3981,6 +3981,9 @@ if ( -e $extradb and -r $extradb ) {
     if ( -e "$extradb/exac/ExAC.r0.2.sites.vep.vcf.gz" ) {
 	$opts{exac} = "$extradb/exac/ExAC.r0.2.sites.vep.vcf.gz";
     }
+    if ( -e "$extradb/gnomAD/gnomad.exomes.r2.0.1.sites.vcf.gz" ) {
+	$opts{gnomAD} = "$extradb/gnomAD/gnomad.exomes.r2.0.1.sites.vcf.gz";
+    }
     if ( -e "$extradb/aln_db/hg19/hg19_chM.fa.rz" ) {
 	$opts{genome} = "$extradb/aln_db/hg19/hg19_chM.fa.rz";
     }
@@ -4065,6 +4068,18 @@ if ( -e $extradb and -r $extradb ) {
         }
         else {
             fail("for [ exac ]");
+	    explain "The returned var info:", $t3_anno->{var};
+        }
+    }
+
+    if ( exists $opts{gnomAD} ) {
+        if ( exists $t3_anno->{var}->{gnomAD}->{AF}
+            and $t3_anno->{var}->{gnomAD}->{AF} eq '9.99996e-01' )
+        {
+            pass("for [ gnomAD ]");
+        }
+        else {
+            fail("for [ gnomAD ]");
 	    explain "The returned var info:", $t3_anno->{var};
         }
     }

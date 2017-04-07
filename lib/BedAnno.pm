@@ -9,13 +9,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '1.01';
+our $VERSION = '1.11';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED format database.
 
-=head2 VERSION v1.01
+=head2 VERSION v1.11
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -426,6 +426,14 @@ our $REF_BUILD = 'GRCh37';
 
 =back
 
+=item I<gnomAD> [gnomad.exomes.r2.0.1.sites.vcf.gz]
+
+=over
+
+=item add gnomAD allele frequency information of 123,136 exomes and 15,496 genomes from unrelated individuals sequenced
+
+=back
+
 =item I<customdb_XX> [custom db in the same format with esp6500's]
 
 =over
@@ -636,6 +644,10 @@ sub new {
         $self->set_exac( $self->{exac} );
     }
 
+    if ( exists $self->{gnomAD} ) {
+        $self->set_gnomAD( $self->{gnomAD} );
+    }
+
     foreach my $dbk ( sort keys %$self ) {
         if ( $dbk =~ /^customdb_(\S+)/ ) {
             my $dbID = $1;
@@ -700,6 +712,7 @@ sub new {
     esp6500             o            o
     esp6500_h           o            x
     exac                o            o
+    gnomAD              o            o
     exac_h              o            x
     cg54                o            o
     cg54_h              o            x
@@ -1086,6 +1099,30 @@ sub get_exac {
 sub get_exac_h {
     my $self = shift;
     return $self->{exac_h} if ( exists $self->{exac_h} );
+    return undef;
+}
+
+sub set_gnomAD {
+    my $self    = shift;
+    my $gnomAD_db = shift;
+    $self->{gnomAD} = $gnomAD_db;
+    require GetGAD if ( !exists $self->{gnomAD_h} );
+    my %common_opts = ();
+    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
+    my $gnomAD_h = GetGAD->new( db => $gnomAD_db, %common_opts );
+    $self->{gnomAD_h} = $gnomAD_h;
+    return $self;
+}
+
+sub get_gnomAD {
+    my $self = shift;
+    return $self->{gnomAD} if ( exists $self->{gnomAD} );
+    return undef;
+}
+
+sub get_gnomAD_h {
+    my $self = shift;
+    return $self->{gnomAD_h} if ( exists $self->{gnomAD_h} );
     return undef;
 }
 
@@ -2195,6 +2232,10 @@ sub varanno {
 
     if ( exists $self->{exac} ) {
         $var->{exac} = $self->{exac_h}->getAF( @$var{qw(chr pos end ref alt)} );
+    }
+
+    if ( exists $self->{gnomAD} ) {
+        $var->{gnomAD} = $self->{gnomAD_h}->getGAD( @$var{qw(chr pos end ref alt)} );
     }
 
     foreach my $dbhk ( sort keys %$self ) {
@@ -8150,7 +8191,7 @@ The Format of annotation database is listed as following:
 
 =head1 AUTHOR
 
-liutao E<lt>liutao@genomics.cnE<gt>
+liutao E<lt>liut@geneplus.org.cnE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 

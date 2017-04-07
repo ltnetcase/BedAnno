@@ -4,7 +4,7 @@
 <head>
 <title></title>
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<link rev="made" href="mailto:buildbot@teneleven-slave.macports.org" />
+<link rev="made" href="mailto:root@elcapitan.internal.macports.net" />
 </head>
 
 <body>
@@ -14,7 +14,7 @@
 <ul id="index">
   <li><a href="#NAME">NAME</a>
     <ul>
-      <li><a href="#VERSION-v1.00">VERSION v1.00</a></li>
+      <li><a href="#VERSION-v1.11">VERSION v1.11</a></li>
     </ul>
   </li>
   <li><a href="#SYNOPSIS">SYNOPSIS</a></li>
@@ -88,14 +88,14 @@
 
 <p>BedAnno - Perl module for annotating variation depend on the BED format database.</p>
 
-<h2 id="VERSION-v1.00">VERSION v1.00</h2>
+<h2 id="VERSION-v1.11">VERSION v1.11</h2>
 
 <p>From version 0.32 BedAnno will change to support CG&#39;s variant shell list and use ncbi annotation release 104 as the annotation database with reformatted database format, and won&#39;t give any individual annotation, so the individual_anno() is no longer available. VCF4.1 format variant description (chr, pos, ref, alt) will also be supported.</p>
 
 <h1 id="SYNOPSIS">SYNOPSIS</h1>
 
 <pre><code>  use BedAnno;
-  my $beda = BedAnno-&gt;new( db =&gt; &quot;in.bed.gz&quot;, tr =&gt; &#39;in.trans.fas.gz&#39; );
+  my $beda = BedAnno-&gt;new( db =&gt; &quot;in.bed.gz&quot;, tr =&gt; &#39;in.trans.fas&#39; );
   my $anno = $beda-&gt;anno( &#39;chr20&#39;, 1234567, 1234569, &#39;AG&#39;, &#39;TGGG&#39; );</code></pre>
 
 <h1 id="DESCRIPTION">DESCRIPTION</h1>
@@ -339,6 +339,18 @@
 </dl>
 
 </dd>
+<dt id="gnomAD-gnomad.exomes.r2.0.1.sites.vcf.gz"><i>gnomAD</i> [gnomad.exomes.r2.0.1.sites.vcf.gz]</dt>
+<dd>
+
+<dl>
+
+<dt id="add-gnomAD-allele-frequency-information-of-123-136-exomes-and-15-496-genomes-from-unrelated-individuals-sequenced">add gnomAD allele frequency information of 123,136 exomes and 15,496 genomes from unrelated individuals sequenced</dt>
+<dd>
+
+</dd>
+</dl>
+
+</dd>
 <dt id="customdb_XX-custom-db-in-the-same-format-with-esp6500s"><i>customdb_XX</i> [custom db in the same format with esp6500&#39;s]</dt>
 <dd>
 
@@ -521,6 +533,7 @@
     esp6500             o            o
     esp6500_h           o            x
     exac                o            o
+    gnomAD              o            o
     exac_h              o            x
     cg54                o            o
     cg54_h              o            x
@@ -1433,7 +1446,7 @@
 
 <h1 id="AUTHOR">AUTHOR</h1>
 
-<p>liutao &lt;liutao@genomics.cn&gt;</p>
+<p>liutao &lt;liut@geneplus.org.cn&gt;</p>
 
 <h1 id="COPYRIGHT-AND-LICENSE">COPYRIGHT AND LICENSE</h1>
 

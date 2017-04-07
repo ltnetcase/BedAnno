@@ -272,3 +272,6 @@
 
 1.01  Thu Mar 17 00:10:00
     - correct a probleam of mutation with stop codon inserted in, the pHGVS is corrected now.
+
+1.11  Fri Apr 7 08:54:12
+    - Add gnomAD query API and corresponding info hash
