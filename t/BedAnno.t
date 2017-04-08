@@ -3978,8 +3978,8 @@ if ( -e $extradb and -r $extradb ) {
     if ( -e "$extradb/panelDB/PrePreg12_V1.0.HIGHQ.bed.gz" ) {
 	$opts{customdb_PP12} = "$extradb/panelDB/PrePreg12_V1.0.HIGHQ.bed.gz";
     }
-    if ( -e "$extradb/exac/ExAC.r0.2.sites.vep.vcf.gz" ) {
-	$opts{exac} = "$extradb/exac/ExAC.r0.2.sites.vep.vcf.gz";
+    if ( -e "$extradb/exac/release0.3.1/ExAC.r0.3.1.sites.vep.vcf.gz" ) {
+	$opts{exac} = "$extradb/exac/release0.3.1/ExAC.r0.3.1.sites.vep.vcf.gz";
     }
     if ( -e "$extradb/gnomAD/gnomad.exomes.r2.0.1.sites.vcf.gz" ) {
 	$opts{gnomAD} = "$extradb/gnomAD/gnomad.exomes.r2.0.1.sites.vcf.gz";
@@ -4062,7 +4062,7 @@ if ( -e $extradb and -r $extradb ) {
 
     if ( exists $opts{exac} ) {
         if ( exists $t3_anno->{var}->{exac}->{AF}
-            and $t3_anno->{var}->{exac}->{AF} eq '0.999984' )
+            and $t3_anno->{var}->{exac}->{AF} eq '1.000' )
         {
             pass("for [ exac ]");
         }
