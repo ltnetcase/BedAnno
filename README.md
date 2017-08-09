@@ -38,7 +38,7 @@ Tag parsing rules: Entries are separated by "; ", and for tags in entry are sepa
 
      5'==|>>>>|[============]|>>>|>>>|[=========]|>>>|>>>|[============]|>>>>|==3'
      PROM 5U2E D5U1 I5U1 A5U1 5U1 C1  DC1 IC1 AC1 C2E 3U1 D3U1 I3U1 A3U1 3U2E
-     167  204  163  447  164  204 316 163 191 164 316 205 163  448  164  448
+     167  204  163  447  164  204 316 163 191 164 316 205 163  448  164  205
      .   |EX1 |     IVS1     |  EX2  |   IVS2    |  EX3  |    IVS3      |EX4E|               
 
 
