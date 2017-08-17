@@ -3952,8 +3952,8 @@ if ( -e $extradb and -r $extradb ) {
     if ( -e "$extradb/dbsnp/snp137.bed.gz" ) {
         $opts{dbSNP} = "$extradb/dbsnp/snp137.bed.gz";
     }
-    if ( -e "$extradb/tgp/tgp_phaseI_version3_hg19.dbdump.bed.gz" ) {
-        $opts{tgp} = "$extradb/tgp/tgp_phaseI_version3_hg19.dbdump.bed.gz";
+    if ( -e "$extradb/tgp/tgpPhase3_vcfDB/tgp_phase3_small_vars.vcf.gz" ) {
+        $opts{tgp} = "$extradb/tgp/tgpPhase3_vcfDB/tgp_phase3_small_vars.vcf.gz";
     }
     if ( -e "$extradb/CG/CG54_20130709_stats_filtered_ct0.tsv.gz" ) {
         $opts{cg54} = "$extradb/CG/CG54_20130709_stats_filtered_ct0.tsv.gz";

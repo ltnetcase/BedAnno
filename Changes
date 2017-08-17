@@ -275,3 +275,6 @@
 
 1.11  Fri Apr 7 08:54:12
     - Add gnomAD query API and corresponding info hash
+
+1.12  Thu Aug 17 18:06:12
+    - Change to use TGP's new API, not only frequency information, but also other infomation is involved in hash

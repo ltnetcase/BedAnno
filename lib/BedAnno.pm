@@ -9,13 +9,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '1.11';
+our $VERSION = '1.12';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED format database.
 
-=head2 VERSION v1.11
+=head2 VERSION v1.12
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -386,7 +386,7 @@ our $REF_BUILD = 'GRCh37';
 
 =back
 
-=item I<tgp> [tgp_phaseI_v3.bed.gz]
+=item I<tgp> [tgp_phase3_small_vars.vcf.gz]
 
 =over
 
@@ -1038,11 +1038,10 @@ sub set_tgp {
     my $self  = shift;
     my $tgpdb = shift;
     $self->{tgp} = $tgpdb;
-    require GetVcfAF if ( !$load_opt_vcfaf );
-    $load_opt_vcfaf = 1;
+    require GetTGP if ( !exists $self->{tgp_h} );
     my %common_opts = ();
     $common_opts{quiet} = 1 if ( exists $self->{quiet} );
-    my $tgp_h = GetVcfAF->new( db => $tgpdb, %common_opts );
+    my $tgp_h = GetTGP->new( db => $tgpdb, %common_opts );
     $self->{tgp_h} = $tgp_h;
     return $self;
 }
@@ -2043,20 +2042,8 @@ sub anno {
 
                     cosmic => $ref_cosmic_return,
 
-                    tgp => {
-                        AN => $tgp_total_allele_count,
-                        AF => $tgp_alt_allele_frequency,
-                    },
-
-                    cg54 => {
-                        AN => $cg54_total_allele_count,
-                        AF => $cg54_alt_allele_frequency,
-                    },
-
-                    wellderly => {
-                        AN => $wellderly_total_allele_count,
-                        AF => $wellderly_alt_allele_frequency,
-                    },
+                    tgp => $ref_tgp_return,
+                    exac => $ref_exac_return,
 
                     esp6500 => {
                         AN => $esp6500_total_allele_count,
