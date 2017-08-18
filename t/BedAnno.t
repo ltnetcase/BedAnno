@@ -4050,7 +4050,7 @@ if ( -e $extradb and -r $extradb ) {
 
     if ( exists $opts{tgp} ) {
 	if ( exists $t3_anno->{var}->{tgp}->{AF}
-	    and $t3_anno->{var}->{tgp}->{AF} eq '0.990000' )
+	    and $t3_anno->{var}->{tgp}->{AF} eq '1' )
 	{
 	    pass("for [ tgp ]");
 	}
