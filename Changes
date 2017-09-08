@@ -278,3 +278,6 @@
 
 1.12  Thu Aug 17 18:06:12
     - Change to use TGP's new API, not only frequency information, but also other infomation is involved in hash
+
+1.13  Fri Sep  8 13:41:49
+    - Change fs1 frameshift to show fs*1 in pHGVS to be used to differ from nonsense mutation
