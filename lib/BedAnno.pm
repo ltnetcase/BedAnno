@@ -9,13 +9,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '1.12';
+our $VERSION = '1.13';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED format database.
 
-=head2 VERSION v1.12
+=head2 VERSION v1.13
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -4460,7 +4460,7 @@ sub getTrChange {
                           . ( $no_parsed_pP + 1 )
                           . $no_parsed_prAlt_Start;
                         my $ext_length = ( length($prAlt) - $prSimpleSame );
-                        if ( $ext_length > 1 or $prAlt !~ /\*$/ ) {
+                        if ( $ext_length > 0 or $prAlt !~ /\*$/ ) {
                             $trannoEnt->{p} .= 'fs*';
                             if ( $prAlt =~ /\*$/ ) {    # ext length estimated
                                 $trannoEnt->{p} .= $ext_length;
@@ -4468,6 +4468,10 @@ sub getTrChange {
                             else {    # don't meet a stop codon
                                 $trannoEnt->{p} .= '?';
                             }
+                        }
+                        else {
+                            $trannoEnt->{func} = 'no-change';
+                            $trannoEnt->{p} = 'p.(=)';
                         }
                         $trannoEnt->{protBegin} += $prSimpleSame;
                         next;
