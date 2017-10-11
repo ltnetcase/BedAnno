@@ -3899,6 +3899,8 @@ my $unknownProt_varanno = $bare_beda->anno("chr12", "56490980", "56490980", "", 
 my $unknownProt_varname = $unknownProt_varanno->{var}->{varName};
 my $ins_stop_anno2 = $bare_beda->anno( "chr17", "7578238", "7578240", "CC", "AA" );
 my $ins_stop_varname = $ins_stop_anno2->{var}->{varName};
+my $neighbor_mismatch_anno = $bare_beda->anno("chr9", "134385434", "134385435", "C", "T");
+my $neighbor_mismatch_varname = $neighbor_mismatch_anno->{var}->{varName};
 
 ok( $prTag_correction eq "NM_000151.3(G6PC): c.326G>A (p.C109Y)",
     "for [ primary tag correction ]" )
@@ -3935,6 +3937,8 @@ ok ( $unknownProt_varname eq "NM_001982.3(ERBB3): c.2427_2428insNTG (p.Q809_L810
 ) or explain "The anno info: ", $unknownProt_varanno;
 ok ( $ins_stop_varname eq "NM_000546.5(TP53): c.609_610delGGinsTT (p.E204*)", "for [ delins mutation with insert a stop codon anno ]"
 ) or explain "The anno info: ", $ins_stop_anno2;
+ok ( $neighbor_mismatch_varname eq "NM_007171.3(POMT1): c.751_752delCGinsTA (p.R251*)", "for [ neighbor base mismatch anno ]"
+) or explain "The anno info: ", $neighbor_mismatch_anno;
 
 $bare_beda->DESTROY();
 undef $bare_beda;
