@@ -9,13 +9,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '1.13';
+our $VERSION = '1.14';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED format database.
 
-=head2 VERSION v1.13
+=head2 VERSION v1.14
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -6447,7 +6447,7 @@ sub get_gHGVS {
 
     my $imp = $var->{imp};
     my $sm  = $var->{sm};
-    my ( $pos, $ref, $alt, $reflen, $altlen ) = $var->getUnifiedVar('+');
+    my ( $pos, $ref, $alt, $reflen, $altlen ) = $var->getUnifiedVar('-');
 
     if ( $imp eq 'snv' ) {
         $gHGVS .= $pos . $ref . '>' . $alt;
