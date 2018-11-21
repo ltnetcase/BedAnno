@@ -6456,7 +6456,7 @@ sub get_gHGVS {
 
     my $imp = $var->{imp};
     my $sm  = $var->{sm};
-    my ( $pos, $ref, $alt, $reflen, $altlen ) = $var->getUnifiedVar('-');
+    my ( $pos, $ref, $alt, $reflen, $altlen ) = $var->getUnifiedVar('+');
 
     if ( $imp eq 'snv' ) {
         $gHGVS .= $pos . $ref . '>' . $alt;
