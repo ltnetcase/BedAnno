@@ -9,13 +9,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '1.14';
+our $VERSION = '1.15';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED format database.
 
-=head2 VERSION v1.14
+=head2 VERSION v1.15
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -2147,16 +2147,25 @@ sub varanno {
         $t0 = [gettimeofday];
     }
 
+    my ($unified_start, $unified_ref, $unified_alt, $unified_rl, $no_use);
+    if ($var->{guess} eq 'ref') {
+        ($unified_start, $unified_ref, $unified_alt, $unified_rl, $no_use) = @$var{qw(pos ref alt reflen altlen)};
+    }
+    else {
+        ($unified_start, $unified_ref, $unified_alt, $unified_rl, $no_use) = $var->getUnifiedVar('-');
+    }
+    my $unified_end = $unified_start + $unified_rl;
+
     if ( exists $self->{cytoBand} ) {
-        $var->{cytoBand} = $self->{cytoBand_h}->getCB( @$var{qw(chr pos end)} );
+        $var->{cytoBand} = $self->{cytoBand_h}->getCB( $var->{chr}, $unified_start, $unified_end );
     }
 
     if ( exists $self->{rmsk} ) {
-        $var->{reptag} = $self->{rmsk_h}->getRepTag( @$var{qw(chr pos end)} );
+        $var->{reptag} = $self->{rmsk_h}->getRepTag( $var->{chr}, $unified_start, $unified_end );
     }
 
     if ( exists $self->{gwas} ) {
-        $var->{gwas} = $self->{gwas_h}->getGWAS( @$var{qw(chr pos end)} );
+        $var->{gwas} = $self->{gwas_h}->getGWAS( $var->{chr}, $unified_start, $unified_end );
     }
 
     if ( exists $self->{phyloP} ) {
@@ -2204,47 +2213,47 @@ sub varanno {
         }
         else {
             $var->{dbsnp} =
-              $self->{dbSNP_h}->getRS( @$var{qw(chr pos end ref alt)} );
+              $self->{dbSNP_h}->getRS( $var->{chr}, $unified_start, $unified_end, $unified_ref, $unified_alt );
         }
     }
 
     if ( exists $self->{tgp} ) {
-        $var->{tgp} = $self->{tgp_h}->getAF( @$var{qw(chr pos end ref alt)} );
+        $var->{tgp} = $self->{tgp_h}->getAF( $var->{chr}, $unified_start, $unified_end, $unified_ref, $unified_alt );
     }
 
     if ( exists $self->{esp6500} ) {
         $var->{esp6500} =
-          $self->{esp6500_h}->getAF( @$var{qw(chr pos end ref alt)} );
+          $self->{esp6500_h}->getAF( $var->{chr}, $unified_start, $unified_end, $unified_ref, $unified_alt );
     }
 
     if ( exists $self->{exac} ) {
-        $var->{exac} = $self->{exac_h}->getAF( @$var{qw(chr pos end ref alt)} );
+        $var->{exac} = $self->{exac_h}->getAF( $var->{chr}, $unified_start, $unified_end, $unified_ref, $unified_alt );
     }
 
     if ( exists $self->{gnomAD} ) {
-        $var->{gnomAD} = $self->{gnomAD_h}->getGAD( @$var{qw(chr pos end ref alt)} );
+        $var->{gnomAD} = $self->{gnomAD_h}->getGAD( $var->{chr}, $unified_start, $unified_end, $unified_ref, $unified_alt );
     }
 
     foreach my $dbhk ( sort keys %$self ) {
         if ( $dbhk =~ /^cusdb_(\S+)_h/ and defined $self->{$dbhk} ) {
             my $dbID = $1;
             $var->{"cusdb_$dbID"} =
-              $self->{$dbhk}->getAF( @$var{qw(chr pos end ref alt)} );
+              $self->{$dbhk}->getAF( $var->{chr}, $unified_start, $unified_end, $unified_ref, $unified_alt );
         }
     }
 
     if ( exists $self->{cg54} ) {
-        $var->{cg54} = $self->{cg54_h}->getAF( @$var{qw(chr pos end ref alt)} );
+        $var->{cg54} = $self->{cg54_h}->getAF( $var->{chr}, $unified_start, $unified_end, $unified_ref, $unified_alt );
     }
 
     if ( exists $self->{wellderly} ) {
         $var->{wellderly} =
-          $self->{wellderly_h}->getAF( @$var{qw(chr pos end ref alt)} );
+          $self->{wellderly_h}->getAF( $var->{chr}, $unified_start, $unified_end, $unified_ref, $unified_alt );
     }
 
     if ( exists $self->{cosmic} ) {
         $var->{cosmic} =
-          $self->{cosmic_h}->getCOSMIC( @$var{qw(chr pos end ref alt)} );
+          $self->{cosmic_h}->getCOSMIC( $var->{chr}, $unified_start, $unified_end, $unified_ref, $unified_alt );
     }
 
     my $t1;
