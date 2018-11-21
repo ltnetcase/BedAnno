@@ -281,3 +281,6 @@
 
 1.13  Fri Sep  8 13:41:49
     - Change fs1 frameshift to show fs*1 in pHGVS to be used to differ from nonsense mutation
+
+1.15  Wes Nov 21 18:24:31
+    - Change population database quering when variant alleles are pseudo mnv.
