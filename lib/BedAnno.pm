@@ -6045,7 +6045,7 @@ sub getUnifiedVar {
         if ($norep) {
             if ($$var{rl} < $$var{al}) {
                 $consRef = "";
-                $confRL  = 0;
+                $consRL  = 0;
                 $consAlt = $$var{rep} x ($$var{alt_cn} - $$var{ref_cn});
                 $consAL  = $$var{al} - $$var{rl};
             }
