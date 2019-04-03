@@ -9,13 +9,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '1.15';
+our $VERSION = '1.16';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED format database.
 
-=head2 VERSION v1.15
+=head2 VERSION v1.16
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -2152,7 +2152,7 @@ sub varanno {
         ($unified_start, $unified_ref, $unified_alt, $unified_rl, $no_use) = @$var{qw(pos ref alt reflen altlen)};
     }
     else {
-        ($unified_start, $unified_ref, $unified_alt, $unified_rl, $no_use) = $var->getUnifiedVar('-');
+        ($unified_start, $unified_ref, $unified_alt, $unified_rl, $no_use) = $var->getUnifiedVar('-', 1);
     }
     my $unified_end = $unified_start + $unified_rl;
 
@@ -6027,6 +6027,7 @@ sub TO_JSON {
 sub getUnifiedVar {
     my $var  = shift;
     my $strd = shift;
+    my $norep = shift || 0;
 
     my $consPos = $$var{pos};
     my $consRef = $$var{ref};
@@ -6041,10 +6042,26 @@ sub getUnifiedVar {
 
     if ( exists $var->{p} ) {    # rep
         $consPos = $$var{p};
-        $consRef = $$var{r};
-        $consAlt = $$var{a};
-        $consRL  = $$var{rl};
-        $consAL  = $$var{al};
+        if ($norep) {
+            if ($$var{rl} < $$var{al}) {
+                $consRef = "";
+                $confRL  = 0;
+                $consAlt = $$var{rep} x ($$var{alt_cn} - $$var{ref_cn});
+                $consAL  = $$var{al} - $$var{rl};
+            }
+            else {
+                $consAlt = "";
+                $consAL  = 0;
+                $consRef = $$var{rep} x ($$var{ref_cn} - $$var{alt_cn});
+                $consRL  = $$var{rl} - $$var{al};
+            }
+        }
+        else {
+            $consRef = $$var{r};
+            $consAlt = $$var{a};
+            $consRL  = $$var{rl};
+            $consAL  = $$var{al};
+        }
     }
     elsif ( exists $var->{bp} ) {    # complex bc strand same
         $consPos = $$var{bp};

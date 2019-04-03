@@ -284,3 +284,6 @@
 
 1.15  Wes Nov 21 18:24:31
     - Change population database quering when variant alleles are pseudo mnv.
+
+1.16  Wes Apr 3  19:04:23
+    - Change to let db query without repeat format
