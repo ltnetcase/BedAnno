@@ -1,4 +1,4 @@
 db
 config
-plugins/
-update_bin/
+plugins
+update_bin
