@@ -3891,6 +3891,8 @@ my $down3_anno_next_to_badaln_edge =
 my $down3_anno_varname = $down3_anno_next_to_badaln_edge->{var}->{varName};
 my $ins_nochange_anno = $bare_beda->anno( "chr11", 67765163, 67765163, "", "G" );
 my $ins_nochange_varname = $ins_nochange_anno->{var}->{varName};
+my $inframe_ins_before_stop = $bare_beda->anno( "chr1", 172376978, 172376978, "", "AGG" );
+my $inframe_ins_before_stop_varname = $inframe_ins_before_stop->{var}->{varName};
 my $long_ref_anno = $bare_beda->anno( "chr2", "27532178", "27533753", "=", "CAGGC" );
 my $long_ref_varname = $long_ref_anno->{var}->{varName};
 my $span_cds_edge_rep_anno = $bare_beda->anno( "chr11", "67434394", "67434394", "", "TTCATCC");
@@ -3928,6 +3930,11 @@ ok(
 ok ( $ins_nochange_varname eq "NM_030930.2(UNC93B1): c.888C=",
     "for [ ins nochange anno ]"
 ) or explain "The anno info: ", $ins_nochange_anno;
+ok(
+    $inframe_ins_before_stop_varname eq
+      "NM_015569.3(DNM3): c.2589_2590insAGG (p.D863_*864insR)",
+    "for [ inframe ins before stop codon ]"
+) or explain "The anno info: ", $inframe_ins_before_stop;
 ok ( $long_ref_varname eq "NM_002437.4(MPV17): c.462-904_*464+d181delinsGCCTG",
     "for [ long reference anno ]"
 ) or explain "The anno info: ", $long_ref_anno;

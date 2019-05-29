@@ -287,3 +287,6 @@
 
 1.16  Wes Apr 3  19:04:23
     - Change to let db query without repeat format
+
+1.17  Wes May 29 15:35:14
+    - fix a bug for inframe insertion just before stop codon
