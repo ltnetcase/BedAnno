@@ -3903,6 +3903,8 @@ my $ins_stop_anno2 = $bare_beda->anno( "chr17", "7578238", "7578240", "CC", "AA"
 my $ins_stop_varname = $ins_stop_anno2->{var}->{varName};
 my $neighbor_mismatch_anno = $bare_beda->anno("chr9", "134385434", "134385435", "C", "T");
 my $neighbor_mismatch_varname = $neighbor_mismatch_anno->{var}->{varName};
+my $span_with_DI_in_DB = $bare_beda->anno("chr7", "50367357", "50367358", "G", "A");
+my $span_with_DI_in_DB_varname = $span_with_DI_in_DB->{var}->{varName};
 
 ok( $prTag_correction eq "NM_000151.3(G6PC): c.326G>A (p.C109Y)",
     "for [ primary tag correction ]" )
@@ -3946,6 +3948,8 @@ ok ( $ins_stop_varname eq "NM_000546.5(TP53): c.609_610delGGinsTT (p.E204*)", "f
 ) or explain "The anno info: ", $ins_stop_anno2;
 ok ( $neighbor_mismatch_varname eq "NM_007171.3(POMT1): c.751_752delCGinsTA (p.R251*)", "for [ neighbor base mismatch anno ]"
 ) or explain "The anno info: ", $neighbor_mismatch_anno;
+ok ( $span_with_DI_in_DB_varname eq "NM_006060.4(IKZF1): c.160+1_160+2insTAAA", "for [ span with DI mismatch in DB case anno ]" 
+) or explain "The anno info: ", $span_with_DI_in_DB;
 
 $bare_beda->DESTROY();
 undef $bare_beda;

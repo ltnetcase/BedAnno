@@ -290,3 +290,6 @@
 
 1.17  Wes May 29 15:35:14
     - fix a bug for inframe insertion just before stop codon
+
+1.18  Wes Jul 03 14:12:21
+    - fix a bug for snv around DI mismatch anno problem

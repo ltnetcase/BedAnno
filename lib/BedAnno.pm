@@ -9,13 +9,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '1.17';
+our $VERSION = '1.18';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED format database.
 
-=head2 VERSION v1.17
+=head2 VERSION v1.18
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -4037,10 +4037,27 @@ sub getTrChange {
                     $trEnd = $1 - 1
                       if ( $cmpPos < 0 and $trEnd =~ /^(\d+)\-1$/ );
 
+                      if ( $chgvs_5 !~ /^\d+$/ ) {
+                          # special case of transcript - refgenome differing
+                          if ($chgvs_5 =~ /\d([\+\-])(\d+)$/ and my ($c5s, $c5i) = ($1, $2) and $chgvs_3 =~ /\d([\+\-])(\d+)$/ and my ($c3s, $c3i) = ($1, $2)) {
+                              if ($c5s eq $c3s and $c5i < 3 and $c3i < 3) {
+                                  $trannoEnt->{func} = 'splice';
+                                  $trannoEnt->{func} .= ($c5s eq '+') ? '-5' : '-3';
+                              }
+                              else {
+                                  $trannoEnt->{func} = 'intron';
+                              }
+                              next;
+                          }
+                          else {
+                              $self->throw("Error: unavailable 5' cHGVS. $chgvs_5 annoEnt:".Dumper($trannoEnt))
+                                if ( $chgvs_5 == 0 );
+                          }
+                      }
                     # 5' end should be in coding region.
                     # leave this as debug information
-                    $self->throw("Error: unavailable 5' cHGVS. $chgvs_5")
-                      if ( $chgvs_5 !~ /^\d+$/ or $chgvs_5 == 0 );
+                    $self->throw("Error: unavailable 5' cHGVS. $chgvs_5 annoEnt:".Dumper($trannoEnt))
+                      if ( $chgvs_5 == 0 );
 
                     ( $rcInfo5, $rcInfo3 ) =
                       _getPairedCodon( $trdbEnt, $trBegin, $trEnd );
