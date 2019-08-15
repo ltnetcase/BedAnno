@@ -3679,8 +3679,8 @@ my $mt_stop_loss = {
     'strd'          => '+',
     'geneSym'       => 'ND1',
     'geneId'        => '4535',
-    'p'             => 'p.*319Wfs*?',
-    'p3'             => 'p.*319Trpfs*?',
+    'p'             => 'p.*319Wext*?',
+    'p3'             => 'p.*319Trpext*?',
     'rnaEnd'        => 956,
     'prAlt'         => 'W',
     'genepart'      => 'CDS',
@@ -3905,7 +3905,19 @@ my $neighbor_mismatch_anno = $bare_beda->anno("chr9", "134385434", "134385435", 
 my $neighbor_mismatch_varname = $neighbor_mismatch_anno->{var}->{varName};
 my $span_with_DI_in_DB = $bare_beda->anno("chr7", "50367357", "50367358", "G", "A");
 my $span_with_DI_in_DB_varname = $span_with_DI_in_DB->{var}->{varName};
+my $stoploss_var_anno = $bare_beda->anno("chr17", 71334725, 71334726, "T", "C");
+my $stoploss_varname = $stoploss_var_anno->{var}->{varName};
+my $stoploss_delvar_anno = $bare_beda->anno("chr17", 71334725, 71334726, "T", "");
+my $stoploss_del_varname = $stoploss_delvar_anno->{var}->{varName};
 
+ok( $stoploss_varname eq "NM_001144952.1(SDK2): c.6519A>G (p.*2173Wext*61)",
+    "for [ stop-loss snv ]" )
+  or explain "The anno info: ", $stoploss_var_anno;
+ok(
+    $stoploss_del_varname eq
+      "NM_001144952.1(SDK2): c.6519delA (p.*2173Cext*39)",
+    "for [ stop-loss del ]"
+) or explain "The ano info: ", $stoploss_del_varname;
 ok( $prTag_correction eq "NM_000151.3(G6PC): c.326G>A (p.C109Y)",
     "for [ primary tag correction ]" )
   or explain "The anno info: ", $prtc_anno;

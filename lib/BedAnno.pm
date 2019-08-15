@@ -9,13 +9,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '1.18';
+our $VERSION = '1.19';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED format database.
 
-=head2 VERSION v1.18
+=head2 VERSION v1.19
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -4192,6 +4192,8 @@ sub getTrChange {
                     # probably frame shift flag
                     my $frameshift_flag = ( $diff_ra % 3 > 0 ) ? 1 : 0;
 
+                    my $start_in_cds_flag = ($chgvs_5 > ( $trdbEnt->{csto} - 3 )) ? 0 : 1;
+
                     # end in cds or not.
                     my $end_in_cds_flag = (
                              $chgvs_3 =~ /^\*/
@@ -4439,16 +4441,19 @@ sub getTrChange {
 
                     # non stop frameshift with extra non-coded base
                     if ($non_stop_flag) {
+                        my $local_fs_ext;
                         if ( $no_parsed_pP >= $trdbEnt->{plen} ) {
                             $trannoEnt->{func} = 'stop-loss';
+                            $local_fs_ext = 'ext*?';
                         }
                         else {
                             $trannoEnt->{func} = 'frameshift';
+                            $local_fs_ext = 'fs*?';
                         }
                         $trannoEnt->{p} = 'p.'
                           . $no_parsed_prStart
                           . ( $no_parsed_pP + 1 )
-                          . $no_parsed_prAlt_Start . 'fs*?';
+                          . $no_parsed_prAlt_Start . $local_fs_ext;
                         $trannoEnt->{protBegin} += $prSimpleSame;
                         next;
                     }
@@ -4480,24 +4485,24 @@ sub getTrChange {
                     # frameshift
                     if ( !$end_in_cds_flag or $frameshift_flag ) {
 
-                        $trannoEnt->{func} = 'frameshift';
+                        $trannoEnt->{func} = ($start_in_cds_flag and $frameshift_flag) ? 'frameshift' : 'stop-loss';
                         $trannoEnt->{p}    = 'p.'
                           . $no_parsed_prStart
                           . ( $no_parsed_pP + 1 )
                           . $no_parsed_prAlt_Start;
                         my $ext_length = ( length($prAlt) - $prSimpleSame );
                         if ( $ext_length > 0 or $prAlt !~ /\*$/ ) {
-                            $trannoEnt->{p} .= 'fs*';
+                            $trannoEnt->{p} .= ($start_in_cds_flag and $frameshift_flag) ? 'fs*' : 'ext*';
                             if ( $prAlt =~ /\*$/ ) {    # ext length estimated
-                                $trannoEnt->{p} .= $ext_length;
+                                $trannoEnt->{p} .= ($start_in_cds_flag and $frameshift_flag) ? $ext_length : ($ext_length - 1);
                             }
                             else {    # don't meet a stop codon
                                 $trannoEnt->{p} .= '?';
                             }
                         }
                         else {
-                            $trannoEnt->{func} = 'no-change';
-                            $trannoEnt->{p} = 'p.(=)';
+                            $trannoEnt->{func} = 'stop-retained';
+                            $trannoEnt->{p} = 'p.(*' . ( $no_parsed_pP + 1 ) . '=)';
                         }
                         $trannoEnt->{protBegin} += $prSimpleSame;
                         next;
@@ -4558,9 +4563,6 @@ sub getTrChange {
                         }
                         elsif ( $p_a eq '?' ) {    # substitution with N
                             $trannoEnt->{func} = 'unknown-no-call';
-                        }
-                        elsif ( $p_r eq '*' ) {
-                            $trannoEnt->{func} = 'stop-loss';
                         }
                         elsif ( $p_a eq '*' ) {
                             $trannoEnt->{func} = 'nonsense';
