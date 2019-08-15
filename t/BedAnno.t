@@ -2274,16 +2274,16 @@ my $span_3U = {
         'exin' => 'EX52E'
     },
     'geneId'     => '1285',
-    'p'          => 'p.H1670Qfs*9',
+    'p'          => 'p.H1670Qext*8',
     'rnaEnd'     => 5181,
-    'p3'         => 'p.His1670Glnfs*9',
+    'p3'         => 'p.His1670Glnext*8',
     'prAlt'      => 'QQNCYFSS*',
     'genepart'   => 'span',
     'prRef'      => 'H*',
-    'func'       => 'frameshift',
-    'funcSO'     => 'SO:0001589',
+    'func'       => 'stop-loss',
+    'funcSO'     => 'SO:0001578',
     'genepartSO' => '',
-    'funcSOname' => 'frameshift_variant',
+    'funcSOname' => 'stop_lost',
     'primaryTag' => 'Y'
 };
 

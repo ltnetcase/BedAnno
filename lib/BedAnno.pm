@@ -2363,6 +2363,11 @@ sub P1toP3 {
         # missense, frameshift
         return 'p.' . $C1toC3{$1} . $2 . $C1toC3{$3} . $4;
     }
+    elsif ( $p1 =~ /^p\.([A-Z\*])(\d+)([A-Z\*])((ext\*.+)?)$/ ) {
+
+        # missense, frameshift
+        return 'p.' . $C1toC3{$1} . $2 . $C1toC3{$3} . $4;
+    }
     elsif ( $p1 =~ /^p\.([A-Z\*])(\d+)(del|dup|\[.*\])$/ ) {
 
         # 1 bp deletion, duplication, repeats

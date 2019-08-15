@@ -293,3 +293,6 @@
 
 1.18  Wes Jul 03 14:12:21
     - fix a bug for snv around DI mismatch anno problem
+
+1.19  Thr Aug 15 09:05:11
+    - fix a bug for annotating stop-loss mutation to frameshift
