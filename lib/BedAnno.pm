@@ -9,13 +9,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '1.19';
+our $VERSION = '1.20';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED format database.
 
-=head2 VERSION v1.19
+=head2 VERSION v1.20
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -1581,7 +1581,7 @@ sub readtr {
 
     my $fas_h;
     if ($self->{tr} =~ /\.gz$/) {
-        $fas_h = new IO::Uncompress::Gunzip $self->{tr}, AUTOCLOSE => 1
+        $fas_h = new IO::Uncompress::Gunzip $self->{tr}, AUTOCLOSE => 1, MultiStream => 1
             or confess "Error: [$self->{tr}] $GunzipError\n";
     }
     else {
@@ -1755,7 +1755,7 @@ sub load_anno {
     my $annodb_h;
     if ( 0 == @query_region ) {
         $read_all_opt = 1;
-        $annodb_h = new IO::Uncompress::Gunzip $self->{db}, AUTOCLOSE => 1
+        $annodb_h = new IO::Uncompress::Gunzip $self->{db}, AUTOCLOSE => 1, MultiStream => 1
             or confess "Error: [$self->{db}] $GunzipError\n";
     }
     else {
