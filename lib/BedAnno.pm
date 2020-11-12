@@ -9,13 +9,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '1.20';
+our $VERSION = '1.21';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED format database.
 
-=head2 VERSION v1.20
+=head2 VERSION v1.21
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -6064,28 +6064,12 @@ sub getUnifiedVar {
 
     my $consAL = $$var{altlen};
 
-    if ( exists $var->{p} ) {    # rep
+    if (!$norep and exists $var->{p} ) {    # rep
         $consPos = $$var{p};
-        if ($norep) {
-            if ($$var{rl} < $$var{al}) {
-                $consRef = "";
-                $consRL  = 0;
-                $consAlt = $$var{rep} x ($$var{alt_cn} - $$var{ref_cn});
-                $consAL  = $$var{al} - $$var{rl};
-            }
-            else {
-                $consAlt = "";
-                $consAL  = 0;
-                $consRef = $$var{rep} x ($$var{ref_cn} - $$var{alt_cn});
-                $consRL  = $$var{rl} - $$var{al};
-            }
-        }
-        else {
-            $consRef = $$var{r};
-            $consAlt = $$var{a};
-            $consRL  = $$var{rl};
-            $consAL  = $$var{al};
-        }
+        $consRef = $$var{r};
+        $consAlt = $$var{a};
+        $consRL  = $$var{rl};
+        $consAL  = $$var{al};
     }
     elsif ( exists $var->{bp} ) {    # complex bc strand same
         $consPos = $$var{bp};
