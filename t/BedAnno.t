@@ -3693,7 +3693,7 @@ my $mt_stop_loss = {
     'primaryTag'    => 'Y'
 };
 my $shift_elm_rep_var = BedAnno::Var->new("7", 82581487, "TTTCATC", "TTTCATCATC");
-my @shift_elm_rep_var_unify = $shift_elm_rep_var->getUnifiedVar('-', 1);
+my @shift_elm_rep_var_unify = $shift_elm_rep_var->getUnifiedVar('-');
 
 test_parse_var( "crawler_snv_parse",           $snv_parse,    $crawler_input );
 test_parse_var( "crawler_vcf_insert_parse",    $insert_parse, $crawler_input2 );
@@ -3713,8 +3713,8 @@ test_parse_var( "no_call_edge_parse", $no_call_edge_parse, "chr1", 0, 10000,
     "=", "?" );
 test_parse_var( "no_call_edge_ins_parse", $no_call_edge_ins_parse, "chr1",
     6526167, 6526167, "=", "?" );
-ok( $shift_elm_rep_var_unify[0] == 82581488 and $shift_elm_rep_var_unify[2] eq "TCA",
-    "for [shift repeat element variant unified]" 
+ok( ($shift_elm_rep_var_unify[0] == 82581488 and $shift_elm_rep_var_unify[2] eq "TCATCA"),
+    "for [ shift repeat element variant unified ]" 
 ) or explain "The variant parsed: ", $shift_elm_rep_var;
 
 test_varanno( "snv_varanno",        $snv_varanno,        $snv_parse );

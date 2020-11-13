@@ -6205,8 +6205,8 @@ sub parse_complex {
                 my $lofs   = length($`);    # $` is the prematched string
 
                 my $cn = check_div( $rep_el, \@absdiff );
+                my $lenrep = length($rep_el);
                 if ( $cn and check_insrep( $larger, $smaller, $rep_el, $cn ) ) {
-                    my $lenrep = length($rep_el);
 
                     @$var{qw(p rep replen)} =
                       ( ( $var->{pos} + $lofs ), $rep_el, $lenrep );
@@ -6237,6 +6237,9 @@ sub parse_complex {
                     $var->{sm} = ( $var->{rl} == 1 ) ? 1 : 2;
 
                     return $var;
+                }
+                else {
+                    pos($larger) -= $lenrep * ($rep + 1) - 1;
                 }
                 $has{$rep_el} = 1;
             }

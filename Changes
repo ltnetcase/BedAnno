@@ -302,3 +302,4 @@
 
 1.21  Thr Nov 12 20:38:14
     - Change getUnifiedVar to give absolutely left or right aligned result without consider the repeat elements when "norep" is set to 1.
+    - fix a minor problem when occasionally the common part of ref and alt allele contains concordant repeats which is not the repeat variants unit.
