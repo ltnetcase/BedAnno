@@ -2,3 +2,5 @@ db
 config
 plugins
 update_bin
+.vscode/
+.vstags

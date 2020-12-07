@@ -626,6 +626,7 @@ my $rep_varanno = bless(
         'trInfo' => {
             'NR_024540.1' => {
                 'c'             => 'n.1718_1719delTGinsCTACTACTACT',
+                'standard_cHGVS'=> 'n.1718_1719delinsCTACTACTACT',
                 'cdsBegin'      => '',
                 'cdsEnd'        => '',
                 'ei_Begin'      => 'EX11E',
@@ -722,6 +723,7 @@ my $delins_varanno = bless(
         'trInfo' => {
             'NR_024540.1' => {
                 'c'             => 'n.1717_1721delCTGAGinsAC',
+                'standard_cHGVS'=> 'n.1717_1721delinsAC',
                 'cdsBegin'      => '',
                 'cdsEnd'        => '',
                 'ei_Begin'      => 'EX11E',
@@ -773,6 +775,7 @@ my $delins_varanno = bless(
                 'chr'       => '1',
                 'end'       => 14414,
                 'gHGVS'     => 'g.14410_14414delCTAGAinsGT',
+                'standard_gHGVS' => 'g.14410_14414delinsGT',
                 'guess'     => 'delins',
                 'imp'       => 'delins',
                 'pos'       => 14409,
@@ -793,6 +796,7 @@ my $subs_varanno = bless(
         'trInfo' => {
             'NR_024540.1' => {
                 'c'             => 'n.1717_1721delCTGAGinsACACA',
+                'standard_cHGVS'=> 'n.1717_1721delinsACACA',
                 'cdsBegin'      => '',
                 'cdsEnd'        => '',
                 'ei_Begin'      => 'EX11E',
@@ -844,6 +848,7 @@ my $subs_varanno = bless(
                 'chr'       => '1',
                 'end'       => 14414,
                 'gHGVS'     => 'g.14410_14414delCATGAinsTGTGT',
+                'standard_gHGVS'=> 'g.14410_14414delinsTGTGT',
                 'guess'     => 'delins',
                 'imp'       => 'delins',
                 'pos'       => 14409,
@@ -1690,6 +1695,7 @@ my $cds_delins_anno = bless(
         'trInfo' => {
             'NM_152486.2' => {
                 'c'             => 'c.73-2_73-1delAGinsTC',
+                'standard_cHGVS'=> 'c.73-2_73-1delinsTC',
                 'cdsBegin'      => '73-2',
                 'cdsEnd'        => '73-1',
                 'ei_Begin'      => 'IVS2',
@@ -1741,6 +1747,7 @@ my $cds_delins_anno = bless(
                 'chr'       => '1',
                 'end'       => 865534,
                 'gHGVS'     => 'g.865533_865534delAGinsTC',
+                'standard_gHGVS'=> 'g.865533_865534delinsTC',
                 'guess'     => 'delins',
                 'imp'       => 'delins',
                 'pos'       => 865532,
@@ -2046,6 +2053,7 @@ my $rep_span_cds_utr3 = {
     },
     'r_End'    => 'C6E',
     'c'	       => 'c.833_*12delAAAAAAAAAAAAAAinsAAAAAAAAAAAAA',
+    'standard_cHGVS'=> 'c.833_*12delinsAAAAAAAAAAAAA',
     'rnaBegin' => 908,
     'ei_Begin' => 'EX6E',
     'r'        => 'C6E',
@@ -3278,6 +3286,7 @@ my $mt_span_no_call = {
     'geneSym'    => 'TRNF',
     'r_End'      => 'R1E',
     'c'          => 'n.-7_9delCCCCACAGTTTATGTAins?',
+    'standard_cHGVS'=> 'n.-7_9delins?',
     'geneId'     => '4558',
     'rnaEnd'     => 9,
     'genepart'   => 'span',
@@ -3961,9 +3970,9 @@ ok ( $span_cds_edge_rep_varname eq "NM_001031615.1(ALDH3B2): c.6_12dupGGATGAA (p
 ) or explain "The anno info: ", $span_cds_edge_rep_anno;
 ok ( $unknownProt_varname eq "NM_001982.3(ERBB3): c.2427_2428insNTG (p.Q809_L810ins?)", "for [ ambiguous mutant of protein anno ]"
 ) or explain "The anno info: ", $unknownProt_varanno;
-ok ( $ins_stop_varname eq "NM_000546.5(TP53): c.609_610delGGinsTT (p.E204*)", "for [ delins mutation with insert a stop codon anno ]"
+ok ( $ins_stop_varname eq "NM_000546.5(TP53): c.609_610delinsTT (p.E204*)", "for [ delins mutation with insert a stop codon anno ]"
 ) or explain "The anno info: ", $ins_stop_anno2;
-ok ( $neighbor_mismatch_varname eq "NM_007171.3(POMT1): c.751_752delCGinsTA (p.R251*)", "for [ neighbor base mismatch anno ]"
+ok ( $neighbor_mismatch_varname eq "NM_007171.3(POMT1): c.751_752delinsTA (p.R251*)", "for [ neighbor base mismatch anno ]"
 ) or explain "The anno info: ", $neighbor_mismatch_anno;
 ok ( $span_with_DI_in_DB_varname eq "NM_006060.4(IKZF1): c.160+1_160+2insTAAA", "for [ span with DI mismatch in DB case anno ]" 
 ) or explain "The anno info: ", $span_with_DI_in_DB;

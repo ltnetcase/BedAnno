@@ -9,13 +9,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '1.21';
+our $VERSION = '1.22';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED format database.
 
-=head2 VERSION v1.21
+=head2 VERSION v1.22
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -2271,6 +2271,10 @@ sub varanno {
         $var->{standard_gHGVS} = gen_standard_gphgvs( $var->{gHGVS} );
         $var->{alt_gHGVS}      = gen_alt_ghgvs( $var->{gHGVS} );
     }
+    if ( $var->{gHGVS} =~ /del[ACGTN]+ins/ ) {
+        $var->{standard_gHGVS} = $var->{gHGVS};
+        $var->{standard_gHGVS} =~ s/del[ACGTN]+ins/delins/;
+    }
 
     # Due to the bed format database,
     # add flank left and right 1bp to query the database
@@ -2834,6 +2838,12 @@ sub finaliseAnno {
               if ( exists $trAnnoEnt->{standard_pHGVS} );
             $trAnnoEnt->{alt_p3} = P1toP3( $trAnnoEnt->{alt_pHGVS} )
               if ( exists $trAnnoEnt->{alt_pHGVS} );
+
+            # add standard_cHGVS for delXXXinsXXX format cHGVS, for the need of standardization
+            if ( exists $trAnnoEnt->{c} and $trAnnoEnt->{c} =~ /del[ACGTN]+ins/) {
+                $trAnnoEnt->{standard_cHGVS} = $trAnnoEnt->{c};
+                $trAnnoEnt->{standard_cHGVS} =~ s/del[ACGTN]+ins/delins/;
+            }
 
             $trAnnoEnt->{trVarName} = _getTrVarName( $tid, $trAnnoEnt );
         }
