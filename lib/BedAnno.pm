@@ -7,15 +7,15 @@ use Data::Dumper;
 use IO::Uncompress::Gunzip qw($GunzipError);
 use Time::HiRes qw(gettimeofday tv_interval);
 
-use Tabix;
+use Bio::DB::HTS::Tabix;
 
-our $VERSION = '1.22';
+our $VERSION = '1.30';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED format database.
 
-=head2 VERSION v1.22
+=head2 VERSION v1.30
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -38,10 +38,13 @@ HGVS string together with a most recent strandard HGVS mutation name.
 It can not annotate ambiguous variants (transition, transvertion, or unknown 
 break point large deletion and duplication).
 
-This module need bgzipped BED format database, combined with tabix index.
-tabix perl module is required to be installed. If allele frequency information, 
-prediction information or cytoBand information etc. are needed, then extra 
-resource dependencies will be required.
+I<BedAnno> annotate genomics variations of hg19 by using a BED format database, 
+which construct from ncbi anno release 104, combined with tabix index.
+This module can directly parse the vcf4.1 format ref and single alt string(no commas in it),
+without normalized by vcftools, and can recognize the tandom repeat 
+variation and duplication, generate the standard HGVS strings for 
+most of complex cases. Also it will ajust the strand of transcript,
+and follow the 3' nearest rules to annotate. 
 
 =cut
 
@@ -52,7 +55,7 @@ our (
     %canonicalSS,
 );
 
-our $CURRENT_MT  = 'NC_012920.1';
+# CURRENT_MT : 'NC_012920.1'
 my $load_opt_vcfaf = 0;
 
 %C3 = (
@@ -229,16 +232,16 @@ $AAnumber{'.'}                 = $AAcount + 2;
     "unknown-no-call"     => 'unknown-no-call',
     "utr-3"               => "unknown",
     "utr-5"               => "unknown",
-    altstart              => "SO:0001582",
-    frameshift            => "SO:0001589",
-    intron                => "unknown",
-    knockout              => "SO:0001893",
-    missense              => "SO:0001583",
-    ncRNA                 => "unknown",
-    nonsense              => "SO:0001587",
-    promoter              => "unknown",
-    span                  => "unknown-likely-deleterious",
-    unknown               => "unknown",
+    "altstart"            => "SO:0001582",
+    "frameshift"          => "SO:0001589",
+    "intron"              => "unknown",
+    "knockout"            => "SO:0001893",
+    "missense"            => "SO:0001583",
+    "ncRNA"               => "unknown",
+    "nonsense"            => "SO:0001587",
+    "promoter"            => "unknown",
+    "span"                => "unknown-likely-deleterious",
+    "unknown"             => "unknown",
 
     # newly added in 1.01 for splicing variants complementary
     # may exists in alt_func keys, alt_funcSO, alt_funcSOname
@@ -314,135 +317,6 @@ our $REF_BUILD = 'GRCh37';
 
 =over 
 
-=item I<cytoBand> [cytoBand.bed.gz]
-
-=over
-
-=item add cytoBand information
-
-=back
-
-=item I<rmsk> [rmsk.bed.gz]
-
-=over
-
-=item add repeat tag information
-
-=back
-
-=item I<gwas> [gwasCatalog_snp137.bed.gz]
-
-=over
-
-=item add gwas information depend on only position
-
-=back
-
-=item I<pfam> [pfam.tsv.gz]
-
-=over
-
-=item add pfam information
-
-=back
-
-=item I<prediction> [ensembl_prediction_db.tsv.gz]
-
-=over
-
-=item add sift, polyphen2 prediction and scores
-
-=back
-
-=item I<condel> [condel config path]
-
-=over
-
-=item compute condel scores and prediction based on sift and polyphen2 HumVar prediction
-
-=back
-
-=item I<cosmic> [Cosmic_v67_241013.bed.gz]
-
-=over
-
-=item add cosmic annotation information
-
-=back
-
-=item I<phyloP> [phyloP_scores.tsv.gz]
-
-=over
-
-=item add phyloP scores of all 3 datasets.
-
-=back
-
-=item I<dbSNP> [snp137.bed.gz]
-
-=over
-
-=item add rsID and dbSNP frequency information
-
-=back
-
-=item I<tgp> [tgp_phase3_small_vars.vcf.gz]
-
-=over
-
-=item add 1000 genomes allele frequency information
-
-=back
-
-=item I<cg54> [CG54.bed.gz]
-
-=over
-
-=item add 54 whole genomes allele frequency information from CompleteGenomics.
-
-=back
-
-=item I<wellderly> [wellderly.bed.gz]
-
-=over
-
-=item add wellderly's allele frequency information from CompleteGenomics.
-
-=back
-
-=item I<esp6500> [ESP6500.bed.gz]
-
-=over
-
-=item add ESP6500 allele frequency information from NHLBI
-
-=back
-
-=item I<exac> [ExAC.r0.2.sites.vep.vcf.gz]
-
-=over
-
-=item add ExAC allele frequency information from 61,486 unrelated individuals.
-
-=back
-
-=item I<gnomAD> [gnomad.exomes.r2.0.1.sites.vcf.gz]
-
-=over
-
-=item add gnomAD allele frequency information of 123,136 exomes and 15,496 genomes from unrelated individuals sequenced
-
-=back
-
-=item I<customdb_XX> [custom db in the same format with esp6500's]
-
-=over
-
-=item add customdb XX frequency infomation, XX is the ID. (multiple db will require multiple customdb option)
-
-
-=back
-
 =item I<quiet>
 
 =over
@@ -459,15 +333,15 @@ our $REF_BUILD = 'GRCh37';
 
 =back
 
-=item I<genome> [ "refgenome.fa.rz" ]
+=item I<genome> [ "refgenome.fa.gz" ]
 
 =over
 
-=item reference genome fasta, razipped and samtools faidxed for use.
+=item reference genome fasta, bgzipped and samtools faidxed for use.
 
 =back
 
-=item I<genes> [ "genes.list" | $rh_geneslist ]
+=item I<genes> [ "genes.list" | geneslist_filehandle ]
 
 =over
 
@@ -475,7 +349,7 @@ our $REF_BUILD = 'GRCh37';
 
 =back
 
-=item I<trans> [ "trans.list" | $rh_translist ]
+=item I<trans> [ "trans.list" | translist_filehandle ]
 
 =over
 
@@ -604,73 +478,6 @@ sub new {
         $self->set_genome( $self->{genome} );
     }
 
-    if ( exists $self->{cytoBand} ) {
-        $self->set_cytoBand( $self->{cytoBand} );
-    }
-
-    if ( exists $self->{pfam} ) {
-        $self->set_pfam( $self->{pfam} );
-    }
-
-    if ( exists $self->{prediction} ) {
-        $self->set_prediction( $self->{prediction} );
-    }
-
-    if ( exists $self->{condel} ) {
-        $self->set_condel( $self->{condel} );
-    }
-
-    if ( exists $self->{phyloP} ) {
-        $self->set_phyloP( $self->{phyloP} );
-    }
-
-    if ( exists $self->{cosmic} ) {
-        $self->set_cosmic( $self->{cosmic} );
-    }
-
-    if ( exists $self->{dbSNP} ) {
-        $self->set_dbSNP( $self->{dbSNP} );
-    }
-
-    if ( exists $self->{tgp} ) {
-        $self->set_tgp( $self->{tgp} );
-    }
-
-    if ( exists $self->{esp6500} ) {
-        $self->set_esp6500( $self->{esp6500} );
-    }
-
-    if ( exists $self->{exac} ) {
-        $self->set_exac( $self->{exac} );
-    }
-
-    if ( exists $self->{gnomAD} ) {
-        $self->set_gnomAD( $self->{gnomAD} );
-    }
-
-    foreach my $dbk ( sort keys %$self ) {
-        if ( $dbk =~ /^customdb_(\S+)/ ) {
-            my $dbID = $1;
-            $self->set_customdb( $self->{$dbk}, $dbID );
-        }
-    }
-
-    if ( exists $self->{cg54} ) {
-        $self->set_cg54( $self->{cg54} );
-    }
-
-    if ( exists $self->{wellderly} ) {
-        $self->set_wellderly( $self->{wellderly} );
-    }
-
-    if ( exists $self->{rmsk} ) {
-        $self->set_rmsk( $self->{rmsk} );
-    }
-
-    if ( exists $self->{gwas} ) {
-        $self->set_gwas( $self->{gwas} );
-    }
-
     if ($debugOpt) {
         $t1 = [gettimeofday];
         print STDERR "BedAnno->new [others load] ... "
@@ -681,46 +488,16 @@ sub new {
     return $self;
 }
 
-=head2 set/get methods for properties
+=head2 set methods for properties
 
     List of Properties:
-                        get          set
-    db                  o            o
-    tr                  o            o
-    refbuild            o            o
-    tidb                o            x
-    annodb              o            x
-    trInfodb            o            x
-    cytoBand            o            o
-    cytoBand_h          o            x
-    rmsk                o            o
-    rmsk_h              o            x
-    gwas                o            o
-    gwas_h              o            x
-    pfam                o            o
-    pfam_h              o            x
-    prediction          o            o
-    prediction_h        o            x
-    phyloP              o            o
-    phyloP_h            o            x
-    cosmic              o            o
-    cosmic_h            o            x
-    dbSNP               o            o
-    dbSNP_h             o            x
-    tgp                 o            o
-    tgp_h               o            x
-    esp6500             o            o
-    esp6500_h           o            x
-    exac                o            o
-    gnomAD              o            o
-    exac_h              o            x
-    cg54                o            o
-    cg54_h              o            x
-    wellderly           o            o
-    wellderly_h         o            x
+                        set
+    db                  o
+    tr                  o
+    refbuild            o
+    genome              o
 
     e.g.    : $beda->set_refbuild($refbuild);
-              my $refbuild = $beda->get_refbuild();
 
 =cut
 
@@ -729,11 +506,6 @@ sub set_refbuild {
     my $custom_build_info = shift;
     $self->{refbuild} = $custom_build_info;
     return $self;
-}
-
-sub get_refbuild {
-    my $self = shift;
-    return $self->{refbuild};
 }
 
 sub set_db {
@@ -749,7 +521,7 @@ sub set_db {
             "Error: [$db] index (.tbi) file not found, please build it first.");
     }
 
-    $self->{tidb} = Tabix->new( -data => $db );
+    $self->{tidb} = Bio::DB::HTS::Tabix->new( filename => $db );
 
     return $self if ( !exists $self->{batch} );
 
@@ -776,26 +548,6 @@ sub set_db {
     return $self;
 }
 
-sub get_db {
-    my $self = shift;
-    return $self->{db};
-}
-
-sub get_tidb {
-    my $self = shift;
-    return $self->{tidb};
-}
-
-sub get_annodb {
-    my $self = shift;
-    if ( exists $self->{annodb} ) {
-        return $self->{annodb};
-    }
-    else {
-        return undef;
-    }
-}
-
 sub set_tr {
     my $self = shift;
     my $tr   = shift;
@@ -811,386 +563,15 @@ sub set_tr {
 }
 
 sub set_genome {
-    my $self      = shift;
-    my $genome_rz = shift;
-    if ( !-e $genome_rz or !-r $genome_rz ) {
-        $self->throw("Error: cannot read $genome_rz.");
+    my $self   = shift;
+    my $genome = shift;
+    if ( !-e $genome or !-r $genome ) {
+        $self->throw("Error: cannot read $genome.");
     }
-    require Faidx if ( !exists $self->{genome_h} );
-    $self->{genome}   = $genome_rz;
-    $self->{genome_h} = Faidx->new($genome_rz);
+    require Bio::DB::HTS::Faidx if ( !exists $self->{genome_h} );
+    $self->{genome}   = $genome;
+    $self->{genome_h} = Bio::DB::HTS::Faidx->new($genome);
     return $self;
-}
-
-sub get_tr {
-    my $self = shift;
-    return $self->{tr};
-}
-
-sub get_trInfodb {
-    my $self = shift;
-    return $self->{trInfodb};
-}
-
-sub set_cytoBand {
-    my $self   = shift;
-    my $cytodb = shift;
-    $self->{cytoBand} = $cytodb;
-    require GetCytoBand if ( !exists $self->{cytoBand_h} );
-    my $cytoBand_h = GetCytoBand->new( db => $cytodb );
-    $self->{cytoBand_h} = $cytoBand_h;
-    return $self;
-}
-
-sub get_cytoBand {
-    my $self = shift;
-    return $self->{cytoBand} if ( exists $self->{cytoBand} );
-    return undef;
-}
-
-sub get_cytoBand_h {
-    my $self = shift;
-    return $self->{cytoBand_h} if ( exists $self->{cytoBand_h} );
-    return undef;
-}
-
-sub set_rmsk {
-    my $self   = shift;
-    my $rmskdb = shift;
-    $self->{rmsk} = $rmskdb if ( defined $rmskdb );
-    require GetRepeatTag if ( !exists $self->{rmsk_h} );
-    my $rmsk_h = GetRepeatTag->new( db => $self->{rmsk} );
-    $self->{rmsk_h} = $rmsk_h;
-    return $self;
-}
-
-sub get_rmsk {
-    my $self = shift;
-    return $self->{rmsk} if ( exists $self->{rmsk} );
-    return undef;
-}
-
-sub get_rmsk_h {
-    my $self = shift;
-    return $self->{rmsk_h} if ( exists $self->{rmsk_h} );
-    return undef;
-}
-
-sub set_gwas {
-    my $self   = shift;
-    my $gwasdb = shift;
-    $self->{gwas} = $gwasdb if ( defined $gwasdb );
-    require GetGWAS if ( !exists $self->{gwas_h} );
-    my $gwas_h = GetGWAS->new( db => $self->{gwas} );
-    $self->{gwas_h} = $gwas_h;
-    return $self;
-}
-
-sub get_gwas {
-    my $self = shift;
-    return $self->{gwas} if ( exists $self->{gwas} );
-    return undef;
-}
-
-sub get_gwas_h {
-    my $self = shift;
-    return $self->{gwas_h} if ( exists $self->{gwas_h} );
-    return undef;
-}
-
-sub set_pfam {
-    my $self   = shift;
-    my $pfamdb = shift;
-    $self->{pfam} = $pfamdb;
-    require GetPfam if ( !exists $self->{pfam_h} );
-    my $pfam_h = GetPfam->new( db => $pfamdb );
-    $self->{pfam_h} = $pfam_h;
-    return $self;
-}
-
-sub get_pfam {
-    my $self = shift;
-    return $self->{pfam} if ( exists $self->{pfam} );
-    return undef;
-}
-
-sub get_pfam_h {
-    my $self = shift;
-    return $self->{pfam_h} if ( exists $self->{pfam_h} );
-    return undef;
-}
-
-sub set_prediction {
-    my $self         = shift;
-    my $predictiondb = shift;
-    $self->{prediction} = $predictiondb;
-    require GetPrediction if ( !exists $self->{prediction_h} );
-    my %common_opts = ();
-    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
-    my $prediction_h = GetPrediction->new( db => $predictiondb, %common_opts );
-    $self->{prediction_h} = $prediction_h;
-    return $self;
-}
-
-sub get_prediction {
-    my $self = shift;
-    return $self->{prediction} if ( exists $self->{prediction} );
-    return undef;
-}
-
-sub get_prediction_h {
-    my $self = shift;
-    return $self->{prediction_h} if ( exists $self->{prediction_h} );
-    return undef;
-}
-
-sub set_condel {
-    my $self         = shift;
-    my $condelConfig = shift;
-    $self->{condel} = $condelConfig;
-    require CondelPred if ( !exists $self->{condel_h} );
-    my $condel_h = CondelPred->new($condelConfig);
-    $self->{condel_h} = $condel_h;
-    return $self;
-}
-
-sub get_condel {
-    my $self = shift;
-    return $self->{condel} if ( exists $self->{condel} );
-    return undef;
-}
-
-sub get_condel_h {
-    my $self = shift;
-    return $self->{condel_h} if ( exists $self->{condel_h} );
-    return undef;
-}
-
-sub set_phyloP {
-    my $self     = shift;
-    my $phyloPdb = shift;
-    $self->{phyloP} = $phyloPdb;
-    require GetPhyloP46wayScore if ( !exists $self->{phyloP_h} );
-    my $phyloP_h = GetPhyloP46wayScore->new( db => $phyloPdb );
-    $self->{phyloP_h} = $phyloP_h;
-    return $self;
-}
-
-sub get_phyloP {
-    my $self = shift;
-    return $self->{phyloP} if ( exists $self->{phyloP} );
-    return undef;
-}
-
-sub get_phyloP_h {
-    my $self = shift;
-    return $self->{phyloP_h} if ( exists $self->{phyloP_h} );
-    return undef;
-}
-
-sub set_dbSNP {
-    my $self    = shift;
-    my $dbSNPdb = shift;
-    $self->{dbSNP} = $dbSNPdb;
-    require GetDBSNP if ( !exists $self->{dbSNP_h} );
-    my $dbSNP_h = GetDBSNP->new( db => $dbSNPdb );
-    $self->{dbSNP_h} = $dbSNP_h;
-    return $self;
-}
-
-sub get_dbSNP {
-    my $self = shift;
-    return $self->{dbSNP} if ( exists $self->{dbSNP} );
-    return undef;
-}
-
-sub get_dbSNP_h {
-    my $self = shift;
-    return $self->{dbSNP_h} if ( exists $self->{dbSNP_h} );
-    return undef;
-}
-
-sub get_cosmic {
-    my $self = shift;
-    return $self->{cosmic} if ( exists $self->{cosmic} );
-    return undef;
-}
-
-sub set_cosmic {
-    my $self      = shift;
-    my $cosmic_db = shift;
-    $self->{cosmic} = $cosmic_db;
-    require GetCOSMIC if ( !exists $self->{cosmic_h} );
-    my %common_opts = ();
-    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
-    my $cosmic_h = GetCOSMIC->new( db => $cosmic_db, %common_opts );
-    $self->{cosmic_h} = $cosmic_h;
-    return $self;
-}
-
-sub get_cosmic_h {
-    my $self = shift;
-    return $self->{cosmic_h} if ( exists $self->{cosmic_h} );
-    return undef;
-}
-
-sub set_tgp {
-    my $self  = shift;
-    my $tgpdb = shift;
-    $self->{tgp} = $tgpdb;
-    require GetTGP if ( !exists $self->{tgp_h} );
-    my %common_opts = ();
-    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
-    my $tgp_h = GetTGP->new( db => $tgpdb, %common_opts );
-    $self->{tgp_h} = $tgp_h;
-    return $self;
-}
-
-sub get_tgp {
-    my $self = shift;
-    return $self->{tgp} if ( exists $self->{tgp} );
-    return undef;
-}
-
-sub get_tgp_h {
-    my $self = shift;
-    return $self->{tgp_h} if ( exists $self->{tgp_h} );
-    return undef;
-}
-
-sub set_esp6500 {
-    my $self      = shift;
-    my $esp6500db = shift;
-    $self->{esp6500} = $esp6500db;
-    require GetVcfAF if ( !$load_opt_vcfaf );
-    $load_opt_vcfaf = 1;
-    my %common_opts = ();
-    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
-    my $esp6500_h = GetVcfAF->new( db => $esp6500db, %common_opts );
-    $self->{esp6500_h} = $esp6500_h;
-    return $self;
-}
-
-sub get_esp6500 {
-    my $self = shift;
-    return $self->{esp6500} if ( exists $self->{esp6500} );
-    return undef;
-}
-
-sub set_exac {
-    my $self    = shift;
-    my $exac_db = shift;
-    $self->{exac} = $exac_db;
-    require GetExAC if ( !exists $self->{exac_h} );
-    my %common_opts = ();
-    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
-    my $exac_h = GetExAC->new( db => $exac_db, %common_opts );
-    $self->{exac_h} = $exac_h;
-    return $self;
-}
-
-sub get_exac {
-    my $self = shift;
-    return $self->{exac} if ( exists $self->{exac} );
-    return undef;
-}
-
-sub get_exac_h {
-    my $self = shift;
-    return $self->{exac_h} if ( exists $self->{exac_h} );
-    return undef;
-}
-
-sub set_gnomAD {
-    my $self    = shift;
-    my $gnomAD_db = shift;
-    $self->{gnomAD} = $gnomAD_db;
-    require GetGAD if ( !exists $self->{gnomAD_h} );
-    my %common_opts = ();
-    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
-    my $gnomAD_h = GetGAD->new( db => $gnomAD_db, %common_opts );
-    $self->{gnomAD_h} = $gnomAD_h;
-    return $self;
-}
-
-sub get_gnomAD {
-    my $self = shift;
-    return $self->{gnomAD} if ( exists $self->{gnomAD} );
-    return undef;
-}
-
-sub get_gnomAD_h {
-    my $self = shift;
-    return $self->{gnomAD_h} if ( exists $self->{gnomAD_h} );
-    return undef;
-}
-
-sub set_customdb {
-    my $self = shift;
-    my ( $cusdb, $dbID ) = @_;
-    require GetVcfAF if ( !$load_opt_vcfaf );
-    $load_opt_vcfaf = 1;
-    my %common_opts = ();
-    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
-    my $cusdb_h = GetVcfAF->new( db => $cusdb, %common_opts );
-    $self->{ "cusdb_" . $dbID . "_h" } = $cusdb_h;
-    return $self;
-}
-
-sub get_esp6500_h {
-    my $self = shift;
-    return $self->{esp6500_h} if ( exists $self->{esp6500_h} );
-    return undef;
-}
-
-sub set_cg54 {
-    my $self   = shift;
-    my $cg54db = shift;
-    $self->{cg54} = $cg54db;
-    require GetCGpub
-      if ( !exists $self->{cg54_h} and !exists $self->{wellderly_h} );
-    my %common_opts = ();
-    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
-    my $cg54_h = GetCGpub->new( db => $cg54db, %common_opts );
-    $self->{cg54_h} = $cg54_h;
-    return $self;
-}
-
-sub get_cg54 {
-    my $self = shift;
-    return $self->{cg54} if ( exists $self->{cg54} );
-    return undef;
-}
-
-sub get_cg54_h {
-    my $self = shift;
-    return $self->{cg54_h} if ( exists $self->{cg54_h} );
-    return undef;
-}
-
-sub set_wellderly {
-    my $self        = shift;
-    my $wellderlydb = shift;
-    $self->{wellderly} = $wellderlydb;
-    require GetCGpub
-      if ( !exists $self->{cg54_h} and !exists $self->{wellderly_h} );
-    my %common_opts = ();
-    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
-    my $wellderly_h = GetCGpub->new( db => $wellderlydb, %common_opts );
-    $self->{wellderly_h} = $wellderly_h;
-    return $self;
-}
-
-sub get_wellderly {
-    my $self = shift;
-    return $self->{wellderly} if ( exists $self->{wellderly} );
-    return undef;
-}
-
-sub get_wellderly_h {
-    my $self = shift;
-    return $self->{wellderly_h} if ( exists $self->{wellderly_h} );
-    return undef;
 }
 
 sub TO_JSON {
@@ -1200,7 +581,7 @@ sub TO_JSON {
 sub DESTROY {
     my $self = shift;
     if ( exists $self->{tidb} and defined $self->{tidb} ) {
-        $self->{tidb}->DESTROY() if ( $self->{tidb}->can('DESTROY') );
+        $self->{tidb}->DESTROY();
         delete $self->{tidb};
     }
 
@@ -1770,8 +1151,8 @@ sub load_anno {
             my ( $dname, $dbeg, $dend ) = @{ $sorted_regions[$k] };
             if ( $dname ne $cname or $dbeg > $cend ) {
 
-                my $query_ent = $self->{tidb}->query( $cname, $cbeg, $cend );
-                if ( defined $query_ent->{_} ) {
+                my $query_ent = $self->{tidb}->query_full( $cname, $cbeg, $cend );
+                if ( defined $query_ent->{_tabix_iter} ) {
                     push( @all_querys, $query_ent );
                 }
                 ( $cname, $cbeg, $cend ) = @{ $sorted_regions[$k] };
@@ -1780,8 +1161,8 @@ sub load_anno {
                 $cend = $dend;
             }
         }
-        my $q = $self->{tidb}->query( $cname, $cbeg, $cend );
-        if ( defined $q->{_} ) {
+        my $q = $self->{tidb}->query_full( $cname, $cbeg, $cend );
+        if ( defined $q->{_tabix_iter} ) {
             push( @all_querys, $q );
         }
     }
@@ -1803,8 +1184,9 @@ sub load_anno {
         }
         else {
             while ( 0 < @all_querys ) {
-                my $region_read = $self->{tidb}->read( $all_querys[0] );
+                my $region_read = $all_querys[0]->next();
                 if ( !defined $region_read or $region_read eq "" ) {
+                    $all_querys[0]->DESTROY();
                     shift(@all_querys);
                 }
                 else {
@@ -2017,45 +1399,6 @@ sub anno {
                     varTypeSO => $varTypeSO,
                     gHGVS     => $gHGVS,
                     refbuild  => $referenceBuild,
-
-                    # Here's some optional parts which may be generated
-                    # when extra resource is available:
-
-                    cytoBand  => $cytoBand,
-                    reptag    => $repeatTag,
-                    gwas      => $ref_gwas_ret,
-
-                    # For single position for now
-                    phyloPpm    => $PhyloPscorePlacentalMammals,
-                    phyloPpr    => $PhyloPscorePrimates,
-                    phyloPve    => $PhyloPscoreVetebrates,
-
-                    reptag	=> $RepeatMaskerTag,
-
-                    dbsnp => {
-                        $rsID => {
-                            AN => $dbsnp_total_allele_count,
-                            AF => $dbsnp_alt_allele_frequency,  # though ref
-                        },
-                        ...
-                    },
-
-                    cosmic => $ref_cosmic_return,
-
-                    tgp => $ref_tgp_return,
-                    exac => $ref_exac_return,
-
-                    esp6500 => {
-                        AN => $esp6500_total_allele_count,
-                        AF => $esp6500_alt_allele_frequency,
-                    },
-
-                    cusdb_XX => {
-                    AN => $custom_db_allele_count,
-                    AF => $custom_db_allele_frequency,
-                    },
-                    ...
-
                 },
                 trInfo => {
                     $tid => {
@@ -2116,20 +1459,6 @@ sub anno {
                         alt_func        => $alternative_func_code,
                         alt_funcSO      => $alternative_variant_SO_id,
                         alt_funcSOname  => $alt_variant_SO_name,
-
-                        # The following parts will be exists if extra resource
-                        # is available.
-                        pfamId      => $PFAM_ID,
-                        pfamName    => $PFAM_NAME,
-                        siftPred    => $SIFTpred,
-                        siftScore   => $SIFTscore,
-                        pp2divPred  => $Polyphen2HumDivPred,
-                        pp2divScore => $Polyphen2HumDivScore,
-                        pp2varPred  => $Polyphen2HumVarPred,
-                        pp2varScore => $Polyphen2HumVarScore,
-                        condelPred  => $Condelpred,
-                        condelScore => $Condelscore,
-
                     },
                     ...
                 }
@@ -2145,115 +1474,6 @@ sub varanno {
     my $t0;
     if ($debugOpt) {
         $t0 = [gettimeofday];
-    }
-
-    my ($unified_start, $unified_ref, $unified_alt, $unified_rl, $no_use);
-    if ($var->{guess} eq 'ref') {
-        ($unified_start, $unified_ref, $unified_alt, $unified_rl, $no_use) = @$var{qw(pos ref alt reflen altlen)};
-    }
-    else {
-        ($unified_start, $unified_ref, $unified_alt, $unified_rl, $no_use) = $var->getUnifiedVar('-', 1);
-    }
-    my $unified_end = $unified_start + $unified_rl;
-
-    if ( exists $self->{cytoBand} ) {
-        $var->{cytoBand} = $self->{cytoBand_h}->getCB( $var->{chr}, $unified_start, $unified_end );
-    }
-
-    if ( exists $self->{rmsk} ) {
-        $var->{reptag} = $self->{rmsk_h}->getRepTag( $var->{chr}, $unified_start, $unified_end );
-    }
-
-    if ( exists $self->{gwas} ) {
-        $var->{gwas} = $self->{gwas_h}->getGWAS( $var->{chr}, $unified_start, $unified_end );
-    }
-
-    if ( exists $self->{phyloP} ) {
-        if ( $var->{sm} == 1 ) {
-            @$var{qw(phyloPpm phyloPpr phyloPve)} =
-              @{ $self->{phyloP_h}
-                  ->getPhyloP46wayScore( $var->{chr}, ( $var->{pos} + 1 ) ) };
-        }
-    }
-
-    if ( exists $self->{dbSNP} ) {
-        if ( exists $var->{sep_snvs} ) {
-            my @new_sqls  = ();
-            my $cur_start = $var->{sep_snvs}->[0];
-            for my $i ( 0 .. $#{ $var->{sep_snvs} } ) {
-                if (   $i == $#{ $var->{sep_snvs} }
-                    or $var->{sep_snvs}->[ $i + 1 ] - $cur_start > 1 )
-                {
-                    my $new_ref = substr(
-                        $var->{ref},
-                        ( $cur_start - $var->{pos} - 1 ),
-                        ( $var->{sep_snvs}->[$i] - $cur_start + 1 )
-                    );
-                    my $new_alt = substr(
-                        $var->{alt},
-                        ( $cur_start - $var->{pos} - 1 ),
-                        ( $var->{sep_snvs}->[$i] - $cur_start + 1 )
-                    );
-                    push(
-                        @new_sqls,
-                        [
-                            $cur_start, $var->{sep_snvs}->[$i],
-                            $new_ref,   $new_alt
-                        ]
-                    );
-                    $cur_start = $var->{sep_snvs}->[ $i + 1 ]
-                      if ( $i < $#{ $var->{sep_snvs} } );
-                }
-            }
-            foreach my $rSE (@new_sqls) {
-                my $rOneSql = $self->{dbSNP_h}->getRS( $var->{chr}, @$rSE );
-                @{ $$var{dbsnp} }{ sort keys %$rOneSql } =
-                  @$rOneSql{ sort keys %$rOneSql };
-            }
-        }
-        else {
-            $var->{dbsnp} =
-              $self->{dbSNP_h}->getRS( $var->{chr}, $unified_start, $unified_end, $unified_ref, $unified_alt );
-        }
-    }
-
-    if ( exists $self->{tgp} ) {
-        $var->{tgp} = $self->{tgp_h}->getAF( $var->{chr}, $unified_start, $unified_end, $unified_ref, $unified_alt );
-    }
-
-    if ( exists $self->{esp6500} ) {
-        $var->{esp6500} =
-          $self->{esp6500_h}->getAF( $var->{chr}, $unified_start, $unified_end, $unified_ref, $unified_alt );
-    }
-
-    if ( exists $self->{exac} ) {
-        $var->{exac} = $self->{exac_h}->getAF( $var->{chr}, $unified_start, $unified_end, $unified_ref, $unified_alt );
-    }
-
-    if ( exists $self->{gnomAD} ) {
-        $var->{gnomAD} = $self->{gnomAD_h}->getGAD( $var->{chr}, $unified_start, $unified_end, $unified_ref, $unified_alt );
-    }
-
-    foreach my $dbhk ( sort keys %$self ) {
-        if ( $dbhk =~ /^cusdb_(\S+)_h/ and defined $self->{$dbhk} ) {
-            my $dbID = $1;
-            $var->{"cusdb_$dbID"} =
-              $self->{$dbhk}->getAF( $var->{chr}, $unified_start, $unified_end, $unified_ref, $unified_alt );
-        }
-    }
-
-    if ( exists $self->{cg54} ) {
-        $var->{cg54} = $self->{cg54_h}->getAF( $var->{chr}, $unified_start, $unified_end, $unified_ref, $unified_alt );
-    }
-
-    if ( exists $self->{wellderly} ) {
-        $var->{wellderly} =
-          $self->{wellderly_h}->getAF( $var->{chr}, $unified_start, $unified_end, $unified_ref, $unified_alt );
-    }
-
-    if ( exists $self->{cosmic} ) {
-        $var->{cosmic} =
-          $self->{cosmic_h}->getCOSMIC( $var->{chr}, $unified_start, $unified_end, $unified_ref, $unified_alt );
     }
 
     my $t1;
@@ -2730,100 +1950,6 @@ sub finaliseAnno {
                   : $trAnnoEnt->{protBegin};
                 $trAnnoEnt->{protEnd} =
                   ( $trAnnoEnt->{protEnd} eq '0' ) ? "" : $trAnnoEnt->{protEnd};
-                if (    $trAnnoEnt->{protBegin} ne ""
-                    and $trAnnoEnt->{protEnd} ne "" )
-                {
-                    if ( exists $self->{pfam} ) {
-                        my ( $pb, $pe ) =
-                          ( $trAnnoEnt->{protBegin}, $trAnnoEnt->{protEnd} );
-                        if ( $pb > $pe ) {
-                            my $tmp = $pb;
-                            $pb = $pe;
-                            $pe = $tmp;
-                        }
-                        ( $trAnnoEnt->{pfamId}, $trAnnoEnt->{pfamName} ) =
-                          $self->{pfam_h}
-                          ->getPfam( $trAnnoEnt->{prot}, $pb, $pe );
-                    }
-                }
-                if ( exists $self->{prediction} ) {
-                    if ( exists $trAnnoEnt->{p}
-                        and $trAnnoEnt->{p} =~ /^p\.[A-Z](\d+)([A-Z])$/ )
-                    {
-                        my $rpred =
-                          $self->{prediction_h}
-                          ->getPredScore( $trAnnoEnt->{prot}, $1, $2 );
-                        if ( exists $rpred->{sift} ) {
-                            $trAnnoEnt->{siftPred}  = $rpred->{sift}->[0];
-                            $trAnnoEnt->{siftScore} = $rpred->{sift}->[1];
-                        }
-                        if ( exists $rpred->{polyphen2_humdiv} ) {
-                            $trAnnoEnt->{pp2divPred} =
-                              $rpred->{polyphen2_humdiv}->[0];
-                            $trAnnoEnt->{pp2divScore} =
-                              $rpred->{polyphen2_humdiv}->[1];
-                        }
-                        if ( exists $rpred->{polyphen2_humvar} ) {
-                            $trAnnoEnt->{pp2varPred} =
-                              $rpred->{polyphen2_humvar}->[0];
-                            $trAnnoEnt->{pp2varScore} =
-                              $rpred->{polyphen2_humvar}->[1];
-                        }
-
-                    }
-                    elsif ( exists $trAnnoEnt->{prRef}
-                        and exists $trAnnoEnt->{prAlt} )
-                    {
-                        my $prReflen = length( $trAnnoEnt->{prRef} );
-                        my $prAltlen = length( $trAnnoEnt->{prAlt} );
-                        if (    $prReflen == 1
-                            and $prAltlen == 1
-                            and $trAnnoEnt->{protBegin} eq '1'
-                            and $trAnnoEnt->{protEnd} eq '1' )
-                        {
-                            my $init_pred =
-                              $self->{prediction_h}
-                              ->getPredScore( $trAnnoEnt->{prot}, 1,
-                                $trAnnoEnt->{prAlt} );
-
-                            if ( exists $init_pred->{sift} ) {
-                                $trAnnoEnt->{siftPred} =
-                                  $init_pred->{sift}->[0];
-                                $trAnnoEnt->{siftScore} =
-                                  $init_pred->{sift}->[1];
-                            }
-
-                            if ( exists $init_pred->{polyphen2_humdiv} ) {
-                                $trAnnoEnt->{pp2divPred} =
-                                  $init_pred->{polyphen2_humdiv}->[0];
-                                $trAnnoEnt->{pp2divScore} =
-                                  $init_pred->{polyphen2_humdiv}->[1];
-                            }
-
-                            if ( exists $init_pred->{polyphen2_humvar} ) {
-                                $trAnnoEnt->{pp2varPred} =
-                                  $init_pred->{polyphen2_humvar}->[0];
-                                $trAnnoEnt->{pp2varScore} =
-                                  $init_pred->{polyphen2_humvar}->[1];
-                            }
-                        }
-                    }
-
-                    if ( exists $self->{condel_h}
-                        and defined $self->{condel_h} )
-                    {
-                        my $rcondel_info = $self->{condel_h}->pred($trAnnoEnt);
-                        if ( exists $rcondel_info->{condelPred}
-                            and $rcondel_info->{condelPred} ne
-                            "not_computable_was" )
-                        {
-                            $trAnnoEnt->{condelPred} =
-                              $rcondel_info->{condelPred};
-                            $trAnnoEnt->{condelScore} =
-                              $rcondel_info->{condelScore};
-                        }
-                    }
-                }
             }
 
             $trAnnoEnt->{standard_pHGVS} =
@@ -3001,9 +2127,6 @@ sub decide_major {
         $intergenic = "chr" . $intergenic if ( $intergenic =~ /^[\dXYM]/ );
         $intergenic .= " (intergenic)";    # for only intergenic
 
-        if ( $intergenic =~ /^chrMT/ ) {
-            $intergenic =~ s/^chrMT/$CURRENT_MT/;
-        }
         return $intergenic;
     }
     else {
@@ -3251,13 +2374,18 @@ sub getTrChange {
 
         $trannoEnt->{prot} = $trdbEnt->{prot}
           if ( exists $trdbEnt->{prot} and $trdbEnt->{prot} ne "." );
-        my $f = ($cdsOpt) ? 'c.' : 'n.';
-        my $chgvs_5 =
-          ($cdsOpt) ? $trannoEnt->{cdsBegin} : $trannoEnt->{rnaBegin};
-        my $chgvs_3 = ($cdsOpt) ? $trannoEnt->{cdsEnd} : $trannoEnt->{rnaEnd};
+        my ($f, $chgvs_5, $chgvs_3);
         if ($cdsOpt) {
+            $f = 'c.';
+            $chgvs_5 = $trannoEnt->{cdsBegin};
+            $chgvs_3 = $trannoEnt->{cdsEnd};
             ( $trannoEnt->{protBegin}, $trannoEnt->{protEnd} ) =
               _getCoveredProd( $trdbEnt, $chgvs_5, $chgvs_3 );
+        }
+        else {
+            $f = 'n.';
+            $chgvs_5 = $trannoEnt->{rnaBegin};
+            $chgvs_3 = $trannoEnt->{rnaEnd};
         }
 
         # [ aaPos, codon, aa, polar, frame, [framealt] ]
@@ -3310,7 +2438,8 @@ sub getTrChange {
             next;
         }
 
-        if ( $trRef =~ /=/ ) {    # reference sequence too long
+        # 3. check if reference sequence is too long to parse
+        if ( $trRef =~ /=/ ) {
             if ( $trannoEnt->{r_Begin} ne $trannoEnt->{r_End} ) {
                 $trannoEnt->{func} = 'span';
             }
@@ -3321,6 +2450,8 @@ sub getTrChange {
             $trannoEnt->{c} .= 'ins' . $trAlt if ( $trAlt ne "" );
             next;
         }
+
+        # 4. check if transcipt has no change
         if ( $trRef eq $trAlt ) {
             $trannoEnt->{func} = 'no-change';
             $trannoEnt->{c} = $f;
@@ -3867,7 +2998,7 @@ sub getTrChange {
                             }
                             else {
                                 my $toAdd1 =
-                                  $self->{genome_h}->getseq($rgn_tmp);
+                                  $self->{genome_h}->get_sequence_no_length($rgn_tmp);
                                 if ( defined $toAdd1 ) {
                                     $Ladded = uc($toAdd1);
                                     $getseq_cache{$rgn_tmp} = $Ladded;
@@ -3886,7 +3017,7 @@ sub getTrChange {
                             }
                             else {
                                 my $toAdd2 =
-                                  $self->{genome_h}->getseq($rgn_tmp2);
+                                  $self->{genome_h}->get_sequence_no_length($rgn_tmp2);
                                 if ( defined $toAdd2 ) {
                                     $Radded = uc($toAdd2);
                                     $getseq_cache{$rgn_tmp2} = $Radded;
@@ -4043,6 +3174,7 @@ sub getTrChange {
                         }
                     }
 
+                    # For edge insertion case transformation
                     $chgvs_5 = $1 + 1
                       if ( $cmpPos < 0 and $chgvs_5 =~ /^(\d+)\+1$/ );
                     $chgvs_3 = $1 - 1
@@ -4835,12 +3967,15 @@ sub prWalker {
 sub trWalker {
     my ( $self, $tid, $rtrinfo ) = @_;
 
-    # reparse the transcript originated var
+    # reparse the transcript originated pseudo var, to get relative changing compared
+    # with the genomic variant mapping back locations.
     my $real_var = BedAnno::Var->new( $tid, 0, length( $rtrinfo->{trRef} ),
         $rtrinfo->{trRef}, $rtrinfo->{trAlt} );
     my @Unified = $real_var->getUnifiedVar('+');
     my ( $real_p, $real_r, $real_a, $real_rl, $real_al ) = @Unified;
 
+    # using trRefComp to calculate renewed begin end transcript nomenclature depending
+    # on the offset position real_p and real_p + real_rl - 1
     my $trBegin = reCalTrPos_by_ofst( $rtrinfo, $real_p );
     my $trEnd = reCalTrPos_by_ofst( $rtrinfo, ( $real_p + $real_rl - 1 ) );
 
@@ -4848,15 +3983,14 @@ sub trWalker {
         # skip snv and mnp
         ( $real_rl == $real_al )
 
-        # skip span case or any edge case
-        or ( $rtrinfo->{ei_Begin} ne $rtrinfo->{ei_End} )
+        # skip non-insertion span cases due to no genome_h involved
+        or ( $rtrinfo->{ei_Begin} ne $rtrinfo->{ei_End} and $real_rl > 0)
 
-        # skip non exon begin/end position
-        or ( $trBegin !~ /^\d+$/ or $trEnd !~ /^\d+$/ )
+        # skip non exon variants (at least one must locate in exon, due to no genome_h)
+        or ( $trBegin !~ /^\d+$/ and $trEnd !~ /^\d+$/ )
 
         # skip delins without repeat
-        or (    0 != index( $real_r, $real_a )
-            and 0 != index( $real_a, $real_r ) )
+        or ( 0 != index($real_r, $real_a, 0) and 0 != index($real_a, $real_r, 0) )
       )
     {
         # no correction
@@ -4866,20 +4000,45 @@ sub trWalker {
     my $qtid = $tid;
     $qtid =~ s/\-\d+$//;
     my $trSeq = $self->{trInfodb}->{$qtid}->{seq};
-    my ( $ref_sta, $ref_sto, $trRef, $trAlt ) =
-      walker( $trBegin, $trEnd, $trSeq, $real_r, $real_a, $real_rl, $real_al );
 
-    if (   $ref_sta ne $trBegin
-        or $ref_sto ne $trEnd )
-    {
-        $trBegin = $ref_sta;
-        $trEnd   = $ref_sto;
+    if ( $trBegin =~ /^\d+$/ and $trEnd =~ /^\d+$/ ) { # exon region
+        my ( $ref_sta, $ref_sto, $trRef, $trAlt ) =
+          walker( $trBegin, $trEnd, $trSeq, $real_r, $real_a, $real_rl, $real_al );
 
-        $real_var =
-          BedAnno::Var->new( $tid, 0, length($trRef), $trRef, $trAlt );
-        @Unified = $real_var->getUnifiedVar('+');
+        if (   $ref_sta ne $trBegin
+            or $ref_sto ne $trEnd )
+        {
+            $trBegin = $ref_sta;
+            $trEnd   = $ref_sto;
+
+            $real_var =
+              BedAnno::Var->new( $tid, 0, length($trRef), $trRef, $trAlt );
+            @Unified = $real_var->getUnifiedVar('+');
+        }
     }
-
+    else {
+        if ($trEnd =~ /^(\d+)?-1$/) { # only walking for insertion on left edge of exon due to 3' most rule
+            my $left_edge = $1 || 1;
+            my $latter_trseq = substr( $trSeq, $left_edge-1 );
+            my ( $tmp_sta2, $tmp_sto2, $tmp_trRef2, $tmp_trAlt2 ) =
+              walker( 1, 0, $latter_trseq, $real_r, $real_a, $real_rl,
+                $real_al );
+            if ( $tmp_sto2 != 0 ) {
+                $trBegin = $left_edge + $tmp_sta2 - 1;
+                $trEnd = $left_edge + $tmp_sto2 - 1;
+                $real_var =
+                  BedAnno::Var->new( $tid, 0, length($tmp_trRef2), $tmp_trRef2, $tmp_trAlt2 );
+                @Unified = $real_var->getUnifiedVar('+');
+                $rtrinfo->{ei_End} = $rtrinfo->{ei_Begin};
+                $rtrinfo->{r_End} = $rtrinfo->{r_Begin};
+                $rtrinfo->{exin} = $rtrinfo->{ei_Begin};
+            }
+        }
+        else {
+            # unexpected insertion case which may not be common, ignore it
+            1;
+        }
+    }
     return ( $trBegin, $trEnd, $real_var, \@Unified );
 }
 
@@ -6582,7 +5741,7 @@ sub TO_JSON {
 
     About   : Assign the BedAnno::Anno obj's trInfo with affected regions
     Usage   : my $AEIndex = $annoEnt->getTrPosition($rannodb, $AEIndex);
-    Args    : $rannodb is a BedAnno::Anno object created by varanno(),
+    Args    : $rannodb is a chromosome branch of BedAnno object's annodb feature,
               $AEIndex is the current index for annodb searching.
     Returns : A new AEIndex for next query.
     Notes   : $AEIndex is used for same chr batch mode.
@@ -7737,7 +6896,6 @@ use warnings;
 
 use Data::Dumper;
 use Carp;
-use Tabix;
 
 =head1 METHOD
 
@@ -7754,7 +6912,7 @@ use Tabix;
                 - cnvPub      Well formatted tabix indexed file as a collection of Cases
                 - cnvd        CNVD database tabix indexed file.
               Same args in BedAnno method 'new':
-                - db, tr, genes, trans, region, regbed, mmap, batch, cytoBand
+                - db, tr, genes, trans, region, regbed, mmap, batch
     Returns : BedAnno::CNV object
 
 =cut

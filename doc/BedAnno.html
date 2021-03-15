@@ -4,7 +4,7 @@
 <head>
 <title></title>
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<link rev="made" href="mailto:root@elcapitan.internal.macports.net" />
+<link rev="made" href="mailto:root@bigsura.local" />
 </head>
 
 <body>
@@ -14,7 +14,7 @@
 <ul id="index">
   <li><a href="#NAME">NAME</a>
     <ul>
-      <li><a href="#VERSION-v1.11">VERSION v1.11</a></li>
+      <li><a href="#VERSION-v1.30">VERSION v1.30</a></li>
     </ul>
   </li>
   <li><a href="#SYNOPSIS">SYNOPSIS</a></li>
@@ -22,7 +22,7 @@
   <li><a href="#Methods">Methods</a>
     <ul>
       <li><a href="#new">new</a></li>
-      <li><a href="#set-get-methods-for-properties">set/get methods for properties</a></li>
+      <li><a href="#set-methods-for-properties">set methods for properties</a></li>
       <li><a href="#write_using">write_using</a></li>
       <li><a href="#get_cover_batch">get_cover_batch</a></li>
       <li><a href="#readtr">readtr</a></li>
@@ -88,7 +88,7 @@
 
 <p>BedAnno - Perl module for annotating variation depend on the BED format database.</p>
 
-<h2 id="VERSION-v1.11">VERSION v1.11</h2>
+<h2 id="VERSION-v1.30">VERSION v1.30</h2>
 
 <p>From version 0.32 BedAnno will change to support CG&#39;s variant shell list and use ncbi annotation release 104 as the annotation database with reformatted database format, and won&#39;t give any individual annotation, so the individual_anno() is no longer available. VCF4.1 format variant description (chr, pos, ref, alt) will also be supported.</p>
 
@@ -102,7 +102,7 @@
 
 <p>By using this module, we can get variants from whole-genome or exome-capture NGS genotyping result annotated. The information contains various possible HGVS string together with a most recent strandard HGVS mutation name. It can not annotate ambiguous variants (transition, transvertion, or unknown break point large deletion and duplication).</p>
 
-<p>This module need bgzipped BED format database, combined with tabix index. tabix perl module is required to be installed. If allele frequency information, prediction information or cytoBand information etc. are needed, then extra resource dependencies will be required.</p>
+<p><i>BedAnno</i> annotate genomics variations of hg19 by using a BED format database, which construct from ncbi anno release 104, combined with tabix index. This module can directly parse the vcf4.1 format ref and single alt string(no commas in it), without normalized by vcftools, and can recognize the tandom repeat variation and duplication, generate the standard HGVS strings for most of complex cases. Also it will ajust the strand of transcript, and follow the 3&#39; nearest rules to annotate.</p>
 
 <h1 id="Methods">Methods</h1>
 
@@ -171,198 +171,6 @@
 
 <dl>
 
-<dt id="cytoBand-cytoBand.bed.gz"><i>cytoBand</i> [cytoBand.bed.gz]</dt>
-<dd>
-
-<dl>
-
-<dt id="add-cytoBand-information">add cytoBand information</dt>
-<dd>
-
-</dd>
-</dl>
-
-</dd>
-<dt id="rmsk-rmsk.bed.gz"><i>rmsk</i> [rmsk.bed.gz]</dt>
-<dd>
-
-<dl>
-
-<dt id="add-repeat-tag-information">add repeat tag information</dt>
-<dd>
-
-</dd>
-</dl>
-
-</dd>
-<dt id="gwas-gwasCatalog_snp137.bed.gz"><i>gwas</i> [gwasCatalog_snp137.bed.gz]</dt>
-<dd>
-
-<dl>
-
-<dt id="add-gwas-information-depend-on-only-position">add gwas information depend on only position</dt>
-<dd>
-
-</dd>
-</dl>
-
-</dd>
-<dt id="pfam-pfam.tsv.gz"><i>pfam</i> [pfam.tsv.gz]</dt>
-<dd>
-
-<dl>
-
-<dt id="add-pfam-information">add pfam information</dt>
-<dd>
-
-</dd>
-</dl>
-
-</dd>
-<dt id="prediction-ensembl_prediction_db.tsv.gz"><i>prediction</i> [ensembl_prediction_db.tsv.gz]</dt>
-<dd>
-
-<dl>
-
-<dt id="add-sift-polyphen2-prediction-and-scores">add sift, polyphen2 prediction and scores</dt>
-<dd>
-
-</dd>
-</dl>
-
-</dd>
-<dt id="condel-condel-config-path"><i>condel</i> [condel config path]</dt>
-<dd>
-
-<dl>
-
-<dt id="compute-condel-scores-and-prediction-based-on-sift-and-polyphen2-HumVar-prediction">compute condel scores and prediction based on sift and polyphen2 HumVar prediction</dt>
-<dd>
-
-</dd>
-</dl>
-
-</dd>
-<dt id="cosmic-Cosmic_v67_241013.bed.gz"><i>cosmic</i> [Cosmic_v67_241013.bed.gz]</dt>
-<dd>
-
-<dl>
-
-<dt id="add-cosmic-annotation-information">add cosmic annotation information</dt>
-<dd>
-
-</dd>
-</dl>
-
-</dd>
-<dt id="phyloP-phyloP_scores.tsv.gz"><i>phyloP</i> [phyloP_scores.tsv.gz]</dt>
-<dd>
-
-<dl>
-
-<dt id="add-phyloP-scores-of-all-3-datasets">add phyloP scores of all 3 datasets.</dt>
-<dd>
-
-</dd>
-</dl>
-
-</dd>
-<dt id="dbSNP-snp137.bed.gz"><i>dbSNP</i> [snp137.bed.gz]</dt>
-<dd>
-
-<dl>
-
-<dt id="add-rsID-and-dbSNP-frequency-information">add rsID and dbSNP frequency information</dt>
-<dd>
-
-</dd>
-</dl>
-
-</dd>
-<dt id="tgp-tgp_phaseI_v3.bed.gz"><i>tgp</i> [tgp_phaseI_v3.bed.gz]</dt>
-<dd>
-
-<dl>
-
-<dt id="add-1000-genomes-allele-frequency-information">add 1000 genomes allele frequency information</dt>
-<dd>
-
-</dd>
-</dl>
-
-</dd>
-<dt id="cg54-CG54.bed.gz"><i>cg54</i> [CG54.bed.gz]</dt>
-<dd>
-
-<dl>
-
-<dt id="add-54-whole-genomes-allele-frequency-information-from-CompleteGenomics">add 54 whole genomes allele frequency information from CompleteGenomics.</dt>
-<dd>
-
-</dd>
-</dl>
-
-</dd>
-<dt id="wellderly-wellderly.bed.gz"><i>wellderly</i> [wellderly.bed.gz]</dt>
-<dd>
-
-<dl>
-
-<dt id="add-wellderlys-allele-frequency-information-from-CompleteGenomics">add wellderly&#39;s allele frequency information from CompleteGenomics.</dt>
-<dd>
-
-</dd>
-</dl>
-
-</dd>
-<dt id="esp6500-ESP6500.bed.gz"><i>esp6500</i> [ESP6500.bed.gz]</dt>
-<dd>
-
-<dl>
-
-<dt id="add-ESP6500-allele-frequency-information-from-NHLBI">add ESP6500 allele frequency information from NHLBI</dt>
-<dd>
-
-</dd>
-</dl>
-
-</dd>
-<dt id="exac-ExAC.r0.2.sites.vep.vcf.gz"><i>exac</i> [ExAC.r0.2.sites.vep.vcf.gz]</dt>
-<dd>
-
-<dl>
-
-<dt id="add-ExAC-allele-frequency-information-from-61-486-unrelated-individuals">add ExAC allele frequency information from 61,486 unrelated individuals.</dt>
-<dd>
-
-</dd>
-</dl>
-
-</dd>
-<dt id="gnomAD-gnomad.exomes.r2.0.1.sites.vcf.gz"><i>gnomAD</i> [gnomad.exomes.r2.0.1.sites.vcf.gz]</dt>
-<dd>
-
-<dl>
-
-<dt id="add-gnomAD-allele-frequency-information-of-123-136-exomes-and-15-496-genomes-from-unrelated-individuals-sequenced">add gnomAD allele frequency information of 123,136 exomes and 15,496 genomes from unrelated individuals sequenced</dt>
-<dd>
-
-</dd>
-</dl>
-
-</dd>
-<dt id="customdb_XX-custom-db-in-the-same-format-with-esp6500s"><i>customdb_XX</i> [custom db in the same format with esp6500&#39;s]</dt>
-<dd>
-
-<dl>
-
-<dt id="add-customdb-XX-frequency-infomation-XX-is-the-ID.-multiple-db-will-require-multiple-customdb-option">add customdb XX frequency infomation, XX is the ID. (multiple db will require multiple customdb option)</dt>
-<dd>
-
-</dd>
-</dl>
-
-</dd>
 <dt id="quiet"><i>quiet</i></dt>
 <dd>
 
@@ -387,19 +195,19 @@
 </dl>
 
 </dd>
-<dt id="genome-refgenome.fa.rz"><i>genome</i> [ &quot;refgenome.fa.rz&quot; ]</dt>
+<dt id="genome-refgenome.fa.gz"><i>genome</i> [ &quot;refgenome.fa.gz&quot; ]</dt>
 <dd>
 
 <dl>
 
-<dt id="reference-genome-fasta-razipped-and-samtools-faidxed-for-use">reference genome fasta, razipped and samtools faidxed for use.</dt>
+<dt id="reference-genome-fasta-bgzipped-and-samtools-faidxed-for-use">reference genome fasta, bgzipped and samtools faidxed for use.</dt>
 <dd>
 
 </dd>
 </dl>
 
 </dd>
-<dt id="genes-genes.list-rh_geneslist"><i>genes</i> [ &quot;genes.list&quot; | $rh_geneslist ]</dt>
+<dt id="genes-genes.list-geneslist_filehandle"><i>genes</i> [ &quot;genes.list&quot; | geneslist_filehandle ]</dt>
 <dd>
 
 <dl>
@@ -411,7 +219,7 @@
 </dl>
 
 </dd>
-<dt id="trans-trans.list-rh_translist"><i>trans</i> [ &quot;trans.list&quot; | $rh_translist ]</dt>
+<dt id="trans-trans.list-translist_filehandle"><i>trans</i> [ &quot;trans.list&quot; | translist_filehandle ]</dt>
 <dd>
 
 <dl>
@@ -502,46 +310,16 @@
 </dd>
 </dl>
 
-<h2 id="set-get-methods-for-properties">set/get methods for properties</h2>
+<h2 id="set-methods-for-properties">set methods for properties</h2>
 
 <pre><code>    List of Properties:
-                        get          set
-    db                  o            o
-    tr                  o            o
-    refbuild            o            o
-    tidb                o            x
-    annodb              o            x
-    trInfodb            o            x
-    cytoBand            o            o
-    cytoBand_h          o            x
-    rmsk                o            o
-    rmsk_h              o            x
-    gwas                o            o
-    gwas_h              o            x
-    pfam                o            o
-    pfam_h              o            x
-    prediction          o            o
-    prediction_h        o            x
-    phyloP              o            o
-    phyloP_h            o            x
-    cosmic              o            o
-    cosmic_h            o            x
-    dbSNP               o            o
-    dbSNP_h             o            x
-    tgp                 o            o
-    tgp_h               o            x
-    esp6500             o            o
-    esp6500_h           o            x
-    exac                o            o
-    gnomAD              o            o
-    exac_h              o            x
-    cg54                o            o
-    cg54_h              o            x
-    wellderly           o            o
-    wellderly_h         o            x
+                        set
+    db                  o
+    tr                  o
+    refbuild            o
+    genome              o
 
-    e.g.    : $beda-&gt;set_refbuild($refbuild);
-              my $refbuild = $beda-&gt;get_refbuild();</code></pre>
+    e.g.    : $beda-&gt;set_refbuild($refbuild);</code></pre>
 
 <h2 id="write_using">write_using</h2>
 
@@ -699,57 +477,6 @@
                     varTypeSO =&gt; $varTypeSO,
                     gHGVS     =&gt; $gHGVS,
                     refbuild  =&gt; $referenceBuild,
-
-                    # Here&#39;s some optional parts which may be generated
-                    # when extra resource is available:
-
-                    cytoBand  =&gt; $cytoBand,
-                    reptag    =&gt; $repeatTag,
-                    gwas      =&gt; $ref_gwas_ret,
-
-                    # For single position for now
-                    phyloPpm    =&gt; $PhyloPscorePlacentalMammals,
-                    phyloPpr    =&gt; $PhyloPscorePrimates,
-                    phyloPve    =&gt; $PhyloPscoreVetebrates,
-
-                    reptag      =&gt; $RepeatMaskerTag,
-
-                    dbsnp =&gt; {
-                        $rsID =&gt; {
-                            AN =&gt; $dbsnp_total_allele_count,
-                            AF =&gt; $dbsnp_alt_allele_frequency,  # though ref
-                        },
-                        ...
-                    },
-
-                    cosmic =&gt; $ref_cosmic_return,
-
-                    tgp =&gt; {
-                        AN =&gt; $tgp_total_allele_count,
-                        AF =&gt; $tgp_alt_allele_frequency,
-                    },
-
-                    cg54 =&gt; {
-                        AN =&gt; $cg54_total_allele_count,
-                        AF =&gt; $cg54_alt_allele_frequency,
-                    },
-
-                    wellderly =&gt; {
-                        AN =&gt; $wellderly_total_allele_count,
-                        AF =&gt; $wellderly_alt_allele_frequency,
-                    },
-
-                    esp6500 =&gt; {
-                        AN =&gt; $esp6500_total_allele_count,
-                        AF =&gt; $esp6500_alt_allele_frequency,
-                    },
-
-                    cusdb_XX =&gt; {
-                    AN =&gt; $custom_db_allele_count,
-                    AF =&gt; $custom_db_allele_frequency,
-                    },
-                    ...
-
                 },
                 trInfo =&gt; {
                     $tid =&gt; {
@@ -810,20 +537,6 @@
                         alt_func        =&gt; $alternative_func_code,
                         alt_funcSO      =&gt; $alternative_variant_SO_id,
                         alt_funcSOname  =&gt; $alt_variant_SO_name,
-
-                        # The following parts will be exists if extra resource
-                        # is available.
-                        pfamId      =&gt; $PFAM_ID,
-                        pfamName    =&gt; $PFAM_NAME,
-                        siftPred    =&gt; $SIFTpred,
-                        siftScore   =&gt; $SIFTscore,
-                        pp2divPred  =&gt; $Polyphen2HumDivPred,
-                        pp2divScore =&gt; $Polyphen2HumDivScore,
-                        pp2varPred  =&gt; $Polyphen2HumVarPred,
-                        pp2varScore =&gt; $Polyphen2HumVarScore,
-                        condelPred  =&gt; $Condelpred,
-                        condelScore =&gt; $Condelscore,
-
                     },
                     ...
                 }
@@ -1175,7 +888,7 @@
 
 <pre><code>    About   : Assign the BedAnno::Anno obj&#39;s trInfo with affected regions
     Usage   : my $AEIndex = $annoEnt-&gt;getTrPosition($rannodb, $AEIndex);
-    Args    : $rannodb is a BedAnno::Anno object created by varanno(),
+    Args    : $rannodb is a chromosome branch of BedAnno object&#39;s annodb feature,
               $AEIndex is the current index for annodb searching.
     Returns : A new AEIndex for next query.
     Notes   : $AEIndex is used for same chr batch mode.
@@ -1293,7 +1006,7 @@
                 - cnvPub      Well formatted tabix indexed file as a collection of Cases
                 - cnvd        CNVD database tabix indexed file.
               Same args in BedAnno method &#39;new&#39;:
-                - db, tr, genes, trans, region, regbed, mmap, batch, cytoBand
+                - db, tr, genes, trans, region, regbed, mmap, batch
     Returns : BedAnno::CNV object</code></pre>
 
 <h2 id="annoCNV">annoCNV</h2>

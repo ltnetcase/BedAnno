@@ -2,22 +2,15 @@
 # `make test'. After `make install' it should work as `perl BedAnno.t'
 
 our $data;
-our $extradb;
-our $config;
 
 BEGIN {
     unless ( grep /blib/, @INC ) {
         chdir 't' if -d 't';
-        unshift @INC, '../plugins' if -d '../plugins';
         unshift @INC, '../lib'     if -d '../lib';
         $data    = '../data';
-        $extradb = '../db';
-	$config  = '../config';
     }
 }
 $data    ||= "data";
-$extradb ||= "db";
-$config  ||= "config";
 my %opts = (
     db    => "$data/test_db.bed.gz",
     tr    => "$data/test.fas.gz",
@@ -2495,22 +2488,24 @@ my $span_annotation_fail = {
 };
 
 my $cds_edge_ins_anno = {
+    'alt_cHGVS' => 'c.103_104insG',
+    'standard_cHGVS' => 'c.103dupG',
     'alt_func' => 'splice-region',
     'alt_funcSO' => 'SO:0001630',
     'alt_funcSOname' => 'splice_region_variant',
 
     'protBegin' => 35,
-    'ei_End'    => 'IVS2',
-    'exin'      => 'EX3-IVS2',
+    'ei_End'    => 'EX3',
+    'exin'      => 'EX3',
     'prot'      => 'NP_006832.1',
     'trRefComp' => {
         'EX3' => 0
     },
-    'r_End'    => 'AC1',
-    'c'        => 'c.102-1_102insG',
+    'r_End'    => 'C2',
+    'c'        => 'c.102G[2>3]',
     'rnaBegin' => 243,
     'ei_Begin' => 'EX3',
-    'r'        => 'C2-AC1',
+    'r'        => 'C2',
     'cdsBegin' => '102',
     'preStart' => {
         'r'    => 'AC1',
@@ -2524,7 +2519,7 @@ my $cds_edge_ins_anno = {
     'exonIndex'      => '3',
     'r_Begin'        => 'C2',
     'trAlt'          => 'G',
-    'intronIndex'    => '2',
+    'intronIndex'    => '.',
     'strd'           => '+',
     'componentIndex' => '3',
     'geneSym'        => 'SLC38A3',
@@ -2539,12 +2534,12 @@ my $cds_edge_ins_anno = {
     'p3' => 'p.Val35Glyfs*27',
     'rnaEnd'   => '243-1',
     'prAlt'    => 'RGRGPCTELYGGQELPTEKSQQGATLH*',
-    'genepart' => 'span',
+    'genepart' => 'CDS',
     'prRef' =>
 'RVEDPARSCMEGKSFLQKSPSKEPHFTDFEGKTSFGMSVFNLSNAIMGSGILGLAYAMANTGIILFLFLLTAVALLSSYSIHLLLKSSGVVGIRAYEQLGYRAFGTPGKLAAALAITLQNIGAMSSYLYIIKSELPLVIQTFLNLEEKTSDWYMNGNYLVILVSVTIILPLALMRQLGYLGYSSGFSLSCMVFFLIAVIYKKFHVPCPLPPNFNNTTGNFSHVEIVKEKVQLQVEPEASAFCTPSYFTLNSQTAYTIPIMAFAFVCHPEVLPIYTELKDPSKKKMQHISNLSIAVMYIMYFLAALFGYLTFYNGVESELLHTYSKVDPFDVLILCVRVAVLTAVTLTVPIVLFPVRRAIQQMLFPNQEFSWLRHVLIAVGLLTCINLLVIFAPNILGIFGVIGATSAPFLIFIFPAIFYFRIMPTEKEPARSTPKILALCFAMLGFLLMTMSLSFIIIDWASGTSRHGGNH*',
     'func'       => 'frameshift',
     'funcSO'     => 'SO:0001589',
-    'genepartSO' => '',
+    'genepartSO' => 'SO:0000316',
     'funcSOname' => 'frameshift_variant',
     'primaryTag' => 'Y'
   };
@@ -3979,199 +3974,6 @@ ok ( $span_with_DI_in_DB_varname eq "NM_006060.4(IKZF1): c.160+1_160+2insTAAA", 
 
 $bare_beda->DESTROY();
 undef $bare_beda;
-
-if ( -e $extradb and -r $extradb ) {
-    if ( -e "$extradb/cytoBand/cytoBand_hg19_grch37.txt.gz" ) {
-       $opts{cytoBand} = "$extradb/cytoBand/cytoBand_hg19_grch37.txt.gz";
-    }
-    if ( -e "$extradb/RepeatMasker/rmsk.bed.gz" ) {
-	$opts{rmsk} = "$extradb/RepeatMasker/rmsk.bed.gz";
-    }
-    if ( -e "$extradb/gwas/gwasCatalog_snp137.bed.gz" ) {
-	$opts{gwas} = "$extradb/gwas/gwasCatalog_snp137.bed.gz";
-    }
-    if ( -e "$extradb/dbsnp/snp137.bed.gz" ) {
-        $opts{dbSNP} = "$extradb/dbsnp/snp137.bed.gz";
-    }
-    if ( -e "$extradb/tgp/tgpPhase3_vcfDB/tgp_phase3_small_vars.vcf.gz" ) {
-        $opts{tgp} = "$extradb/tgp/tgpPhase3_vcfDB/tgp_phase3_small_vars.vcf.gz";
-    }
-    if ( -e "$extradb/CG/CG54_20130709_stats_filtered_ct0.tsv.gz" ) {
-        $opts{cg54} = "$extradb/CG/CG54_20130709_stats_filtered_ct0.tsv.gz";
-    }
-    if ( -e "$extradb/NHLBI/ESP6500SI-V2-SSA137.NHLBI.bed.rmanchor.uniq.gz" ) {
-        $opts{esp6500} =
-          "$extradb/NHLBI/ESP6500SI-V2-SSA137.NHLBI.bed.rmanchor.uniq.gz";
-    }
-    if ( -e "$extradb/pfam/Pfam-A-ncbi_2012-12-21.bed.gz" ) {
-        $opts{pfam} = "$extradb/pfam/Pfam-A-ncbi_2012-12-21.bed.gz";
-    }
-    if ( -e "$extradb/predictions/predictDB_for_anno104.tab.gz" ) {
-        $opts{prediction} = "$extradb/predictions/predictDB_for_anno104.tab.gz";
-    }
-    if ( -e "$extradb/phyloP/phyloP_all3class_combin_2013-09-25.bed.gz" ) {
-        $opts{phyloP} =
-          "$extradb/phyloP/phyloP_all3class_combin_2013-09-25.bed.gz";
-    }
-    if ( -e "$extradb/cosmic/Cosmic_v67_241013.bed.gz" ) {
-	$opts{cosmic} = "$extradb/cosmic/Cosmic_v67_241013.bed.gz";
-    }
-    if ( -e "$extradb/panelDB/PrePreg12_V1.0.HIGHQ.bed.gz" ) {
-	$opts{customdb_PP12} = "$extradb/panelDB/PrePreg12_V1.0.HIGHQ.bed.gz";
-    }
-    if ( -e "$extradb/exac/release0.3.1/ExAC.r0.3.1.sites.vep.vcf.gz" ) {
-	$opts{exac} = "$extradb/exac/release0.3.1/ExAC.r0.3.1.sites.vep.vcf.gz";
-    }
-    if ( -e "$extradb/gnomAD/gnomad.exomes.r2.0.1.sites.vcf.gz" ) {
-	$opts{gnomAD} = "$extradb/gnomAD/gnomad.exomes.r2.0.1.sites.vcf.gz";
-    }
-    if ( -e "$extradb/aln_db/hg19/hg19_chM.fa.rz" ) {
-	$opts{genome} = "$extradb/aln_db/hg19/hg19_chM.fa.rz";
-    }
-
-    my $beda = BedAnno->new(%opts);
-    if ( exists $opts{cytoBand} ) {
-	my ($t1_anno, $n1) = $beda->varanno( $snv_parse );
-	if ( exists $t1_anno->{var}->{cytoBand}
-	    and $t1_anno->{var}->{cytoBand} eq '1p36.33' )
-	{
-	    pass("for [ cytoBand ]");
-	}
-	else {
-	    fail("for [ cytoBand ]");
-	    explain "The returned var info:", $t1_anno->{var};
-	}
-    }
-    if ( exists $opts{phyloP} ) {
-	my ($t2_anno, $n2) = $beda->varanno( $cds_rna_delins );
-	if (exists $t2_anno->{var}->{phyloPpr}
-	      and $t2_anno->{var}->{phyloPpr} eq '-0.181') {
-	    pass("for [ phyloP ]");
-	}
-	else {
-	    fail("for [ phyloP ]");
-	    explain "The returned var info:", $t2_anno->{var};
-	}
-    }
-
-    my ($t3_anno, $n3) = $beda->varanno($cds_no_change);
-    if ( exists $opts{cg54} ) {
-	if ( exists $t3_anno->{var}->{cg54}->{AF}
-	    and $t3_anno->{var}->{cg54}->{AF} == 1.0 )
-	{
-	    pass("for [ cg54 ]");
-	}
-	else {
-	    fail("for [ cg54 ]");
-	    explain "The returned var info:", $t3_anno->{var};
-	}
-    }
-
-    if ( exists $opts{dbSNP} ) {
-	if ( exists $t3_anno->{var}->{dbsnp}->{'rs11300136'} ) {
-	    pass("for [ dbSNP ]" );
-	}
-	else {
-	    fail("for [ dbSNP ]" );
-	    explain "The returned var info:", $t3_anno->{var};
-	}
-    }
-
-    if ( exists $opts{esp6500} ) {
-	if ( exists $t3_anno->{var}->{esp6500}->{AF}
-	    and $t3_anno->{var}->{esp6500}->{AF} eq '0.999742' )
-	{
-	    pass("for [ esp6500 ]");
-	}
-	else {
-	    fail("for [ esp6500 ]");
-	    explain "The returned var info:", $t3_anno->{var};
-	}
-    }
-
-    if ( exists $opts{tgp} ) {
-	if ( exists $t3_anno->{var}->{tgp}->{AF}
-	    and $t3_anno->{var}->{tgp}->{AF} eq '1' )
-	{
-	    pass("for [ tgp ]");
-	}
-	else {
-	    fail("for [ tgp ]");
-	    explain "The returned var info:", $t3_anno->{var};
-	}
-    }
-
-    if ( exists $opts{exac} ) {
-        if ( exists $t3_anno->{var}->{exac}->{AF}
-            and $t3_anno->{var}->{exac}->{AF} eq '0.999983' )
-        {
-            pass("for [ exac ]");
-        }
-        else {
-            fail("for [ exac ]");
-	    explain "The returned var info:", $t3_anno->{var};
-        }
-    }
-
-    if ( exists $opts{gnomAD} ) {
-        if ( exists $t3_anno->{var}->{gnomAD}->{AF}
-            and $t3_anno->{var}->{gnomAD}->{AF} eq '9.99996e-01' )
-        {
-            pass("for [ gnomAD ]");
-        }
-        else {
-            fail("for [ gnomAD ]");
-	    explain "The returned var info:", $t3_anno->{var};
-        }
-    }
-
-    if ( exists $opts{pfam} ) {
-	my $t4_anno =
-	  $beda->anno( "chr1", 100327863, 100327884, "TGGTGCTGATAATCATGTGCT",
-	    "" );
-	if ( exists $t4_anno->{trInfo}->{"NM_000028.2"}
-	    and $t4_anno->{trInfo}->{"NM_000028.2"}->{pfamId} eq
-	    'PF14699.1;PF14701.1' )
-	{
-	    pass("for [ pfam ]");
-	}
-	else {
-	    fail("for [ pfam ]");
-	    explain "The returned tr info:", $t4_anno->{trInfo};
-	}
-    }
-
-
-    if ( exists $opts{prediction} ) {
-	my $t5_anno = $beda->anno( "chr3", 49395708, 49395709, "C", "T" );
-	if
-	    ( exists $t5_anno->{trInfo}
-	      and exists $t5_anno->{trInfo}->{'NM_000581.2'}
-	      and exists $t5_anno->{trInfo}->{'NM_000581.2'}->{siftPred}
-	      and $t5_anno->{trInfo}->{'NM_000581.2'}->{siftPred} eq 'Damaging' ) {
-	    pass("for [ prediction ]");
-	}
-	else {
-	    fail("for [ prediction ]");
-	    explain "The returned tr info:", $t5_anno->{trInfo};
-	}
-    }
-
-    my $ss_nochange_anno = $beda->anno( "chr11", 827712, 827713, "A", "T" );
-    my $splice_no_change = $ss_nochange_anno->{trInfo}->{"NM_173584.3"}->{func};
-    if ( exists $opts{genome} ) {
-	if ( $splice_no_change eq "no-change" ) {
-	    pass( "for [ splice change to canonical ]" );
-	}
-	else {
-	    fail( "for [ splice change to canonical ]" );
-	    explain "The returned anno info:", $ss_nochange_anno;
-	}
-    }
-    $beda->DESTROY();
-    undef $beda;
-}
-
 
 done_testing();
 
