@@ -565,13 +565,40 @@ sub set_tr {
 sub set_genome {
     my $self   = shift;
     my $genome = shift;
-    if ( !-e $genome or !-r $genome ) {
-        $self->throw("Error: cannot read $genome.");
+    if ( !-e $genome or !-r $genome or !-e $genome.".fai" or !-r $genome.".fai" ) {
+        $self->throw("Error: cannot read $genome.")
     }
     require Bio::DB::HTS::Faidx if ( !exists $self->{genome_h} );
     $self->{genome}   = $genome;
     $self->{genome_h} = Bio::DB::HTS::Faidx->new($genome);
+    open(TASTE, $genome.".fai") or $self->throw("$genome.fai: $!\n");
+    my $first_chr = <TASTE>;
+    close(TASTE);
+    $self->_trimOrAddChr($first_chr);
     return $self;
+}
+
+sub _trimOrAddChr {
+    my $self = shift;
+    my $first_chr = shift;
+    if ($first_chr =~ /^chr/i) {
+        $self->{trimOrAddChr} = 1;
+    }
+    else {
+        $self->{trimOrAddChr} = 0;
+    }
+}
+
+sub _unifiy_chr {
+    my $self = shift;
+    my $chrname = shift;
+    if ($chrname !~ /^chr/ and $self->{trimOrAddChr}) {
+        $chrname = 'chr'.$chrname;
+    }
+    elsif ($chrname =~ /^chr/ and !$self->{trimOrAddChr}) {
+        $chrname =~ s/^chr//i;
+    }
+    return $chrname;
 }
 
 sub TO_JSON {
@@ -584,14 +611,6 @@ sub DESTROY {
         $self->{tidb}->DESTROY();
         delete $self->{tidb};
     }
-
-    foreach my $dbhk ( sort keys %$self ) {
-        if ( $dbhk =~ /\S+_h$/ and defined $self->{$dbhk} ) {
-            $self->{$dbhk}->DESTROY() if ( $self->{$dbhk}->can('DESTROY') );
-            delete $self->{$dbhk};
-        }
-    }
-
     return;
 }
 
@@ -2975,7 +2994,7 @@ sub getTrChange {
                         $annoEnt->{var}->{end}
                     );
 
-                    $gchr = "chr" . $gchr if ( $gchr !~ /^chr/ );
+                    $gchr = $self->_unifiy_chr($gchr);
 
                     if ( $ext_len == 1 ) {    # only can be 1
                         if (
@@ -3983,10 +4002,10 @@ sub trWalker {
         # skip snv and mnp
         ( $real_rl == $real_al )
 
-        # skip non-insertion span cases due to no genome_h involved
+        # skip non-insertion span cases
         or ( $rtrinfo->{ei_Begin} ne $rtrinfo->{ei_End} and $real_rl > 0)
 
-        # skip non exon variants (at least one must locate in exon, due to no genome_h)
+        # skip non exon variants (at least one must locate in exon)
         or ( $trBegin !~ /^\d+$/ and $trEnd !~ /^\d+$/ )
 
         # skip delins without repeat
@@ -4016,8 +4035,25 @@ sub trWalker {
             @Unified = $real_var->getUnifiedVar('+');
         }
     }
-    else {
-        if ($trEnd =~ /^(\d+)?-1$/) { # only walking for insertion on left edge of exon due to 3' most rule
+    else { # for edge insertion case, only walk on exon region, due to no genome_h
+        if ( $trBegin =~ /^(\d+)?\+1$/ ) {    # insertion on right edge of exon
+            my $right_edge = $1 || length($trSeq);
+            my $former_trseq = substr( $trSeq, 0, $right_edge );
+            my ( $tmp_sta, $tmp_sto, $tmp_trRef, $tmp_trAlt ) =
+              walker( $right_edge + 1,
+                $trEnd, $former_trseq, $real_r, $real_a, $real_rl, $real_al );
+            if ( $tmp_sta != $right_edge + 1 ) {    # repeat
+                $trBegin = $tmp_sta;
+                $trEnd   = $tmp_sto;
+                $real_var =
+                  BedAnno::Var->new( $tid, 0, length($tmp_trRef), $tmp_trRef, $tmp_trAlt );
+                @Unified = $real_var->getUnifiedvar('+');
+                $rtrinfo->{ei_Begin} = $rtrinfo->{ei_End};
+                $rtrinfo->{r_Begin} = $rtrinfo->{r_End};
+                $rtrinfo->{exin} = $rtrinfo->{ei_End};
+            }
+        }
+        elsif ($trEnd =~ /^(\d+)?-1$/) { # insertion on left edge of exon
             my $left_edge = $1 || 1;
             my $latter_trseq = substr( $trSeq, $left_edge-1 );
             my ( $tmp_sta2, $tmp_sto2, $tmp_trRef2, $tmp_trAlt2 ) =
@@ -6907,10 +6943,6 @@ use Carp;
               Specific args:
                 - ovlp_rate   overlapping region rate while searching for hits
                 - max_uncov   maximum uncovered region length in querys while searching.
-                - dgv         DGV tabix index file as Controls (got from anno_dgv)
-                - sfari       SFARI tabix index file, as a case/control mix resource for autism.
-                - cnvPub      Well formatted tabix indexed file as a collection of Cases
-                - cnvd        CNVD database tabix indexed file.
               Same args in BedAnno method 'new':
                 - db, tr, genes, trans, region, regbed, mmap, batch
     Returns : BedAnno::CNV object
@@ -6922,87 +6954,6 @@ sub new {
     my $self;
     $self = $class->SUPER::new(%args);
     bless $self, ref($class) || $class;
-
-    if ( exists $args{dgv} ) {
-        $self->set_dgv( $args{dgv} );
-    }
-
-    if ( exists $args{sfari} ) {
-        $self->set_sfari( $args{sfari} );
-    }
-
-    if ( exists $args{cnvPub} ) {
-        $self->set_cnvPub( $args{cnvPub} );
-    }
-
-    if ( exists $args{cnvd} ) {
-        $self->set_cnvd( $args{cnvd} );
-    }
-
-    return $self;
-}
-
-sub set_dgv {
-    my $self  = shift;
-    my $dgvdb = shift;
-    $self->{dgv} = $dgvdb;
-    require GetDGV if ( !exists $self->{dgv_h} );
-    my %common_opts = ();
-    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
-    $common_opts{ovlp_rate} = $self->{ovlp_rate}
-      if ( exists $self->{ovlp_rate} );
-    $common_opts{max_uncov} = $self->{max_uncov}
-      if ( exists $self->{max_uncov} );
-    my $dgv_h = GetDGV->new( db => $dgvdb, %common_opts );
-    $self->{dgv_h} = $dgv_h;
-    return $self;
-}
-
-sub set_sfari {
-    my $self    = shift;
-    my $sfaridb = shift;
-    $self->{sfari} = $sfaridb;
-    require GetSFARI if ( !exists $self->{sfari_h} );
-    my %common_opts = ();
-    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
-    $common_opts{ovlp_rate} = $self->{ovlp_rate}
-      if ( exists $self->{ovlp_rate} );
-    $common_opts{max_uncov} = $self->{max_uncov}
-      if ( exists $self->{max_uncov} );
-    my $sfari_h = GetSFARI->new( db => $sfaridb, %common_opts );
-    $self->{sfari_h} = $sfari_h;
-    return $self;
-}
-
-sub set_cnvPub {
-    my $self     = shift;
-    my $cnvPubdb = shift;
-    $self->{cnvPub} = $cnvPubdb;
-    require GetCNVPub if ( !exists $self->{cnvPub_h} );
-    my %common_opts = ();
-    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
-    $common_opts{ovlp_rate} = $self->{ovlp_rate}
-      if ( exists $self->{ovlp_rate} );
-    $common_opts{max_uncov} = $self->{max_uncov}
-      if ( exists $self->{max_uncov} );
-    my $cnvPub_h = GetCNVPub->new( db => $cnvPubdb, %common_opts );
-    $self->{cnvPub_h} = $cnvPub_h;
-    return $self;
-}
-
-sub set_cnvd {
-    my $self  = shift;
-    my $cnvdb = shift;
-    $self->{cnvd} = $cnvdb;
-    require GetCNVD if ( !exists $self->{cnvd} );
-    my %common_opts = ();
-    $common_opts{quiet} = 1 if ( exists $self->{quiet} );
-    $common_opts{ovlp_rate} = $self->{ovlp_rate}
-      if ( exists $self->{ovlp_rate} );
-    $common_opts{max_uncov} = $self->{max_uncov}
-      if ( exists $self->{max_uncov} );
-    my $cnvd_h = GetCNVD->new( db => $cnvdb, %common_opts );
-    $self->{cnvd_h} = $cnvd_h;
     return $self;
 }
 
@@ -7031,13 +6982,6 @@ sub set_cnvd {
                         },
                         ...
                     },
-
-                    # available when resource ok
-                    cytoBand  => $cytoBand_info,
-                    dgv    => $dgv_sql_rst,
-                    sfari  => $sfari_sql_rst,
-                    cnvd   => $cnvd_sql_rst,
-                    cnvPub => $cnvPub_sql_rst,
                 }
 
 =cut
@@ -7050,18 +6994,6 @@ sub annoCNV {
     if ( $chr =~ /^M/i ) {
         $chr = 'MT';
     }
-
-    my $cb = $self->{cytoBand_h}->getCB( $chr, $start, $end )
-      if ( defined $self->{cytoBand_h} );
-    my $dgv = $self->{dgv_h}->getDGV( $chr, $start, $end, $copy_number )
-      if ( defined $self->{dgv_h} );
-    my $sfari = $self->{sfari_h}->getSFARI( $chr, $start, $end, $copy_number )
-      if ( defined $self->{sfari_h} );
-    my $cnvPub =
-      $self->{cnvPub_h}->getCNVpub( $chr, $start, $end, $copy_number )
-      if ( defined $self->{cnvPub_h} );
-    my $cnvd = $self->{cnvd_h}->getCNVD( $chr, $start, $end, $copy_number )
-      if ( defined $self->{cnvd_h} );
 
     my $rAnnos;
     my %open_args;
@@ -7085,11 +7017,6 @@ sub annoCNV {
     $rAnnos = $rcurrent->{$chr} if ( exists $rcurrent->{$chr} );
 
     my %cnv_anno = ();
-    $cnv_anno{cytoBand} = $cb     if ( defined $cb );
-    $cnv_anno{dgv}      = $dgv    if ( defined $dgv );
-    $cnv_anno{cnvPub}   = $cnvPub if ( defined $cnvPub );
-    $cnv_anno{sfari}    = $sfari  if ( defined $sfari );
-    $cnv_anno{cnvd}     = $cnvd   if ( defined $cnvd );
 
     if ( !defined $rAnnos ) {
         $self->warn("Warning: no available annotation items in curdb for $chr")
@@ -7142,11 +7069,6 @@ sub annoCNV {
                              },
                              ...
                            },
-
-                           # available when resource ok
-                           cytoBand  => $cytoBand_info,
-                           dgv => $dgv_sql_rst,
-                           cnvPub => $cnvPub_sql_rst,
                         },
                         ...
                       },
@@ -7167,25 +7089,6 @@ sub batch_annoCNV {
 
             my $cur_CN = $rCNVvars->{$chr}->{$pos_pair};
             $cur_anno->{cur_CN} = $cur_CN;
-
-            my ( $start, $stop ) = split( /-/, $pos_pair );
-            $start -= 1;    # change 1 based pos pair to 0 based start
-            $cur_anno->{dgv} =
-              $self->{dgv_h}->getDGV( $chr, $start, $stop, $cur_CN )
-              if ( defined $self->{dgv_h} );
-            $cur_anno->{sfari} =
-              $self->{sfari_h}->getSFARI( $chr, $start, $stop, $cur_CN )
-              if ( defined $self->{sfari_h} );
-            $cur_anno->{cnvPub} =
-              $self->{cnvPub_h}->getCNVpub( $chr, $start, $stop, $cur_CN )
-              if ( defined $self->{cnvPub_h} );
-            $cur_anno->{cytoband} =
-              $self->{cytoBand_h}->getCB( $chr, $start, $stop )
-              if ( defined $self->{cytoBand_h} );
-            $cur_anno->{cnvd} =
-              $self->{cnvd_h}->getCNVD( $chr, $start, $stop, $cur_CN )
-              if ( defined $self->{cnvd_h} );
-            $cnvAnnos{$chr}{$pos_pair} = $cur_anno;
         }
     }
     return \%cnvAnnos;
@@ -7302,11 +7205,9 @@ sub get_region {
 
 sub DESTROY {
     my $self = shift;
-    foreach my $key ( keys %$self ) {
-        next if ( $key !~ /_h$/ );
-        $self->{$key}->DESTROY()
-          if ( defined $self->{$key} and $self->{$key}->can('DESTROY') );
-        delete $self->{$key};
+    if ( exists $self->{tidb} and defined $self->{tidb} ) {
+        $self->{tidb}->DESTROY();
+        delete $self->{tidb};
     }
     return;
 }

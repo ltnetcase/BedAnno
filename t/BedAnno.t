@@ -2,15 +2,18 @@
 # `make test'. After `make install' it should work as `perl BedAnno.t'
 
 our $data;
+our $largedb;
 
 BEGIN {
     unless ( grep /blib/, @INC ) {
         chdir 't' if -d 't';
         unshift @INC, '../lib'     if -d '../lib';
         $data    = '../data';
+        $largedb = '../largedb';
     }
 }
 $data    ||= "data";
+$largedb ||= "largedb";
 my %opts = (
     db    => "$data/test_db.bed.gz",
     tr    => "$data/test.fas.gz",
@@ -3971,6 +3974,17 @@ ok ( $neighbor_mismatch_varname eq "NM_007171.3(POMT1): c.751_752delinsTA (p.R25
 ) or explain "The anno info: ", $neighbor_mismatch_anno;
 ok ( $span_with_DI_in_DB_varname eq "NM_006060.4(IKZF1): c.160+1_160+2insTAAA", "for [ span with DI mismatch in DB case anno ]" 
 ) or explain "The anno info: ", $span_with_DI_in_DB;
+
+
+# Test engine with genome fasta available to check canonical splice site or not.
+if ( -e "$largedb/hs37d5.fa.gz" ) {
+    $bare_beda->set_genome("$largedb/hs37d5.fa.gz");
+    my $noncanonical_splice_nochange = $bare_beda->anno("chr14", "58678118", "A", "G");
+    my $noncanonical_splice_nochange_func = $noncanonical_splice_nochange->{trInfo}->{"NM_018477.2"}->{"func"};
+    ok ( $noncanonical_splice_nochange_func eq "no-change", "for [ non-canonical splice nochange ]"
+    ) or explain "The anno info: ", $noncanonical_splice_nochange;
+}
+
 
 $bare_beda->DESTROY();
 undef $bare_beda;
