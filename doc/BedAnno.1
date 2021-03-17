@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "..::lib::BedAnno 3"
-.TH ..::lib::BedAnno 3 "2021-02-25" "perl v5.28.3" "User Contributed Perl Documentation"
+.TH ..::lib::BedAnno 3 "2021-03-17" "perl v5.28.3" "User Contributed Perl Documentation"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -1040,17 +1040,13 @@ and follow the 3' nearest rules to annotate.
 .IX Header "METHOD"
 .SS "new"
 .IX Subsection "new"
-.Vb 10
+.Vb 9
 \&    About   : Create BedAnno::CNV object
 \&    Usage   : my $cnva = BedAnno::CNV\->new( db => $annodb, tr => $trdb, dgv => $dgvdb, cnvPub => $cnvPubdb );
 \&    Args    : required args: db, tr
 \&              Specific args:
 \&                \- ovlp_rate   overlapping region rate while searching for hits
 \&                \- max_uncov   maximum uncovered region length in querys while searching.
-\&                \- dgv         DGV tabix index file as Controls (got from anno_dgv)
-\&                \- sfari       SFARI tabix index file, as a case/control mix resource for autism.
-\&                \- cnvPub      Well formatted tabix indexed file as a collection of Cases
-\&                \- cnvd        CNVD database tabix indexed file.
 \&              Same args in BedAnno method \*(Aqnew\*(Aq:
 \&                \- db, tr, genes, trans, region, regbed, mmap, batch
 \&    Returns : BedAnno::CNV object
@@ -1081,13 +1077,6 @@ and follow the 3' nearest rules to annotate.
 \&                        },
 \&                        ...
 \&                    },
-\&
-\&                    # available when resource ok
-\&                    cytoBand  => $cytoBand_info,
-\&                    dgv    => $dgv_sql_rst,
-\&                    sfari  => $sfari_sql_rst,
-\&                    cnvd   => $cnvd_sql_rst,
-\&                    cnvPub => $cnvPub_sql_rst,
 \&                }
 .Ve
 .SS "batch_annoCNV"
@@ -1123,11 +1112,6 @@ and follow the 3' nearest rules to annotate.
 \&                             },
 \&                             ...
 \&                           },
-\&
-\&                           # available when resource ok
-\&                           cytoBand  => $cytoBand_info,
-\&                           dgv => $dgv_sql_rst,
-\&                           cnvPub => $cnvPub_sql_rst,
 \&                        },
 \&                        ...
 \&                      },

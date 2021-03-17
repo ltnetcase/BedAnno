@@ -1001,10 +1001,6 @@
               Specific args:
                 - ovlp_rate   overlapping region rate while searching for hits
                 - max_uncov   maximum uncovered region length in querys while searching.
-                - dgv         DGV tabix index file as Controls (got from anno_dgv)
-                - sfari       SFARI tabix index file, as a case/control mix resource for autism.
-                - cnvPub      Well formatted tabix indexed file as a collection of Cases
-                - cnvd        CNVD database tabix indexed file.
               Same args in BedAnno method &#39;new&#39;:
                 - db, tr, genes, trans, region, regbed, mmap, batch
     Returns : BedAnno::CNV object</code></pre>
@@ -1034,13 +1030,6 @@
                         },
                         ...
                     },
-
-                    # available when resource ok
-                    cytoBand  =&gt; $cytoBand_info,
-                    dgv    =&gt; $dgv_sql_rst,
-                    sfari  =&gt; $sfari_sql_rst,
-                    cnvd   =&gt; $cnvd_sql_rst,
-                    cnvPub =&gt; $cnvPub_sql_rst,
                 }</code></pre>
 
 <h2 id="batch_annoCNV">batch_annoCNV</h2>
@@ -1075,11 +1064,6 @@
                              },
                              ...
                            },
-
-                           # available when resource ok
-                           cytoBand  =&gt; $cytoBand_info,
-                           dgv =&gt; $dgv_sql_rst,
-                           cnvPub =&gt; $cnvPub_sql_rst,
                         },
                         ...
                       },

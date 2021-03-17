@@ -770,10 +770,6 @@ and follow the 3' nearest rules to annotate.
               Specific args:
                 - ovlp_rate   overlapping region rate while searching for hits
                 - max_uncov   maximum uncovered region length in querys while searching.
-                - dgv         DGV tabix index file as Controls (got from anno_dgv)
-                - sfari       SFARI tabix index file, as a case/control mix resource for autism.
-                - cnvPub      Well formatted tabix indexed file as a collection of Cases
-                - cnvd        CNVD database tabix indexed file.
               Same args in BedAnno method 'new':
                 - db, tr, genes, trans, region, regbed, mmap, batch
     Returns : BedAnno::CNV object
@@ -803,13 +799,6 @@ and follow the 3' nearest rules to annotate.
                         },
                         ...
                     },
-
-                    # available when resource ok
-                    cytoBand  => $cytoBand_info,
-                    dgv    => $dgv_sql_rst,
-                    sfari  => $sfari_sql_rst,
-                    cnvd   => $cnvd_sql_rst,
-                    cnvPub => $cnvPub_sql_rst,
                 }
 
 ## batch\_annoCNV
@@ -844,11 +833,6 @@ and follow the 3' nearest rules to annotate.
                              },
                              ...
                            },
-
-                           # available when resource ok
-                           cytoBand  => $cytoBand_info,
-                           dgv => $dgv_sql_rst,
-                           cnvPub => $cnvPub_sql_rst,
                         },
                         ...
                       },
