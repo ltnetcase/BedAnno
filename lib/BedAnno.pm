@@ -1205,7 +1205,7 @@ sub load_anno {
             while ( 0 < @all_querys ) {
                 my $region_read = $all_querys[0]->next();
                 if ( !defined $region_read or $region_read eq "" ) {
-                    $all_querys[0]->DESTROY();
+                    $all_querys[0]->close();
                     shift(@all_querys);
                 }
                 else {
