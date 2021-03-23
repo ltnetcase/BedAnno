@@ -7,9 +7,13 @@ BedAnno - Perl module for annotating variation depend on the BED format database
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
 with reformatted database format, and won't give any individual
-annotation, so the individual\_anno() is no longer available.
+annotation, so the `individual_anno` is no longer available.
 VCF4.1 format variant description (chr, pos, ref, alt) will also
 be supported.
+
+From version v1.30 BedAnno will change to NOT to give extra annotations,
+no other plugins is supported and will completely clean, only for chromosome
+variant's gHGVS cHGVS pHGVS annotation and function predictions.
 
 # SYNOPSIS
 
@@ -27,7 +31,7 @@ break point large deletion and duplication).
 
 _BedAnno_ annotate genomics variations of hg19 by using a BED format database, 
 which construct from ncbi anno release 104, combined with tabix index.
-This module can directly parse the vcf4.1 format ref and single alt string(no commas in it),
+This module can directly parse the vcf4.1 format ref and single alt string (no commas in it),
 without normalized by vcftools, and can recognize the tandom repeat 
 variation and duplication, generate the standard HGVS strings for 
 most of complex cases. Also it will ajust the strand of transcript,
@@ -593,6 +597,13 @@ and follow the 3' nearest rules to annotate.
                 $alt,  # called bases
                 $reflen, # reference len
                 $altlen )# called len, undef if no-call
+
+## isSameTo
+
+    About   : Check if the current var is the same with another var
+    Usage   : my $isSame = $var->isSameTo($another_var);
+    Args    : BedAnno::Var entry.
+    Returns : 1 for Same, 0 for NOT same.
 
 ## parse\_complex
 

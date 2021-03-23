@@ -50,6 +50,7 @@
     <ul>
       <li><a href="#new1">new</a></li>
       <li><a href="#getUnifiedVar">getUnifiedVar</a></li>
+      <li><a href="#isSameTo">isSameTo</a></li>
       <li><a href="#parse_complex">parse_complex</a></li>
       <li><a href="#guess_type">guess_type</a></li>
       <li><a href="#get_internal">get_internal</a></li>
@@ -90,7 +91,9 @@
 
 <h2 id="VERSION-v1.30">VERSION v1.30</h2>
 
-<p>From version 0.32 BedAnno will change to support CG&#39;s variant shell list and use ncbi annotation release 104 as the annotation database with reformatted database format, and won&#39;t give any individual annotation, so the individual_anno() is no longer available. VCF4.1 format variant description (chr, pos, ref, alt) will also be supported.</p>
+<p>From version 0.32 BedAnno will change to support CG&#39;s variant shell list and use ncbi annotation release 104 as the annotation database with reformatted database format, and won&#39;t give any individual annotation, so the <code>individual_anno</code> is no longer available. VCF4.1 format variant description (chr, pos, ref, alt) will also be supported.</p>
+
+<p>From version v1.30 BedAnno will change to NOT to give extra annotations, no other plugins is supported and will completely clean, only for chromosome variant&#39;s gHGVS cHGVS pHGVS annotation and function predictions.</p>
 
 <h1 id="SYNOPSIS">SYNOPSIS</h1>
 
@@ -102,7 +105,7 @@
 
 <p>By using this module, we can get variants from whole-genome or exome-capture NGS genotyping result annotated. The information contains various possible HGVS string together with a most recent strandard HGVS mutation name. It can not annotate ambiguous variants (transition, transvertion, or unknown break point large deletion and duplication).</p>
 
-<p><i>BedAnno</i> annotate genomics variations of hg19 by using a BED format database, which construct from ncbi anno release 104, combined with tabix index. This module can directly parse the vcf4.1 format ref and single alt string(no commas in it), without normalized by vcftools, and can recognize the tandom repeat variation and duplication, generate the standard HGVS strings for most of complex cases. Also it will ajust the strand of transcript, and follow the 3&#39; nearest rules to annotate.</p>
+<p><i>BedAnno</i> annotate genomics variations of hg19 by using a BED format database, which construct from ncbi anno release 104, combined with tabix index. This module can directly parse the vcf4.1 format ref and single alt string (no commas in it), without normalized by vcftools, and can recognize the tandom repeat variation and duplication, generate the standard HGVS strings for most of complex cases. Also it will ajust the strand of transcript, and follow the 3&#39; nearest rules to annotate.</p>
 
 <h1 id="Methods">Methods</h1>
 
@@ -824,6 +827,13 @@
                 $alt,  # called bases
                 $reflen, # reference len
                 $altlen )# called len, undef if no-call</code></pre>
+
+<h2 id="isSameTo">isSameTo</h2>
+
+<pre><code>    About   : Check if the current var is the same with another var
+    Usage   : my $isSame = $var-&gt;isSameTo($another_var);
+    Args    : BedAnno::Var entry.
+    Returns : 1 for Same, 0 for NOT same.</code></pre>
 
 <h2 id="parse_complex">parse_complex</h2>
 

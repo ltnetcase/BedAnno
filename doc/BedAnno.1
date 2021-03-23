@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "..::lib::BedAnno 3"
-.TH ..::lib::BedAnno 3 "2021-03-17" "perl v5.28.3" "User Contributed Perl Documentation"
+.TH ..::lib::BedAnno 3 "2021-03-23" "perl v5.28.3" "User Contributed Perl Documentation"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -145,9 +145,13 @@ BedAnno \- Perl module for annotating variation depend on the BED format databas
 From version 0.32 BedAnno will change to support \s-1CG\s0's variant shell list
 and use ncbi annotation release 104 as the annotation database
 with reformatted database format, and won't give any individual
-annotation, so the \fBindividual_anno()\fR is no longer available.
+annotation, so the \f(CW\*(C`individual_anno\*(C'\fR is no longer available.
 \&\s-1VCF4.1\s0 format variant description (chr, pos, ref, alt) will also
 be supported.
+.PP
+From version v1.30 BedAnno will change to \s-1NOT\s0 to give extra annotations,
+no other plugins is supported and will completely clean, only for chromosome
+variant's gHGVS cHGVS pHGVS annotation and function predictions.
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
 .Vb 3
@@ -165,7 +169,7 @@ break point large deletion and duplication).
 .PP
 \&\fIBedAnno\fR annotate genomics variations of hg19 by using a \s-1BED\s0 format database, 
 which construct from ncbi anno release 104, combined with tabix index.
-This module can directly parse the vcf4.1 format ref and single alt string(no commas in it),
+This module can directly parse the vcf4.1 format ref and single alt string (no commas in it),
 without normalized by vcftools, and can recognize the tandom repeat 
 variation and duplication, generate the standard \s-1HGVS\s0 strings for 
 most of complex cases. Also it will ajust the strand of transcript,
@@ -860,6 +864,14 @@ and follow the 3' nearest rules to annotate.
 \&                $alt,  # called bases
 \&                $reflen, # reference len
 \&                $altlen )# called len, undef if no\-call
+.Ve
+.SS "isSameTo"
+.IX Subsection "isSameTo"
+.Vb 4
+\&    About   : Check if the current var is the same with another var
+\&    Usage   : my $isSame = $var\->isSameTo($another_var);
+\&    Args    : BedAnno::Var entry.
+\&    Returns : 1 for Same, 0 for NOT same.
 .Ve
 .SS "parse_complex"
 .IX Subsection "parse_complex"

@@ -3977,8 +3977,8 @@ ok ( $span_with_DI_in_DB_varname eq "NM_006060.4(IKZF1): c.160+1_160+2insTAAA", 
 
 
 # Test engine with genome fasta available to check canonical splice site or not.
-if ( -e "$largedb/hs37d5.fa.gz" ) {
-    $bare_beda->set_genome("$largedb/hs37d5.fa.gz");
+if ( -e "$largedb/refgenome/hs37d5.fa.gz" ) {
+    $bare_beda->set_genome("$largedb/refgenome/hs37d5.fa.gz");
     my $noncanonical_splice_nochange = $bare_beda->anno("chr14", "58678118", "A", "G");
     my $noncanonical_splice_nochange_func = $noncanonical_splice_nochange->{trInfo}->{"NM_018477.2"}->{"func"};
     ok ( $noncanonical_splice_nochange_func eq "no-change", "for [ non-canonical splice nochange ]"

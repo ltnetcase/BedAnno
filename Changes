@@ -311,3 +311,4 @@
     - Remove Tabix module dependency, use Bio::DB::HTS::Tabix instead, use bgzip compressed reference fasta, instead of razipped ones.
     - Remove all extra plugins from BedAnno to make it clean for only HGVS and function annotation.
     - Add a feature to trWalker to let it also walk the 5'edge insertion vars, (not perfect solution, need further redesign).
+    - Add a method isSameTo to BedAnno::Var, to be used for comparing variants.

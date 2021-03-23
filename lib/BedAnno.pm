@@ -20,9 +20,13 @@ BedAnno - Perl module for annotating variation depend on the BED format database
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
 with reformatted database format, and won't give any individual
-annotation, so the individual_anno() is no longer available.
+annotation, so the C<individual_anno> is no longer available.
 VCF4.1 format variant description (chr, pos, ref, alt) will also
 be supported.
+
+From version v1.30 BedAnno will change to NOT to give extra annotations,
+no other plugins is supported and will completely clean, only for chromosome
+variant's gHGVS cHGVS pHGVS annotation and function predictions.
 
 =head1 SYNOPSIS
 
@@ -40,7 +44,7 @@ break point large deletion and duplication).
 
 I<BedAnno> annotate genomics variations of hg19 by using a BED format database, 
 which construct from ncbi anno release 104, combined with tabix index.
-This module can directly parse the vcf4.1 format ref and single alt string(no commas in it),
+This module can directly parse the vcf4.1 format ref and single alt string (no commas in it),
 without normalized by vcftools, and can recognize the tandom repeat 
 variation and duplication, generate the standard HGVS strings for 
 most of complex cases. Also it will ajust the strand of transcript,
@@ -1171,7 +1175,7 @@ sub load_anno {
             if ( $dname ne $cname or $dbeg > $cend ) {
 
                 my $query_ent = $self->{tidb}->query_full( $cname, $cbeg, $cend );
-                if ( defined $query_ent->{_tabix_iter} ) {
+                if ( defined $query_ent ) {
                     push( @all_querys, $query_ent );
                 }
                 ( $cname, $cbeg, $cend ) = @{ $sorted_regions[$k] };
@@ -1181,7 +1185,7 @@ sub load_anno {
             }
         }
         my $q = $self->{tidb}->query_full( $cname, $cbeg, $cend );
-        if ( defined $q->{_tabix_iter} ) {
+        if ( defined $q ) {
             push( @all_querys, $q );
         }
     }
@@ -4047,7 +4051,7 @@ sub trWalker {
                 $trEnd   = $tmp_sto;
                 $real_var =
                   BedAnno::Var->new( $tid, 0, length($tmp_trRef), $tmp_trRef, $tmp_trAlt );
-                @Unified = $real_var->getUnifiedvar('+');
+                @Unified = $real_var->getUnifiedVar('+');
                 $rtrinfo->{ei_Begin} = $rtrinfo->{ei_End};
                 $rtrinfo->{r_Begin} = $rtrinfo->{r_End};
                 $rtrinfo->{exin} = $rtrinfo->{ei_End};
@@ -5043,6 +5047,7 @@ use warnings;
 use Data::Dumper;
 use Carp;
 
+use experimental "smartmatch";
 our $MAX_COMPLEX_PARSING = 200;
 
 =head1 METHOD
@@ -5293,6 +5298,25 @@ sub getUnifiedVar {
 
     return ( $consPos, $consRef, $consAlt, $consRL, $consAL );
 }
+
+=head2 isSameTo
+
+    About   : Check if the current var is the same with another var
+    Usage   : my $isSame = $var->isSameTo($another_var);
+    Args    : BedAnno::Var entry.
+    Returns : 1 for Same, 0 for NOT same.
+
+=cut
+
+sub isSameTo {
+    my $self_var = shift;
+    my $another_var = shift;
+    my @unified_self = $self_var->getUnifiedVar('-', 1);
+    my @unified_another = $another_var->getUnifiedVar('-', 1);
+    my $ret = (@unified_self ~~ @unified_another) ? 1 : 0;
+    return $ret;
+}
+
 
 sub normalise_chr {
     my $chr = shift;
