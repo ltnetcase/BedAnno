@@ -1975,6 +1975,7 @@ my $promoter_anno = {
         'exin' => '.'
     },
     'c'          => 'c.-111-u48C>T',
+    'standard_cHGVS' => 'c.-159C>T',
     'geneId'     => '984',
     'rnaEnd'     => -48,
     'genepart'   => 'promoter',
@@ -3963,7 +3964,7 @@ ok(
       "NM_015569.3(DNM3): c.2589_2590insAGG (p.D863_*864insR)",
     "for [ inframe ins before stop codon ]"
 ) or explain "The anno info: ", $inframe_ins_before_stop;
-ok ( $long_ref_varname eq "NM_002437.4(MPV17): c.462-904_*464+d181delinsGCCTG",
+ok ( $long_ref_varname eq "NM_002437.4(MPV17): c.462-904_*645delinsGCCTG",
     "for [ long reference anno ]"
 ) or explain "The anno info: ", $long_ref_anno;
 ok ( $span_cds_edge_rep_varname eq "NM_001031615.1(ALDH3B2): c.6_12dupGGATGAA (p.P5Gfs*2)", "for [ span cds edge repeat anno ]"

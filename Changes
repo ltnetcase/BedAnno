@@ -306,3 +306,6 @@
 
 1.22  Mon Dec  7 11:48:37 2020
     - add standard_cHGVS key for delXXXinsXXX format cHGVS annotation.
+
+1.23  Tue Apr  6 17:52:33 2021 
+    - add standard_cHGVS for gene flanking region cHGVS annotation.
