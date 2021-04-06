@@ -9,13 +9,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '1.22';
+our $VERSION = '1.23';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED format database.
 
-=head2 VERSION v1.22
+=head2 VERSION v1.23
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -2843,6 +2843,15 @@ sub finaliseAnno {
             if ( exists $trAnnoEnt->{c} and $trAnnoEnt->{c} =~ /del[ACGTN]+ins/) {
                 $trAnnoEnt->{standard_cHGVS} = $trAnnoEnt->{c};
                 $trAnnoEnt->{standard_cHGVS} =~ s/del[ACGTN]+ins/delins/;
+            }
+
+            # 1.23 add standard_cHGVS for gene flanking numbering cHGVS.
+            if ( exists $trAnnoEnt->{c} and $trAnnoEnt->{c} =~ /-u|\+d/ ) {
+                $trAnnoEnt->{strandard_cHGVS} = $trAnnoEnt->{c};
+
+            }
+            if ( exists $trAnnoEnt->{standard_cHGVS} ) {
+                $trAnnoEnt->{strandard_cHGVS} =~ s/(\d+)(-u|\+d)(\d+)/$1+$3/eg;
             }
 
             $trAnnoEnt->{trVarName} = _getTrVarName( $tid, $trAnnoEnt );
