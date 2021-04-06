@@ -2847,11 +2847,11 @@ sub finaliseAnno {
 
             # 1.23 add standard_cHGVS for gene flanking numbering cHGVS.
             if ( exists $trAnnoEnt->{c} and $trAnnoEnt->{c} =~ /-u|\+d/ ) {
-                $trAnnoEnt->{strandard_cHGVS} = $trAnnoEnt->{c};
+                $trAnnoEnt->{standard_cHGVS} = $trAnnoEnt->{c};
 
             }
             if ( exists $trAnnoEnt->{standard_cHGVS} ) {
-                $trAnnoEnt->{strandard_cHGVS} =~ s/(\d+)(-u|\+d)(\d+)/$1+$3/eg;
+                $trAnnoEnt->{standard_cHGVS} =~ s/(\d+)(-u|\+d)(\d+)/$1+$3/eg;
             }
 
             $trAnnoEnt->{trVarName} = _getTrVarName( $tid, $trAnnoEnt );
