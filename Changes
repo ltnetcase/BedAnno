@@ -307,6 +307,9 @@
 1.22  Mon Dec  7 11:48:37 2020
     - add standard_cHGVS key for delXXXinsXXX format cHGVS annotation.
 
+1.23  Tue Apr  6 17:52:33 2021
+    - add standard_cHGVS for gene flanking region cHGVS annotation.
+
 1.30  Thu Feb 25 11:39:11 2021
     - Remove Tabix module dependency, use Bio::DB::HTS::Tabix instead, use bgzip compressed reference fasta, instead of razipped ones.
     - Remove all extra plugins from BedAnno to make it clean for only HGVS and function annotation.
