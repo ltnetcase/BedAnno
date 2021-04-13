@@ -1994,6 +1994,17 @@ sub finaliseAnno {
                 $trAnnoEnt->{standard_cHGVS} =~ s/del[ACGTN]+ins/delins/;
             }
 
+            # 1.23 add standard_cHGVS for gene flanking numbering cHGVS.
+            if ( exists $trAnnoEnt->{c} and $trAnnoEnt->{c} =~ /-u|\+d/ ) {
+                $trAnnoEnt->{standard_cHGVS} = $trAnnoEnt->{c};
+
+            }
+            if ( exists $trAnnoEnt->{standard_cHGVS} ) {
+                $trAnnoEnt->{standard_cHGVS} =~ s/(?<=\*|-)(\d+)(-u|\+d)(\d+)/$1+$3/eg;
+                $trAnnoEnt->{standard_cHGVS} =~ s/\d+-u/-/g;  # for no-5'utr case
+                $trAnnoEnt->{standard_cHGVS} =~ s/\d+\+d/*/g; # for no-3'utr case
+            }
+
             $trAnnoEnt->{trVarName} = _getTrVarName( $tid, $trAnnoEnt );
         }
     }
