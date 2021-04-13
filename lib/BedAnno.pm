@@ -2000,7 +2000,9 @@ sub finaliseAnno {
 
             }
             if ( exists $trAnnoEnt->{standard_cHGVS} ) {
-                $trAnnoEnt->{standard_cHGVS} =~ s/(\d+)(-u|\+d)(\d+)/$1+$3/eg;
+                $trAnnoEnt->{standard_cHGVS} =~ s/(?<=\*|-)(\d+)(-u|\+d)(\d+)/$1+$3/eg;
+                $trAnnoEnt->{standard_cHGVS} =~ s/\d+-u/-/g;  # for no-5'utr case
+                $trAnnoEnt->{standard_cHGVS} =~ s/\d+\+d/*/g; # for no-3'utr case
             }
 
             $trAnnoEnt->{trVarName} = _getTrVarName( $tid, $trAnnoEnt );
