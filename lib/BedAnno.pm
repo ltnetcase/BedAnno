@@ -593,7 +593,7 @@ sub _trimOrAddChr {
     }
 }
 
-sub _unifiy_chr {
+sub _unify_chr {
     my $self = shift;
     my $chrname = shift;
     if ($chrname !~ /^chr/ and $self->{trimOrAddChr}) {
@@ -3009,7 +3009,7 @@ sub getTrChange {
                         $annoEnt->{var}->{end}
                     );
 
-                    $gchr = $self->_unifiy_chr($gchr);
+                    $gchr = $self->_unify_chr($gchr);
 
                     if ( $ext_len == 1 ) {    # only can be 1
                         if (
