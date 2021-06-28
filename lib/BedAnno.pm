@@ -4093,6 +4093,78 @@ sub trWalker {
     return ( $trBegin, $trEnd, $real_var, \@Unified );
 }
 
+=head2 genomicWalker
+
+    About   : walk around the variant position to find possible
+              repeat start/end, and return the recalculated
+              genomicBegin and genomicEnd, together with the unified property
+              Current implementation won't walk around in the following
+              cases:
+              1. no-call
+              2. annotation-fail
+              3. snv or mnp
+              4. delins without repeat.
+    Usage   : $real_var = $beda->genomicWalker($rVar, $walking_band);
+    Args    : rVar - BedAnno::Var object
+              walking_band - walk around distance, default 200bp
+    Notes   : Occasionally, this will lead a very long range walking,
+              which may involve some other small variants in real sample,
+              but we can only assume the sequences flanking the variant
+              are no-changed, and can only use reference sequence to walk
+              through the sequencing result of sample.
+
+=cut
+
+sub genomicWalker {
+    my $self = shift;
+    my $rVar = shift;
+    my $walking_band = shift // 200;
+
+    my @Unified = $rVar->getUnifiedVar('-', 1);
+    my ( $real_p, $real_r, $real_a, $real_rl, $real_al ) = @Unified;
+
+    if (
+        !defined $real_al
+
+        # skip snv and mnp
+        or ( $real_rl == $real_al )
+
+        # skip delins without repeat
+        or ( 0 != $real_rl and 0 != $real_al )
+      )
+    {
+        # no correction
+        return $rVar;
+    }
+    my $real_var = $rVar;
+    my $gchr = $rVar->{chr};
+    $gchr = "chr" . $gchr if ($gchr !~ /^chr/);
+    my $walkRegionSta = ($real_p >= $walking_band) ? ($real_p - $walking_band) : 0;
+    my $walkRegionSto = $real_p + $real_rl + $walking_band;
+    my $walkingRegion = $gchr . ":" . ($walkRegionSta + 1) . "-" . $walkRegionSto;
+
+    my ($walkingSeq, $walkingLen) = $self->{genome_h}->get_sequence($walkingRegion);
+    $walkRegionSto = $walkRegionSta + $walkingLen;
+
+    my $relBegin = $real_p - $walkRegionSta + 1;
+    my $relEnd = $real_p - $walkRegionSta + $real_rl;
+
+    my ( $ref_sta, $ref_sto, $newRef, $newAlt ) =
+      walker( $relBegin, $relEnd, $walkingSeq, $real_r, $real_a, $real_rl, $real_al );
+
+    if (   $ref_sta ne $relBegin
+        or $ref_sto ne $relEnd )
+    {
+        $real_var = BedAnno::Var->new(
+            $rVar->{chr},
+            $ref_sta + $walkRegionSta - 1,
+            $ref_sto + $walkRegionSta,
+            $newRef, $newAlt
+        );
+    }
+    return $real_var;
+}
+
 sub walker {
     my ( $ref_sta, $ref_sto, $whole_seq, $ref, $alt, $reflen, $altlen ) = @_;
     my $seqlen = length($whole_seq);
