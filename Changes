@@ -310,6 +310,9 @@
 1.23  Tue Apr  6 17:52:33 2021
     - add standard_cHGVS for gene flanking region cHGVS annotation.
 
+1.24  Thu Jul  8 13:29:19 2021
+    - fix a bug for using csto as the cds length error in stoploss snv mutation annotation, which leads the error extent length.
+	
 1.30  Thu Feb 25 11:39:11 2021
     - Remove Tabix module dependency, use Bio::DB::HTS::Tabix instead, use bgzip compressed reference fasta, instead of razipped ones.
     - Remove all extra plugins from BedAnno to make it clean for only HGVS and function annotation.

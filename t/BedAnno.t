@@ -2050,6 +2050,7 @@ my $rep_span_cds_utr3 = {
     },
     'r_End'    => 'C6E',
     'c'	       => 'c.833_*12delAAAAAAAAAAAAAAinsAAAAAAAAAAAAA',
+    'uncurated_cHGVS' => 'c.833_*12delAAAAAAAAAAAAAAinsAAAAAAAAAAAAA',
     'standard_cHGVS'=> 'c.833_*12delinsAAAAAAAAAAAAA',
     'rnaBegin' => 908,
     'ei_Begin' => 'EX6E',
@@ -3922,10 +3923,15 @@ my $stoploss_var_anno = $bare_beda->anno("chr17", 71334725, 71334726, "T", "C");
 my $stoploss_varname = $stoploss_var_anno->{var}->{varName};
 my $stoploss_delvar_anno = $bare_beda->anno("chr17", 71334725, 71334726, "T", "");
 my $stoploss_del_varname = $stoploss_delvar_anno->{var}->{varName};
+my $stoploss_snv_anno = $bare_beda->anno("chr2", 152236045, 152236046, "A", "T");
+my $stoploss_snv_varname = $stoploss_snv_anno->{var}->{varName};
 
 ok( $stoploss_varname eq "NM_001144952.1(SDK2): c.6519A>G (p.*2173Wext*61)",
     "for [ stop-loss snv ]" )
   or explain "The anno info: ", $stoploss_var_anno;
+ok( $stoploss_snv_varname eq "NM_007115.3(TNFAIP6): c.833A>T (p.*278Lext*6)",
+    "for [ stop-loss snv2 ]" )
+  or explain "The anno info: ", $stoploss_snv_anno;
 ok(
     $stoploss_del_varname eq
       "NM_001144952.1(SDK2): c.6519delA (p.*2173Cext*39)",
