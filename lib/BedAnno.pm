@@ -2409,7 +2409,7 @@ sub getTrChange {
         $trannoEnt->{prot} = $trdbEnt->{prot}
           if ( exists $trdbEnt->{prot} and $trdbEnt->{prot} ne "." );
         my ($f, $chgvs_5, $chgvs_3);
-        my $cds_len = 0
+        my $cds_len = 0;
         if ($cdsOpt) {
             $f = 'c.';
             $chgvs_5 = $trannoEnt->{cdsBegin};
