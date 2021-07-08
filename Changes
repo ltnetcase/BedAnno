@@ -309,3 +309,6 @@
 
 1.23  Tue Apr  6 17:52:33 2021 
     - add standard_cHGVS for gene flanking region cHGVS annotation.
+
+1.24  Thu Jul  8 13:29:19 2021
+    - fix a bug for using csto as the cds length error in stoploss snv mutation annotation, which leads the error extent length.

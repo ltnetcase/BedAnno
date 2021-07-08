@@ -9,13 +9,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Tabix;
 
-our $VERSION = '1.23';
+our $VERSION = '1.24';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED format database.
 
-=head2 VERSION v1.23
+=head2 VERSION v1.24
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -3270,9 +3270,11 @@ sub getTrChange {
         my $chgvs_5 =
           ($cdsOpt) ? $trannoEnt->{cdsBegin} : $trannoEnt->{rnaBegin};
         my $chgvs_3 = ($cdsOpt) ? $trannoEnt->{cdsEnd} : $trannoEnt->{rnaEnd};
+        my $cds_len = 0;
         if ($cdsOpt) {
             ( $trannoEnt->{protBegin}, $trannoEnt->{protEnd} ) =
               _getCoveredProd( $trdbEnt, $chgvs_5, $chgvs_3 );
+            $cds_len = $trdbEnt->{csto} - $trdbEnt->{csta};
         }
 
         # [ aaPos, codon, aa, polar, frame, [framealt] ]
@@ -3381,15 +3383,14 @@ sub getTrChange {
             my $lesser_len = ($real_rl < $real_al) ? $real_rl : $real_al;
             if (
                 ( $chgvs_5 =~ /^\-(\d+)$/ and $1 <= $lesser_len )
-                or ( $chgvs_5 =~ /^(\d+)$/
-                    and ( $trdbEnt->{csto} - $1 ) <= $lesser_len )
+                or ( $chgvs_5 =~ /^(\d+)$/ and $cdsOpt
+                    and ( $cds_len - $1 ) <= $lesser_len )
               )
             {
-                # 5utr and first cds
                 my $offset = $1;
                 my $opt_53 = ( $chgvs_5 =~ /^\-/ ) ? 1 : 0;
                 if ( !$opt_53 ) {
-                    $offset = $trdbEnt->{csto} - $offset;
+                    $offset = $cds_len - $offset - 1;
                 }
                 my $change_cn = 0;
                 $change_cn++
@@ -3668,8 +3669,7 @@ sub getTrChange {
                     if (
                         (
                                 $cdsOpt
-                            and $chgvs_3 + 1 <=
-                            ( $trdbEnt->{csto} - $trdbEnt->{csta} )
+                            and $chgvs_3 + 1 <= $cds_len
                         )
                         or ( !$cdsOpt and $chgvs_3 + 1 <= $trdbEnt->{len} )
                       )
@@ -4018,7 +4018,7 @@ sub getTrChange {
                     next;
                 }
                 elsif ( $chgvs_5 =~ /^(\d+)\+1/
-                    and $1 == ( $trdbEnt->{csto} - $trdbEnt->{csta} ) )
+                    and $1 == $cds_len )
                 {
                     $trannoEnt->{func} = 'utr-3';
                     next;
@@ -4222,12 +4222,12 @@ sub getTrChange {
                     # probably frame shift flag
                     my $frameshift_flag = ( $diff_ra % 3 > 0 ) ? 1 : 0;
 
-                    my $start_in_cds_flag = ($chgvs_5 > ( $trdbEnt->{csto} - 3 )) ? 0 : 1;
+                    my $start_in_cds_flag = ($chgvs_5 > ( $cds_len - 3 )) ? 0 : 1;
 
                     # end in cds or not.
                     my $end_in_cds_flag = (
                              $chgvs_3 =~ /^\*/
-                          or $chgvs_3 > ( $trdbEnt->{csto} - 3 )
+                          or $chgvs_3 > ( $cds_len - 3 )
                     ) ? 0 : 1;
 
                     my $ready_to_add_3;
