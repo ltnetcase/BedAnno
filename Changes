@@ -318,3 +318,7 @@
     - Remove all extra plugins from BedAnno to make it clean for only HGVS and function annotation.
     - Add a feature to trWalker to let it also walk the 5'edge insertion vars, (not perfect solution, need further redesign).
     - Add a method isSameTo to BedAnno::Var, to be used for comparing variants.
+
+1.31  Tue Mar 22 10:04:59 2022 
+    - fix a bug for add support to hs37d5 refgenome fasta
+    - Add genomic walker test case for span intron exon case duplication, but without giving repeat format HGVS for that var.

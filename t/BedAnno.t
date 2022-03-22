@@ -3988,8 +3988,15 @@ if ( -e "$largedb/refgenome/hs37d5.fa.gz" ) {
     $bare_beda->set_genome("$largedb/refgenome/hs37d5.fa.gz");
     my $noncanonical_splice_nochange = $bare_beda->anno("chr14", "58678118", "A", "G");
     my $noncanonical_splice_nochange_func = $noncanonical_splice_nochange->{trInfo}->{"NM_018477.2"}->{"func"};
+    my $real_var = BedAnno::Var->new("chr7", 55248980, 55248980, "", "TCCAGGAAGCCT");
+    my $walked_var = $bare_beda->genomicWalker($real_var, 200);
+    my ($span_exon_edge_dup_anno, $return_idx) = $bare_beda->varanno($walked_var);
+    
+    my $span_exon_edge_dup_varname = $span_exon_edge_dup_anno->{var}->{varName};
     ok ( $noncanonical_splice_nochange_func eq "no-change", "for [ non-canonical splice nochange ]"
     ) or explain "The anno info: ", $noncanonical_splice_nochange;
+    ok ( $span_exon_edge_dup_varname eq "NM_005228.3(EGFR): c.2284-5_2290delinsTCCAGGAAGCCTTCCAGGAAGCCT", "for [ span exon edge duplication anno ]"
+    ) or explain "The anno info: ", $span_exon_edge_dup_anno;
 }
 
 

@@ -9,13 +9,13 @@ use Time::HiRes qw(gettimeofday tv_interval);
 
 use Bio::DB::HTS::Tabix;
 
-our $VERSION = '1.30';
+our $VERSION = '1.31';
 
 =head1 NAME
 
 BedAnno - Perl module for annotating variation depend on the BED format database.
 
-=head2 VERSION v1.30
+=head2 VERSION v1.31
 
 From version 0.32 BedAnno will change to support CG's variant shell list
 and use ncbi annotation release 104 as the annotation database
@@ -2607,9 +2607,6 @@ sub getTrChange {
                 $chgvs_5 !~ /\d+[\+\-][ud]?\d+/ xor $chgvs_3 !~
                 /\d+[\+\-][ud]?\d+/
             )
-
-            # we currently assume repeat variant won't get across more than
-            # two region, so ommit other case test
           )
         {
             my $trRep = $real_var->{rep};
@@ -4138,8 +4135,7 @@ sub genomicWalker {
         return $rVar;
     }
     my $real_var = $rVar;
-    my $gchr = $rVar->{chr};
-    $gchr = "chr" . $gchr if ($gchr !~ /^chr/);
+    my $gchr = $self->_unify_chr($rVar->{chr});
     my $walkRegionSta = ($real_p >= $walking_band) ? ($real_p - $walking_band) : 0;
     my $walkRegionSto = $real_p + $real_rl + $walking_band;
     my $walkingRegion = $gchr . ":" . ($walkRegionSta + 1) . "-" . $walkRegionSto;
