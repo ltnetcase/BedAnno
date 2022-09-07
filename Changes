@@ -312,3 +312,6 @@
 
 1.24  Thu Jul  8 13:29:19 2021
     - fix a bug for using csto as the cds length error in stoploss snv mutation annotation, which leads the error extent length.
+
+1.25  Wed 07 Sep 2022 12:09:17 PM CST
+    - fix a bug referenced in issue 15 which influence the multiple aa synonymous variants pDot annotation.
