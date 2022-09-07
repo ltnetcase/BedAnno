@@ -3016,8 +3016,8 @@ my $synon_dup_frame = {
     'genepart'       => 'CDS',
     'genepartSO'     => 'SO:0000316',
     'intronIndex'    => '.',
-    'p'              => 'p.(320_321=)',
-    'p3'             => 'p.(320_321=)',
+    'p'              => 'p.(319_320=)',
+    'p3'             => 'p.(319_320=)',
     'postEnd'        => {
         'cDot' => '957',
         'exin' => 'EX2E',
