@@ -6,6 +6,12 @@ WriteMakefile(
     NAME          => 'BedAnno',
     VERSION_FROM  => 'lib/BedAnno.pm',            # finds $VERSION
     PREREQ_PM     => { Tabix => 0.2.0 },          # e.g., Module::Name => 1.1
+    PM            => {
+        'lib/BedAnno.pm' => '$(INST_LIBDIR)/BedAnno.pm',
+        'lib/BedAnno/Var.pm' => '$(INST_LIBDIR)/BedAnno/Var.pm',
+        'lib/BedAnno/Anno.pm' => '$(INST_LIBDIR)/BedAnno/Anno.pm',
+        'lib/BedAnno/CNV.pm' => '$(INST_LIBDIR)/BedAnno/CNV.pm'
+    },
     TEST_REQUIRES => { 'Test::Most' => 0.34 },    # for test only
     (
         $] >= 5.005

@@ -27,7 +27,11 @@ my %opts = (
 my %bare_opts = %opts;
 
 use Test::Most;
-BEGIN { use_ok('BedAnno') }
+BEGIN {
+    use_ok('BedAnno');
+    use_ok('BedAnno::Var');
+    use_ok('BedAnno::Anno');
+}
 
 my $bare_beda = BedAnno->new(%bare_opts);
 

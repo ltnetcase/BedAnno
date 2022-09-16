@@ -315,3 +315,6 @@
 
 1.25  Wed 07 Sep 2022 12:09:17 PM CST
     - fix a bug referenced in issue 15 which influence the multiple aa synonymous variants pDot annotation.
+
+2.00  Fri 16 Sep 2022 09:30:59 AM CST
+    - change to multiple mudole structure
