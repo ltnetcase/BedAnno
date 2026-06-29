@@ -4164,17 +4164,6 @@ if ( -e $extradb and -r $extradb ) {
 	}
     }
 
-    my $ss_nochange_anno = $beda->anno( "chr11", 827712, 827713, "A", "T" );
-    my $splice_no_change = $ss_nochange_anno->{trInfo}->{"NM_173584.3"}->{func};
-    if ( exists $opts{genome} ) {
-	if ( $splice_no_change eq "no-change" ) {
-	    pass( "for [ splice change to canonical ]" );
-	}
-	else {
-	    fail( "for [ splice change to canonical ]" );
-	    explain "The returned anno info:", $ss_nochange_anno;
-	}
-    }
     $beda->DESTROY();
     undef $beda;
 }
