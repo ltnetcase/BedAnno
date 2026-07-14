@@ -315,3 +315,6 @@
 
 1.25  Wed 07 Sep 2022 12:09:17 PM CST
     - fix a bug referenced in issue 15 which influence the multiple aa synonymous variants pDot annotation.
+
+1.26  Tue Jul 14 08:54:23 2026
+    - fix splice-site no-change recovery problem
